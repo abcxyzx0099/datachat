@@ -1,0 +1,47 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-58c607fd-9c38-4ab5-9917-4c040abf7e14"
+      ],
+      "env": {}
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--headless",
+        "--isolated",
+        "--output-dir=./tests/playwright-mcp/results/"
+      ],
+      "env": {}
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest",
+        "--isolated",
+        "--headless"
+      ],
+      "env": {}
+    },
+    "agno-docs": {
+      "type": "http",
+      "url": "https://docs.agno.com/mcp"
+    },
+    "copilotkit-doc": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp.copilotkit.ai"
+      ]
+    }
+  }
+}
