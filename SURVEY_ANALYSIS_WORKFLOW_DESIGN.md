@@ -42,9 +42,9 @@ flowchart TD
     subgraph P2["**Phase 2: New Variable Generation**<br/>AI generates, validates, and refines recoding rules"]
         direction TB
         S4["**Step 4**<br/>Generate Recoding Rules<br/>with Self-Verification 🔄<br/>(AI generates → validates → refines)"]
-        S4b["**Step 4.6**<br/>Human Review: Rules 👤<br/>(semantic validation - optional)"]
-        S5["**Step 5**<br/>Generate PSPP Syntax<br/>(convert rules to PSPP)"]
-        S6["**Step 6**<br/>Execute PSPP<br/>(apply transformations)"]
+        S4b["**Step 5**<br/>Human Review: Rules 👤<br/>(semantic validation - optional)"]
+        S5["**Step 6**<br/>Generate PSPP Syntax<br/>(convert rules to PSPP)"]
+        S6["**Step 7**<br/>Execute PSPP<br/>(apply transformations)"]
         RECODED["**Output**<br/>RECODED DATA (NEW VARIABLES)"]
         S4 --> S4b
         S4b --> S5
@@ -54,8 +54,8 @@ flowchart TD
 
     subgraph P3["**Phase 3: Indicator Generation**<br/>Group variables into semantic indicators for analysis"]
         direction TB
-        S7["**Step 7**<br/>Generate Indicators<br/>(AI groups variables)"]
-        S7a["**Step 7.1**<br/>Human Review: Indicators 👤<br/>(analyst approves groupings)"]
+        S7["**Step 8**<br/>Generate Indicators<br/>(AI groups variables)"]
+        S7a["**Step 8.1**<br/>Human Review: Indicators 👤<br/>(analyst approves groupings)"]
         INDICATORS["**Output**<br/>INDICATORS (SEMANTIC GROUPS)"]
         S7 --> S7a
         S7a -.-> INDICATORS
@@ -63,10 +63,10 @@ flowchart TD
 
     subgraph P4["**Phase 4: Cross-Table Specification**<br/>Define and generate cross-tabulation tables"]
         direction TB
-        S8["**Step 8**<br/>Generate Table Specs<br/>(define rows, columns, weighting)"]
-        S8a["**Step 8.1**<br/>Human Review: Table Specs 👤<br/>(analyst approves structure)"]
-        S9["**Step 9**<br/>Generate PSPP Syntax<br/>(convert specs to PSPP)"]
-        S10["**Step 10**<br/>Execute PSPP<br/>(generate cross-tables)"]
+        S8["**Step 9**<br/>Generate Table Specs<br/>(define rows, columns, weighting)"]
+        S8a["**Step 9.1**<br/>Human Review: Table Specs 👤<br/>(analyst approves structure)"]
+        S9["**Step 10**<br/>Generate PSPP Syntax<br/>(convert specs to PSPP)"]
+        S10["**Step 11**<br/>Execute PSPP<br/>(generate cross-tables)"]
         CROSSTAB["**Output**<br/>CROSS TABLES (.sav)"]
         S8 --> S8a
         S8a --> S9
@@ -74,24 +74,24 @@ flowchart TD
         S10 -.-> CROSSTAB
     end
 
-    subgraph P4_5["**Phase 4.5: Statistical Analysis**<br/>Compute Chi-square statistics and effect sizes"]
+    subgraph P5["**Phase 5: Statistical Analysis**<br/>Compute Chi-square statistics and effect sizes"]
         direction TB
-        S10_5["**Step 10.5**<br/>Compute Chi-Square Stats<br/>(Python: scipy, pandas)"]
+        S10_5["**Step 12**<br/>Compute Chi-Square Stats<br/>(Python: scipy, pandas)"]
         STATS["**Output**<br/>TABLES WITH STATISTICS<br/>(χ², p-value, Cramer's V)"]
         S10_5 -.-> STATS
     end
 
-    subgraph P5["**Phase 5: Significant Tables Selection**<br/>Filter tables by effect strength and sample size"]
+    subgraph P6["**Phase 6: Significant Tables Selection**<br/>Filter tables by effect strength and sample size"]
         direction TB
-        S11["**Step 11**<br/>Filter Significant Tables<br/>(Cramer's V ≥ 0.1, count ≥ 30)"]
+        S11["**Step 13**<br/>Filter Significant Tables<br/>(Cramer's V ≥ 0.1, count ≥ 30)"]
         SIGNIFICANT["**Output**<br/>SIGNIFICANT TABLES ONLY"]
         S11 -.-> SIGNIFICANT
     end
 
-    subgraph P6["**Phase 6: Presentation**<br/>Generate final deliverables for stakeholders"]
+    subgraph P7["**Phase 7: Presentation**<br/>Generate final deliverables for stakeholders"]
         direction TB
-        S12["**Step 12**<br/>Generate PowerPoint<br/>(.pptx with charts)"]
-        S13["**Step 13**<br/>Generate HTML Dashboard<br/>(interactive web view)"]
+        S12["**Step 14**<br/>Generate PowerPoint<br/>(.pptx with charts)"]
+        S13["**Step 15**<br/>Generate HTML Dashboard<br/>(interactive web view)"]
         OUTPUTS["**Output**<br/>FINAL OUTPUTS<br/>(.pptx + .html)"]
         S12 -.-> OUTPUTS
         S13 -.-> OUTPUTS
@@ -114,8 +114,8 @@ flowchart TD
 | **2** | New Variable Generation | AI generates, validates, and iteratively refines recoding rules; creates new variables through PSPP | Filtered metadata, AI rules | Recoded dataset with new variables |
 | **3** | Indicator Generation | Group variables into semantic indicators for analysis | Recoded variables | Indicator definitions |
 | **4** | Cross-Table Generation | Define and generate cross-tabulation tables with weighting | Indicators, table specs | Cross-table contingency tables |
-| **4.5** | Statistical Analysis | Compute Chi-square statistics and effect sizes for all tables | Cross-table tables, recoded data | Tables with Chi-square statistics |
-| **5** | Significant Tables Selection | Filter tables by Cramer's V effect size and minimum sample count | Tables with statistics | Significant tables only |
+| **5** | Statistical Analysis | Compute Chi-square statistics and effect sizes for all tables | Cross-table tables, recoded data | Tables with Chi-square statistics |
+| **6** | Significant Tables Selection | Filter tables by Cramer's V effect size and minimum sample count | Tables with statistics | Significant tables only |
 | **6** | Presentation | Generate final deliverables for stakeholders | Significant tables | PowerPoint, HTML dashboard |
 
 ### 2.3 Data Evolution Through Phases
@@ -164,15 +164,15 @@ flowchart LR
         sav3(["📁 cross_table.sav"]):::dataFileStyle
     end
 
-    %% Phase 4.5 & 5: Statistical Analysis & Filtering
-    subgraph P5["Phase 4.5-5: Statistical Analysis"]
+    %% Phase 5 & 6: Statistical Analysis & Filtering
+    subgraph P5["Phase 5-6: Statistical Analysis"]
         direction TB
         allTables["all_small_tables<br/>(with Chi-Square)"]:::traditionalStyle
         sigTables["significant_tables<br/>(filtered)"]:::traditionalStyle
     end
 
-    %% Phase 6: Presentation
-    subgraph P6["Phase 6: Presentation"]
+    %% Phase 7: Presentation
+    subgraph P7["Phase 7: Presentation"]
         direction TB
         ppt(["📊 .pptx"]):::outputStyle
         html(["🌐 .html"]):::outputStyle
@@ -187,21 +187,21 @@ flowchart LR
     filtMeta -->|Step 4| recodingRules
     recodingRules -->|Step 4| validationResults
     recodingRules -->|Step 5| psppRecodeSyntax
-    sav1 ==>|Step 6<br/>input| sav2
-    psppRecodeSyntax -.->|Step 6<br/>syntax| sav2
-    varMeta ==>|Step 7| indicators
-    indicators -->|Step 8| tableSpecs
-    varMeta -->|Step 8| weightVar
-    tableSpecs -->|Step 9| psppTableSyntax
-    sav2 ==>|Step 10<br/>input| sav3
-    psppTableSyntax -.->|Step 10<br/>syntax| sav3
-    sav2 ==>|Step 10.5| allTables
-    indicators ==>|Step 10.5| allTables
-    tableSpecs ==>|Step 10.5| allTables
-    weightVar ==>|Step 10.5| allTables
-    allTables -->|Step 11| sigTables
-    sigTables -->|Step 12| ppt
-    sigTables -->|Step 13| html
+    sav1 ==>|Step 7<br/>input| sav2
+    psppRecodeSyntax -.->|Step 7<br/>syntax| sav2
+    varMeta ==>|Step 8| indicators
+    indicators -->|Step 9| tableSpecs
+    varMeta -->|Step 9| weightVar
+    tableSpecs -->|Step 10| psppTableSyntax
+    sav2 ==>|Step 11<br/>input| sav3
+    psppTableSyntax -.->|Step 11<br/>syntax| sav3
+    sav2 ==>|Step 12| allTables
+    indicators ==>|Step 12| allTables
+    tableSpecs ==>|Step 12| allTables
+    weightVar ==>|Step 12| allTables
+    allTables -->|Step 13| sigTables
+    sigTables -->|Step 14| ppt
+    sigTables -->|Step 15| html
 ```
 
 **Legend:**
@@ -215,10 +215,10 @@ flowchart LR
 
 **Key Observations:**
 
-1. **AI-Driven Nodes** (3 nodes): Steps 4, 7, and 8 use AI agents to generate intelligent rules and groupings with built-in self-verification
-2. **Traditional Programming** (13 nodes): All other steps use deterministic Python/PSPP processing
+1. **AI-Driven Nodes** (3 nodes): Steps 4, 8, and 9 use AI agents to generate intelligent rules and groupings with built-in self-verification
+2. **Traditional Programming** (12 nodes): All other steps use deterministic Python/PSPP processing
 3. **Hybrid Approach**: The workflow combines AI for semantic understanding with traditional programming for statistical rigor
-4. **Step 10.5 is data-intensive**: Consumes both data files (`recoded_data.sav`) and multiple metadata sources (`indicators`, `table_specifications`, `weighting_variable`)
+4. **Step 12 is data-intensive**: Consumes both data files (`recoded_data.sav`) and multiple metadata sources (`indicators`, `table_specifications`, `weighting_variable`)
 5. **Dashed lines** (`.-.->`): Indicate syntax/control flow (not direct data dependency)
 
 ### 2.4 LangGraph State Management
@@ -249,7 +249,7 @@ class ExtractionState(TypedDict):
 
 
 class RecodingState(TypedDict):
-    """New variable generation through AI-driven recoding - Step 4-6"""
+    """New variable generation through AI-driven recoding - Step 4-7"""
     recoding_rules: Dict[str, Any]           # AI-generated recoding rules
     recoding_rules_json_path: str            # Saved recoding rules file
     self_correction_iterations: int           # Number of self-correction iterations used
@@ -262,7 +262,7 @@ class RecodingState(TypedDict):
 
 
 class IndicatorState(TypedDict):
-    """Indicator generation and semantic grouping - Step 7"""
+    """Indicator generation and semantic grouping - Step 8"""
     indicator_metadata: List[Dict]           # Metadata for indicator generation
     indicators: List[Dict[str, Any]]         # Generated indicators
     indicators_json_path: str                # Saved indicators file
@@ -270,7 +270,7 @@ class IndicatorState(TypedDict):
 
 
 class CrossTableState(TypedDict):
-    """Cross-table specification and generation - Step 8-10"""
+    """Cross-table specification and generation - Step 9-11"""
     table_specifications: Dict[str, Any]     # Table structure definitions
     table_specs_json_path: str               # Saved table specs
     weighting_variable: Optional[str]        # Weighting variable for cross-tables
@@ -281,18 +281,18 @@ class CrossTableState(TypedDict):
 
 
 class StatisticalAnalysisState(TypedDict):
-    """Chi-square statistics and effect size computation - Step 10.5"""
+    """Chi-square statistics and effect size computation - Step 12"""
     all_small_tables: List[Dict]             # All tables with chi-square stats
 
 
 class FilteringState(TypedDict):
-    """Significant tables selection by effect size - Step 11"""
+    """Significant tables selection by effect size - Step 13"""
     significant_tables: List[Dict]           # Tables filtered by Cramer's V + count
     significant_tables_json_path: str        # Saved filtered tables
 
 
 class PresentationState(TypedDict):
-    """Final output generation - Step 12-13"""
+    """Final output generation - Step 14-15"""
     powerpoint_path: str                     # Generated PowerPoint file
     html_dashboard_path: str                 # Generated HTML dashboard
     charts_generated: List[Dict]             # Chart metadata
@@ -505,7 +505,7 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
 **Self-Verification Loop Algorithm**:
 ```python
 def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
-    from scripts.survey_analysis import SelfVerifyingRecodingAgent, VariableMetadata
+    from agent.utils.validators import SelfVerifyingRecodingAgent, VariableMetadata
 
     # Convert metadata
     metadata = [VariableMetadata(**v) for v in state["filtered_metadata"]]
@@ -639,41 +639,12 @@ Please generate new recoding rules that address ALL of the errors above:
 - Max iterations default is 3 to prevent infinite loops
 - Each iteration adds validation errors to the AI prompt
 - The agent learns from its mistakes through structured feedback
-- Human review (Step 4.6) becomes optional for semantic validation only
+- Human review (Step 5) becomes optional for semantic validation only
 - All objective validation is handled automatically by this step
 
 ---
 
-### Step 4.5: Validate Recoding Rules
-
-**Node**: ~~`validate_recoding_rules_node`~~
-
-**Status**: ✅ **DEPRECATED** - Now integrated into `generate_recoding_rules_node` (Step 4)
-
-**Rationale**: The validation logic has been moved inside the AI agent as part of the self-verification loop. This allows the AI to:
-
-1. **Automatically fix its own mistakes** - No manual intervention for objective errors
-2. **Faster iteration** - Seconds per iteration instead of minutes/hours
-3. **Reduce human workload** - Only semantic validation requires human review
-
-**Legacy Validation Checks** (now performed in Step 4):
-
-| # | Check | Description |
-|---|-------|-------------|
-| 1 | Source variables exist | Referenced variables must exist in metadata |
-| 2 | Target conflicts | Warn if target variables already exist |
-| 3 | Range validity | For range rules: start ≤ end |
-| 4 | No duplicate targets | Each target variable must be unique |
-| 5 | Transformation completeness | All transformations must have source values |
-| 6 | Target uniqueness | Target values must be unique within each rule |
-| 7 | Source overlap | Source values must not overlap within a rule |
-
-**Implementation** (see Step 4):
-The validation is now performed by `RuleValidator` class within the self-verification loop in Step 4.
-
----
-
-### Step 4.6: Human Review - Recoding Rules (Optional)
+### Step 5: Human Review - Recoding Rules (Optional)
 
 **Node**: `human_review_recoding_rules_node`
 
@@ -864,14 +835,14 @@ If rejecting, please specify:
 
 **Rejection with Feedback Workflow**:
 
-When a human reviewer rejects the recoding rules (Step 4.6):
+When a human reviewer rejects the recoding rules (Step 5):
 
 1. **Rejection Decision**: Human selects "REJECT" and provides feedback
 2. **State Update**: `recoding_rules_approved = False`, comments stored in `approval_comments`
 3. **Loop Back**: Workflow returns to Step 4 (`generate_recoding_rules_node`)
 4. **Feedback Integration**: The AI agent receives the previous rules + human feedback
 5. **Regeneration with Self-Verification**: AI generates new rules addressing the feedback and automatically validates them
-6. **Re-review**: Step 4.6 presents new rules for approval
+6. **Re-review**: Step 5 presents new rules for approval
 
 **Note**: Steps 6 and 7 from the old workflow (separate validation step) are no longer needed since Step 4 now includes automatic self-verification.
 
@@ -920,7 +891,7 @@ Please generate new recoding rules that address the feedback above.
 
 ---
 
-### Step 5: Generate PSPP Recoding Syntax
+### Step 6: Generate PSPP Recoding Syntax
 
 **Node**: `generate_pspp_recoding_syntax_node`
 
@@ -957,7 +928,7 @@ SAVE OUTFILE='{recoded_data_path}'.
 
 ---
 
-### Step 6: Execute PSPP Recoding
+### Step 7: Execute PSPP Recoding
 
 **Node**: `execute_pspp_recoding_node`
 
@@ -997,7 +968,7 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
 
 ---
 
-### Step 7: Generate Indicators
+### Step 8: Generate Indicators
 
 **Node**: `generate_indicators_node`
 
@@ -1122,7 +1093,7 @@ OUTPUT FORMAT (JSON):
 
 ---
 
-### Step 7.1: Human Review - Indicators
+### Step 8.1: Human Review - Indicators
 
 **Node**: `human_review_indicators_node`
 
@@ -1214,7 +1185,7 @@ def human_review_indicators_node(state: WorkflowState) -> WorkflowState:
 
 **LangGraph Interrupt Mechanism for Indicators**:
 
-Similar to Step 4.6, this step uses LangGraph's interrupt functionality:
+Similar to Step 5, this step uses LangGraph's interrupt functionality:
 
 1. **Pause at Indicator Review**: Workflow halts after generating indicators
 2. **Presentation**: Human-readable report shows all indicators with their variables
@@ -1361,7 +1332,7 @@ For rejections, please indicate:
 
 ---
 
-### Step 8: Generate Table Specifications
+### Step 9: Generate Table Specifications
 
 **Node**: `generate_table_specs_node`
 
@@ -1405,7 +1376,7 @@ OUTPUT FORMAT (JSON):
             "filter_by": "cramers_v_and_count",  // Filter by effect size and sample size
             "cramers_v_min": 0.1,
             "count_min": 30,
-            "test_type": "chi_square"  // Computed in Step 10.5 using Python (scipy)
+            "test_type": "chi_square"  // Computed in Step 12 using Python (scipy)
         }
     }
 }
@@ -1417,7 +1388,7 @@ OUTPUT FORMAT (JSON):
 
 ---
 
-### Step 8.1: Human Review - Table Specifications
+### Step 9.1: Human Review - Table Specifications
 
 **Node**: `human_review_table_specs_node`
 
@@ -1655,7 +1626,7 @@ For rejections, please indicate:
 
 ---
 
-### Step 9: Generate PSPP Table Syntax
+### Step 10: Generate PSPP Table Syntax
 
 **Node**: `generate_pspp_table_syntax_node`
 
@@ -1688,7 +1659,7 @@ CTABLES
 SAVE OUTFILE='{cross_table_sav_path}'.
 ```
 
-**Note**: Chi-square statistics are computed in Step 10.5 using Python (scipy.stats), not in PSPP. This provides better integration and more detailed statistical output (effect sizes, residuals).
+**Note**: Chi-square statistics are computed in Step 12 using Python (scipy.stats), not in PSPP. This provides better integration and more detailed statistical output (effect sizes, residuals).
 
 **Output**:
 - `pspp_table_syntax`: Complete cross-table syntax
@@ -1696,11 +1667,11 @@ SAVE OUTFILE='{cross_table_sav_path}'.
 
 ---
 
-### Step 10: Execute PSPP Tables
+### Step 11: Execute PSPP Tables
 
 **Node**: `execute_pspp_tables_node`
 
-**Description**: Run PSPP to generate cross-tabulation tables with observed counts (Chi-square statistics are computed separately in Step 10.5)
+**Description**: Run PSPP to generate cross-tabulation tables with observed counts (Chi-square statistics are computed separately in Step 12)
 
 **Input**:
 - `pspp_table_syntax_path`
@@ -1733,11 +1704,11 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
 
 **Output**:
 - `cross_table_sav_path`: Path to exported cross-table file (.sav) containing observed counts and weighted data
-- Note: Chi-square statistics are NOT computed by PSPP; they are calculated in Step 10.5
+- Note: Chi-square statistics are NOT computed by PSPP; they are calculated in Step 12
 
 ---
 
-### Step 10.5: Compute Chi-Square Statistics
+### Step 12: Compute Chi-Square Statistics
 
 **Node**: `compute_chi_square_statistics_node`
 
@@ -1813,7 +1784,7 @@ def compute_chi_square_statistics_node(state: WorkflowState) -> WorkflowState:
                 continue
 
             # Handle multi-variable indicators based on metric type
-            # See Step 7 for detailed explanation of three scenarios
+            # See Step 8 for detailed explanation of three scenarios
             if row_metric == "average" and len(row_vars) > 1:
                 # Scenario 1: Average metric - each variable becomes one row in the crosstab
                 # For matrix rating questions, compute mean for each variable by column categories
@@ -2429,14 +2400,14 @@ def compute_percentage_metric_table(
 
 ---
 
-### Step 11: Filter Significant Tables
+### Step 13: Filter Significant Tables
 
 **Node**: `filter_significant_tables_node`
 
 **Description**: Filter tables using practical business criteria: Cramer's V effect size and minimum sample size. This approach is more interpretable for stakeholders than p-value filtering.
 
 **Input**:
-- `all_small_tables`: List of all tables with Chi-square statistics from Step 10.5
+- `all_small_tables`: List of all tables with Chi-square statistics from Step 12
 - `config["cramers_v_min"]`: Minimum effect size threshold (default: 0.1)
 - `config["count_min"]`: Minimum total count in crosstab (default: 30)
 
@@ -2506,7 +2477,7 @@ def filter_significant_tables_node(state: WorkflowState) -> WorkflowState:
 
 ---
 
-### Step 12: Generate PowerPoint
+### Step 14: Generate PowerPoint
 
 **Node**: `generate_powerpoint_node`
 
@@ -2538,7 +2509,7 @@ Slide N+1: Conclusion
 
 ---
 
-### Step 13: Generate HTML Dashboard
+### Step 15: Generate HTML Dashboard
 
 **Node**: `generate_html_dashboard_node`
 
@@ -2585,7 +2556,7 @@ DEFAULT_CONFIG = {
     "table_instructions": "Place demographics in columns; identify weighting variable",
     "weighting_variable": None,  # Auto-detected or manually specified
 
-    # Statistical Analysis (Step 10.5)
+    # Statistical Analysis (Step 12)
     "min_expected_frequency": 5,          # Minimum expected cell count for Chi-square validity
     "enable_effect_size": False,          # Optional: compute Cramer's V for context
     "enable_residuals": False,            # Optional: compute standardized residuals
@@ -2647,34 +2618,40 @@ This workflow uses PSPP, the open-source alternative to SPSS. Complete PSPP synt
 - **RECODE**: Transform and recode variables
 - **WEIGHT BY**: Apply sampling weights to analyses
 - **CTABLES**: Advanced custom tables for generating cross-tabulation observed counts
-  - Note: Chi-square tests are NOT computed in PSPP; they are calculated in Step 10.5 using Python (scipy.stats)
+  - Note: Chi-square tests are NOT computed in PSPP; they are calculated in Step 12 using Python (scipy.stats)
 
 ---
 
 ## 6. Project Structure
 
+> **IMPORTANT**: Following the official [LangGraph application structure](https://docs.langchain.com/oss/python/langgraph/application-structure), `{PROJECT_ROOT}` serves as the top-level project directory (equivalent to `my-app` in LangGraph docs).
+>
+> **Example**: Set `PROJECT_ROOT=/home/admin/workspaces/survey-analysis` and create the project directly at that path — **NOT** inside the current `datachat/` codebase.
+>
+> Required LangGraph configuration file: `langgraph.json` (see Section 6.1).
+
 ```
-survey-analysis-workflow/
-├── src/
+{PROJECT_ROOT}/                     # ← Top-level project directory (the "my-app" equivalent)
+├── agent/          # ← Python package containing all code (the "my_agent" equivalent)
 │   ├── nodes/
 │   │   ├── __init__.py
 │   │   ├── 01_extract_spss.py
 │   │   ├── 02_transform_metadata.py
 │   │   ├── 03_preliminary_filter.py
 │   │   ├── 04_generate_recoding_rules.py  # Includes self-verification logic
-│   │   ├── 04_6_human_review_recoding.py  # Optional semantic review
-│   │   ├── 05_generate_pspp_recoding_syntax.py
-│   │   ├── 06_execute_pspp_recoding.py
-│   │   ├── 07_generate_indicators.py
-│   │   ├── 07_1_human_review_indicators.py
-│   │   ├── 08_generate_table_specs.py
-│   │   ├── 08_1_human_review_table_specs.py
-│   │   ├── 09_generate_pspp_table_syntax.py
-│   │   ├── 10_execute_pspp_tables.py
-│   │   ├── 10_5_compute_chi_square_statistics.py
-│   │   ├── 11_filter_significant_tables.py
-│   │   ├── 12_generate_powerpoint.py
-│   │   └── 13_generate_html_dashboard.py
+│   │   ├── 05_human_review_recoding.py  # Optional semantic review
+│   │   ├── 06_generate_pspp_recoding_syntax.py
+│   │   ├── 07_execute_pspp_recoding.py
+│   │   ├── 08_generate_indicators.py
+│   │   ├── 08_1_human_review_indicators.py
+│   │   ├── 09_generate_table_specs.py
+│   │   ├── 09_1_human_review_table_specs.py
+│   │   ├── 10_generate_pspp_table_syntax.py
+│   │   ├── 11_execute_pspp_tables.py
+│   │   ├── 12_compute_chi_square_statistics.py
+│   │   ├── 13_filter_significant_tables.py
+│   │   ├── 14_generate_powerpoint.py
+│   │   └── 15_generate_html_dashboard.py
 │   ├── graph/
 │   │   ├── __init__.py
 │   │   ├── state.py
@@ -2705,17 +2682,48 @@ survey-analysis-workflow/
 ├── output/                    # Generated outputs (timestamped)
 ├── requirements.txt
 ├── pyproject.toml
+├── langgraph.json             # ← Required LangGraph configuration
 └── README.md
 ```
+
+### 6.1 LangGraph Configuration (`langgraph.json`)
+
+The `langgraph.json` file is required for LangGraph deployment. It specifies dependencies, graphs, and environment variables.
+
+```json
+{
+  "dependencies": [
+    "pyreadstat",
+    "python-pptx",
+    "scipy",
+    "pandas",
+    "jinja2",
+    "langchain-anthropic",
+    "langchain-openai",
+    "./agent"
+  ],
+  "graphs": {
+    "analysis": "./agent/graph/workflow.py:create_workflow"
+  },
+  "env": "./.env"
+}
+```
+
+**Key fields:**
+- `dependencies`: Python packages required to run the workflow
+- `graphs`: Mapping of graph names to their Python entry points
+- `env`: Path to environment variables file
 
 ---
 
 ## 7. Execution Example
 
+> **Working Directory**: All commands below should be executed from `{PROJECT_ROOT}` (the top-level project directory).
+
 ### 7.1 Basic Usage
 
 ```python
-from src.graph.workflow import create_workflow
+from agent.graph.workflow import create_workflow
 
 # Initialize workflow
 workflow = create_workflow()
@@ -2811,7 +2819,7 @@ The workflow includes three human review checkpoints, each positioned at the end
 
 **New Pattern for Phase 2**: **AI Generation → Self-Verification Loop (auto-refine) → Optional Semantic Review → Approval/Rejection**
 
-**Key Change**: Step 4 now includes automatic self-verification that handles all objective validation (syntax, structure, logic errors). Human review in Step 4.6 is optional and focuses only on semantic validation that requires domain expertise.
+**Key Change**: Step 4 now includes automatic self-verification that handles all objective validation (syntax, structure, logic errors). Human review in Step 5 is optional and focuses only on semantic validation that requires domain expertise.
 
 ### 10.1 Approval Flow
 
