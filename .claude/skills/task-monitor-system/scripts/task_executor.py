@@ -55,28 +55,33 @@ class TaskExecutor:
             started_at=start_time,
         )
 
-        # Create query object explicitly for proper cleanup
-        q = query(
-            prompt=f"""/task-coordination
+        # Track if we've received final result (to avoid break)
+        task_complete = False
+        full_output = []
+
+        try:
+            # Create query object
+            q = query(
+                prompt=f"""/task-coordination
 
 Execute the following task:
 
 {task_content}
 """,
-            options=options
-        )
+                options=options
+            )
 
-        try:
-            full_output = []
-            # Iterate through messages
+            # Iterate through messages - DO NOT use break, consume all messages naturally
             async for message in q:
+                # Skip processing if task is already complete
+                if task_complete:
+                    continue
+
                 if hasattr(message, 'subtype'):
                     if message.subtype == 'success':
                         result.status = TaskStatus.COMPLETED
                         result.completed_at = datetime.now()
-                        # Calculate duration
                         result.duration_seconds = (result.completed_at - start_time).total_seconds()
-                        # Capture stdout
                         result.stdout = "\n".join(full_output) if full_output else ""
                         result.worker_output = {
                             "summary": message.result or "Task completed",
@@ -86,10 +91,10 @@ Execute the following task:
                             result.worker_output['usage'] = message.usage
                         if hasattr(message, 'total_cost_usd'):
                             result.worker_output['cost_usd'] = message.total_cost_usd
-                        # Log completion to systemd journal
                         logger.info(f"[{task_id}] Task completed in {result.duration_seconds:.1f}s")
-                        # Exit loop normally (no break needed when we close below)
-                        break
+                        # Mark complete but don't break - consume remaining messages naturally
+                        task_complete = True
+
                     elif message.subtype == 'error':
                         result.status = TaskStatus.FAILED
                         result.completed_at = datetime.now()
@@ -97,34 +102,39 @@ Execute the following task:
                         result.stdout = "\n".join(full_output) if full_output else ""
                         result.stderr = message.result or "Task failed"
                         result.error = result.stderr
-                        # Log failure to systemd journal
                         logger.error(f"[{task_id}] Task failed: {result.error}")
-                        break
+                        # Mark complete but don't break - consume remaining messages naturally
+                        task_complete = True
                 else:
+                    # Collect output from other message types
                     if hasattr(message, 'content'):
                         for block in message.content:
                             if hasattr(block, 'text'):
                                 full_output.append(block.text)
 
+            # Save result after consuming all messages naturally
             self._save_result(result)
+
+        except asyncio.CancelledError:
+            # Handle task cancellation gracefully
+            logger.info(f"[{task_id}] Task cancelled")
+            if not task_complete:
+                result.status = TaskStatus.FAILED
+                result.completed_at = datetime.now()
+                result.duration_seconds = (result.completed_at - start_time).total_seconds()
+                result.error = "Task cancelled"
+                self._save_result(result)
+            # Re-raise to allow proper cleanup
+            raise
 
         except Exception as e:
-            result.status = TaskStatus.FAILED
-            result.completed_at = datetime.now()
-            result.duration_seconds = (result.completed_at - start_time).total_seconds()
-            result.error = f"{type(e).__name__}: {str(e)}"
-            # Log exception to systemd journal
-            logger.error(f"[{task_id}] Task exception: {result.error}")
-            self._save_result(result)
-
-        finally:
-            # Explicitly close query in the same async context
-            # This prevents the cancel scope error when cleanup runs
-            try:
-                await q.close()
-            except Exception:
-                # Ignore errors during cleanup (query may already be closed)
-                pass
+            if not task_complete:
+                result.status = TaskStatus.FAILED
+                result.completed_at = datetime.now()
+                result.duration_seconds = (result.completed_at - start_time).total_seconds()
+                result.error = f"{type(e).__name__}: {str(e)}"
+                logger.error(f"[{task_id}] Task exception: {result.error}")
+                self._save_result(result)
 
         return result
 
@@ -141,4 +151,3 @@ Execute the following task:
         output_file = self.results_dir / f"{result.task_id}.json"
         with open(output_file, "w") as f:
             f.write(result.model_dump_json(indent=2))
-

@@ -26,6 +26,7 @@ class MultiProjectMonitor:
         self.running = False
         self.observers = []
         self.event_loop = None
+        self.processor_tasks = []  # Track processor tasks for proper cleanup
 
     def load_registry(self):
         """Load project registry."""
@@ -143,16 +144,26 @@ class MultiProjectMonitor:
 
     async def _run_all_queues(self):
         """Run queue processors for all projects."""
-        processors = []
+        self.processor_tasks = []
 
         for name, project in self.projects.items():
             processor = asyncio.create_task(
                 self._process_project_queue(name, project)
             )
-            processors.append(processor)
+            self.processor_tasks.append(processor)
 
-        # Wait for all processors
-        await asyncio.gather(*processors)
+        # Wait for all processors, handling cancellation gracefully
+        try:
+            await asyncio.gather(*self.processor_tasks, return_exceptions=True)
+        except asyncio.CancelledError:
+            # During shutdown, cancel all processor tasks
+            logging.info("Shutting down queue processors...")
+            for task in self.processor_tasks:
+                if not task.done():
+                    task.cancel()
+            # Wait for all tasks to complete cancellation
+            await asyncio.gather(*self.processor_tasks, return_exceptions=True)
+            logging.info("Queue processors stopped")
 
     async def _process_project_queue(self, name: str, project: dict):
         """Process tasks for a specific project."""
@@ -162,58 +173,83 @@ class MultiProjectMonitor:
 
         logger.info(f"Queue processor started for '{name}'")
 
-        while self.running:
-            try:
-                # Wait for next task
-                task_file = await asyncio.wait_for(
-                    queue.get_next(),
-                    timeout=1.0
-                )
-
-                logger.info(f"[{name}] Starting task: {task_file}")
-                queue.is_processing = True
-                queue.current_task = task_file
-                queue._save_state()
-
-                # Execute task
+        try:
+            while self.running:
                 try:
-                    result = await executor.execute_task(task_file)
-                    if result.completed_at:
-                        duration = (result.completed_at - result.started_at).total_seconds()
-                    else:
-                        duration = 0
-                    logger.info(
-                        f"[{name}] Task completed: {task_file} - "
-                        f"status={result.status}, "
-                        f"duration={duration:.1f}s"
+                    # Wait for next task
+                    task_file = await asyncio.wait_for(
+                        queue.get_next(),
+                        timeout=1.0
                     )
+
+                    logger.info(f"[{name}] Starting task: {task_file}")
+                    queue.is_processing = True
+                    queue.current_task = task_file
+                    queue._save_state()
+
+                    # Execute task
+                    try:
+                        result = await executor.execute_task(task_file)
+                        if result.completed_at:
+                            duration = (result.completed_at - result.started_at).total_seconds()
+                        else:
+                            duration = 0
+                        logger.info(
+                            f"[{name}] Task completed: {task_file} - "
+                            f"status={result.status}, "
+                            f"duration={duration:.1f}s"
+                        )
+                    except Exception as e:
+                        logger.error(f"[{name}] Task failed: {task_file} - {e}")
+
+                    # Mark as ready for next task
+                    queue.current_task = None
+                    queue.is_processing = False
+                    queue._save_state()
+
+                    # Small delay before next task
+                    await asyncio.sleep(0.5)
+
+                except asyncio.TimeoutError:
+                    # No task in queue, continue waiting
+                    continue
                 except Exception as e:
-                    logger.error(f"[{name}] Task failed: {task_file} - {e}")
+                    logger.error(f"[{name}] Error processing task: {e}")
+                    queue.current_task = None
+                    queue.is_processing = False
+                    queue._save_state()
 
-                # Mark as ready for next task
-                queue.current_task = None
-                queue.is_processing = False
-                queue._save_state()
-
-                # Small delay before next task
-                await asyncio.sleep(0.5)
-
-            except asyncio.TimeoutError:
-                # No task in queue, continue waiting
-                continue
-            except Exception as e:
-                logger.error(f"[{name}] Error processing task: {e}")
-                queue.current_task = None
-                queue.is_processing = False
-                queue._save_state()
+        except asyncio.CancelledError:
+            # Handle cancellation gracefully (normal shutdown)
+            logging.info(f"[{name}] Queue processor cancelled, shutting down...")
+            # Clean up state before exiting
+            queue.current_task = None
+            queue.is_processing = False
+            queue._save_state()
+            # Re-raise to allow proper cleanup
+            raise
 
     def stop(self):
         """Stop all observers."""
+        logging.info("Stopping monitor...")
         self.running = False
+
+        # Cancel all processor tasks first
+        for task in self.processor_tasks:
+            if not task.done():
+                task.cancel()
+
+        # Stop observers
         for name, project in self.projects.items():
-            project["observer"].stop()
+            if project.get("observer"):
+                project["observer"].stop()
+
+        # Wait for observers to finish
         for project in self.projects.values():
-            project["observer"].join()
+            if project.get("observer"):
+                project["observer"].join()
+
+        logging.info("Monitor stopped")
 
 
 class ProjectTaskQueue:
@@ -296,11 +332,32 @@ class TaskFileHandler(FileSystemEventHandler):
             except Exception as e:
                 logging.error(f"[{self.project_name}] Failed to queue task {file_path.name}: {e}")
 
+    def on_moved(self, event):
+        """Called when a file is moved or renamed."""
+        if event.is_directory:
+            return
+
+        dest_path = Path(event.dest_path)
+        if dest_path.match(r"task-*-????????-??????.md"):
+            logging.info(f"[{self.project_name}] Task detected (moved): {dest_path.name}")
+            try:
+                # Add to project's queue (non-blocking)
+                future = asyncio.run_coroutine_threadsafe(
+                    self.task_queue.put(dest_path.name),
+                    self.event_loop
+                )
+                logging.info(f"[{self.project_name}] Task queued successfully: {dest_path.name}")
+            except Exception as e:
+                logging.error(f"[{self.project_name}] Failed to queue task {dest_path.name}: {e}")
+
 
 if __name__ == "__main__":
     monitor = MultiProjectMonitor()
     try:
         monitor.start()
     except KeyboardInterrupt:
-        logging.info("Shutting down...")
+        logging.info("Keyboard interrupt received")
+        monitor.stop()
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}", exc_info=True)
         monitor.stop()
