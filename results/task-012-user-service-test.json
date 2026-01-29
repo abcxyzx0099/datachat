@@ -1,0 +1,33 @@
+{
+  "task_id": "task-012-user-service-test",
+  "status": "completed",
+  "created_at": "2026-01-29T04:28:47.030415",
+  "started_at": "2026-01-29T04:28:47.030420",
+  "completed_at": "2026-01-29T04:29:07.718455",
+  "queue_position": null,
+  "worker_output": {
+    "summary": "Invalid API key · Please run /login",
+    "raw_output": "Invalid API key · Please run /login",
+    "usage": {
+      "input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "output_tokens": 0,
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      }
+    },
+    "cost_usd": 0
+  },
+  "audit_score": null,
+  "audit_notes": null,
+  "artifacts": [],
+  "error": null,
+  "retry_count": 0
+}

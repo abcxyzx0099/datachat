@@ -1,0 +1,33 @@
+{
+  "task_id": "task-013-api-key-test",
+  "status": "completed",
+  "created_at": "2026-01-29T04:29:56.658889",
+  "started_at": "2026-01-29T04:29:56.658894",
+  "completed_at": "2026-01-29T04:30:17.691265",
+  "queue_position": null,
+  "worker_output": {
+    "summary": "Invalid API key · Fix external API key",
+    "raw_output": "Invalid API key · Fix external API key",
+    "usage": {
+      "input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "output_tokens": 0,
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      }
+    },
+    "cost_usd": 0
+  },
+  "audit_score": null,
+  "audit_notes": null,
+  "artifacts": [],
+  "error": null,
+  "retry_count": 0
+}

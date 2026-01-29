@@ -1,109 +1,177 @@
 ---
 name: task-document-generator
-description: "Generates structured task documents from conversation context for delegation to Worker Agents. Use when: a task identified in conversation needs to be implemented by another agent; you need to convert user requirements into a clear, actionable task document; the task is complex enough to require independent verification through the agent-delegation-auditor skill."
+description: "Generates structured task documents from conversation context for delegation to Worker Agents via the task monitoring system. Use when: a task identified in conversation needs to be implemented by another agent; you need to convert user requirements into a clear, actionable task document; the task should be queued for sequential processing."
 ---
 
 # Task Document Generator
 
-## Purpose
+## Workflow
 
-Convert conversation context and user requirements into a structured task document that can be passed to the `agent-delegation-auditor` skill.
+Convert conversation context and user requirements into a structured task document, then save it to the `tasks/` directory for pickup by the task monitoring system.
 
-## When to Use
+### Input
 
-Call this skill when:
-- A conversation has identified a task that needs implementation
-- The task is complex enough to benefit from a Worker Agent + Auditor workflow
-- You need to transform discussion into clear, actionable requirements
-
-## Input
-
-You will receive:
-- **Conversation history** - The discussion between user and AI
+- **Conversation history** - The full discussion between user and AI; read all history but focus especially on the recent conversation
 - **Context** - Project context (codebase, architecture, current state)
 - **Task intent** - What needs to be done (may be implied from conversation)
 
-## Output
+## File Generation (4 Steps)
 
-Generate a structured task document in the following format AND save it to a file.
+### Step 1: Investigate & Understand (Before Writing)
 
-### File Location
+Before writing the task document, ensure you fully understand the context and requirements.
 
-**Directory**: `temp/tasks/` (project root)
+**1.1 Analyze Conversation**
 
-**Naming Convention**: `{YYYYMMDD}-{HHMMSS}-{slug}.md`
+Re-read the discussion to identify:
+- The original problem/request
+- Decisions made during discussion
+- Constraints mentioned
+- Acceptance criteria discussed
+- Any assumptions that need clarification
 
-**Example file paths**:
-- `temp/tasks/20250113-143052-fix-auth-timeout.md`
-- `temp/tasks/20250113-150230-indicator-manager-two-page-design.md`
-- `temp/tasks/20250113-161045-crosstab-specs-sidebar-layout.md`
+**1.2 Clarify Task Intent**
 
-### Return Format
+Define what needs to be done:
+- Specific outcome required
+- Boundaries of the task (what's included/excluded)
+- Success metrics
 
-Return BOTH the task document content AND the file path:
+**1.3 Investigate Codebase**
 
-```json
-{
-  "task_document": "[Full markdown content]",
-  "file_path": "temp/tasks/20250113-143052-fix-auth-timeout.md",
-  "task_summary": "Fix authentication timeout bug"
-}
+Use tools to gather technical context:
+
+```bash
+# Find relevant files
+glob "**/*.py"           # or appropriate pattern
+grep "keyword" --include="*.py"    # search for related code
+
+# Read key files to understand patterns
 ```
 
-### Task Document Template
+**1.4 Identify Technical Context**
 
-```markdown
-# Task: [One-line summary]
+Determine:
+- Current architecture/patterns used
+- Dependencies and their locations
+- Potential edge cases
+- Integration points
 
-**Created**: [YYYY-MM-DD HH:MM:SS]
-**Status**: pending
+**1.5 Quality Gate**
+
+Before proceeding to write:
+- If anything is unclear → ask questions
+- If context is missing → investigate more
+- Only write document when you have complete understanding
 
 ---
 
-## Task
-[Clear one-line description of what needs to be done]
+### Step 2: Write Temp File (AI Agent)
 
-## Context
-[Relevant background from the conversation - why this task exists, what problem it solves]
+Once you fully understand the task, use the Write tool to create the task document with `.md.tmp` extension:
 
-## Scope
-[Directories, files, or areas affected]
-- Directories: [list relevant directories]
-- Files: [list specific files if known]
-- Dependencies: [what this task depends on or affects]
+**Temp file pattern**: `tasks/task-{description}.md.tmp`
 
-## Requirements
-[Specific, actionable requirements]
-1. [Requirement 1 - what must be implemented]
-2. [Requirement 2 - what must be implemented]
-3. [Requirement 3 - constraints or edge cases]
+**Example**: `tasks/task-fix-auth-timeout.md.tmp`
 
-## Deliverables
-[What the Worker Agent should produce]
-1. [Deliverable 1]
-2. [Deliverable 2]
+- Simple filename with description only
+- The `.tmp` extension prevents monitor from picking it up prematurely
+- Timestamp will be added to filename in Step 3
 
-## Constraints
-[Limitations the Worker must respect]
-1. [Constraint 1 - e.g., framework, language, compatibility]
-2. [Constraint 2 - e.g., performance, security]
+**Why `.md.tmp` first?** The task monitor watches for `.md` files only. By writing to `.md.tmp` first, we ensure the document is complete before the monitor sees it. This prevents race conditions where an incomplete file gets executed.
 
-## Success Criteria
-[How to verify the task is complete]
-1. [Criterion 1]
-2. [Criterion 2]
+---
 
-## Worker Investigation Instructions
-[CRITICAL] Explicit instructions for the Worker Agent's own investigation:
-- You MUST do your own deep investigation before implementing
-- Find ALL files affected: [suggest grep/find commands if applicable]
-- Understand current patterns before making changes
-- Identify ALL edge cases and dependencies
+### Step 3: Rename with Timestamp (Bash Script)
+
+Run the rename script to atomically rename the temp file:
+
+```bash
+bash .claude/skills/task-document-generator/scripts/rename_task.sh /path/to/temp/file.md.tmp
 ```
 
-## Task Document Quality Checklist
+**What the script does:**
+1. Extracts description from temp filename
+2. Gets current timestamp: `YYYYMMDD-HHMMSS`
+3. Renames `task-{description}.md.tmp` → `task-{description}-{TIMESTAMP}.md`
+4. Outputs the final file path
 
-Before returning the task document, ensure:
+**Example transformation:**
+```
+tasks/task-fix-auth-timeout.md.tmp
+    ↓
+tasks/task-fix-auth-timeout-20260129-170500.md
+```
+
+**Capture the output** - The script outputs the final file path, which can be captured and passed to Step 4:
+
+```bash
+# Capture final file path
+FINAL_FILE=$(bash .claude/skills/task-document-generator/scripts/rename_task.sh tasks/task-xxx.md.tmp)
+```
+
+---
+
+### Step 4: Monitor Status (CLI)
+
+Use the task-monitor CLI to check if the task monitor picked up the task:
+
+```bash
+# Option 1: Monitor general status
+task-monitor queue
+
+# Option 2: Monitor specific task (if task file exists)
+task-monitor task-xxx-20260130-hhmmss.md
+```
+
+**What the CLI does:**
+1. Checks the queue state file (`state/queue_state.json`)
+2. Displays current task being processed
+3. Shows queue status and process information
+
+**Output you'll see:**
+```
+Queue size: 0
+Processing: task-implement-langgraph-three-node-pattern-20260130-005036.md
+```
+
+**Note**: The task-monitor CLI requires `~/.local/bin` to be in your PATH (already configured in `~/.bashrc`). If the command is not found, run `source ~/.bashrc` or open a new terminal.
+
+## Full Example
+
+```bash
+# Step 1: Investigate and understand (read conversation, explore codebase)
+
+# Step 2: Write temp file using Write tool
+# File: tasks/task-fix-auth-timeout.md.tmp
+# Content: (full task document)
+
+# Step 3: Rename with timestamp
+FINAL_FILE=$(bash .claude/skills/task-document-generator/scripts/rename_task.sh tasks/task-fix-auth-timeout.md.tmp)
+# Output: ✅ Task created: tasks/task-fix-auth-timeout-20260129-170500.md
+#         tasks/task-fix-auth-timeout-20260129-170500.md
+
+# Step 4: Monitor status
+task-monitor queue
+```
+
+## Document Structure
+
+Use the template in [references/task-template.md](references/task-template.md) for the document structure.
+
+**Required sections**:
+- Task (one-line summary)
+- Context (why this task exists)
+- Scope (directories, files, dependencies)
+- Requirements (specific, actionable)
+- Deliverables (what Worker produces)
+- Constraints (limitations)
+- Success Criteria (how to verify completion)
+- Worker Investigation Instructions (explicit research directives)
+
+## Quality Checklist
+
+Before running the rename script (Step 3), ensure:
 
 - [ ] **Task is clear** - One-line summary is unambiguous
 - [ ] **Context is provided** - Worker understands why this task exists
@@ -112,102 +180,19 @@ Before returning the task document, ensure:
 - [ ] **Investigation is requested** - Worker is told to do their own research
 - [ ] **Success criteria exist** - Worker knows when they're done
 
-## Example: Good vs Bad
+## Examples
 
-### Bad Task Document
-```markdown
-## Task
-Fix the bugs in the codebase
+See [references/examples.md](references/examples.md) for good vs bad task document examples.
 
-## Requirements
-1. Make it work better
-```
+## Key Principles
 
-### Good Task Document
-```markdown
-# Task: Fix authentication timeout bug
+1. **Understand first** - Investigate before writing
+2. **Be specific** - Vague tasks produce vague results
+3. **Request investigation** - Worker Agents must do their own deep research before implementing
+4. **Define success** - Worker needs clear completion criteria
+5. **Provide context** - Worker should understand why the task exists
 
-**Created**: 2025-01-12 14:30:52
-**Status**: pending
+## Related Skills
 
----
-
-## Task
-Fix the authentication bug where users are incorrectly logged out after 5 minutes
-
-## Context
-Users report being logged out even when active. Session timeout is set to 24 hours but appears to be expiring at 5 minutes. Affects user experience significantly.
-
-## Scope
-- Directories: frontend/src/auth/, backend/src/middleware/
-- Files: session_manager.py, auth_store.ts
-
-## Requirements
-1. Identify why session expires at 5 minutes instead of 24 hours
-2. Fix the session timeout configuration
-3. Ensure session refresh works properly during active use
-4. Add logging for session lifecycle events
-
-## Deliverables
-1. Fixed session timeout code
-2. Explanation of root cause
-3. Test cases verifying 24-hour timeout works
-
-## Constraints
-1. Must not break existing active sessions
-2. Must maintain backward compatibility
-3. Use existing session management infrastructure
-
-## Success Criteria
-1. Sessions last 24 hours of inactivity
-2. Active sessions refresh properly
-3. No existing functionality broken
-
-## Worker Investigation Instructions
-[CRITICAL] You MUST do your own deep investigation:
-- Find ALL session-related configuration: grep -r "timeout\|expir" --include="*.py" --include="*.ts"
-- Check frontend and backend timeout settings
-- Identify where session refresh logic lives
-- Review any recent changes to auth code
-```
-
-## What This Skill Does
-
-- ✅ Generate structured task document from conversation
-- ✅ Save task document to `tasks/` directory
-- ✅ Return file path for downstream skills
-- ✅ Extract context and requirements from discussion
-
-## What This Skill Does NOT Do
-
-- ❌ Execute the task
-- ❌ Review or audit implementation
-- ❌ Make assumptions - extract from conversation context
-- ❌ Create vague tasks - be specific
-
-## Workflow After This Skill
-
-Once the task document is generated and saved:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  task-document-generator SKILL                                  │
-│  1. Generate task document from conversation                    │
-│  2. Save to: temp/tasks/{YYYYMMDD}-{HHMMSS}-{slug}.md   │
-│  3. Return: document content + file_path                        │
-└────────────────────────────────────┬────────────────────────────┘
-                                     │
-                                     ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  agent-delegation-auditor SKILL                                 │
-│  1. Receives task document (or file_path)                       │
-│  2. Delegates to Worker Agent                                   │
-│  3. Auditor Agent reviews and rates                             │
-│  4. Returns: implementation + quality rating                    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-Your job ends when:
-1. Task document is generated
-2. File is saved to `temp/tasks/`
-3. File path is returned to caller
+- `monitor-system-generator`: Creates the task monitoring system that processes these task documents
+- `task-coordination`: Executes tasks with worker-auditor workflow (called by monitor)

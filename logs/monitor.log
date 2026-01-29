@@ -1,0 +1,418 @@
+2026-01-29 03:52:14,504 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 03:52:14,504 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 03:52:14,505 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 03:52:14,506 - __main__ - INFO - Queue processor started
+2026-01-29 03:52:33,037 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 03:52:33,037 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 03:52:33,038 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 03:52:33,039 - __main__ - INFO - Queue processor started
+2026-01-29 03:52:34,504 - __main__ - INFO - New task detected: task-002-test.md
+2026-01-29 03:53:25,057 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 03:53:25,057 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 03:53:25,059 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 03:53:25,059 - __main__ - INFO - Queue processor started
+2026-01-29 03:53:35,757 - __main__ - INFO - New task detected: task-003-service-test.md
+2026-01-29 03:55:09,176 - __main__ - INFO - New task detected: task-004-workflow-test.md
+2026-01-29 03:55:43,732 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 03:55:43,733 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 03:55:43,734 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 03:55:43,735 - __main__ - INFO - Queue processor started
+2026-01-29 03:55:48,755 - __main__ - INFO - New task detected: task-005-queue-test.md
+2026-01-29 03:55:48,755 - __main__ - INFO - Task queued successfully: task-005-queue-test.md
+2026-01-29 03:56:26,478 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 03:56:26,478 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 03:56:26,480 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 03:56:26,480 - __main__ - INFO - Queue processor started
+2026-01-29 03:56:27,904 - __main__ - INFO - New task detected: task-006-debug-test.md
+2026-01-29 03:56:27,905 - __main__ - INFO - Task queued successfully: task-006-debug-test.md
+2026-01-29 03:56:57,141 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 03:56:57,141 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 03:56:57,141 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 03:56:57,142 - __main__ - INFO - Queue processor started
+2026-01-29 03:56:58,428 - __main__ - INFO - New task detected: task-007-fixed-test.md
+2026-01-29 03:56:58,429 - __main__ - INFO - Task queued successfully: task-007-fixed-test.md
+2026-01-29 03:56:58,429 - __main__ - INFO - Task queued: task-007-fixed-test.md (queue size: 1)
+2026-01-29 03:56:58,430 - __main__ - INFO - Task retrieved from queue: task-007-fixed-test.md
+2026-01-29 03:56:58,431 - __main__ - INFO - Starting task: task-007-fixed-test.md (queue size: 0)
+2026-01-29 03:56:58,433 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 03:57:33,686 - __main__ - ERROR - Task failed: task-007-fixed-test.md - unsupported operand type(s) for -: 'NoneType' and 'datetime.datetime'
+2026-01-29 04:05:48,234 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:05:48,234 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:05:48,235 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:05:48,236 - __main__ - INFO - Queue processor started
+2026-01-29 04:05:57,454 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:05:57,455 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:05:57,455 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:05:57,456 - __main__ - INFO - Queue processor started
+2026-01-29 04:07:39,338 - __main__ - INFO - New task detected: task-008-cwd-test.md
+2026-01-29 04:07:39,338 - __main__ - INFO - Task queued successfully: task-008-cwd-test.md
+2026-01-29 04:07:39,339 - __main__ - INFO - Task queued: task-008-cwd-test.md (queue size: 1)
+2026-01-29 04:07:39,339 - __main__ - INFO - Task retrieved from queue: task-008-cwd-test.md
+2026-01-29 04:07:39,340 - __main__ - INFO - Starting task: task-008-cwd-test.md (queue size: 0)
+2026-01-29 04:07:39,341 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 04:08:01,506 - __main__ - INFO - Task completed: task-008-cwd-test.md - status=TaskStatus.RUNNING, duration=0.0s
+2026-01-29 04:08:56,188 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:08:56,189 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:08:56,190 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:08:56,191 - __main__ - INFO - Queue processor started
+2026-01-29 04:17:31,750 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:17:31,750 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:17:31,751 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:17:31,752 - __main__ - INFO - Queue processor started
+2026-01-29 04:17:52,394 - __main__ - INFO - New task detected: task-009-simplified-test.md
+2026-01-29 04:17:52,394 - __main__ - INFO - Task queued successfully: task-009-simplified-test.md
+2026-01-29 04:17:52,394 - __main__ - INFO - Task queued: task-009-simplified-test.md (queue size: 1)
+2026-01-29 04:17:52,395 - __main__ - INFO - Task retrieved from queue: task-009-simplified-test.md
+2026-01-29 04:17:52,397 - __main__ - INFO - Starting task: task-009-simplified-test.md (queue size: 0)
+2026-01-29 04:17:52,400 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 04:17:53,937 - claude_agent_sdk._internal.query - ERROR - Fatal error in message reader: Command failed with exit code 1 (exit code: 1)
+Error output: Check stderr output for details
+2026-01-29 04:17:53,938 - __main__ - INFO - Task completed: task-009-simplified-test.md - status=TaskStatus.FAILED, duration=1.5s
+2026-01-29 04:18:19,656 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:18:19,656 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:18:19,657 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:18:19,658 - __main__ - INFO - Queue processor started
+2026-01-29 04:18:27,637 - __main__ - INFO - New task detected: task-010-direct-test.md
+2026-01-29 04:18:27,637 - __main__ - INFO - Task queued successfully: task-010-direct-test.md
+2026-01-29 04:18:27,638 - __main__ - INFO - Task queued: task-010-direct-test.md (queue size: 1)
+2026-01-29 04:18:27,639 - __main__ - INFO - Task retrieved from queue: task-010-direct-test.md
+2026-01-29 04:18:27,639 - __main__ - INFO - Starting task: task-010-direct-test.md (queue size: 0)
+2026-01-29 04:18:27,640 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 04:18:50,182 - __main__ - INFO - Task completed: task-010-direct-test.md - status=TaskStatus.RUNNING, duration=0.0s
+2026-01-29 04:22:49,067 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:22:49,068 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:22:49,068 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:22:49,069 - __main__ - INFO - Queue processor started
+2026-01-29 04:22:57,603 - __main__ - INFO - New task detected: task-011-query-test.md
+2026-01-29 04:22:57,603 - __main__ - INFO - Task queued successfully: task-011-query-test.md
+2026-01-29 04:22:57,604 - __main__ - INFO - Task queued: task-011-query-test.md (queue size: 1)
+2026-01-29 04:22:57,604 - __main__ - INFO - Task retrieved from queue: task-011-query-test.md
+2026-01-29 04:22:57,605 - __main__ - INFO - Starting task: task-011-query-test.md (queue size: 0)
+2026-01-29 04:22:57,607 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 04:23:18,686 - __main__ - INFO - Task completed: task-011-query-test.md - status=TaskStatus.COMPLETED, duration=21.1s
+2026-01-29 04:23:18,688 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
+2026-01-29 04:27:55,663 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:27:55,663 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:27:55,664 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:27:55,665 - __main__ - INFO - Queue processor started
+2026-01-29 04:28:21,079 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:28:21,080 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:28:21,080 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:28:21,081 - __main__ - INFO - Queue processor started
+2026-01-29 04:28:47,025 - __main__ - INFO - New task detected: task-012-user-service-test.md
+2026-01-29 04:28:47,026 - __main__ - INFO - Task queued successfully: task-012-user-service-test.md
+2026-01-29 04:28:47,026 - __main__ - INFO - Task queued: task-012-user-service-test.md (queue size: 1)
+2026-01-29 04:28:47,027 - __main__ - INFO - Task retrieved from queue: task-012-user-service-test.md
+2026-01-29 04:28:47,029 - __main__ - INFO - Starting task: task-012-user-service-test.md (queue size: 0)
+2026-01-29 04:28:47,030 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 04:29:07,718 - __main__ - INFO - Task completed: task-012-user-service-test.md - status=TaskStatus.COMPLETED, duration=20.7s
+2026-01-29 04:29:07,722 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
+2026-01-29 04:29:48,475 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:29:48,475 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:29:48,476 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:29:48,477 - __main__ - INFO - Queue processor started
+2026-01-29 04:29:56,655 - __main__ - INFO - New task detected: task-013-api-key-test.md
+2026-01-29 04:29:56,656 - __main__ - INFO - Task queued successfully: task-013-api-key-test.md
+2026-01-29 04:29:56,656 - __main__ - INFO - Task queued: task-013-api-key-test.md (queue size: 1)
+2026-01-29 04:29:56,657 - __main__ - INFO - Task retrieved from queue: task-013-api-key-test.md
+2026-01-29 04:29:56,657 - __main__ - INFO - Starting task: task-013-api-key-test.md (queue size: 0)
+2026-01-29 04:29:56,659 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 04:30:17,692 - __main__ - INFO - Task completed: task-013-api-key-test.md - status=TaskStatus.COMPLETED, duration=21.0s
+2026-01-29 04:30:17,693 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
+2026-01-29 04:31:56,794 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:31:56,794 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:31:56,795 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:31:56,796 - __main__ - INFO - Queue processor started
+2026-01-29 04:32:05,092 - __main__ - INFO - New task detected: task-014-env-test.md
+2026-01-29 04:32:05,093 - __main__ - INFO - Task queued: task-014-env-test.md (queue size: 1)
+2026-01-29 04:32:05,094 - __main__ - INFO - Task queued successfully: task-014-env-test.md
+2026-01-29 04:32:05,096 - __main__ - INFO - Task retrieved from queue: task-014-env-test.md
+2026-01-29 04:32:05,097 - __main__ - INFO - Starting task: task-014-env-test.md (queue size: 0)
+2026-01-29 04:32:05,098 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 04:32:25,364 - __main__ - INFO - Task completed: task-014-env-test.md - status=TaskStatus.COMPLETED, duration=20.3s
+2026-01-29 04:32:25,365 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
+2026-01-29 04:32:50,443 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:32:50,443 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:32:50,444 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:32:50,445 - __main__ - INFO - Queue processor started
+2026-01-29 04:33:07,362 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:33:07,362 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:33:07,362 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:33:07,363 - __main__ - INFO - Queue processor started
+2026-01-29 04:33:17,073 - __main__ - INFO - Starting monitor on tasks
+2026-01-29 04:33:17,074 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 04:33:17,074 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 04:33:17,075 - __main__ - INFO - Queue processor started
+2026-01-29 04:33:26,224 - __main__ - INFO - New task detected: task-015-final-test.md
+2026-01-29 04:33:26,225 - __main__ - INFO - Task queued successfully: task-015-final-test.md
+2026-01-29 04:33:26,225 - __main__ - INFO - Task queued: task-015-final-test.md (queue size: 1)
+2026-01-29 04:33:26,226 - __main__ - INFO - Task retrieved from queue: task-015-final-test.md
+2026-01-29 04:33:26,227 - __main__ - INFO - Starting task: task-015-final-test.md (queue size: 0)
+2026-01-29 04:33:26,228 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 04:33:58,323 - __main__ - INFO - Task completed: task-015-final-test.md - status=TaskStatus.COMPLETED, duration=32.1s
+2026-01-29 04:33:58,327 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
+2026-01-29 11:59:32,999 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 11:59:32,999 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 11:59:32,999 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 11:59:33,000 - __main__ - INFO - Queue processor started
+2026-01-29 12:21:56,736 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:21:56,737 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:21:56,737 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:21:56,738 - __main__ - INFO - Queue processor started
+2026-01-29 12:25:06,146 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:25:06,146 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:25:06,146 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:25:06,147 - __main__ - INFO - Queue processor started
+2026-01-29 12:26:01,788 - __main__ - INFO - New task detected: task-manual-test.md
+2026-01-29 12:26:01,788 - __main__ - INFO - Task queued successfully: task-manual-test.md
+2026-01-29 12:26:01,789 - __main__ - INFO - Task queued: task-manual-test.md (queue size: 1)
+2026-01-29 12:26:01,791 - __main__ - INFO - Task retrieved from queue: task-manual-test.md
+2026-01-29 12:26:01,792 - __main__ - INFO - Starting task: task-manual-test.md (queue size: 0)
+2026-01-29 12:26:01,795 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 12:27:37,630 - __main__ - INFO - Task completed: task-manual-test.md - status=TaskStatus.COMPLETED, duration=95.8s
+2026-01-29 12:27:37,632 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
+2026-01-29 12:35:42,486 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:35:42,486 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:35:42,486 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:35:42,487 - __main__ - INFO - Queue processor started
+2026-01-29 12:36:29,627 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:36:29,628 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:36:29,629 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:36:29,633 - __main__ - INFO - Queue processor started
+2026-01-29 12:38:30,457 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:38:30,457 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:38:30,458 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:38:30,459 - __main__ - INFO - Queue processor started
+2026-01-29 12:39:13,409 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:39:13,409 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:39:13,409 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:39:13,410 - __main__ - INFO - Queue processor started
+2026-01-29 12:39:52,989 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:39:52,989 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:39:52,989 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:39:52,990 - __main__ - INFO - Queue processor started
+2026-01-29 12:39:57,713 - __main__ - INFO - New task detected: task-debug-test-20260129-123945.md
+2026-01-29 12:39:57,713 - __main__ - INFO - Task queued successfully: task-debug-test-20260129-123945.md
+2026-01-29 12:39:57,713 - __main__ - INFO - Task queued: task-debug-test-20260129-123945.md (queue size: 1)
+2026-01-29 12:39:57,714 - __main__ - INFO - Task retrieved from queue: task-debug-test-20260129-123945.md
+2026-01-29 12:39:57,715 - __main__ - INFO - Starting task: task-debug-test-20260129-123945.md (queue size: 0)
+2026-01-29 12:39:57,716 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 12:40:25,975 - __main__ - INFO - Task completed: task-debug-test-20260129-123945.md - status=TaskStatus.COMPLETED, duration=28.3s
+2026-01-29 12:40:25,976 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
+2026-01-29 12:41:59,404 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:41:59,404 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:41:59,404 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:41:59,405 - __main__ - INFO - Queue processor started
+2026-01-29 12:43:37,106 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:43:37,106 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:43:37,107 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:43:37,108 - __main__ - INFO - Queue processor started
+2026-01-29 12:43:39,445 - __main__ - INFO - New task detected: task-watchdog-test-20260129-124300.md
+2026-01-29 12:43:39,445 - __main__ - INFO - Task queued successfully: task-watchdog-test-20260129-124300.md
+2026-01-29 12:43:39,445 - __main__ - INFO - Task queued: task-watchdog-test-20260129-124300.md (queue size: 1)
+2026-01-29 12:43:39,446 - __main__ - INFO - Task retrieved from queue: task-watchdog-test-20260129-124300.md
+2026-01-29 12:43:39,447 - __main__ - INFO - Starting task: task-watchdog-test-20260129-124300.md (queue size: 0)
+2026-01-29 12:43:39,448 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 12:44:08,336 - __main__ - INFO - Task completed: task-watchdog-test-20260129-124300.md - status=TaskStatus.COMPLETED, duration=28.9s
+2026-01-29 12:44:08,338 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
+2026-01-29 12:51:40,161 - __main__ - INFO - Starting monitor on /home/admin/workspaces/datachat/tasks
+2026-01-29 12:51:40,161 - __main__ - INFO - Execution model: SEQUENTIAL (one task at a time)
+2026-01-29 12:51:40,161 - __main__ - INFO - Monitor running, waiting for tasks...
+2026-01-29 12:51:40,162 - __main__ - INFO - Queue processor started
+2026-01-29 12:51:46,163 - __main__ - INFO - New task detected: task-multi-project-test-20260129-125140.md
+2026-01-29 12:51:46,164 - __main__ - INFO - Task queued successfully: task-multi-project-test-20260129-125140.md
+2026-01-29 12:51:46,164 - __main__ - INFO - Task queued: task-multi-project-test-20260129-125140.md (queue size: 1)
+2026-01-29 12:51:46,165 - __main__ - INFO - Task retrieved from queue: task-multi-project-test-20260129-125140.md
+2026-01-29 12:51:46,166 - __main__ - INFO - Starting task: task-multi-project-test-20260129-125140.md (queue size: 0)
+2026-01-29 12:51:46,167 - claude_agent_sdk._internal.transport.subprocess_cli - INFO - Using bundled Claude Code CLI: /home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_bundled/claude
+2026-01-29 12:52:18,526 - __main__ - INFO - Task completed: task-multi-project-test-20260129-125140.md - status=TaskStatus.COMPLETED, duration=32.4s
+2026-01-29 12:52:18,526 - asyncio - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('Attempted to exit cancel scope in a different task than it was entered in')>
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 121, in process_query
+    yield parse_message(data)
+GeneratorExit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/client.py", line 124, in process_query
+    await query.close()
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/claude_agent_sdk/_internal/query.py", line 613, in close
+    await self._tg.__aexit__(None, None, None)
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 794, in __aexit__
+    return self.cancel_scope.__exit__(exc_type, exc_val, exc_tb)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/admin/workspaces/datachat/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 461, in __exit__
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: Attempted to exit cancel scope in a different task than it was entered in

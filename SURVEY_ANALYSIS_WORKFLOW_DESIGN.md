@@ -469,91 +469,244 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
 
 ---
 
-### Step 4: Generate Recoding Rules with Self-Verification
+### Step 4: Generate Recoding Rules (Three-Node Pattern)
 
-**Node**: `generate_recoding_rules_node`
+**Nodes**: `generate_recoding`, `validate_recoding`, `review_recoding`
 
-**Description**: AI agent generates recoding rules with built-in self-verification loop. The agent validates its own output using Python scripts and iteratively refines until all checks pass.
+**Description**: Three-node pattern using LangGraph's explicit pattern. The LLM generates rules, Python validates them, and human optionally reviews. Routing functions control flow between nodes.
 
 **Architecture**:
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│              Self-Verifying AI Agent                         │
+│                  LangGraph Workflow                          │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
-│  │  Generate   │───▶│  Validate   │───▶│  All Valid? │     │
-│  │  (LLM)      │    │  (Python)   │    │  (check)    │     │
-│  └─────────────┘    └─────────────┘    └──────┬──────┘     │
-│                                                 │            │
-│                                    ┌────────────▼─────────┐ │
-│                                    │  Iteration Loop       │ │
-│                                    │  (max 3 times)        │ │
-│                                    └────────────┬─────────┘ │
-│                                                 │            │
-│                              ┌──────────────────▼───────┐  │
-│                              │  Output Validated Rules  │  │
-│                              └───────────────────────────┘  │
+│  │  1. Generate│───▶│  2. Validate │───▶│  3. Review   │     │
+│  │    (LLM)    │    │   (Python)  │    │   (Human)   │     │
+│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘     │
+│         │                  │                  │            │
+│         │                  │                  │            │
+│         ▼                  ▼                  ▼            │
+│   ┌─────────┐        ┌─────────┐        ┌─────────┐       │
+│   │ Invalid │        │ Invalid │        │ Reject/ │       │
+│   │         │◀───────│         │◀───────│ Modify  │       │
+│   └─────────┘        └─────────┘        └─────────┘       │
+│   (validation        (semantic         (human               │
+│    errors)           feedback)         feedback)            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Input**:
-- `filtered_metadata`
-- `config["recoding_instructions"]`: Custom instructions for AI
-- `config["max_self_correction_iterations"]`: Max iterations (default: 3)
-
-**Self-Verification Loop Algorithm**:
+**State Fields**:
 ```python
-def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
-    from agent.utils.validators import SelfVerifyingRecodingAgent, VariableMetadata
+class RecodingTaskState(TypedDict):
+    # Task-specific state
+    recoding_rules: dict | None
+    recoding_validation: dict | None
+    recoding_feedback: dict | None  # From validation OR human
+    recoding_iteration: int
+    recoding_feedback_source: Literal["validation", "human"] | None
+```
 
-    # Convert metadata
-    metadata = [VariableMetadata(**v) for v in state["filtered_metadata"]]
+**Node 1: Generate Recoding Rules**
+```python
+def generate_recoding(state: State) -> State:
+    """
+    LLM generates recoding rules.
+    Builds prompt based on feedback source if retrying.
+    """
+    iteration = state.get("recoding_iteration", 1)
+    feedback = state.get("recoding_feedback")
+    feedback_source = state.get("recoding_feedback_source")
 
-    # Initialize self-verifying agent
-    agent = SelfVerifyingRecodingAgent(
-        llm_client=state.get("llm_client"),
-        max_iterations=state["config"].get("max_self_correction_iterations", 3)
+    # Build prompt based on iteration and feedback source
+    if feedback_source == "validation":
+        prompt = build_validation_retry_prompt(
+            metadata=state["filtered_metadata"],
+            validation_result=feedback,
+            iteration=iteration
+        )
+    elif feedback_source == "human":
+        prompt = build_human_feedback_prompt(
+            metadata=state["filtered_metadata"],
+            human_feedback=feedback,
+            iteration=iteration
+        )
+    else:
+        prompt = build_initial_prompt(state["filtered_metadata"])
+
+    # Call LLM
+    response = llm.invoke(prompt)
+    rules = parse_recoding_rules(response)
+
+    return {
+        "recoding_rules": rules,
+        "recoding_iteration": iteration + 1,
+        "recoding_feedback": None,  # Clear after use
+        "recoding_feedback_source": None
+    }
+```
+
+**Node 2: Validate Recoding Rules**
+```python
+def validate_recoding(state: State) -> State:
+    """
+    Python validates recoding rules using objective checks.
+    Returns validation result with errors/warnings.
+    """
+    validator = RecodingValidator(state["filtered_metadata"])
+    result = validator.validate_all_rules(state["recoding_rules"])
+
+    return {
+        "recoding_validation": {
+            "is_valid": result.is_valid,
+            "errors": result.errors,
+            "warnings": result.warnings,
+            "checks_performed": result.checks_performed
+        }
+    }
+```
+
+**Node 3: Human Review Recoding Rules**
+```python
+def review_recoding(state: State) -> State:
+    """
+    Human analyst reviews rules for semantic validation.
+    Uses LangGraph interrupt to pause for human input.
+    """
+    # Generate human-readable report
+    review_report = generate_recoding_review_report(
+        state["recoding_rules"],
+        state["recoding_validation"],
+        state["filtered_metadata"]
     )
 
-    # Self-verification loop (up to max_iterations)
-    for iteration in range(1, max_iterations + 1):
-        # 1. Generate rules (or refine if iteration > 1)
-        rules = agent._generate_with_llm(
-            prompt=agent._build_generation_prompt(
-                metadata=metadata,
-                iteration=iteration,
-                previous_result=state.get("last_validation_result")
-            ),
-            metadata=metadata
-        )
+    # Save report
+    report_path = f"{state['config']['output_dir']}/recoding_review.md"
+    with open(report_path, "w") as f:
+        f.write(review_report)
 
-        # 2. Validate using Python
-        validator = RuleValidator(metadata)
-        validation_result = validator.validate_all_rules(rules)
+    # Pause workflow for human review
+    decision = interrupt({
+        "type": "approval_required",
+        "task": "recoding_rules",
+        "report_path": report_path,
+        "message": "Review recoding rules and provide decision",
+        "options": ["approve", "reject", "modify"]
+    })
 
-        # 3. Check if all checks passed
-        if validation_result.is_valid:
-            state["recoding_rules"] = {"recoding_rules": [r.dict() for r in rules]}
-            state["validation_results"] = validation_result.dict()
-            state["self_correction_iterations"] = iteration
-            state["execution_log"].append({
-                "step": "generate_recoding_rules",
-                "status": "completed",
-                "iterations_used": iteration,
-                "validation_passed": True
-            })
-            break  # Exit loop - rules are valid
-
-        # 4. If failed, store for next iteration
-        state["last_validation_result"] = {
-            "rules": rules,
-            "validation_result": validation_result
+    return {
+        "recoding_feedback": {
+            "action": decision.get("decision"),
+            "comments": decision.get("comments", ""),
+            "modified_rules": decision.get("modified_rules")
         }
-        # Loop continues with feedback in prompt
-
-    return state
+    }
 ```
+
+**Edge 1: After Validation**
+```python
+def after_recoding_validation(state: State) -> Literal["review_recoding", "generate_recoding"]:
+    """
+    Route based on validation result.
+    - Valid: Proceed to human review
+    - Invalid + under max iterations: Retry generation
+    - Invalid + max iterations reached: Proceed anyway (let human decide)
+    """
+    validation = state["recoding_validation"]
+    iteration = state["recoding_iteration"]
+    max_iterations = state["config"].get("max_self_correction_iterations", 3)
+
+    if validation["is_valid"]:
+        return "review_recoding"
+    elif iteration >= max_iterations:
+        # Max iterations reached, let human decide
+        return "review_recoding"
+    else:
+        # Store feedback for retry
+        return {
+            "recoding_feedback": validation,
+            "recoding_feedback_source": "validation"
+        }
+        return "generate_recoding"
+```
+
+**Edge 2: After Human Review**
+```python
+def after_recoding_review(state: State) -> Literal[END, "generate_recoding"]:
+    """
+    Route based on human decision.
+    - Approve: End workflow for this task
+    - Reject/Modify: Retry generation with human feedback
+    """
+    feedback = state["recoding_feedback"]
+
+    if feedback["action"] == "approve":
+        return END
+    else:
+        # Store human feedback for retry
+        return {
+            "recoding_feedback_source": "human"
+        }
+        return "generate_recoding"
+```
+
+**Build Graph (Explicit Pattern)**
+```python
+from langgraph.graph import StateGraph, START, END
+
+workflow = StateGraph(State)
+
+# Add nodes explicitly
+workflow.add_node("generate_recoding", generate_recoding)
+workflow.add_node("validate_recoding", validate_recoding)
+workflow.add_node("review_recoding", review_recoding)
+
+# Add edges explicitly
+workflow.add_edge("previous_step", "generate_recoding")
+workflow.add_edge("generate_recoding", "validate_recoding")
+workflow.add_conditional_edges(
+    "validate_recoding",
+    after_recoding_validation,
+    {
+        "review_recoding": "review_recoding",
+        "generate_recoding": "generate_recoding"
+    }
+)
+workflow.add_conditional_edges(
+    "review_recoding",
+    after_recoding_review,
+    {
+        END: END,
+        "generate_recoding": "generate_recoding"
+    }
+)
+
+app = workflow.compile()
+```
+
+**Validation Checks Performed** (Python-based):
+
+| # | Check | Description |
+|---|-------|-------------|
+| 1 | Source variables exist | Referenced variables must exist in metadata |
+| 2 | Target conflicts | Warn if target variables already exist |
+| 3 | Range validity | For range rules: start ≤ end |
+| 4 | No duplicate targets | Each target variable must be unique |
+| 5 | Transformation completeness | All transformations must have source values |
+| 6 | Target uniqueness | Target values must be unique within each rule |
+| 7 | Source overlap | Source values must not overlap within a rule |
+
+**Output**:
+- `recoding_rules`: JSON structure with recoding definitions
+- `recoding_validation`: Validation results with errors/warnings
+- `recoding_iteration`: Number of iterations used
+
+**Implementation Notes**:
+- Uses LangGraph's explicit node pattern (no factory functions)
+- Conditional edges control routing based on state
+- Tracks feedback source to build appropriate retry prompts
+- Human review via LangGraph's `interrupt()` mechanism
 
 **Validation Checks Performed** (Python-based):
 
@@ -968,128 +1121,130 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
 
 ---
 
-### Step 8: Generate Indicators
+### Step 8: Generate Indicators (Three-Node Pattern)
 
-**Node**: `generate_indicators_node`
+**Nodes**: `generate_indicators`, `validate_indicators`, `review_indicators`
 
-**Description**: AI agent groups variables into semantic indicators
+**Description**: Three-node pattern using LangGraph's explicit pattern. LLM groups variables into semantic indicators, Python validates the structure, and human optionally reviews.
 
-**Input**:
-- `variable_centered_metadata` (including recoded variables)
-- `config["indicator_instructions"]`: Custom instructions
+**Architecture**: Same three-node flow as Step 4.
+
+**State Fields**:
+```python
+class IndicatorTaskState(TypedDict):
+    indicators: dict | None
+    indicators_validation: dict | None
+    indicators_feedback: dict | None
+    indicators_iteration: int
+    indicators_feedback_source: Literal["validation", "human"] | None
+```
+
+**Node 1: Generate Indicators**
+```python
+def generate_indicators(state: State) -> State:
+    """LLM groups variables into semantic indicators."""
+    iteration = state.get("indicators_iteration", 1)
+    feedback = state.get("indicators_feedback")
+    feedback_source = state.get("indicators_feedback_source")
+
+    # Build prompt
+    if feedback_source == "validation":
+        prompt = build_validation_retry_prompt(
+            metadata=state["variable_centered_metadata"],
+            validation_result=feedback,
+            iteration=iteration
+        )
+    elif feedback_source == "human":
+        prompt = build_human_feedback_prompt(
+            metadata=state["variable_centered_metadata"],
+            human_feedback=feedback,
+            iteration=iteration
+        )
+    else:
+        prompt = build_indicators_prompt(state["variable_centered_metadata"])
+
+    response = llm.invoke(prompt)
+    indicators = parse_indicators(response)
+
+    return {
+        "indicators": indicators,
+        "indicators_iteration": iteration + 1,
+        "indicators_feedback": None,
+        "indicators_feedback_source": None
+    }
+```
+
+**Node 2: Validate Indicators**
+```python
+def validate_indicators(state: State) -> State:
+    """Python validates indicator structure and references."""
+    validator = IndicatorValidator(state["variable_centered_metadata"])
+    result = validator.validate_all_indicators(state["indicators"])
+
+    return {
+        "indicators_validation": {
+            "is_valid": result.is_valid,
+            "errors": result.errors,
+            "warnings": result.warnings
+        }
+    }
+```
+
+**Node 3: Review Indicators**
+```python
+def review_indicators(state: State) -> State:
+    """Human reviews indicator groupings."""
+    decision = interrupt({
+        "type": "approval_required",
+        "task": "indicators",
+        "indicators": state["indicators"],
+        "validation": state["indicators_validation"]
+    })
+
+    return {"indicators_feedback": decision}
+```
+
+**Edge 1: After Validation**
+```python
+def after_indicators_validation(state: State) -> Literal["review_indicators", "generate_indicators"]:
+    validation = state["indicators_validation"]
+    iteration = state["indicators_iteration"]
+    max_iterations = 3
+
+    if validation["is_valid"] or iteration >= max_iterations:
+        return "review_indicators"
+    return "generate_indicators"
+```
+
+**Edge 2: After Review**
+```python
+def after_indicators_review(state: State) -> Literal[END, "generate_indicators"]:
+    if state["indicators_feedback"]["action"] == "approve":
+        return END
+    return "generate_indicators"
+```
 
 **Multi-Variable Indicator Handling**:
 
-Indicators with multiple underlying variables are handled differently based on their `metric` type:
-
 | Metric | Variable Type | Output Structure | Use Case |
 |--------|---------------|------------------|----------|
-| **average** | Rating scales (numeric) | Each variable = ONE ROW in crosstab | Matrix questions where each attribute is rated separately (e.g., satisfaction on 1-10 scale for 10 attributes) |
-| **percentage** | Binary (0/1) | Combined as MULTIPLE RESPONSE SET | Multiple response questions where respondents select all that apply (e.g., "Which brands have you heard of?") |
-| **distribution** | Categorical (multiple options) | Each variable = ONE SEPARATE TABLE | Categorical questions that need separate analysis (e.g., region preference for each brand) |
+| **average** | Rating scales (numeric) | Each variable = ONE ROW in crosstab | Matrix questions |
+| **percentage** | Binary (0/1) | MULTIPLE RESPONSE SET | Multiple response questions |
+| **distribution** | Categorical | SEPARATE TABLE per variable | Categorical questions |
 
-**Example Output Structures**:
+**Validation Checks**:
 
-*Scenario 1 (average)* - Matrix rating with one row per variable:
-```
-Product Satisfaction by Age Group
-┌─────────────────────┬───────┬───────┬───────┐
-│ Attribute           │ 18-24 │ 25-34 │ 35-44 │
-├─────────────────────┼───────┼───────┼───────┤
-│ Quality (q5a)       │  8.2  │  7.8  │  7.5  │
-│ Service (q5b)       │  7.5  │  7.9  │  8.1  │
-│ Value (q5c)        │  7.1  │  7.4  │  7.6  │
-└─────────────────────┴───────┴───────┴───────┘
-```
-
-*Scenario 2 (percentage)* - Multiple response set:
-```
-Brands Aware by Gender
-┌──────────┬───────┬───────┐
-│ Brand    │ Male  │ Female│
-├──────────┼───────┼───────┤
-│ Brand A  │  45%  │  52%  │
-│ Brand B  │  38%  │  41%  │
-│ Brand C  │  22%  │  18%  │
-└──────────┴───────┴───────┘
-```
-
-*Scenario 3 (distribution)* - Separate tables per variable:
-```
-Table 1: Region for Brand A Preference        Table 2: Region for Brand B Preference
-┌─────────┬────┬────┬────┐                ┌─────────┬────┬────┬────┐
-│ Region  │ N  │ S  │ E  │                │ Region  │ N  │ S  │ E  │
-├─────────┼────┼────┼────┤                ├─────────┼────┼────┼────┤
-│ Urban   │ 30 │ 25 │ 20 │                │ Urban   │ 15 │ 18 │ 22 │
-│ Rural   │ 20 │ 15 │ 10 │                │ Rural   │ 25 │ 20 │ 18 │
-└─────────┴────┴────┴────┘                └─────────┴────┴────┴────┘
-```
-
-**AI Prompt Template**:
-```
-You are a market research analyst. Group variables into semantic indicators.
-
-PRINCIPLES:
-1. Single variable = indicator if semantically meaningful (e.g., age, gender)
-2. Multiple variables = one indicator if they measure a construct
-3. Define appropriate metric for each indicator:
-   - Distribution: For categorical variables with multiple options
-   - Average: For rating scale variables (numeric, e.g., 1-10)
-   - Percentage: For binary/Top Box variables (0/1, multiple response)
-
-INPUT METADATA:
-{indicator_metadata}
-
-OUTPUT FORMAT (JSON):
-{
-    "indicators": [
-        {
-            "id": "IND_001",
-            "name": "Age Group",
-            "description": "Respondent age distribution",
-            "metric": "distribution",
-            "underlying_variables": ["age_group"],
-            "question_type": "single_select"
-        },
-        {
-            "id": "IND_002",
-            "name": "Product Satisfaction",
-            "description": "Overall satisfaction with product attributes (Scenario 1: average)",
-            "metric": "average",
-            "underlying_variables": [
-                "q5a_rating", "q5b_rating", "q5c_rating",
-                "q5d_rating", "q5e_rating", "q5f_rating",
-                "q5g_rating", "q5h_rating", "q5i_rating", "q5j_rating"
-            ],
-            "question_type": "matrix_rating"
-        },
-        {
-            "id": "IND_003",
-            "name": "Brand Awareness",
-            "description": "Which brands have you heard of? (Scenario 2: percentage)",
-            "metric": "percentage",
-            "underlying_variables": [
-                "brand_a_aware", "brand_b_aware", "brand_c_aware"
-            ],
-            "question_type": "multiple_response"
-        },
-        {
-            "id": "IND_004",
-            "name": "Brand Preference by Region",
-            "description": "Region preference for each brand (Scenario 3: distribution)",
-            "metric": "distribution",
-            "underlying_variables": [
-                "brand_a_region", "brand_b_region", "brand_c_region"
-            ],
-            "question_type": "categorical"
-        }
-    ]
-}
-```
+| # | Check | Description |
+|---|-------|-------------|
+| 1 | Variables exist | All underlying_variables must exist in metadata |
+| 2 | Metric valid | Must be: average, percentage, or distribution |
+| 3 | No duplicate IDs | Each indicator ID must be unique |
+| 4 | Variables not empty | Each indicator must have at least one variable |
+| 5 | Variable type matches | Metric must match variable type |
 
 **Output**:
 - `indicators`: List of indicator definitions
-- `indicators_json_path`: Saved indicators file
+- `indicators_validation`: Validation results
 
 ---
 
@@ -1332,15 +1487,114 @@ For rejections, please indicate:
 
 ---
 
-### Step 9: Generate Table Specifications
+### Step 9: Generate Table Specifications (Three-Node Pattern)
 
-**Node**: `generate_table_specs_node`
+**Nodes**: `generate_table_specs`, `validate_table_specs`, `review_table_specs`
 
-**Description**: AI agent defines cross-table structure
+**Description**: Three-node pattern using LangGraph's explicit pattern. LLM defines cross-table structure, Python validates references, and human optionally reviews.
 
-**Input**:
-- `indicators`
-- `config["table_instructions"]`: Custom instructions
+**Architecture**: Same three-node flow as Steps 4 and 8.
+
+**State Fields**:
+```python
+class TableSpecsTaskState(TypedDict):
+    table_specifications: dict | None
+    table_specs_validation: dict | None
+    table_specs_feedback: dict | None
+    table_specs_iteration: int
+    table_specs_feedback_source: Literal["validation", "human"] | None
+```
+
+**Node 1: Generate Table Specifications**
+```python
+def generate_table_specs(state: State) -> State:
+    """LLM defines cross-table structure (rows, columns, weighting)."""
+    iteration = state.get("table_specs_iteration", 1)
+    feedback = state.get("table_specs_feedback")
+    feedback_source = state.get("table_specs_feedback_source")
+
+    # Build prompt
+    if feedback_source == "validation":
+        prompt = build_validation_retry_prompt(
+            indicators=state["indicators"],
+            metadata=state["variable_centered_metadata"],
+            validation_result=feedback,
+            iteration=iteration
+        )
+    elif feedback_source == "human":
+        prompt = build_human_feedback_prompt(
+            indicators=state["indicators"],
+            metadata=state["variable_centered_metadata"],
+            human_feedback=feedback,
+            iteration=iteration
+        )
+    else:
+        prompt = build_table_specs_prompt(
+            state["indicators"],
+            state["variable_centered_metadata"]
+        )
+
+    response = llm.invoke(prompt)
+    specs = parse_table_specs(response)
+
+    return {
+        "table_specifications": specs,
+        "table_specs_iteration": iteration + 1,
+        "table_specs_feedback": None,
+        "table_specs_feedback_source": None
+    }
+```
+
+**Node 2: Validate Table Specifications**
+```python
+def validate_table_specs(state: State) -> State:
+    """Python validates indicator references and structure."""
+    validator = TableSpecsValidator(state["indicators"])
+    result = validator.validate_table_specs(state["table_specifications"])
+
+    return {
+        "table_specs_validation": {
+            "is_valid": result.is_valid,
+            "errors": result.errors,
+            "warnings": result.warnings
+        }
+    }
+```
+
+**Node 3: Review Table Specifications**
+```python
+def review_table_specs(state: State) -> State:
+    """Human reviews table structure (rows, columns, weighting)."""
+    decision = interrupt({
+        "type": "approval_required",
+        "task": "table_specs",
+        "table_specifications": state["table_specifications"],
+        "indicators": state["indicators"],
+        "validation": state["table_specs_validation"]
+    })
+
+    return {"table_specs_feedback": decision}
+```
+
+**Edge 1: After Validation**
+```python
+def after_table_specs_validation(state: State) -> Literal["review_table_specs", "generate_table_specs"]:
+    validation = state["table_specs_validation"]
+    iteration = state["table_specs_iteration"]
+    max_iterations = 3
+
+    if validation["is_valid"] or iteration >= max_iterations:
+        return "review_table_specs"
+    return "generate_table_specs"
+```
+
+**Edge 2: After Review**
+```python
+def after_table_specs_review(state: State) -> Literal[END, "generate_table_specs"]:
+    if state["table_specs_feedback"]["action"] == "approve":
+        return END
+    return "generate_table_specs"
+```
 
 **AI Prompt Template**:
 ```
@@ -1351,40 +1605,43 @@ PRINCIPLES:
 2. Only demographics and key filters go to columns
 3. Define sorting: by frequency (categorical) or by value (ratings)
 4. Include significance testing for column comparisons
-5. Identify the weighting variable if present (typically named "weight", "weight_var", "sampl_weight", etc.)
-
-INPUT INDICATORS:
-{indicators}
-
-INPUT METADATA (for identifying weighting variable):
-{variable_centered_metadata}
+5. Identify the weighting variable if present
 
 OUTPUT FORMAT (JSON):
 {
     "table_specifications": {
         "row_indicators": ["IND_001", "IND_002", ...],
         "column_indicators": ["IND_DEMO_001", "IND_DEMO_002", ...],
-        "weighting_variable": "weight",  // or null if no weighting variable exists
+        "weighting_variable": "weight",
         "sorting_rules": {
             "default": "frequency",
-            "overrides": {
-                "IND_002": "value"  // Sort ratings by value
-            }
+            "overrides": {"IND_002": "value"}
         },
         "significance_tests": {
             "enabled": true,
-            "filter_by": "cramers_v_and_count",  // Filter by effect size and sample size
+            "filter_by": "cramers_v_and_count",
             "cramers_v_min": 0.1,
             "count_min": 30,
-            "test_type": "chi_square"  // Computed in Step 12 using Python (scipy)
+            "test_type": "chi_square"
         }
     }
 }
 ```
 
+**Validation Checks**:
+
+| # | Check | Description |
+|---|-------|-------------|
+| 1 | Indicator IDs exist | All row_indicators and column_indicators must exist |
+| 2 | No overlap | Same indicator cannot be in both rows and columns |
+| 3 | Weighting variable exists | If specified, must exist in metadata |
+| 4 | Sorting valid | Must be "frequency" or "value" |
+| 5 | Cramer's V range | Must be between 0 and 1 |
+| 6 | Count min positive | Must be greater than 0 |
+
 **Output**:
 - `table_specifications`: Cross-table structure definitions
-- `table_specs_json_path`: Saved table specs
+- `table_specs_validation`: Validation results
 
 ---
 
