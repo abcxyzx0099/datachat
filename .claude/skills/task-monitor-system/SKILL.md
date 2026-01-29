@@ -1,5 +1,5 @@
 ---
-name: monitor-system-generator
+name: task-monitor-system
 description: "Create and configure the multi-project task monitoring system with watchdog file monitoring and Claude Agent SDK integration. Use when: setting up a new task monitor system; installing from scratch; understanding system architecture; troubleshooting service issues; configuring the monitor; registering new projects. For detailed architecture, see [architecture.md](references/architecture.md). For troubleshooting, see [troubleshooting.md](references/troubleshooting.md)."
 ---
 
@@ -97,7 +97,7 @@ task-monitor-control list
 
 | Purpose | Path |
 |---------|------|
-| Install script | `.claude/skills/monitor-system-generator/references/install-service.sh` |
+| Install script | `.claude/skills/task-monitor-system/references/install-service.sh` |
 | System service | `/etc/systemd/system/task-monitor.service` |
 | Monitor daemon | `/opt/task-monitor/` (system-level) |
 | Configuration | `~/.config/task-monitor/` |
@@ -392,8 +392,8 @@ If the task monitor system is completely deleted, you can recreate it using only
 sudo mkdir -p /opt/task-monitor
 
 # 2. Copy source files from this skill's scripts/
-sudo cp .claude/skills/monitor-system-generator/scripts/*.py /opt/task-monitor/
-sudo cp .claude/skills/monitor-system-generator/scripts/install-service.sh /opt/task-monitor/
+sudo cp .claude/skills/task-monitor-system/scripts/*.py /opt/task-monitor/
+sudo cp .claude/skills/task-monitor-system/scripts/install-service.sh /opt/task-monitor/
 
 # 3. Run the install script
 sudo bash /opt/task-monitor/install-service.sh

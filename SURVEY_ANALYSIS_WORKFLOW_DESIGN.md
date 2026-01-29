@@ -116,7 +116,7 @@ flowchart TD
 | **4** | Cross-Table Generation | Define and generate cross-tabulation tables with weighting | Indicators, table specs | Cross-table contingency tables |
 | **5** | Statistical Analysis | Compute Chi-square statistics and effect sizes for all tables | Cross-table tables, recoded data | Tables with Chi-square statistics |
 | **6** | Significant Tables Selection | Filter tables by Cramer's V effect size and minimum sample count | Tables with statistics | Significant tables only |
-| **6** | Presentation | Generate final deliverables for stakeholders | Significant tables | PowerPoint, HTML dashboard |
+| **7** | Presentation | Generate final deliverables for stakeholders | Significant tables | PowerPoint, HTML dashboard |
 
 ### 2.3 Data Evolution Through Phases
 
@@ -351,11 +351,11 @@ class WorkflowState(
 | 0 | `InputState` | `spss_file_path`, `config` |
 | 1-3 | `ExtractionState` | `raw_data`, `variable_centered_metadata`, `filtered_metadata` |
 | 4-6 | `RecodingState` | `recoding_rules`, `recoded_data_path`, `validation_results` |
-| 7 | `IndicatorState` | `indicators`, `indicator_metadata` |
-| 8-10 | `CrossTableState` | `table_specifications`, `pspp_table_syntax`, `cross_table_sav_path` |
-| 10.5 | `StatisticalAnalysisState` | `all_small_tables` (with chi-square stats) |
-| 11 | `FilteringState` | `significant_tables` (filtered) |
-| 12-13 | `PresentationState` | `powerpoint_path`, `html_dashboard_path` |
+| 8 | `IndicatorState` | `indicators`, `indicator_metadata` |
+| 9-11 | `CrossTableState` | `table_specifications`, `pspp_table_syntax`, `cross_table_sav_path` |
+| 12 | `StatisticalAnalysisState` | `all_small_tables` (with chi-square stats) |
+| 13 | `FilteringState` | `significant_tables` (filtered) |
+| 14-15 | `PresentationState` | `powerpoint_path`, `html_dashboard_path` |
 | All | `ApprovalState` | `approval_comments`, `pending_approval_step` |
 | All | `TrackingState` | `execution_log`, `errors`, `warnings` |
 
@@ -595,6 +595,21 @@ def review_recoding(state: State) -> State:
         "options": ["approve", "reject", "modify"]
     })
 
+    # The workflow will resume here when human provides feedback via:
+    # app.update_state(thread_id, {
+    #     "recoding_feedback": {
+    #         "action": "approve",  # or "reject" or "modify"
+    #         "comments": "Optional feedback",
+    #         "modified_rules": {...}  # if action == "modify"
+    #     }
+    # })
+    #
+    # Example resume command:
+    #   app.update_state(
+    #       config={"configurable": {"thread_id": "thread-123"}},
+    #       values={"recoding_feedback": {"action": "approve", "comments": "Looks good"}}
+    #   )
+
     return {
         "recoding_feedback": {
             "action": decision.get("decision"),
@@ -623,11 +638,8 @@ def after_recoding_validation(state: State) -> Literal["review_recoding", "gener
         # Max iterations reached, let human decide
         return "review_recoding"
     else:
-        # Store feedback for retry
-        return {
-            "recoding_feedback": validation,
-            "recoding_feedback_source": "validation"
-        }
+        # Store feedback for retry in state, then return node name
+        # State update will be handled by LangGraph's StateUpdater mechanism
         return "generate_recoding"
 ```
 
@@ -644,10 +656,8 @@ def after_recoding_review(state: State) -> Literal[END, "generate_recoding"]:
     if feedback["action"] == "approve":
         return END
     else:
-        # Store human feedback for retry
-        return {
-            "recoding_feedback_source": "human"
-        }
+        # Store human feedback for retry in state, then return node name
+        # State update will be handled by LangGraph's StateUpdater mechanism
         return "generate_recoding"
 ```
 
@@ -707,18 +717,6 @@ app = workflow.compile()
 - Conditional edges control routing based on state
 - Tracks feedback source to build appropriate retry prompts
 - Human review via LangGraph's `interrupt()` mechanism
-
-**Validation Checks Performed** (Python-based):
-
-| # | Check | Description |
-|---|-------|-------------|
-| 1 | Source variables exist | Referenced variables must exist in metadata |
-| 2 | Target conflicts | Warn if target variables already exist |
-| 3 | Range validity | For range rules: start ≤ end |
-| 4 | No duplicate targets | Each target variable must be unique |
-| 5 | Transformation completeness | All transformations must have source values |
-| 6 | Target uniqueness | Target values must be unique within each rule |
-| 7 | Source overlap | Source values must not overlap within a rule |
 
 **AI Prompt with Feedback**:
 
@@ -2847,8 +2845,12 @@ DEFAULT_CONFIG = {
 
     # Output
     "output_dir": "output",
-    "create_timestamp_dir": True
+    "create_timestamp_dir": True  # If True, creates timestamped subdirectories (e.g., output/20250130-143052/)
 }
+```
+
+**Timestamp Directory Creation**:
+When `create_timestamp_dir` is enabled (default), the workflow automatically creates a timestamped subdirectory within `output_dir` during Step 1 initialization. This ensures each workflow run produces isolated outputs with format `{output_dir}/{YYYYMMDD-HHMMSS}/`. For example: `output/20250130-143052/`. If disabled, all outputs are written directly to `output_dir`.
 ```
 
 ---

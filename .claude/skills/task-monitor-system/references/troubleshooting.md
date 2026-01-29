@@ -187,17 +187,68 @@ sudo journalctl -u task-monitor | grep -E "\[.*\] (Starting|completed)"
 # Each project should have independent queue processors
 ```
 
-### Service crashes after task execution
+### Service crashes after task execution (trio cancel scope error)
 
-Known issue with SDK cleanup (non-fatal):
+**Symptoms:**
+- Service exits with `RuntimeError: Attempted to exit cancel scope in a different task than it was entered in`
+- Service auto-restarts by systemd
+- Tasks complete successfully but service crashes during cleanup
+
+**Root Cause:**
+The Claude Agent SDK documentation explicitly states: *"avoid using `break` to exit early from the iteration. Exiting prematurely with `break` can cause asyncio cleanup issues."*
+
+The original task executor code used `break` to exit the async for loop when receiving success/error messages, causing trio (SDK's internal async library) cancel scope errors during cleanup.
+
+**Solution:**
+
+Update `/opt/task-monitor/task_executor.py` to consume all messages naturally instead of using `break`:
+
+```python
+# ❌ WRONG - Causes cancel scope error
+async for message in q:
+    if message.subtype == 'success':
+        # ... process result ...
+        break  # ❌ Don't do this!
+
+# ✅ CORRECT - Consume all messages naturally
+task_complete = False
+async for message in q:
+    if task_complete:
+        continue  # Skip but don't break
+    if message.subtype == 'success':
+        # ... process result ...
+        task_complete = True  # Mark complete, let loop finish naturally
+```
+
+**Apply the fix:**
 
 ```bash
-# Check if service auto-restarted
-sudo systemctl status task-monitor
+# The fix has been applied to the installation script
+# If you need to reapply it manually:
 
-# The task should still complete successfully
-ls -la /home/admin/workspaces/datachat/results/
+sudo nano /opt/task-monitor/task_executor.py
+
+# Then restart the service
+sudo systemctl restart task-monitor
+
+# Verify it's working
+sudo systemctl status task-monitor
 ```
+
+**Verify the fix:**
+
+```bash
+# Check for cancel scope errors
+sudo journalctl -u task-monitor --since "5 minutes ago" | grep "cancel scope"
+# Should return nothing if fix is working
+
+# Check service uptime (should be continuous, no restarts)
+sudo systemctl status task-monitor | grep "Active:"
+```
+
+**References:**
+- [Claude Agent SDK Python Documentation](https://platform.claude.com/docs/en/agent-sdk/en/api/agent-sdk/python)
+- Search for: "avoid using break to exit early from the iteration"
 
 ## Query task status
 

@@ -77,7 +77,9 @@ class ClaudeLLMClient:
                         # Got final result
                         if hasattr(message, 'result') and message.result:
                             response_text = message.result
-                        break
+                        # Return early to avoid trio cancel scope errors
+                        # This is the proper way to exit async iteration
+                        return self._parse_rules_from_response(response_text)
                     elif message.subtype == 'error':
                         raise Exception(f"Claude API error: {message.result}")
                 else:

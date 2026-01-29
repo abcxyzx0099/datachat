@@ -194,5 +194,5 @@ See [references/examples.md](references/examples.md) for good vs bad task docume
 
 ## Related Skills
 
-- `monitor-system-generator`: Creates the task monitoring system that processes these task documents
+- `task-monitor-system`: Creates the task monitoring system that processes these task documents
 - `task-coordination`: Executes tasks with worker-auditor workflow (called by monitor)
