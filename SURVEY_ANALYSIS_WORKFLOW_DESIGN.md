@@ -3,10 +3,10 @@
 ## 1. Overview
 
 ### 1.1 Purpose
-Design and implement an automated workflow for market research survey data analysis and visualization using LangGraph. The system processes SPSS survey data, applies AI-generated transformations, generates indicators, performs statistical analysis, and produces outputs in PowerPoint and HTML formats.
+Design and implement an automated workflow for market research survey data analysis and visualization using LangGraph. The system processes PSPP survey data, applies AI-generated transformations, generates indicators, performs statistical analysis, and produces outputs in PowerPoint and HTML formats.
 
 ### 1.2 Scope
-- **Input**: SPSS (.sav) survey data files
+- **Input**: PSPP (.sav) survey data files
 - **Processing**: AI-driven recoding, transformation, and indicator generation
 - **Output**: PowerPoint presentations, HTML dashboards with visualizations
 - **Target**: Market research industry professionals
@@ -28,9 +28,9 @@ Design and implement an automated workflow for market research survey data analy
 
 ```mermaid
 flowchart TD
-    subgraph P1["**Phase 1: Extraction & Preparation**<br/>Ingest raw SPSS data and prepare metadata"]
+    subgraph P1["**Phase 1: Extraction & Preparation**<br/>Ingest raw .sav data and prepare metadata"]
         direction TB
-        S1["**Step 1**<br/>Extract SPSS<br/>(.sav file → raw data + metadata)"]
+        S1["**Step 1**<br/>Extract .sav File<br/>(.sav file → raw data + metadata)"]
         S2["**Step 2**<br/>Transform Metadata<br/>(section-based → variable-centered)"]
         S3["**Step 3**<br/>Filter Metadata<br/>(remove variables not needing recoding)"]
         RAW["**Output**<br/>RAW DATA & FILTERED METADATA"]
@@ -39,16 +39,14 @@ flowchart TD
         S3 -.-> RAW
     end
 
-    subgraph P2["**Phase 2: New Variable Generation**<br/>Generate AI-driven recoding rules and create new variables"]
+    subgraph P2["**Phase 2: New Variable Generation**<br/>AI generates, validates, and refines recoding rules"]
         direction TB
-        S4["**Step 4**<br/>Generate Recoding Rules<br/>(AI analyzes metadata)"]
-        S4a["**Step 4.5**<br/>Validate Rules<br/>(automated checks)"]
-        S4b["**Step 4.6**<br/>Human Review: Rules 👤<br/>(analyst approves/rejects)"]
+        S4["**Step 4**<br/>Generate Recoding Rules<br/>with Self-Verification 🔄<br/>(AI generates → validates → refines)"]
+        S4b["**Step 4.6**<br/>Human Review: Rules 👤<br/>(semantic validation - optional)"]
         S5["**Step 5**<br/>Generate PSPP Syntax<br/>(convert rules to PSPP)"]
         S6["**Step 6**<br/>Execute PSPP<br/>(apply transformations)"]
         RECODED["**Output**<br/>RECODED DATA (NEW VARIABLES)"]
-        S4 --> S4a
-        S4a --> S4b
+        S4 --> S4b
         S4b --> S5
         S5 --> S6
         S6 -.-> RECODED
@@ -83,9 +81,9 @@ flowchart TD
         S10_5 -.-> STATS
     end
 
-    subgraph P5["**Phase 5: Significant Tables Selection**<br/>Filter tables by statistical significance"]
+    subgraph P5["**Phase 5: Significant Tables Selection**<br/>Filter tables by effect strength and sample size"]
         direction TB
-        S11["**Step 11**<br/>Filter Significant Tables<br/>(p-value ≤ α threshold)"]
+        S11["**Step 11**<br/>Filter Significant Tables<br/>(Cramer's V ≥ 0.1, count ≥ 30)"]
         SIGNIFICANT["**Output**<br/>SIGNIFICANT TABLES ONLY"]
         S11 -.-> SIGNIFICANT
     end
@@ -112,156 +110,264 @@ flowchart TD
 
 | Phase | Name | Purpose | Input | Output |
 |-------|------|---------|-------|--------|
-| **1** | Extraction & Preparation | Ingest raw SPSS data and prepare metadata for AI processing | SPSS (.sav) file | Raw data, variable metadata |
-| **2** | New Variable Generation | Generate AI-driven recoding rules and create new variables through PSPP | Filtered metadata, AI rules | Recoded dataset with new variables |
+| **1** | Extraction & Preparation | Ingest raw .sav data and prepare metadata for AI processing | .sav file (PSPP/SPSS format) | Raw data, variable metadata |
+| **2** | New Variable Generation | AI generates, validates, and iteratively refines recoding rules; creates new variables through PSPP | Filtered metadata, AI rules | Recoded dataset with new variables |
 | **3** | Indicator Generation | Group variables into semantic indicators for analysis | Recoded variables | Indicator definitions |
 | **4** | Cross-Table Generation | Define and generate cross-tabulation tables with weighting | Indicators, table specs | Cross-table contingency tables |
 | **4.5** | Statistical Analysis | Compute Chi-square statistics and effect sizes for all tables | Cross-table tables, recoded data | Tables with Chi-square statistics |
-| **5** | Significant Tables Selection | Filter tables by statistical significance | Tables with statistics | Significant tables only |
+| **5** | Significant Tables Selection | Filter tables by Cramer's V effect size and minimum sample count | Tables with statistics | Significant tables only |
 | **6** | Presentation | Generate final deliverables for stakeholders | Significant tables | PowerPoint, HTML dashboard |
 
 ### 2.3 Data Evolution Through Phases
 
+```mermaid
+flowchart LR
+    %% Define styles
+    classDef inputFileStyle fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000
+    classDef traditionalStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef aiStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
+    classDef dataFileStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
+    classDef outputStyle fill:#c8e6c9,stroke:#1b5e20,stroke-width:3px,color:#000
+
+    %% Phase 1: Extraction & Preparation
+    subgraph P1["Phase 1: Extraction & Preparation"]
+        direction TB
+        sav1(["📁 .sav File<br/>(Input)"]):::inputFileStyle
+        rawData["raw_data<br/>(DataFrame)"]:::traditionalStyle
+        origMeta["original_metadata"]:::traditionalStyle
+        varMeta["variable_centered_metadata"]:::traditionalStyle
+        filtMeta["filtered_metadata"]:::traditionalStyle
+        filtOut["filtered_out_variables"]:::traditionalStyle
+    end
+
+    %% Phase 2: New Variable Generation
+    subgraph P2["Phase 2: New Variable Generation"]
+        direction TB
+        recodingRules["recoding_rules<br/>(JSON)"]:::aiStyle
+        validationResults["validation_results"]:::traditionalStyle
+        psppRecodeSyntax["pspp_recoding_syntax<br/>(.sps)"]:::traditionalStyle
+        sav2(["📁 recoded_data.sav"]):::dataFileStyle
+    end
+
+    %% Phase 3: Indicator Generation
+    subgraph P3["Phase 3: Indicator Generation"]
+        direction TB
+        indicators["indicators<br/>(JSON)"]:::aiStyle
+    end
+
+    %% Phase 4: Cross-Table Generation
+    subgraph P4["Phase 4: Cross-Table Generation"]
+        direction TB
+        tableSpecs["table_specifications<br/>(JSON)"]:::aiStyle
+        weightVar["weighting_variable"]:::traditionalStyle
+        psppTableSyntax["pspp_table_syntax<br/>(.sps)"]:::traditionalStyle
+        sav3(["📁 cross_table.sav"]):::dataFileStyle
+    end
+
+    %% Phase 4.5 & 5: Statistical Analysis & Filtering
+    subgraph P5["Phase 4.5-5: Statistical Analysis"]
+        direction TB
+        allTables["all_small_tables<br/>(with Chi-Square)"]:::traditionalStyle
+        sigTables["significant_tables<br/>(filtered)"]:::traditionalStyle
+    end
+
+    %% Phase 6: Presentation
+    subgraph P6["Phase 6: Presentation"]
+        direction TB
+        ppt(["📊 .pptx"]):::outputStyle
+        html(["🌐 .html"]):::outputStyle
+    end
+
+    %% Data flow edges
+    sav1 -->|Step 1| rawData
+    sav1 -->|Step 1| origMeta
+    origMeta -->|Step 2| varMeta
+    varMeta -->|Step 3| filtMeta
+    varMeta -->|Step 3| filtOut
+    filtMeta -->|Step 4| recodingRules
+    recodingRules -->|Step 4| validationResults
+    recodingRules -->|Step 5| psppRecodeSyntax
+    sav1 ==>|Step 6<br/>input| sav2
+    psppRecodeSyntax -.->|Step 6<br/>syntax| sav2
+    varMeta ==>|Step 7| indicators
+    indicators -->|Step 8| tableSpecs
+    varMeta -->|Step 8| weightVar
+    tableSpecs -->|Step 9| psppTableSyntax
+    sav2 ==>|Step 10<br/>input| sav3
+    psppTableSyntax -.->|Step 10<br/>syntax| sav3
+    sav2 ==>|Step 10.5| allTables
+    indicators ==>|Step 10.5| allTables
+    tableSpecs ==>|Step 10.5| allTables
+    weightVar ==>|Step 10.5| allTables
+    allTables -->|Step 11| sigTables
+    sigTables -->|Step 12| ppt
+    sigTables -->|Step 13| html
 ```
-SPSS File
-    │
-    ▼
-┌─────────────────────────────────────────────────────────────┐
-│ Phase 1: Extraction & Preparation                           │
-│ • Extract raw data and metadata from SPSS                   │
-│ • Transform to variable-centered format                     │
-│ • Filter variables that need recoding                       │
-└─────────────────────────────────────────────────────────────┘
-    │
-    ▼ Raw Data + Filtered Metadata
-┌─────────────────────────────────────────────────────────────┐
-│ Phase 2: New Variable Generation                           │
-│ • AI generates recoding rules                               │
-│ • Validate and human review rules                          │
-│ • Generate and execute PSPP syntax                         │
-└─────────────────────────────────────────────────────────────┘
-    │
-    ▼ Recoded Data (with new variables)
-┌─────────────────────────────────────────────────────────────┐
-│ Phase 3: Indicator Generation                              │
-│ • AI groups variables into semantic indicators              │
-│ • Human review indicator groupings                        │
-└─────────────────────────────────────────────────────────────┘
-    │
-    ▼ Indicator Definitions
-┌─────────────────────────────────────────────────────────────┐
-│ Phase 4: Cross-Table Generation                         │
-│ • Define table structure (rows, columns, weighting)         │
-│ • Human review table specifications                        │
-│ • Generate and execute PSPP syntax                         │
-└─────────────────────────────────────────────────────────────┘
-    │
-    ▼ Cross-Table Contingency Tables (.sav)
-┌─────────────────────────────────────────────────────────────┐
-│ Phase 4.5: Statistical Analysis                           │
-│ • Compute Chi-square statistics (Python)                   │
-│ • Calculate effect sizes (Cramer's V)                      │
-│ • Generate standardized residuals                          │
-└─────────────────────────────────────────────────────────────┘
-    │
-    ▼ Tables with Chi-Square Statistics
-┌─────────────────────────────────────────────────────────────┐
-│ Phase 5: Significant Tables Selection                      │
-│ • Filter tables by statistical significance (p ≤ α)        │
-└─────────────────────────────────────────────────────────────┘
-    │
-    ▼ Significant Tables
-┌─────────────────────────────────────────────────────────────┐
-│ Phase 6: Presentation                                      │
-│ • Generate PowerPoint with charts                          │
-│ • Generate interactive HTML dashboard                      │
-└─────────────────────────────────────────────────────────────┘
-    │
-    ▼ Final Outputs (.pptx, .html)
-```
+
+**Legend:**
+
+| Style | Meaning | Examples |
+|-------|---------|----------|
+| 🔵 **Input File** | Original input data file | `.sav` file |
+| 🟢 **Traditional Programming** | Deterministic processing (Python, PSPP, scipy) | `raw_data`, `variable_centered_metadata`, `pspp_recoding_syntax`, `all_small_tables`, `.pptx`, `.html` |
+| 🟣 **AI Processing** | LLM/AI-generated artifacts with self-verification | `recoding_rules`, `indicators`, `table_specifications` |
+| 🟠 **Data File (.sav)** | Survey data files generated by PSPP | `recoded_data.sav`, `cross_table.sav` |
+
+**Key Observations:**
+
+1. **AI-Driven Nodes** (3 nodes): Steps 4, 7, and 8 use AI agents to generate intelligent rules and groupings with built-in self-verification
+2. **Traditional Programming** (13 nodes): All other steps use deterministic Python/PSPP processing
+3. **Hybrid Approach**: The workflow combines AI for semantic understanding with traditional programming for statistical rigor
+4. **Step 10.5 is data-intensive**: Consumes both data files (`recoded_data.sav`) and multiple metadata sources (`indicators`, `table_specifications`, `weighting_variable`)
+5. **Dashed lines** (`.-.->`): Indicate syntax/control flow (not direct data dependency)
 
 ### 2.4 LangGraph State Management
 
-The workflow maintains a single state object that evolves through each node:
+The workflow maintains a single state object that evolves through each node. To reduce complexity, state fields are organized into functionally-specific sub-states.
 
 ```python
 from typing import TypedDict, List, Dict, Any, Optional
 from pandas import DataFrame
 
-class WorkflowState(TypedDict):
-    # ===== INPUT =====
+# ============================================================================
+# FUNCTION-SPECIFIC SUB-STATES
+# ============================================================================
+
+class InputState(TypedDict):
+    """Initial input configuration"""
     spss_file_path: str                      # Path to input .sav file
     config: Dict[str, Any]                   # Configuration parameters
 
-    # ===== EXTRACTION =====
+
+class ExtractionState(TypedDict):
+    """Data extraction and preparation - Step 1-3"""
     raw_data: DataFrame                      # Extracted survey data
     original_metadata: Dict[str, Any]        # Raw metadata from pyreadstat
-
-    # ===== METADATA TRANSFORMATION =====
     variable_centered_metadata: List[Dict]   # Metadata grouped by variable
-
-    # ===== PRELIMINARY FILTERING =====
     filtered_metadata: List[Dict]            # Metadata after filtering
     filtered_out_variables: List[Dict]       # Variables removed + reasons
 
-    # ===== AI RECODING RULES =====
+
+class RecodingState(TypedDict):
+    """New variable generation through AI-driven recoding - Step 4-6"""
     recoding_rules: Dict[str, Any]           # AI-generated recoding rules
     recoding_rules_json_path: str            # Saved recoding rules file
-
-    # ===== VALIDATION & APPROVAL =====
+    self_correction_iterations: int           # Number of self-correction iterations used
+    max_self_correction_iterations: int      # Maximum allowed (default: 3)
     validation_results: Dict[str, Any]       # Automated validation results
-    recoding_rules_approved: bool            # Human approval status for recoding rules
-    indicators_approved: bool                # Human approval status for indicators
-    table_specs_approved: bool               # Human approval status for table specifications
-    approval_comments: List[Dict]            # Human feedback and comments
-    pending_approval_step: Optional[str]     # Current step awaiting human review
-
-    # ===== PSPP RECODING =====
+    recoding_rules_approved: bool            # Human approval status
     pspp_recoding_syntax: str                # Generated PSPP syntax
     pspp_recoding_syntax_path: str           # Saved syntax file
     recoded_data_path: str                   # Path to recoded dataset
 
-    # ===== INDICATOR GENERATION =====
+
+class IndicatorState(TypedDict):
+    """Indicator generation and semantic grouping - Step 7"""
     indicator_metadata: List[Dict]           # Metadata for indicator generation
     indicators: List[Dict[str, Any]]         # Generated indicators
     indicators_json_path: str                # Saved indicators file
+    indicators_approved: bool                # Human approval status
 
-    # ===== TABLE SPECIFICATIONS =====
-    table_specifications: Dict[str, Any]     # Table structure definitions (includes weighting variables)
+
+class CrossTableState(TypedDict):
+    """Cross-table specification and generation - Step 8-10"""
+    table_specifications: Dict[str, Any]     # Table structure definitions
     table_specs_json_path: str               # Saved table specs
-    weighting_variable: Optional[str]        # Name of the weighting variable for cross-tables
-
-    # ===== PSPP TABLES =====
+    weighting_variable: Optional[str]        # Weighting variable for cross-tables
+    table_specs_approved: bool               # Human approval status
     pspp_table_syntax: str                   # Generated cross-table syntax
     pspp_table_syntax_path: str              # Saved syntax file
-    cross_table_sav_path: str                # Exported cross-table file (observed counts only)
-    # Note: Chi-square statistics are computed in Step 10.5 from recoded_data_path
+    cross_table_sav_path: str                # Exported cross-table file
 
-    # ===== SIGNIFICANCE FILTERING =====
-    all_small_tables: List[Dict]             # All individual tables
-    significant_tables: List[Dict]           # Tables with significant differences
+
+class StatisticalAnalysisState(TypedDict):
+    """Chi-square statistics and effect size computation - Step 10.5"""
+    all_small_tables: List[Dict]             # All tables with chi-square stats
+
+
+class FilteringState(TypedDict):
+    """Significant tables selection by effect size - Step 11"""
+    significant_tables: List[Dict]           # Tables filtered by Cramer's V + count
     significant_tables_json_path: str        # Saved filtered tables
 
-    # ===== OUTPUTS =====
+
+class PresentationState(TypedDict):
+    """Final output generation - Step 12-13"""
     powerpoint_path: str                     # Generated PowerPoint file
     html_dashboard_path: str                 # Generated HTML dashboard
     charts_generated: List[Dict]             # Chart metadata
 
-    # ===== TRACKING =====
+
+class ApprovalState(TypedDict):
+    """Human-in-the-loop approval tracking (crosses all steps)"""
+    approval_comments: List[Dict]            # Human feedback and comments
+    pending_approval_step: Optional[str]     # Current step awaiting review
+
+
+class TrackingState(TypedDict):
+    """Execution tracking (crosses all steps)"""
     execution_log: List[Dict]                # Step-by-step execution log
     errors: List[str]                        # Error messages
     warnings: List[str]                      # Warning messages
+
+
+# ============================================================================
+# COMBINED WORKFLOW STATE
+# ============================================================================
+
+class WorkflowState(
+    InputState,
+    ExtractionState,
+    RecodingState,
+    IndicatorState,
+    CrossTableState,
+    StatisticalAnalysisState,
+    FilteringState,
+    PresentationState,
+    ApprovalState,
+    TrackingState,
+    total=False
+):
+    """
+    Combined workflow state that inherits all functionally-specific sub-states.
+
+    Using `total=False` allows fields to be optional, populated only when
+    their respective step completes. This reduces state complexity and
+    improves debugging by clearly indicating which function each field belongs to.
+
+    Example usage in nodes:
+        def extract_spss_node(state: WorkflowState) -> WorkflowState:
+            state["raw_data"] = df  # ExtractionState field
+            state["original_metadata"] = meta  # ExtractionState field
+            return state
+    """
+    pass
 ```
+
+**State Evolution by Step:**
+
+| Step | Sub-State | Key Fields Added |
+|------|-----------|------------------|
+| 0 | `InputState` | `spss_file_path`, `config` |
+| 1-3 | `ExtractionState` | `raw_data`, `variable_centered_metadata`, `filtered_metadata` |
+| 4-6 | `RecodingState` | `recoding_rules`, `recoded_data_path`, `validation_results` |
+| 7 | `IndicatorState` | `indicators`, `indicator_metadata` |
+| 8-10 | `CrossTableState` | `table_specifications`, `pspp_table_syntax`, `cross_table_sav_path` |
+| 10.5 | `StatisticalAnalysisState` | `all_small_tables` (with chi-square stats) |
+| 11 | `FilteringState` | `significant_tables` (filtered) |
+| 12-13 | `PresentationState` | `powerpoint_path`, `html_dashboard_path` |
+| All | `ApprovalState` | `approval_comments`, `pending_approval_step` |
+| All | `TrackingState` | `execution_log`, `errors`, `warnings` |
 
 ---
 
 ## 3. Detailed Step Specifications
 
-### Step 1: Extract SPSS Data
+### Step 1: Extract .sav File
 
 **Node**: `extract_spss_node`
 
-**Description**: Read SPSS (.sav) file and extract raw data with metadata
+**Description**: Read .sav file (SPSS/PSPP format) and extract raw data with metadata
 
 **Input**:
 - `spss_file_path`: Path to .sav file
@@ -363,18 +469,109 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
 
 ---
 
-### Step 4: Generate Recoding Rules
+### Step 4: Generate Recoding Rules with Self-Verification
 
 **Node**: `generate_recoding_rules_node`
 
-**Description**: AI agent generates recoding and transformation rules
+**Description**: AI agent generates recoding rules with built-in self-verification loop. The agent validates its own output using Python scripts and iteratively refines until all checks pass.
+
+**Architecture**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│              Self-Verifying AI Agent                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │  Generate   │───▶│  Validate   │───▶│  All Valid? │     │
+│  │  (LLM)      │    │  (Python)   │    │  (check)    │     │
+│  └─────────────┘    └─────────────┘    └──────┬──────┘     │
+│                                                 │            │
+│                                    ┌────────────▼─────────┐ │
+│                                    │  Iteration Loop       │ │
+│                                    │  (max 3 times)        │ │
+│                                    └────────────┬─────────┘ │
+│                                                 │            │
+│                              ┌──────────────────▼───────┐  │
+│                              │  Output Validated Rules  │  │
+│                              └───────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
 
 **Input**:
 - `filtered_metadata`
 - `config["recoding_instructions"]`: Custom instructions for AI
+- `config["max_self_correction_iterations"]`: Max iterations (default: 3)
 
-**AI Prompt Template**:
+**Self-Verification Loop Algorithm**:
+```python
+def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
+    from scripts.survey_analysis import SelfVerifyingRecodingAgent, VariableMetadata
+
+    # Convert metadata
+    metadata = [VariableMetadata(**v) for v in state["filtered_metadata"]]
+
+    # Initialize self-verifying agent
+    agent = SelfVerifyingRecodingAgent(
+        llm_client=state.get("llm_client"),
+        max_iterations=state["config"].get("max_self_correction_iterations", 3)
+    )
+
+    # Self-verification loop (up to max_iterations)
+    for iteration in range(1, max_iterations + 1):
+        # 1. Generate rules (or refine if iteration > 1)
+        rules = agent._generate_with_llm(
+            prompt=agent._build_generation_prompt(
+                metadata=metadata,
+                iteration=iteration,
+                previous_result=state.get("last_validation_result")
+            ),
+            metadata=metadata
+        )
+
+        # 2. Validate using Python
+        validator = RuleValidator(metadata)
+        validation_result = validator.validate_all_rules(rules)
+
+        # 3. Check if all checks passed
+        if validation_result.is_valid:
+            state["recoding_rules"] = {"recoding_rules": [r.dict() for r in rules]}
+            state["validation_results"] = validation_result.dict()
+            state["self_correction_iterations"] = iteration
+            state["execution_log"].append({
+                "step": "generate_recoding_rules",
+                "status": "completed",
+                "iterations_used": iteration,
+                "validation_passed": True
+            })
+            break  # Exit loop - rules are valid
+
+        # 4. If failed, store for next iteration
+        state["last_validation_result"] = {
+            "rules": rules,
+            "validation_result": validation_result
+        }
+        # Loop continues with feedback in prompt
+
+    return state
 ```
+
+**Validation Checks Performed** (Python-based):
+
+| # | Check | Description |
+|---|-------|-------------|
+| 1 | Source variables exist | Referenced variables must exist in metadata |
+| 2 | Target conflicts | Warn if target variables already exist |
+| 3 | Range validity | For range rules: start ≤ end |
+| 4 | No duplicate targets | Each target variable must be unique |
+| 5 | Transformation completeness | All transformations must have source values |
+| 6 | Target uniqueness | Target values must be unique within each rule |
+| 7 | Source overlap | Source values must not overlap within a rule |
+
+**AI Prompt with Feedback**:
+
+On first iteration:
+```python
+prompt = f"""
 You are a market research data expert. Given survey variable metadata,
 generate intelligent recoding rules.
 
@@ -388,119 +585,112 @@ INPUT METADATA:
 {filtered_metadata}
 
 OUTPUT FORMAT (JSON):
-{
+{{
     "recoding_rules": [
-        {
+        {{
             "source_variable": "age",
             "target_variable": "age_group",
-            "type": "grouping",
             "rule_type": "range",
             "transformations": [
-                {"source": [18, 24], "target": 1, "label": "18-24"},
-                {"source": [25, 34], "target": 2, "label": "25-34"},
-                ...
+                {{"source": [18, 24], "target": 1, "label": "18-24"}},
+                {{"source": [25, 34], "target": 2, "label": "25-34"}}
             ]
-        },
-        {
-            "source_variable": "q5_rating",
-            "target_variable": "q5_rating_top2box",
-            "type": "derived",
-            "rule_type": "top_box",
-            "transformations": [
-                {"source": [9, 10], "target": 1, "label": "Top 2 Box"},
-                {"source": [1, 2, 3, 4, 5, 6, 7, 8], "target": 0, "label": "Others"}
-            ]
-        }
+        }}
     ]
-}
+}}
+"""
+```
+
+On subsequent iterations (after validation failure):
+```python
+prompt = f"""
+## Previous Iteration Feedback (Iteration {iteration - 1})
+
+Your previous attempt had the following validation errors:
+
+**Errors:**
+1. Source variable 'nonexistent_var' not found in metadata
+2. Invalid range: [24, 18] - start > end
+3. Duplicate target variables: ['duplicate_target']
+
+**Warnings:**
+(None)
+
+## Instructions for This Iteration
+
+Please generate new recoding rules that address ALL of the errors above:
+
+1. Use only source variables that exist in the provided metadata
+2. Ensure all ranges are valid (start value ≤ end value)
+3. Ensure each target variable name is unique
+4. Ensure all transformations are complete and non-overlapping
+
+[Original prompt with metadata...]
+"""
 ```
 
 **Output**:
 - `recoding_rules`: JSON structure with recoding definitions
 - `recoding_rules_json_path`: Saved rules file
+- `validation_results`: Validation results from final iteration
+- `self_correction_iterations`: Number of iterations used
+
+**Implementation Notes**:
+- Max iterations default is 3 to prevent infinite loops
+- Each iteration adds validation errors to the AI prompt
+- The agent learns from its mistakes through structured feedback
+- Human review (Step 4.6) becomes optional for semantic validation only
+- All objective validation is handled automatically by this step
 
 ---
 
 ### Step 4.5: Validate Recoding Rules
 
-**Node**: `validate_recoding_rules_node`
+**Node**: ~~`validate_recoding_rules_node`~~
 
-**Description**: Validate AI-generated recoding rules for correctness and statistical soundness
+**Status**: ✅ **DEPRECATED** - Now integrated into `generate_recoding_rules_node` (Step 4)
 
-**Input**:
-- `recoding_rules`: AI-generated recoding rules
-- `filtered_metadata`: Original variable metadata
-- `config`: Configuration parameters
+**Rationale**: The validation logic has been moved inside the AI agent as part of the self-verification loop. This allows the AI to:
 
-**Validation Checks**:
-```python
-def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
-    rules = state["recoding_rules"]["recoding_rules"]
-    metadata = state["filtered_metadata"]
-    validation_errors = []
-    validation_warnings = []
+1. **Automatically fix its own mistakes** - No manual intervention for objective errors
+2. **Faster iteration** - Seconds per iteration instead of minutes/hours
+3. **Reduce human workload** - Only semantic validation requires human review
 
-    # Check 1: Source variables exist
-    variable_names = {v["name"] for v in metadata}
-    for rule in rules:
-        source = rule.get("source_variable")
-        if source not in variable_names:
-            validation_errors.append(f"Source variable '{source}' not found in metadata")
+**Legacy Validation Checks** (now performed in Step 4):
 
-    # Check 2: Target variables don't conflict with existing variables
-    for rule in rules:
-        target = rule.get("target_variable")
-        if target in variable_names:
-            validation_warnings.append(f"Target variable '{target}' already exists (will be overwritten)")
+| # | Check | Description |
+|---|-------|-------------|
+| 1 | Source variables exist | Referenced variables must exist in metadata |
+| 2 | Target conflicts | Warn if target variables already exist |
+| 3 | Range validity | For range rules: start ≤ end |
+| 4 | No duplicate targets | Each target variable must be unique |
+| 5 | Transformation completeness | All transformations must have source values |
+| 6 | Target uniqueness | Target values must be unique within each rule |
+| 7 | Source overlap | Source values must not overlap within a rule |
 
-    # Check 3: Value ranges are valid
-    for rule in rules:
-        if rule.get("rule_type") == "range":
-            for transform in rule.get("transformations", []):
-                source_range = transform.get("source", [])
-                if len(source_range) != 2 or source_range[0] > source_range[1]:
-                    validation_errors.append(f"Invalid range in rule: {source_range}")
-
-    # Check 4: No duplicate target variables
-    targets = [r.get("target_variable") for r in rules]
-    duplicates = [t for t in set(targets) if targets.count(t) > 1]
-    if duplicates:
-        validation_errors.append(f"Duplicate target variables: {duplicates}")
-
-    state["execution_log"].append({
-        "step": "validate_recoding_rules",
-        "status": "completed",
-        "errors": validation_errors,
-        "warnings": validation_warnings
-    })
-
-    if validation_errors:
-        state["errors"].extend(validation_errors)
-
-    return state
-```
-
-**Output**:
-- Updated `execution_log` with validation results
-- `errors`: List of critical validation errors
-- `warnings`: List of validation warnings
+**Implementation** (see Step 4):
+The validation is now performed by `RuleValidator` class within the self-verification loop in Step 4.
 
 ---
 
-### Step 4.6: Human Review - Recoding Rules
+### Step 4.6: Human Review - Recoding Rules (Optional)
 
 **Node**: `human_review_recoding_rules_node`
 
-**Description**: Human analyst reviews and approves AI-generated recoding rules before they are applied
+**Description**: Human analyst reviews AI-generated recoding rules for **semantic validation**. This step is now **optional** since objective validation is handled automatically in Step 4.
+
+**Purpose**: Review for business logic appropriateness, research alignment, and domain-specific considerations that cannot be programmatically validated.
 
 **Input**:
-- `recoding_rules`: AI-generated recoding rules
-- `validation_results`: Automated validation results from Step 4.5
+- `recoding_rules`: AI-generated and validated recoding rules
+- `validation_results`: Automated validation results from Step 4
 - `filtered_metadata`: Original variable metadata
 - `config`: Configuration parameters
 
 **Human Review Interface**:
 ```python
+from typing import Literal
+
 def human_review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     """
     Pauses workflow for human review of recoding rules.
@@ -526,10 +716,96 @@ def human_review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         "report_path": report_path
     })
 
-    # Workflow will resume here after human approval
-    # (handled by LangGraph's interrupt mechanism)
+    # Use LangGraph's interrupt mechanism to pause execution
+    # This halts the workflow and waits for human input
+    approval_decision = interrupt({
+        "type": "approval_required",
+        "step": "recoding_rules_review",
+        "report_path": report_path,
+        "message": "Please review the recoding rules and provide approval decision",
+        "options": ["approve", "reject", "modify"]
+    })
+
+    # Process the approval decision
+    decision = approval_decision.get("decision")
+    comments = approval_decision.get("comments", "")
+    modified_rules = approval_decision.get("modified_rules", None)
+
+    if decision == "approve":
+        state["recoding_rules_approved"] = True
+        state["approval_comments"].append({
+            "step": "recoding_rules",
+            "decision": "approved",
+            "comments": comments,
+            "timestamp": datetime.now().isoformat()
+        })
+    elif decision == "reject":
+        state["recoding_rules_approved"] = False
+        state["approval_comments"].append({
+            "step": "recoding_rules",
+            "decision": "rejected",
+            "comments": comments,
+            "timestamp": datetime.now().isoformat()
+        })
+        # Set state to return to Step 4 (rule generation)
+        state["pending_approval_step"] = "recoding_rules_rejected"
+    elif decision == "modify":
+        # Apply modified rules directly
+        if modified_rules:
+            state["recoding_rules"] = modified_rules
+            state["recoding_rules_approved"] = True
+            state["approval_comments"].append({
+                "step": "recoding_rules",
+                "decision": "modified",
+                "comments": comments,
+                "timestamp": datetime.now().isoformat()
+            })
+
+    # Clear pending approval after processing
+    if state["recoding_rules_approved"]:
+        state["pending_approval_step"] = None
 
     return state
+```
+
+**LangGraph Interrupt Mechanism**:
+
+The workflow uses LangGraph's `interrupt()` function to implement human-in-the-loop functionality:
+
+1. **Pause**: When `interrupt()` is called, the workflow execution halts at that point
+2. **State Preservation**: The entire workflow state is preserved, including all intermediate results
+3. **Human Input**: The system waits for human input through one of:
+   - **CLI Interface**: Command-line prompts for terminal users
+   - **Web Interface**: REST API endpoints for web dashboards
+   - **API Callback**: Programmatic approval via API calls
+4. **Resume**: Once approval is received, the workflow resumes from the exact point where it paused
+5. **Decision Processing**: The approval decision (approve/reject/modify) is processed and state is updated accordingly
+
+**State Management for Approval/Rejection Flow**:
+
+```python
+# In the workflow graph definition, add conditional edges
+from langgraph.graph import StateGraph, END
+
+def check_recoding_rules_approval(state: WorkflowState) -> str:
+    """Check if recoding rules were approved or need regeneration."""
+    if state.get("recoding_rules_approved", False):
+        return "approved"
+    elif state.get("pending_approval_step") == "recoding_rules_rejected":
+        return "regenerate"
+    else:
+        return "wait_for_approval"
+
+# Workflow graph setup
+workflow.add_conditional_edges(
+    "human_review_recoding_rules",
+    check_recoding_rules_approval,
+    {
+        "approved": "generate_pspp_recoding_syntax",  # Continue to next step
+        "regenerate": "generate_recoding_rules",      # Loop back to regenerate
+        "wait_for_approval": END                       # Stay paused
+    }
+)
 ```
 
 **Review Report Format**:
@@ -571,24 +847,76 @@ def human_review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
 ---
 ## Approval Required
 Please review the rules above and provide your decision:
-- [ ] APPROVE - Apply these recoding rules
-- [ ] REJECT - Rules need revision
-- [ ] MODIFY - Edit specific rules (see JSON attachment)
 
-Comments: ___________________
+**Options**:
+- **APPROVE** - Apply these recoding rules as-is
+- **REJECT** - Reject all rules and regenerate with feedback
+- **MODIFY** - Edit specific rules in the attached JSON and resubmit
+
+**Feedback/Comments**:
+[Please provide your decision and any comments for rejection/modification]
+
+If rejecting, please specify:
+- Which rules are problematic
+- Why they need revision
+- Suggestions for improvement
+```
+
+**Rejection with Feedback Workflow**:
+
+When a human reviewer rejects the recoding rules (Step 4.6):
+
+1. **Rejection Decision**: Human selects "REJECT" and provides feedback
+2. **State Update**: `recoding_rules_approved = False`, comments stored in `approval_comments`
+3. **Loop Back**: Workflow returns to Step 4 (`generate_recoding_rules_node`)
+4. **Feedback Integration**: The AI agent receives the previous rules + human feedback
+5. **Regeneration with Self-Verification**: AI generates new rules addressing the feedback and automatically validates them
+6. **Re-review**: Step 4.6 presents new rules for approval
+
+**Note**: Steps 6 and 7 from the old workflow (separate validation step) are no longer needed since Step 4 now includes automatic self-verification.
+
+```python
+# Example feedback integration in Step 4
+def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
+    # Check if this is a regeneration due to rejection
+    previous_feedback = None
+    for comment in reversed(state.get("approval_comments", [])):
+        if comment.get("step") == "recoding_rules" and comment.get("decision") == "rejected":
+            previous_feedback = comment
+            break
+
+    # Build prompt with feedback context
+    if previous_feedback:
+        feedback_context = f"""
+PREVIOUS ATTEMPT REJECTED:
+{json.dumps(state['recoding_rules'], indent=2)}
+
+HUMAN FEEDBACK:
+{previous_feedback['comments']}
+
+Please generate new recoding rules that address the feedback above.
+"""
+    else:
+        feedback_context = ""
+
+    # Generate rules with feedback context
+    prompt = base_recoding_prompt + feedback_context
+    # ... rest of generation logic
 ```
 
 **Implementation Notes**:
 - Uses LangGraph's `interrupt()` mechanism to pause execution
 - Human provides approval via CLI, web interface, or API
-- If rejected: workflow returns to Step 4 with feedback
-- If modified: workflow applies edited rules and continues
+- If rejected: workflow returns to Step 4 with detailed feedback
+- If modified: workflow applies edited rules and continues to Step 5
 - Auto-approval can be enabled via `config["auto_approve_recoding"] = True`
+- All approval decisions are logged with timestamps in `approval_comments`
+- Feedback from rejections is automatically incorporated into subsequent AI generations
 
 **Output**:
 - `recoding_rules_approved`: `True` if approved, `False` if rejected
-- `approval_comments`: Human feedback and decisions
-- `pending_approval_step`: `None` (cleared after approval)
+- `approval_comments`: List of human feedback and decisions with timestamps
+- `pending_approval_step`: `None` (cleared after approval) or step to loop back to
 
 ---
 
@@ -679,17 +1007,64 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
 - `variable_centered_metadata` (including recoded variables)
 - `config["indicator_instructions"]`: Custom instructions
 
+**Multi-Variable Indicator Handling**:
+
+Indicators with multiple underlying variables are handled differently based on their `metric` type:
+
+| Metric | Variable Type | Output Structure | Use Case |
+|--------|---------------|------------------|----------|
+| **average** | Rating scales (numeric) | Each variable = ONE ROW in crosstab | Matrix questions where each attribute is rated separately (e.g., satisfaction on 1-10 scale for 10 attributes) |
+| **percentage** | Binary (0/1) | Combined as MULTIPLE RESPONSE SET | Multiple response questions where respondents select all that apply (e.g., "Which brands have you heard of?") |
+| **distribution** | Categorical (multiple options) | Each variable = ONE SEPARATE TABLE | Categorical questions that need separate analysis (e.g., region preference for each brand) |
+
+**Example Output Structures**:
+
+*Scenario 1 (average)* - Matrix rating with one row per variable:
+```
+Product Satisfaction by Age Group
+┌─────────────────────┬───────┬───────┬───────┐
+│ Attribute           │ 18-24 │ 25-34 │ 35-44 │
+├─────────────────────┼───────┼───────┼───────┤
+│ Quality (q5a)       │  8.2  │  7.8  │  7.5  │
+│ Service (q5b)       │  7.5  │  7.9  │  8.1  │
+│ Value (q5c)        │  7.1  │  7.4  │  7.6  │
+└─────────────────────┴───────┴───────┴───────┘
+```
+
+*Scenario 2 (percentage)* - Multiple response set:
+```
+Brands Aware by Gender
+┌──────────┬───────┬───────┐
+│ Brand    │ Male  │ Female│
+├──────────┼───────┼───────┤
+│ Brand A  │  45%  │  52%  │
+│ Brand B  │  38%  │  41%  │
+│ Brand C  │  22%  │  18%  │
+└──────────┴───────┴───────┘
+```
+
+*Scenario 3 (distribution)* - Separate tables per variable:
+```
+Table 1: Region for Brand A Preference        Table 2: Region for Brand B Preference
+┌─────────┬────┬────┬────┐                ┌─────────┬────┬────┬────┐
+│ Region  │ N  │ S  │ E  │                │ Region  │ N  │ S  │ E  │
+├─────────┼────┼────┼────┤                ├─────────┼────┼────┼────┤
+│ Urban   │ 30 │ 25 │ 20 │                │ Urban   │ 15 │ 18 │ 22 │
+│ Rural   │ 20 │ 15 │ 10 │                │ Rural   │ 25 │ 20 │ 18 │
+└─────────┴────┴────┴────┘                └─────────┴────┴────┴────┘
+```
+
 **AI Prompt Template**:
 ```
 You are a market research analyst. Group variables into semantic indicators.
 
 PRINCIPLES:
 1. Single variable = indicator if semantically meaningful (e.g., age, gender)
-2. Multiple variables = one indicator if they measure a construct (e.g., satisfaction ratings for 10 attributes)
+2. Multiple variables = one indicator if they measure a construct
 3. Define appropriate metric for each indicator:
-   - Distribution: For categorical variables
-   - Average: For rating scales
-   - Percentage: For binary/Top Box variables
+   - Distribution: For categorical variables with multiple options
+   - Average: For rating scale variables (numeric, e.g., 1-10)
+   - Percentage: For binary/Top Box variables (0/1, multiple response)
 
 INPUT METADATA:
 {indicator_metadata}
@@ -708,7 +1083,7 @@ OUTPUT FORMAT (JSON):
         {
             "id": "IND_002",
             "name": "Product Satisfaction",
-            "description": "Overall satisfaction with product attributes",
+            "description": "Overall satisfaction with product attributes (Scenario 1: average)",
             "metric": "average",
             "underlying_variables": [
                 "q5a_rating", "q5b_rating", "q5c_rating",
@@ -716,6 +1091,26 @@ OUTPUT FORMAT (JSON):
                 "q5g_rating", "q5h_rating", "q5i_rating", "q5j_rating"
             ],
             "question_type": "matrix_rating"
+        },
+        {
+            "id": "IND_003",
+            "name": "Brand Awareness",
+            "description": "Which brands have you heard of? (Scenario 2: percentage)",
+            "metric": "percentage",
+            "underlying_variables": [
+                "brand_a_aware", "brand_b_aware", "brand_c_aware"
+            ],
+            "question_type": "multiple_response"
+        },
+        {
+            "id": "IND_004",
+            "name": "Brand Preference by Region",
+            "description": "Region preference for each brand (Scenario 3: distribution)",
+            "metric": "distribution",
+            "underlying_variables": [
+                "brand_a_region", "brand_b_region", "brand_c_region"
+            ],
+            "question_type": "categorical"
         }
     ]
 }
@@ -765,7 +1160,130 @@ def human_review_indicators_node(state: WorkflowState) -> WorkflowState:
         "total_indicators": len(state["indicators"])
     })
 
+    # Use LangGraph's interrupt mechanism to pause execution
+    approval_decision = interrupt({
+        "type": "approval_required",
+        "step": "indicators_review",
+        "report_path": report_path,
+        "message": "Please review the indicator groupings and provide approval decision",
+        "options": ["approve", "reject", "modify"],
+        "total_indicators": len(state["indicators"])
+    })
+
+    # Process the approval decision
+    decision = approval_decision.get("decision")
+    comments = approval_decision.get("comments", "")
+    modified_indicators = approval_decision.get("modified_indicators", None)
+
+    if decision == "approve":
+        state["indicators_approved"] = True
+        state["approval_comments"].append({
+            "step": "indicators",
+            "decision": "approved",
+            "comments": comments,
+            "timestamp": datetime.now().isoformat()
+        })
+    elif decision == "reject":
+        state["indicators_approved"] = False
+        state["approval_comments"].append({
+            "step": "indicators",
+            "decision": "rejected",
+            "comments": comments,
+            "timestamp": datetime.now().isoformat()
+        })
+        # Set state to return to Step 7 (indicator generation)
+        state["pending_approval_step"] = "indicators_rejected"
+    elif decision == "modify":
+        # Apply modified indicators directly
+        if modified_indicators:
+            state["indicators"] = modified_indicators
+            state["indicators_approved"] = True
+            state["approval_comments"].append({
+                "step": "indicators",
+                "decision": "modified",
+                "comments": comments,
+                "timestamp": datetime.now().isoformat()
+            })
+
+    # Clear pending approval after processing
+    if state["indicators_approved"]:
+        state["pending_approval_step"] = None
+
     return state
+```
+
+**LangGraph Interrupt Mechanism for Indicators**:
+
+Similar to Step 4.6, this step uses LangGraph's interrupt functionality:
+
+1. **Pause at Indicator Review**: Workflow halts after generating indicators
+2. **Presentation**: Human-readable report shows all indicators with their variables
+3. **Human Decision**: Analyst can approve, reject, or modify
+4. **State-Aware Loopback**: If rejected, returns to Step 7 with context
+
+**State Management for Indicator Approval**:
+
+```python
+def check_indicators_approval(state: WorkflowState) -> str:
+    """Check if indicators were approved or need regeneration."""
+    if state.get("indicators_approved", False):
+        return "approved"
+    elif state.get("pending_approval_step") == "indicators_rejected":
+        return "regenerate"
+    else:
+        return "wait_for_approval"
+
+# Workflow graph setup
+workflow.add_conditional_edges(
+    "human_review_indicators",
+    check_indicators_approval,
+    {
+        "approved": "generate_table_specs",  # Continue to next step
+        "regenerate": "generate_indicators",  # Loop back to regenerate
+        "wait_for_approval": END              # Stay paused
+    }
+)
+```
+
+**Rejection with Feedback for Indicators**:
+
+When indicator groupings are rejected:
+
+1. **Capture Specific Issues**: Human identifies problematic indicators
+2. **Contextual Feedback**: Comments explain why groupings are incorrect
+3. **Smart Regeneration**: AI receives feedback about specific indicators
+4. **Preserve Good Work**: Accepted indicators can be kept while regenerating others
+
+```python
+# Example feedback integration in Step 7
+def generate_indicators_node(state: WorkflowState) -> WorkflowState:
+    # Check for previous rejection feedback
+    previous_feedback = None
+    preserved_indicators = []
+
+    for comment in reversed(state.get("approval_comments", [])):
+        if comment.get("step") == "indicators" and comment.get("decision") == "rejected":
+            previous_feedback = comment
+            break
+
+    # Build prompt with feedback context
+    if previous_feedback:
+        feedback_context = f"""
+PREVIOUS INDICATORS REJECTED:
+{json.dumps(state['indicators'], indent=2)}
+
+HUMAN FEEDBACK:
+{previous_feedback['comments']}
+
+Please generate new indicator groupings that address the feedback above.
+Focus on the specific issues mentioned while preserving valid groupings.
+"""
+    else:
+        feedback_context = ""
+
+    # Generate indicators with feedback context
+    prompt = base_indicator_prompt + feedback_context
+    # ... rest of generation logic
 ```
 
 **Review Report Format**:
@@ -812,17 +1330,34 @@ def human_review_indicators_node(state: WorkflowState) -> WorkflowState:
 ---
 ## Approval Required
 Please review the indicators above and provide your decision:
-- [ ] APPROVE - Use these indicators
-- [ ] REJECT - Indicators need revision
-- [ ] MODIFY - Edit specific indicators (see JSON attachment)
 
-Comments: ___________________
+**Options**:
+- **APPROVE** - Use these indicators as-is
+- **REJECT** - Reject indicators and regenerate with feedback
+- **MODIFY** - Edit specific indicators in the attached JSON and resubmit
+
+**Feedback/Comments**:
+[Please specify which indicators need changes and why]
+
+For rejections, please indicate:
+- Which indicator groupings are incorrect
+- How variables should be grouped instead
+- Any indicators that should be split or combined
 ```
+
+**Implementation Notes**:
+- Uses LangGraph's `interrupt()` mechanism to pause execution
+- Human provides approval via CLI, web interface, or API
+- If rejected: workflow returns to Step 7 with detailed feedback on groupings
+- If modified: workflow applies edited indicators and continues to Step 8
+- Auto-approval can be enabled via `config["auto_approve_indicators"] = True`
+- All approval decisions are logged with timestamps in `approval_comments`
+- Feedback is contextually integrated into subsequent AI generations
 
 **Output**:
 - `indicators_approved`: `True` if approved, `False` if rejected
-- `approval_comments`: Human feedback and decisions
-- `pending_approval_step`: `None` (cleared after approval)
+- `approval_comments`: List of human feedback and decisions with timestamps
+- `pending_approval_step`: `None` (cleared after approval) or step to loop back to
 
 ---
 
@@ -867,8 +1402,10 @@ OUTPUT FORMAT (JSON):
         },
         "significance_tests": {
             "enabled": true,
-            "alpha": 0.05,
-            "test_type": "chi_square"  // Note: Actual computation done in Step 10.5 using Python (scipy)
+            "filter_by": "cramers_v_and_count",  // Filter by effect size and sample size
+            "cramers_v_min": 0.1,
+            "count_min": 30,
+            "test_type": "chi_square"  // Computed in Step 10.5 using Python (scipy)
         }
     }
 }
@@ -917,7 +1454,130 @@ def human_review_table_specs_node(state: WorkflowState) -> WorkflowState:
         "report_path": report_path
     })
 
+    # Use LangGraph's interrupt mechanism to pause execution
+    approval_decision = interrupt({
+        "type": "approval_required",
+        "step": "table_specs_review",
+        "report_path": report_path,
+        "message": "Please review the table specifications and provide approval decision",
+        "options": ["approve", "reject", "modify"]
+    })
+
+    # Process the approval decision
+    decision = approval_decision.get("decision")
+    comments = approval_decision.get("comments", "")
+    modified_specs = approval_decision.get("modified_specs", None)
+
+    if decision == "approve":
+        state["table_specs_approved"] = True
+        state["approval_comments"].append({
+            "step": "table_specs",
+            "decision": "approved",
+            "comments": comments,
+            "timestamp": datetime.now().isoformat()
+        })
+    elif decision == "reject":
+        state["table_specs_approved"] = False
+        state["approval_comments"].append({
+            "step": "table_specs",
+            "decision": "rejected",
+            "comments": comments,
+            "timestamp": datetime.now().isoformat()
+        })
+        # Set state to return to Step 8 (table spec generation)
+        state["pending_approval_step"] = "table_specs_rejected"
+    elif decision == "modify":
+        # Apply modified specifications directly
+        if modified_specs:
+            state["table_specifications"] = modified_specs
+            state["table_specs_approved"] = True
+            state["approval_comments"].append({
+                "step": "table_specs",
+                "decision": "modified",
+                "comments": comments,
+                "timestamp": datetime.now().isoformat()
+            })
+
+    # Clear pending approval after processing
+    if state["table_specs_approved"]:
+        state["pending_approval_step"] = None
+
     return state
+```
+
+**LangGraph Interrupt Mechanism for Table Specifications**:
+
+This step follows the same interrupt pattern as previous review steps:
+
+1. **Pause at Table Spec Review**: Workflow halts after generating table specifications
+2. **Comprehensive Report**: Shows row/column indicators, weighting, and statistical settings
+3. **Human Decision**: Analyst can approve, reject, or modify the specifications
+4. **State-Aware Loopback**: If rejected, returns to Step 8 with detailed feedback
+
+**State Management for Table Specifications Approval**:
+
+```python
+def check_table_specs_approval(state: WorkflowState) -> str:
+    """Check if table specifications were approved or need regeneration."""
+    if state.get("table_specs_approved", False):
+        return "approved"
+    elif state.get("pending_approval_step") == "table_specs_rejected":
+        return "regenerate"
+    else:
+        return "wait_for_approval"
+
+# Workflow graph setup
+workflow.add_conditional_edges(
+    "human_review_table_specs",
+    check_table_specs_approval,
+    {
+        "approved": "generate_pspp_table_syntax",  # Continue to next step
+        "regenerate": "generate_table_specs",       # Loop back to regenerate
+        "wait_for_approval": END                     # Stay paused
+    }
+)
+```
+
+**Rejection with Feedback for Table Specifications**:
+
+When table specifications are rejected:
+
+1. **Identify Structural Issues**: Human indicates problems with row/column assignments
+2. **Specify Changes**: Comments describe which indicators should move or be added
+3. **Weighting Adjustments**: Feedback on weighting variable selection
+4. **Filtering Criteria**: Adjustments to Cramer's V or count thresholds
+
+```python
+# Example feedback integration in Step 8
+def generate_table_specs_node(state: WorkflowState) -> WorkflowState:
+    # Check for previous rejection feedback
+    previous_feedback = None
+    for comment in reversed(state.get("approval_comments", [])):
+        if comment.get("step") == "table_specs" and comment.get("decision") == "rejected":
+            previous_feedback = comment
+            break
+
+    # Build prompt with feedback context
+    if previous_feedback:
+        feedback_context = f"""
+PREVIOUS TABLE SPECIFICATIONS REJECTED:
+{json.dumps(state['table_specifications'], indent=2)}
+
+HUMAN FEEDBACK:
+{previous_feedback['comments']}
+
+Please generate new table specifications that address the feedback above.
+Pay special attention to:
+- Row vs column indicator assignments
+- Weighting variable selection
+- Statistical filtering criteria
+"""
+    else:
+        feedback_context = ""
+
+    # Generate table specifications with feedback context
+    prompt = base_table_spec_prompt + feedback_context
+    # ... rest of generation logic
 ```
 
 **Review Report Format**:
@@ -928,7 +1588,7 @@ def human_review_table_specs_node(state: WorkflowState) -> WorkflowState:
 - Row Indicators: 8 (all semantic indicators)
 - Column Indicators: 3 (demographics only)
 - Weighting Variable: weight (detected)
-- Significance Testing: Enabled (α = 0.05)
+- Statistical Analysis: Enabled (Chi-square with Cramer's V)
 
 ## Row Indicators
 | ID | Name | Metric | Variables |
@@ -955,25 +1615,43 @@ def human_review_table_specs_node(state: WorkflowState) -> WorkflowState:
 - **Weight Variable**: weight
 - **Applied to**: All cross-tables
 
-## Significance Testing
-- **Test**: Chi-square
-- **Alpha**: 0.05
+## Statistical Analysis
+- **Test**: Chi-square with Cramer's V effect size
+- **Filtering**: Tables filtered by Cramer's V ≥ 0.1 and count ≥ 30
 - **Applies to**: All column comparisons
 
 ---
 ## Approval Required
 Please review the table specifications above and provide your decision:
-- [ ] APPROVE - Generate tables with these specifications
-- [ ] REJECT - Specifications need revision
-- [ ] MODIFY - Edit specific settings (see JSON attachment)
 
-Comments: ___________________
+**Options**:
+- **APPROVE** - Generate tables with these specifications
+- **REJECT** - Reject specifications and regenerate with feedback
+- **MODIFY** - Edit specific settings in the attached JSON and resubmit
+
+**Feedback/Comments**:
+[Please specify any changes needed to the table structure]
+
+For rejections, please indicate:
+- Which indicators should move between rows/columns
+- Missing indicators that should be added
+- Changes to weighting variable selection
+- Adjustments to statistical filtering thresholds
 ```
+
+**Implementation Notes**:
+- Uses LangGraph's `interrupt()` mechanism to pause execution
+- Human provides approval via CLI, web interface, or API
+- If rejected: workflow returns to Step 8 with detailed feedback on table structure
+- If modified: workflow applies edited specifications and continues to Step 9
+- Auto-approval can be enabled via `config["auto_approve_table_specs"] = True`
+- All approval decisions are logged with timestamps in `approval_comments`
+- Feedback is contextually integrated into subsequent AI generations
 
 **Output**:
 - `table_specs_approved`: `True` if approved, `False` if rejected
-- `approval_comments`: Human feedback and decisions
-- `pending_approval_step`: `None` (cleared after approval)
+- `approval_comments`: List of human feedback and decisions with timestamps
+- `pending_approval_step`: `None` (cleared after approval) or step to loop back to
 
 ---
 
@@ -1125,31 +1803,72 @@ def compute_chi_square_statistics_node(state: WorkflowState) -> WorkflowState:
             row_ind = indicators_map[row_ind_id]
             col_ind = indicators_map[col_ind_id]
 
-            # Handle multi-variable indicators (e.g., matrix questions)
+            # Get underlying variables and metric type
             row_vars = row_ind.get("underlying_variables", [])
             col_vars = col_ind.get("underlying_variables", [])
+            row_metric = row_ind.get("metric", "distribution")
+            col_metric = col_ind.get("metric", "distribution")
 
-            # For simplicity: use first variable from each indicator
-            # (Can be extended to handle multi-variable aggregation)
-            row_var = row_vars[0] if row_vars else None
-            col_var = col_vars[0] if col_vars else None
-
-            if not row_var or not col_var:
+            if not row_vars or not col_vars:
                 continue
 
-            # Compute contingency table with statistics
-            table_result = compute_single_chi_square(
-                df=df,
-                row_var=row_var,
-                col_var=col_var,
-                weight_var=weighting_var,
-                alpha=alpha,
-                table_id=f"TBL_{table_id:03d}",
-                row_ind_name=row_ind["name"],
-                col_ind_name=col_ind["name"]
-            )
+            # Handle multi-variable indicators based on metric type
+            # See Step 7 for detailed explanation of three scenarios
+            if row_metric == "average" and len(row_vars) > 1:
+                # Scenario 1: Average metric - each variable becomes one row in the crosstab
+                # For matrix rating questions, compute mean for each variable by column categories
+                table_results = compute_average_metric_tables(
+                    df=df, row_vars=row_vars, col_var=col_vars[0],
+                    weight_var=weighting_var, alpha=alpha,
+                    table_id_base=f"TBL_{table_id:03d}",
+                    row_ind_name=row_ind["name"], col_ind_name=col_ind["name"]
+                )
+                all_tables.extend(table_results)
+                # Adjust table_id counter: subtract 1 since next iteration will increment
+                # Only adjust if results were returned to avoid negative adjustment
+                if len(table_results) > 0:
+                    table_id += len(table_results) - 1
 
-            all_tables.append(table_result)
+            elif row_metric == "percentage" and len(row_vars) > 1:
+                # Scenario 2: Percentage metric - combine as multiple response set
+                # For binary (0/1) variables, create one table with variables as rows
+                table_result = compute_percentage_metric_table(
+                    df=df, row_vars=row_vars, col_var=col_vars[0],
+                    weight_var=weighting_var, alpha=alpha,
+                    table_id=f"TBL_{table_id:03d}",
+                    row_ind_name=row_ind["name"], col_ind_name=col_ind["name"]
+                )
+                all_tables.append(table_result)
+
+            elif row_metric == "distribution" and len(row_vars) > 1:
+                # Scenario 3: Distribution metric - each variable gets its own table
+                # For categorical variables, create separate tables per variable
+                for i, row_var in enumerate(row_vars):
+                    table_result = compute_single_chi_square(
+                        df=df,
+                        row_var=row_var,
+                        col_var=col_vars[0],
+                        weight_var=weighting_var,
+                        alpha=alpha,
+                        table_id=f"TBL_{table_id:03d}_{i+1}",
+                        row_ind_name=f"{row_ind['name']} - {row_var}",
+                        col_ind_name=col_ind["name"]
+                    )
+                    all_tables.append(table_result)
+
+            else:
+                # Single variable indicator - use standard chi-square computation
+                table_result = compute_single_chi_square(
+                    df=df,
+                    row_var=row_vars[0],
+                    col_var=col_vars[0],
+                    weight_var=weighting_var,
+                    alpha=alpha,
+                    table_id=f"TBL_{table_id:03d}",
+                    row_ind_name=row_ind["name"],
+                    col_ind_name=col_ind["name"]
+                )
+                all_tables.append(table_result)
 
     # Update state
     state["all_small_tables"] = all_tables
@@ -1370,6 +2089,254 @@ def create_empty_table_result(
             "skip_reason": reason
         }
     }
+
+
+def compute_average_metric_tables(
+    df: pd.DataFrame,
+    row_vars: List[str],
+    col_var: str,
+    weight_var: Optional[str],
+    alpha: float,
+    table_id_base: str,
+    row_ind_name: str,
+    col_ind_name: str
+) -> List[Dict[str, Any]]:
+    """
+    Scenario 1: Handle average metric indicators (e.g., matrix rating questions).
+
+    Each underlying variable becomes one row with mean values computed for each column category.
+    Returns a single table with multiple rows (one per variable).
+
+    Example Output:
+    Product Satisfaction by Age Group
+    ┌─────────────────────┬───────┬───────┬───────┐
+    │ Attribute           │ 18-24 │ 25-34 │ 35-44 │
+    ├─────────────────────┼───────┼───────┼───────┤
+    │ Quality (q5a)       │  8.2  │  7.8  │  7.5  │
+    │ Service (q5b)       │  7.5  │  7.9  │  8.1  │
+    │ Value (q5c)        │  7.1  │  7.4  │  7.6  │
+    └─────────────────────┴───────┴───────┴───────┘
+    """
+    # Get unique categories from column variable
+    col_categories = sorted(df[col_var].dropna().unique())
+
+    # Build table: rows = variables, columns = categories, values = means
+    mean_data = []
+    row_labels = []
+
+    for var in row_vars:
+        if var not in df.columns:
+            continue
+
+        row_means = []
+        for cat in col_categories:
+            # Compute mean for each column category
+            subset = df[df[col_var] == cat]
+
+            # Apply weighting if specified
+            if weight_var and weight_var in df.columns:
+                weights = subset[weight_var]
+                mean_val = np.average(subset[var].dropna(), weights=weights.loc[subset[var].dropna().index])
+            else:
+                mean_val = subset[var].mean()
+
+            row_means.append(mean_val)
+
+        mean_data.append(row_means)
+        row_labels.append(var)
+
+    # Create DataFrame for the means table
+    means_df = pd.DataFrame(mean_data, index=row_labels, columns=col_categories)
+
+    # Perform ANOVA or Kruskal-Wallis test to compare means across categories
+    # For simplicity, we use one-way ANOVA for each variable
+    from scipy.stats import f_oneway
+
+    table_results = []
+    for i, var in enumerate(row_vars):
+        groups = [df[df[col_var] == cat][var].dropna() for cat in col_categories]
+
+        # Remove empty groups
+        groups = [g for g in groups if len(g) > 0]
+
+        if len(groups) < 2:
+            continue
+
+        # Perform one-way ANOVA
+        try:
+            f_stat, p_value = f_oneway(*groups)
+            is_significant = p_value <= alpha
+        except:
+            f_stat, p_value, is_significant = None, None, False
+
+        table_results.append({
+            "table_id": f"{table_id_base}_{i+1}",
+            "row_indicator": f"{row_ind_name} - {row_labels[i]}",
+            "column_indicator": col_ind_name,
+            "row_variable": row_labels[i],
+            "column_variable": col_var,
+
+            "table_structure": {
+                "rows": [row_labels[i]],
+                "columns": col_categories,
+                "n_rows": 1,
+                "n_columns": len(col_categories)
+            },
+
+            "data": {
+                "means": mean_data[i],
+                "metric": "average"
+            },
+
+            "chi_square_stats": {
+                "test_type": "one_way_anova",
+                "f_statistic": float(f_stat) if f_stat is not None else None,
+                "p_value": float(p_value) if p_value is not None else None,
+                "is_significant": is_significant,
+                "alpha": alpha
+            },
+
+            "metadata": {
+                "sample_size": len(df),
+                "weighted": weight_var is not None,
+                "weighting_variable": weight_var,
+                "metric_type": "average"
+            }
+        })
+
+    return table_results
+
+
+def compute_percentage_metric_table(
+    df: pd.DataFrame,
+    row_vars: List[str],
+    col_var: str,
+    weight_var: Optional[str],
+    alpha: float,
+    table_id: str,
+    row_ind_name: str,
+    col_ind_name: str
+) -> Dict[str, Any]:
+    """
+    Scenario 2: Handle percentage metric indicators (multiple response questions).
+
+    All binary (0/1) variables are combined into one multiple response table.
+    Each variable becomes one row showing the percentage of "1" responses.
+
+    Example Output:
+    Brands Aware by Gender
+    ┌──────────┬───────┬───────┐
+    │ Brand    │ Male  │ Female│
+    ├──────────┼───────┼───────┤
+    │ Brand A  │  45%  │  52%  │
+    │ Brand B  │  38%  │  41%  │
+    │ Brand C  │  22%  │  18%  │
+    └──────────┴───────┴───────┘
+    """
+    # Get unique categories from column variable
+    col_categories = sorted(df[col_var].dropna().unique())
+
+    # Build percentage table
+    percentage_data = []
+    row_labels = []
+
+    for var in row_vars:
+        if var not in df.columns:
+            continue
+
+        row_percentages = []
+        for cat in col_categories:
+            # Compute percentage of "1" responses for each column category
+            subset = df[df[col_var] == cat]
+
+            # Apply weighting if specified
+            if weight_var and weight_var in df.columns:
+                weighted_ones = subset[subset[var] == 1][weight_var].sum()
+                weighted_total = subset[weight_var].sum()
+                pct = (weighted_ones / weighted_total * 100) if weighted_total > 0 else 0
+            else:
+                pct = (subset[var] == 1).mean() * 100
+
+            row_percentages.append(pct)
+
+        percentage_data.append(row_percentages)
+        row_labels.append(var)
+
+    # Convert to DataFrame for chi-square computation
+    # For multiple response, we compute chi-square on counts, then convert to percentages
+    count_data = []
+    for var in row_vars:
+        row_counts = []
+        for cat in col_categories:
+            subset = df[df[col_var] == cat]
+
+            if weight_var and weight_var in df.columns:
+                count = subset[subset[var] == 1][weight_var].sum()
+            else:
+                count = (subset[var] == 1).sum()
+
+            row_counts.append(count)
+
+        count_data.append(row_counts)
+
+    # Build contingency table for chi-square test
+    counts_df = pd.DataFrame(count_data, index=row_labels, columns=col_categories)
+
+    # Filter low frequency cells
+    counts_df = filter_low_frequency_cells(counts_df, min_expected=5)
+
+    if counts_df.shape[0] < 2 or counts_df.shape[1] < 2:
+        return create_empty_table_result(table_id, row_ind_name, col_ind_name, "Insufficient data after filtering")
+
+    # Compute Chi-square test on counts
+    chi2, p_value, dof, expected = chi2_contingency(counts_df)
+
+    # Compute effect size: Cramer's V
+    n = counts_df.sum().sum()
+    min_dim = min(counts_df.shape) - 1
+    cramers_v = np.sqrt(chi2 / (n * min_dim)) if n > 0 and min_dim > 0 else 0
+
+    return {
+        "table_id": table_id,
+        "row_indicator": row_ind_name,
+        "column_indicator": col_ind_name,
+        "row_variable": ", ".join(row_vars),
+        "column_variable": col_var,
+
+        "table_structure": {
+            "rows": row_labels,
+            "columns": col_categories,
+            "n_rows": len(row_labels),
+            "n_columns": len(col_categories)
+        },
+
+        "data": {
+            "percentages": percentage_data,
+            "counts": count_data,
+            "metric": "percentage"
+        },
+
+        "chi_square_stats": {
+            "chi_square": float(chi2),
+            "degrees_of_freedom": int(dof),
+            "p_value": float(p_value),
+            "is_significant": p_value <= alpha,
+            "alpha": alpha
+        },
+
+        "effect_size": {
+            "cramers_v": float(cramers_v),
+            "interpretation": interpret_cramers_v(cramers_v, min_dim)
+        },
+
+        "metadata": {
+            "sample_size": int(n),
+            "weighted": weight_var is not None,
+            "weighting_variable": weight_var,
+            "metric_type": "percentage",
+            "multiple_response": True
+        }
+    }
 ```
 
 **Output**:
@@ -1466,34 +2433,47 @@ def create_empty_table_result(
 
 **Node**: `filter_significant_tables_node`
 
-**Description**: Filter tables to retain only those with statistically significant differences
+**Description**: Filter tables using practical business criteria: Cramer's V effect size and minimum sample size. This approach is more interpretable for stakeholders than p-value filtering.
 
 **Input**:
 - `all_small_tables`: List of all tables with Chi-square statistics from Step 10.5
-- `config["significance_alpha"]`: Significance threshold (default: 0.05)
+- `config["cramers_v_min"]`: Minimum effect size threshold (default: 0.1)
+- `config["count_min"]`: Minimum total count in crosstab (default: 30)
 
-**Filtering Logic**:
+**Filtering Criteria**:
+
+| Criteria | Metric | Default | Purpose |
+|----------|--------|---------|---------|
+| Effect strength | Cramer's V | ≥ 0.1 | Keep meaningful associations |
+| Sample adequacy | Total count | ≥ 30 | Ensure reliable data |
+
+**Cramer's V Interpretation**:
+- 0.00-0.09: Negligible (exclude)
+- 0.10-0.19: Small (include)
+- 0.20-0.29: Medium (include)
+- 0.30+: Large (include)
+
+**Implementation**:
 ```python
 def filter_significant_tables_node(state: WorkflowState) -> WorkflowState:
-    alpha = state["config"].get("significance_alpha", 0.05)
+    cramers_v_min = state["config"].get("cramers_v_min", 0.1)
+    count_min = state["config"].get("count_min", 30)
 
-    # Get all tables from Step 10.5
     all_tables = state.get("all_small_tables", [])
 
-    # Filter by significance (statistics already computed)
+    # Filter by effect size, sample size, and exclude skipped tables
     significant = [
         table for table in all_tables
-        if table.get("chi_square_stats", {}).get("is_significant", False)
+        if table.get("metadata", {}).get("skipped", False) != True  # Exclude skipped tables
+        and table.get("effect_size", {}).get("cramers_v", 0) >= cramers_v_min
+        and table.get("metadata", {}).get("sample_size", 0) >= count_min
     ]
 
-    # Optionally: Apply additional filters
-    # e.g., minimum effect size, minimum sample size
-    min_cramers_v = state["config"].get("min_cramers_v", None)
-    if min_cramers_v is not None:
-        significant = [
-            table for table in significant
-            if table.get("effect_size", {}).get("cramers_v", 0) >= min_cramers_v
-        ]
+    # Sort by Cramer's V (strongest effects first)
+    significant.sort(key=lambda t: t.get("effect_size", {}).get("cramers_v", 0), reverse=True)
+
+    # Count skipped tables for logging
+    skipped_count = sum(1 for t in all_tables if t.get("metadata", {}).get("skipped", False) == True)
 
     state["significant_tables"] = significant
 
@@ -1509,30 +2489,19 @@ def filter_significant_tables_node(state: WorkflowState) -> WorkflowState:
         "step": "filter_significant_tables",
         "status": "completed",
         "total_tables": len(all_tables),
+        "skipped_tables": skipped_count,
         "significant_tables": len(significant),
-        "alpha": alpha,
         "filter_criteria": {
-            "p_value_le": alpha,
-            "min_cramers_v": min_cramers_v
+            "cramers_v_min": cramers_v_min,
+            "count_min": count_min
         }
     })
 
     return state
 ```
 
-**Additional Filtering Options**:
-```python
-# Configuration options for filtering
-{
-    "significance_alpha": 0.05,        # p-value threshold
-    "min_cramers_v": 0.1,              # Minimum effect size (optional)
-    "min_sample_size": 30,             # Minimum sample size (optional)
-    "require_at_least_one_sig_cell": True  # Require significant residuals (optional)
-}
-```
-
 **Output**:
-- `significant_tables`: Tables with p-value <= alpha (and additional filters if configured)
+- `significant_tables`: Tables meeting both criteria, sorted by Cramer's V
 - `significant_tables_json_path`: Saved filtered tables
 
 ---
@@ -1617,12 +2586,13 @@ DEFAULT_CONFIG = {
     "weighting_variable": None,  # Auto-detected or manually specified
 
     # Statistical Analysis (Step 10.5)
-    "significance_alpha": 0.05,           # Significance threshold for p-value
     "min_expected_frequency": 5,          # Minimum expected cell count for Chi-square validity
-    "min_cramers_v": None,                # Optional: minimum effect size filter (0-1)
-    "residuals_threshold": 1.96,          # Threshold for significant standardized residuals
-    "enable_residuals_analysis": True,    # Compute standardized residuals for post-hoc
-    "require_at_least_one_sig_cell": False,  # Require at least one significant residual
+    "enable_effect_size": False,          # Optional: compute Cramer's V for context
+    "enable_residuals": False,            # Optional: compute standardized residuals
+
+    # Table Filtering (Step 11)
+    "cramers_v_min": 0.1,                 # Minimum effect size (small = 0.1, medium = 0.2)
+    "count_min": 30,                      # Minimum total count in crosstab
 
     # Human Review / Approval
     "enable_human_review": True,  # Enable/disable human-in-the-loop
@@ -1661,13 +2631,13 @@ DEFAULT_CONFIG = {
 |-----------|-----------|---------|
 | **Workflow** | LangGraph | Orchestration and state management |
 | **LLM** | OpenAI GPT-4 / Claude | AI agent for rule generation |
-| **Data Processing** | pyreadstat, pandas | SPSS file handling and data manipulation |
+| **Data Processing** | pyreadstat, pandas | .sav file handling (SPSS/PSPP format) and data manipulation |
 | **Statistical Software** | PSPP | Open-source SPSS alternative (see `pspp_reference.txt`) |
 | **Statistical Analysis** | scipy, numpy, statsmodels | Chi-square tests, effect sizes, residuals |
 | **PowerPoint** | python-pptx | Presentation generation |
 | **Charts** | matplotlib, seaborn, plotly | Visualization |
 | **HTML Dashboard** | Jinja2, ECharts | Interactive web output |
-| **Validation** | Pydantic | Data validation and structured outputs |
+| **Validation** | Pydantic, Python | Data validation, self-verification logic for recoding rules |
 
 ### 5.1 PSPP Reference
 
@@ -1691,9 +2661,8 @@ survey-analysis-workflow/
 │   │   ├── 01_extract_spss.py
 │   │   ├── 02_transform_metadata.py
 │   │   ├── 03_preliminary_filter.py
-│   │   ├── 04_generate_recoding_rules.py
-│   │   ├── 04_5_validate_recoding_rules.py
-│   │   ├── 04_6_human_review_recoding.py
+│   │   ├── 04_generate_recoding_rules.py  # Includes self-verification logic
+│   │   ├── 04_6_human_review_recoding.py  # Optional semantic review
 │   │   ├── 05_generate_pspp_recoding_syntax.py
 │   │   ├── 06_execute_pspp_recoding.py
 │   │   ├── 07_generate_indicators.py
@@ -1715,7 +2684,7 @@ survey-analysis-workflow/
 │   │   ├── pspp_generator.py
 │   │   ├── metadata_transformer.py
 │   │   ├── ai_prompts.py
-│   │   ├── validators.py
+│   │   ├── validators.py  # Used by Step 4 self-verification
 │   │   ├── statistical_analysis.py    # Chi-square, effect sizes, residuals
 │   │   └── review_reporters.py
 │   └── main.py
@@ -1756,7 +2725,8 @@ initial_state = {
     "spss_file_path": "data/survey_2024.sav",
     "config": {
         "cardinality_threshold": 30,
-        "significance_alpha": 0.05
+        "cramers_v_min": 0.1,
+        "count_min": 30
     },
     "execution_log": [],
     "errors": [],
@@ -1834,11 +2804,14 @@ The workflow includes three human review checkpoints, each positioned at the end
 
 | Phase | Step | Review Point | Purpose |
 |-------|------|--------------|---------|
-| **2** | 4.6 | Recoding Rules | Validate semantic correctness of AI-generated variable transformations |
+| **2** | 4 | Self-Verification | **Automatic**: AI validates and refines until all objective checks pass |
+| **2** | 4.6 | Recoding Rules (Optional) | **Semantic**: Validate business logic appropriateness and research alignment |
 | **3** | 7.1 | Indicators | Ensure indicator groupings align with research objectives |
 | **4** | 8.1 | Table Specifications | Verify crosstab structure answers the research questions |
 
-Each checkpoint follows the pattern: **AI Generation → Validation → Human Review → Approval/Rejection**
+**New Pattern for Phase 2**: **AI Generation → Self-Verification Loop (auto-refine) → Optional Semantic Review → Approval/Rejection**
+
+**Key Change**: Step 4 now includes automatic self-verification that handles all objective validation (syntax, structure, logic errors). Human review in Step 4.6 is optional and focuses only on semantic validation that requires domain expertise.
 
 ### 10.1 Approval Flow
 
@@ -1916,24 +2889,3 @@ Human review can be controlled via config:
     }
 ]
 ```
-
----
-
-**Document Version**: 1.3
-**Last Updated**: 2026-01-28
-**Status**: Design Draft
-**Changes**:
-- v1.3: Added Step 10.5 - Compute Chi-Square Statistics (Python-based statistical analysis)
-- v1.3: Reorganized phases: added Phase 4.5 for Statistical Analysis
-- v1.3: Removed PSPP Chi-square dependency; using scipy.stats.chi2_contingency instead
-- v1.3: Added effect size calculation (Cramer's V) and standardized residuals
-- v1.3: Updated configuration with statistical analysis options (min_expected_frequency, min_cramers_v, residuals_threshold)
-- v1.3: Updated technology stack to include scipy, numpy for statistical computations
-- v1.2: Reorganized workflow into 6 implementation phases (previously 4)
-- v1.2: Phase 3 (Indicator Generation) now follows Phase 2 (New Variable Generation)
-- v1.2: Added phase descriptions table and data evolution diagram
-- v1.2: Updated human-in-the-loop section to reference phases
-- v1.1: Added human-in-the-loop checkpoints (Steps 4.6, 7.1, 8.1)
-- v1.1: Added weighting variable support
-- v1.1: Added automated validation step (4.5)
-- v1.1: Fixed GET FILE syntax for PSPP
