@@ -165,52 +165,55 @@ FINAL_FILE=$(bash .claude/skills/job-document-writer/scripts/rename_job.sh jobs/
 
 ---
 
-### Step 5: Monitor Status (CLI - Enhanced)
+### Step 5: Monitor Status & Verify Results
 
-Use the job-monitor CLI to check the job processing status with detailed information:
+Track job progress and verify completion using both CLI commands and execution result files.
+
+---
+
+#### Check Queue Status (CLI)
 
 ```bash
-# Check full status (waiting + running jobs)
+# Check current status (waiting + running jobs)
 job-monitor queue
 
 # Check specific job details (if job file exists)
 job-monitor job-xxx-20260130-hhmmss.md
 ```
 
-**What the CLI does:**
-1. Checks the queue state file (`jobs/state/queue_state.json`)
-2. Displays current job being processed
-3. Shows jobs waiting in queue
-4. Shows process information
-
-**Output you'll see:**
-
-```
-┌─────────────────────────────────────────────┐
-│  Job Monitor Status                         │
-├─────────────────────────────────────────────┤
-│  Service: ✅ Running                         │
-│                                              │
-│  Currently Processing:                       │
-│  → job-refactor-phase2-20260130-110940.md  │
-│                                              │
-│  Waiting in Queue:                           │
-│  → job-another-job-20260130-111500.md     │
-│  → job-third-job-20260130-111600.md       │
-│                                              │
-│  Queue Size: 2                               │
-└─────────────────────────────────────────────┘
-```
-
-**Interpreting the output:**
+**Output interpretation:**
 
 | Field | Meaning |
 |-------|---------|
-| **Currently Processing** | Job that was dequeued and is being executed by Worker Agent |
-| **Waiting in Queue** | Jobs that have been created but not yet started |
-| **Queue Size** | Number of jobs waiting (not including the one being processed) |
+| **Currently Processing** | Job being executed by Worker Agent |
+| **Waiting in Queue** | Jobs created but not yet started |
+| **Queue Size** | Number of jobs waiting |
 
-**Note**: The job-monitor CLI requires `~/.local/bin` to be in your PATH (already configured in `~/.bashrc`). If the command is not found, run `source ~/.bashrc` or open a new terminal.
+---
+
+#### Check Execution Results (`jobs/results/`)
+
+After job completion, detailed results are stored in `jobs/results/` as JSON files.
+
+**Available information:**
+- `status` - Job completion status: `"completed"`, `"failed"`, or `"cancelled"`
+- `duration_seconds` - Total execution time
+- `worker_output.summary` - Human-readable summary of what was done
+- `worker_output.usage` - Token counts and cost in USD
+- `error` - Error details if job failed
+
+**Job directory reference:**
+```
+jobs/
+├── items/          # Job documents (created by this skill)
+├── results/        # Execution results (JSON files)
+├── state/          # Queue state (queue_state.json)
+└── logs/           # Execution logs (if configured)
+```
+
+The AI agent knows how to read and parse these files to verify job completion and extract relevant information.
+
+**Note**: The job-monitor CLI requires `~/.local/bin` to be in your PATH (already configured in `~/.bashrc`).
 
 ## Full Example
 
@@ -238,9 +241,11 @@ FINAL_FILE=$(bash .claude/skills/job-document-writer/scripts/rename_job.sh jobs/
 # Output: ✅ Job created: jobs/items/job-20260129-170500-fix-auth-timeout.md
 #         jobs/items/job-20260129-170500-fix-auth-timeout.md
 
-# Step 5: Monitor status (shows both waiting and running)
+# Step 5: Monitor status and verify results
 job-monitor queue
-# Output: Shows your job in "Currently Processing" or "Waiting in Queue"
+# → Shows your job in "Currently Processing" or "Waiting in Queue"
+
+# After completion, check results in jobs/results/ for execution details
 ```
 
 ## Document Structure
