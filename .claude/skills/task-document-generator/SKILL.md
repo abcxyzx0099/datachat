@@ -39,33 +39,27 @@ Processing: (task name or empty)
 Error: Task monitor service is not running
 ```
 
-**1.2 If Service Is NOT Running - Ask User**
+**1.2 If Service Is Running**
 
-If the service is not running, present options to the user:
+✅ Continue to Step 2.
 
-| Option | Action | When to Use |
-|--------|--------|-------------|
-| **Start service** | Run `task-monitor start` (if available) or start manually | User wants automation enabled |
-| **Create anyway** | Proceed with task creation, but warn user | User will start service later manually |
-| **Abort** | Stop task creation process | User wants to fix service first |
+**1.3 If Service Is NOT Running - STOP**
 
-**Example prompt to user:**
+⚠️ **STOP and ask the user**:
+
 ```
 ⚠️ Task monitor service is not running. The task document will not be processed automatically.
 
-Options:
-1. Start the service now (if available)
-2. Create task document anyway (will wait until service starts)
-3. Abort (you can start service and retry)
-
-Which option would you like? (1/2/3)
+Would you like me to start the task monitor service now? Please confirm, and I will start it before continuing with task creation.
 ```
 
-**1.3 Quality Gate**
+- If user confirms → Start the service using `task-monitor start` or appropriate command, then verify it's running
+- Only proceed to Step 2 **after** the service is confirmed running
 
-- **Do NOT proceed** to Step 2 unless user confirms they want to create the task document
-- If user chooses to abort, stop the process and guide them to start the service
-- If user chooses to create anyway, add a warning note in the conversation
+**1.4 Quality Gate**
+
+- **MUST NOT proceed** to Step 2 until the service is confirmed running
+- This is a hard stop - no "create anyway" option
 
 ---
 
@@ -216,7 +210,15 @@ task-monitor task-xxx-20260130-hhmmss.md
 ```bash
 # Step 1: Verify task monitor service is running
 task-monitor queue
-# Output: Service is running, proceed
+
+# IF RUNNING:
+# Output: Service is running, proceed to Step 2
+
+# IF NOT RUNNING:
+# ⚠️ Task monitor service is not running. The task document will not be processed automatically.
+# Would you like me to start the task monitor service now?
+# (After user confirms and service starts)
+# Output: Service is running, proceed to Step 2
 
 # Step 2: Investigate and understand (read conversation, explore codebase)
 
@@ -252,7 +254,7 @@ Use the template in [references/task-template.md](references/task-template.md) f
 
 Before running the rename script (Step 4), ensure:
 
-- [ ] **Service verified** - Task monitor is running (Step 1 passed)
+- [ ] **Service verified and running** - Task monitor is running (Step 1 - HARD REQUIREMENT)
 - [ ] **Task is clear** - One-line summary is unambiguous
 - [ ] **Context is provided** - Worker understands why this task exists
 - [ ] **Scope is defined** - Worker knows where to look
@@ -266,7 +268,7 @@ See [references/examples.md](references/examples.md) for good vs bad task docume
 
 ## Key Principles
 
-1. **Verify system first** - Check service is running before creating tasks
+1. **Service must be running** - HARD STOP if service not running; ask user to start it before proceeding
 2. **Understand first** - Investigate before writing
 3. **Be specific** - Vague tasks produce vague results
 4. **Request investigation** - Worker Agents must do their own deep research before implementing

@@ -1,5 +1,24 @@
 # Survey Data Analysis & Visualization Workflow Design
 
+---
+
+# Table of Contents
+
+1. [Introduction](#1-overview)
+2. [Workflow Architecture](#2-workflow-architecture)
+3. [State Management](#3-state-management)
+4. [Detailed Step Specifications](#4-detailed-step-specifications)
+5. [Configuration](#5-configuration)
+6. [Technology Stack](#6-technology-stack)
+7. [Project Structure](#7-project-structure)
+8. [Execution Guide](#8-execution-example)
+9. [Human-in-the-Loop Implementation](#10-human-in-the-loop-implementation)
+10. [Error Handling & Recovery](#8-error-handling--recovery)
+11. [Future Enhancements](#9-future-enhancements)
+12. [Appendix](#11-appendix)
+
+---
+
 ## 1. Overview
 
 ### 1.1 Purpose
@@ -29,7 +48,6 @@ Design and implement an automated workflow for market research survey data analy
 ```mermaid
 flowchart TD
     subgraph P1["**Phase 1: Extraction & Preparation**<br/>Ingest raw .sav data and prepare metadata"]
-        direction TB
         S1["**Step 1**<br/>Extract .sav File<br/>(.sav file → raw data + metadata)"]
         S2["**Step 2**<br/>Transform Metadata<br/>(section-based → variable-centered)"]
         S3["**Step 3**<br/>Filter Metadata<br/>(remove variables not needing recoding)"]
@@ -40,14 +58,14 @@ flowchart TD
     end
 
     subgraph P2["**Phase 2: New Variable Generation**<br/>AI generates, validates, and refines recoding rules"]
-        direction TB
         S4["**Step 4: Generate** 🤖<br/>(LLM creates rules)"]
         S4v["**Step 4v: Validate** ✓<br/>(Python checks rules)"]
         S4r["**Step 4r: Review** 👤<br/>(Human approves/refines)"]
         S5["**Step 5**<br/>Optional Human Review 👤<br/>(additional validation)"]
         S6["**Step 6**<br/>Generate PSPP Syntax<br/>(convert rules to PSPP)"]
         S7["**Step 7**<br/>Execute PSPP<br/>(apply transformations)"]
-        RECODED["**Output**<br/>RECODED DATA + COMPLETE METADATA"]
+        NEW_DATA_SAV["**Output 1**<br/>NEW_DATA.SAV"]
+        NEW_META["**Output 2**<br/>NEW_METADATA<br/>(via pyreadstat)"]
 
         S4 --> S4v
         S4v -->|Valid| S4r
@@ -55,11 +73,12 @@ flowchart TD
         S4r -->|Approve| S5
         S4r -->|Reject/Modify| S4
         S5 --> S6
-        S6 -.-> RECODED
+        S6 --> S7
+        S7 -.-> NEW_DATA_SAV
+        NEW_DATA_SAV ==>|pyreadstat| NEW_META
     end
 
     subgraph P3["**Phase 3: Indicator Generation**<br/>Group variables into semantic indicators for analysis"]
-        direction TB
         S8["**Step 8: Generate** 🤖<br/>(LLM groups variables)"]
         S8v["**Step 8v: Validate** ✓<br/>(Python checks structure)"]
         S8r["**Step 8r: Review** 👤<br/>(Human approves/refines)"]
@@ -74,15 +93,14 @@ flowchart TD
         S8a -.-> INDICATORS
     end
 
-    subgraph P4["**Phase 4: Cross-Table Specification**<br/>Define and generate cross-tabulation tables"]
-        direction TB
+    subgraph P4["**Phase 4: Cross-Table Generation**<br/>Define tables and generate PSPP syntax"]
         S9["**Step 9: Generate** 🤖<br/>(LLM defines tables)"]
         S9v["**Step 9v: Validate** ✓<br/>(Python checks references)"]
         S9r["**Step 9r: Review** 👤<br/>(Human approves/refines)"]
         S9a["**Step 9.1**<br/>Optional Human Review 👤<br/>(additional validation)"]
         S10["**Step 10**<br/>Generate PSPP Syntax<br/>(convert specs to PSPP)"]
-        S11["**Step 11**<br/>Execute PSPP<br/>(generate cross-tables)"]
-        CROSSTAB["**Output**<br/>CROSS TABLES (.sav)"]
+        S11["**Step 11**<br/>Execute PSPP<br/>(generate CSV/JSON)"]
+        CROSSTAB["**Output**<br/>CROSS TABLES (.csv + .json)"]
 
         S9 --> S9v
         S9v -->|Valid| S9r
@@ -90,40 +108,52 @@ flowchart TD
         S9r -->|Approve| S9a
         S9r -->|Reject/Modify| S9
         S9a --> S10
-        S10 --> S11
+        S9a --> S11
+        S10 -.->|PSPP| S11
         S11 -.-> CROSSTAB
     end
 
-    subgraph P5["**Phase 5: Statistical Analysis**<br/>Compute Chi-square statistics and effect sizes"]
-        direction TB
-        S12["**Step 12**<br/>Compute Chi-Square Stats<br/>(Python: scipy, pandas)"]
-        STATS["**Output**<br/>TABLES WITH STATISTICS<br/>(χ², p-value, Cramer's V)"]
-        S12 -.-> STATS
+    subgraph P5["**Phase 5: Statistical Analysis**<br/>Generate Python script and compute statistics"]
+        S12a["**Step 12a**<br/>Generate Python Script<br/>(for Chi-square analysis)"]
+        S12b["**Step 12b**<br/>Execute Python Script<br/>(compute statistics)"]
+        STATS_SUMMARY["**Output 1**<br/>ALL_SMALL_TABLES<br/>(with Chi-Square)"]
+        STATS_RESULTS["**Output 2**<br/>STATISTICAL_ANALYSIS_SUMMARY<br/>(.json)"]
+        S12a --> S12b
+        S12b --> STATS_SUMMARY
+        S12b -.-> STATS_RESULTS
     end
 
-    subgraph P6["**Phase 6: Significant Tables Selection**<br/>Filter tables by effect strength and sample size"]
-        direction TB
-        S13["**Step 13**<br/>Filter Significant Tables<br/>(Cramer's V ≥ 0.1, count ≥ 30)"]
-        SIGNIFICANT["**Output**<br/>SIGNIFICANT TABLES ONLY"]
-        S13 -.-> SIGNIFICANT
+    subgraph P6["**Phase 6: Significant Tables Selection**<br/>Generate filter list, then apply to cross tables"]
+        S13a["**Step 13a**<br/>Generate Filter List<br/>(from statistical summary)"]
+        S13b["**Step 13b**<br/>Apply Filter to Tables<br/>(Cramer's V ≥ 0.1, count ≥ 30)"]
+        FILTER_LIST["**Output 1**<br/>FILTER_LIST<br/>(.json)"]
+        SIGNIFICANT["**Output 2**<br/>SIGNIFICANT_TABLES<br/>(filtered tables)"]
+        S13a --> FILTER_LIST
+        S13b --> SIGNIFICANT
     end
 
-    subgraph P7["**Phase 7: Presentation**<br/>Generate final deliverables for stakeholders"]
-        direction TB
-        S14["**Step 14**<br/>Generate PowerPoint<br/>(.pptx with charts)"]
-        S15["**Step 15**<br/>Generate HTML Dashboard<br/>(interactive web view)"]
-        OUTPUTS["**Output**<br/>FINAL OUTPUTS<br/>(.pptx + .html)"]
-        S14 -.-> OUTPUTS
-        S15 -.-> OUTPUTS
+    subgraph P7["**Phase 7: Executive Summary Presentation**<br/>Generate PowerPoint with key findings"]
+        S14["**Step 14**<br/>Generate PowerPoint<br/>(significant tables only)"]
+        PPT["**Output**<br/>POWERPOINT<br/>(.pptx with charts)"]
+        S14 -.-> PPT
+    end
+
+    subgraph P8["**Phase 8: Full Report Dashboard**<br/>Generate HTML with all tables"]
+        S15["**Step 15**<br/>Generate HTML Dashboard<br/>(all cross tables)"]
+        HTML["**Output**<br/>HTML DASHBOARD<br/>(.html interactive)"]
+        S15 -.-> HTML
     end
 
     RAW ==> S4
-    RECODED ==> S8
+    NEW_META ==> S8
     INDICATORS ==> S9
-    CROSSTAB ==> S12
-    STATS ==> S13
-    SIGNIFICANT ==> S14
-    SIGNIFICANT ==> S15
+    CROSSTAB ==> S12a
+    CROSSTAB ==> S12b
+    CROSSTAB ==> S15          # HTML from all cross tables (Phase 8)
+    STATS_RESULTS ==> S13a    # Statistical summary → Generate filter
+    FILTER_LIST ==> S13b      # Filter list → Apply filter
+    crossTableFiles ==> S13b  # Cross-table data → Apply filter
+    SIGNIFICANT ==> S14       # PowerPoint from significant tables (Phase 7)
 ```
 
 ### 2.2 Phase Descriptions
@@ -131,16 +161,17 @@ flowchart TD
 | Phase | Name | Purpose | Pattern | Input | Output |
 |-------|------|---------|---------|-------|--------|
 | **1** | Extraction & Preparation | Ingest raw .sav data and prepare metadata for AI processing | Traditional pipeline | .sav file (PSPP/SPSS format) | Raw data, variable metadata |
-| **2** | New Variable Generation | AI generates, validates, and iteratively refines recoding rules; creates new variables through PSPP | AI Generate → Auto Validate → Human Review (with iteration) | Filtered metadata, AI rules | Recoded dataset + Complete metadata (original + new variables merged) |
-| **3** | Indicator Generation | Group variables into semantic indicators for analysis | AI Generate → Auto Validate → Human Review (with iteration) | Complete metadata from Phase 2 | Indicator definitions |
-| **4** | Cross-Table Generation | Define and generate cross-tabulation tables with weighting | AI Generate → Auto Validate → Human Review (with iteration) | Complete metadata from Phase 2 | Cross-table contingency tables |
-| **5** | Statistical Analysis | Compute Chi-square statistics and effect sizes for all tables | Traditional pipeline | Cross-table tables, recoded data | Tables with Chi-square statistics |
-| **6** | Significant Tables Selection | Filter tables by Cramer's V effect size and minimum sample count | Traditional pipeline | Tables with statistics | Significant tables only |
-| **7** | Presentation | Generate final deliverables for stakeholders | Traditional pipeline | Significant tables | PowerPoint, HTML dashboard |
+| **2** | New Variable Generation | AI generates, validates, and iteratively refines recoding rules; creates new variables through PSPP | AI Generate → Auto Validate → Human Review (with iteration) | Filtered metadata, AI rules | new_data.sav (data + new_metadata extracted via pyreadstat) |
+| **3** | Indicator Generation | Group variables into semantic indicators for analysis | AI Generate → Auto Validate → Human Review (with iteration) | new_metadata from Phase 2 | Indicator definitions |
+| **4** | Cross-Table Generation | Define and generate cross-tabulation tables with weighting | AI Generate → Auto Validate → Human Review (with iteration) | new_metadata from Phase 2 | Cross-table CSV + JSON |
+| **5** | Statistical Analysis | Generate Python script and execute to compute Chi-square statistics and effect sizes | Traditional pipeline | cross-table CSV + JSON | all_small_tables (.json), statistical_analysis_summary (.json), python_stats_script (.py) |
+| **6** | Significant Tables Selection | Generate filter list from statistical summary, then apply filter to cross tables | Traditional pipeline (two-step) | statistical_analysis_summary (.json) for filter; cross_table data + filter_list for tables | filter_list (.json), significant_tables (.json) |
+| **7** | Executive Summary Presentation | Generate PowerPoint with key findings and significant tables for stakeholders | Traditional pipeline | significant_tables (from Phase 6) | PowerPoint (.pptx) |
+| **8** | Full Report Dashboard | Generate interactive HTML dashboard with all cross-tabulation tables for detailed analysis | Traditional pipeline | cross_table files (from Phase 4) | HTML Dashboard (.html) |
 
 ### 2.2.1 Three-Node Pattern for AI-Driven Steps
 
-**Overview**: Steps 4, 8, and 9 use a **three-node pattern** (Generate → Validate → Review) that enables self-verification and iterative refinement of AI-generated artifacts.
+**Overview**: Steps 4, 8, and 9 use a **three-node pattern** (Generate → Validate → Review) that enables **automated validation** (Python code) and iterative refinement of AI-generated artifacts.
 
 **When It's Used**: The three-node pattern is applied to any workflow step where:
 - An LLM generates complex structured output (recoding rules, indicators, table specifications)
@@ -205,11 +236,32 @@ flowchart TD
 
 **Benefits**:
 
-- **Self-Verification**: AI validates its own output before human review, reducing false positives
+- **Automated Validation**: Python code validates AI-generated output before human review, catching objective errors (syntax, references, constraints) and reducing review burden
 - **Quality Improvement**: Iteration on validation failures catches errors early
 - **Reduced Human Load**: Only validated outputs reach human review (fewer trivial errors to manually catch)
 - **Traceability**: Complete audit trail of iterations, feedback, and decisions
 - **Clear Separation**: Objective validation (Python) vs semantic validation (Human)
+
+**Clarification: Automated Validation vs AI Self-Verification**
+
+The three-node pattern uses **Python code for validation**, NOT AI self-verification:
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Generate** | AI/LLM | Creates artifacts (recoding rules, indicators, table specs) |
+| **Validate** | Python code | Objective checks: syntax, references, constraints |
+| **Review** | Human | Semantic checks: meaning, context, completeness |
+
+**Why Python validation?**
+- Reliable and deterministic (no AI hallucination)
+- Fast and cost-effective
+- Catches objective errors that humans might miss
+- Reduces human review burden by filtering invalid outputs
+
+**Why human review?**
+- Semantic quality assessment (Python can't evaluate meaning)
+- Domain expertise (business logic appropriateness)
+- Context validation (research alignment)
 
 **Related Concepts**:
 
@@ -220,7 +272,7 @@ flowchart TD
 ### 2.3 Data Evolution Through Phases
 
 ```mermaid
-flowchart LR
+flowchart TD
     %% Define styles
     classDef inputFileStyle fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000
     classDef traditionalStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
@@ -231,9 +283,9 @@ flowchart LR
     classDef validationStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
     classDef reviewStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
 
+
     %% Phase 1: Extraction & Preparation
     subgraph P1["Phase 1: Extraction & Preparation"]
-        direction TB
         sav1(["📁 .sav File<br/>(Input)"]):::inputFileStyle
         rawData["raw_data<br/>(DataFrame)"]:::traditionalStyle
         origMeta["original_metadata"]:::traditionalStyle
@@ -244,19 +296,17 @@ flowchart LR
 
     %% Phase 2: New Variable Generation
     subgraph P2["Phase 2: New Variable Generation"]
-        direction TB
         recodingGen["recoding_rules<br/>(Generate) 🤖"]:::aiGenerateStyle
         recodingVal["recoding_rules<br/>(Validate) ✓"]:::validationStyle
         recodingRev["recoding_rules<br/>(Review) 👤"]:::reviewStyle
         validationResults["validation_results"]:::traditionalStyle
         psppRecodeSyntax["pspp_recoding_syntax<br/>(.sps)"]:::traditionalStyle
-        sav2(["📁 recoded_data.sav"]):::dataFileStyle
-        completeMeta["complete_metadata<br/>(merged: orig + new)"]:::traditionalStyle
+        sav2(["📁 new_data.sav"]):::dataFileStyle
+        newMeta["new_metadata<br/>(extracted via pyreadstat)"]:::traditionalStyle
     end
 
     %% Phase 3: Indicator Generation
     subgraph P3["Phase 3: Indicator Generation"]
-        direction TB
         indGen["indicators<br/>(Generate) 🤖"]:::aiGenerateStyle
         indVal["indicators<br/>(Validate) ✓"]:::validationStyle
         indRev["indicators<br/>(Review) 👤"]:::reviewStyle
@@ -264,26 +314,34 @@ flowchart LR
 
     %% Phase 4: Cross-Table Generation
     subgraph P4["Phase 4: Cross-Table Generation"]
-        direction TB
         tabGen["table_specifications<br/>(Generate) 🤖"]:::aiGenerateStyle
         tabVal["table_specifications<br/>(Validate) ✓"]:::validationStyle
         tabRev["table_specifications<br/>(Review) 👤"]:::reviewStyle
         psppTableSyntax["pspp_table_syntax<br/>(.sps)"]:::traditionalStyle
-        sav3(["📁 cross_table.sav"]):::dataFileStyle
+        crossTableFiles(["📁 cross_table<br/>(.csv + .json)"]):::dataFileStyle
     end
 
-    %% Phase 5 & 6: Statistical Analysis & Filtering
-    subgraph P5["Phase 5-6: Statistical Analysis"]
-        direction TB
+    %% Phase 5: Statistical Analysis
+    subgraph P5["Phase 5: Statistical Analysis"]
+        pythonStatsScript["python_stats_script<br/>(.py)"]:::traditionalStyle
         allTables["all_small_tables<br/>(with Chi-Square)"]:::traditionalStyle
+        statsSummary["statistical_analysis_summary<br/>(.json)"]:::traditionalStyle
+    end
+
+    %% Phase 6: Significant Tables Selection
+    subgraph P6["Phase 6: Significant Tables Selection"]
+        filterList["filter_list<br/>(.json)"]:::traditionalStyle
         sigTables["significant_tables<br/>(filtered)"]:::traditionalStyle
     end
 
-    %% Phase 7: Presentation
-    subgraph P7["Phase 7: Presentation"]
-        direction TB
-        ppt(["📊 .pptx"]):::outputStyle
-        html(["🌐 .html"]):::outputStyle
+    %% Phase 7: Executive Summary Presentation
+    subgraph P7["Phase 7: Executive Summary Presentation"]
+        ppt(["📊 .pptx<br/>(significant tables)"]):::outputStyle
+    end
+
+    %% Phase 8: Full Report Dashboard
+    subgraph P8["Phase 8: Full Report Dashboard"]
+        html(["🌐 .html<br/>(all tables)"]):::outputStyle
     end
 
     %% Data flow edges
@@ -294,32 +352,36 @@ flowchart LR
     varMeta -->|Step 3| filtOut
     filtMeta -->|Step 4 Generate| recodingGen
     recodingGen -->|Step 4 Validate| recodingVal
-    recodingVal -->|Step 4 Review| recodingRev
-    recodingGen -.->|Iteration| recodingGen
-    recodingRev -.->|Iteration| recodingGen
+    recodingVal -->|Valid| recodingRev
+    recodingVal -.->|Invalid| recodingGen
+    recodingRev -.->|Reject| recodingGen
     recodingVal -->|Validated| validationResults
     recodingRev -->|Step 5| psppRecodeSyntax
     sav1 ==>|Step 7<br/>input| sav2
     psppRecodeSyntax -.->|Step 7<br/>syntax| sav2
-    completeMeta ==>|Step 8 Generate| indGen
+    sav2 ==>|pyreadstat<br/>extract| newMeta
+    newMeta ==>|Step 8 Generate| indGen
     indGen -->|Step 8 Validate| indVal
-    indVal -->|Step 8 Review| indRev
-    indGen -.->|Iteration| indGen
-    indRev -.->|Iteration| indGen
+    indVal -->|Valid| indRev
+    indVal -.->|Invalid| indGen
+    indRev -.->|Reject| indGen
     indRev -->|Step 9 Generate| tabGen
     tabGen -->|Step 9 Validate| tabVal
-    tabVal -->|Step 9 Review| tabRev
-    tabGen -.->|Iteration| tabGen
-    tabRev -.->|Iteration| tabGen
+    tabVal -->|Valid| tabRev
+    tabVal -.->|Invalid| tabGen
+    tabRev -.->|Reject| tabGen
     tabRev -->|Step 10| psppTableSyntax
-    sav2 ==>|Step 11<br/>input| sav3
-    psppTableSyntax -.->|Step 11<br/>syntax| sav3
-    sav2 ==>|Step 12| allTables
-    indRev ==>|Step 12| allTables
-    tabRev ==>|Step 12| allTables
-    allTables -->|Step 13| sigTables
+    sav2 ==>|Step 11<br/>input| crossTableFiles
+    psppTableSyntax -.->|Step 11<br/>syntax| crossTableFiles
+    crossTableFiles ==>|Step 12a<br/>generate| pythonStatsScript
+    pythonStatsScript ==>|Step 12b<br/>execute| allTables
+    crossTableFiles ==>|Step 12b<br/>data| allTables
+    allTables -->|Step 12b.1| statsSummary
+    statsSummary ==>|Step 13a<br/>generate| filterList
+    filterList ==>|Step 13b<br/>apply| sigTables
+    crossTableFiles ==>|Step 13b<br/>data| sigTables
     sigTables -->|Step 14| ppt
-    sigTables -->|Step 15| html
+    crossTableFiles ==>|Step 15| html
 ```
 
 **Legend:**
@@ -327,11 +389,12 @@ flowchart LR
 | Style | Meaning | Examples |
 |-------|---------|----------|
 | 🔵 **Input File** | Original input data file | `.sav` file |
-| 🟢 **Traditional Programming** | Deterministic processing (Python, PSPP, scipy) | `raw_data`, `complete_metadata`, `pspp_recoding_syntax`, `all_small_tables`, `.pptx`, `.html` |
+| 🟢 **Traditional Programming** | Deterministic processing (Python, PSPP, scipy) | `raw_data`, `new_metadata`, `pspp_recoding_syntax`, `all_small_tables`, `statistical_analysis_summary`, `filter_list`, `.pptx`, `.html` |
 | 🔵 **AI Generation (LLM)** | LLM generates artifact (can iterate on feedback) | `recoding_rules (Generate)`, `indicators (Generate)`, `table_specifications (Generate)` |
 | 🟠 **Validation (Python)** | Objective validation checks (syntax, references, constraints) | `recoding_rules (Validate)`, `indicators (Validate)`, `table_specifications (Validate)` |
 | 🟣 **Review (Human)** | Semantic quality review through LangGraph interrupt | `recoding_rules (Review)`, `indicators (Review)`, `table_specifications (Review)` |
-| ⚪ **Data File (.sav)** | Survey data files generated by PSPP | `recoded_data.sav`, `cross_table.sav` |
+| ⚪ **Data File (.sav + .csv + .json)** | Survey data files generated by PSPP/Python | `new_data.sav`, `new_metadata` (extracted via pyreadstat), `cross_table.csv` + `.json` |
+| 🟢 **Python Script** | Generated Python scripts for statistical analysis | `python_stats_script.py` |
 | ⚡ **Feedback Loop** | Iteration edges (dotted lines) | Validation or Review feedback triggering regeneration |
 
 **Line Styles:**
@@ -344,37 +407,62 @@ flowchart LR
 
 **Key Observations:**
 
-1. **AI-Driven Nodes** (3 nodes): Steps 4, 8, and 9 use AI agents to generate intelligent rules and groupings with built-in self-verification
+1. **AI-Driven Nodes with Automated Validation** (3 nodes): Steps 4, 8, and 9 use AI agents to generate intelligent rules and groupings with built-in automated Python validation
 2. **Traditional Programming** (12 nodes): All other steps use deterministic Python/PSPP processing
 3. **Hybrid Approach**: The workflow combines AI for semantic understanding with traditional programming for statistical rigor
-4. **Step 12 is data-intensive**: Consumes both data files (`recoded_data.sav`) and multiple metadata sources (`indicators`, `table_specifications` which includes `weighting_variable`)
+4. **Step 12a generates Python script**: Creates `python_stats_script.py` from cross-table specifications; Step 12b executes it with `cross_table.csv` and `cross_table.json` to compute Chi-square statistics
 5. **Dashed lines** (`.-.->`): Indicate syntax/control flow (not direct data dependency)
-6. **Phase 2 produces complete_metadata**: After PSPP execution, the recoded .sav file is read and merged with original metadata to create a complete variable catalog (original + new variables), eliminating Phase 1 dependencies for Phases 3-7
+6. **Phase 2 produces two outputs**: `new_data.sav` (generated by PSPP) and `new_metadata` (extracted from .sav file via pyreadstat), eliminating Phase 1 dependencies for Phases 3-8
+7. **Phase 6 creates an audit trail**: Step 13a generates filter criteria from statistical summary, then Step 13b applies it to data - this allows inspection of the filter list before applying it and makes debugging easier
 
 ### Phase 2 as Analysis-Ready Boundary
 
 **Architectural Rationale:**
 
-Phase 2 produces the "analysis-ready" dataset by combining original variables from Phase 1 with newly created variables from recoding. The `complete_metadata` artifact contains:
+Phase 2 produces the "analysis-ready" dataset (`new_data.sav`) by combining original variables from Phase 1 with newly created variables from recoding. The `new_metadata` is extracted from `new_data.sav` using pyreadstat and contains:
 
-- **All original variables**: From Phase 1's `variable_centered_metadata`
-- **All newly created variables**: Extracted from the recoded .sav file after PSPP execution
-- **Source-to-target mappings**: Documentation of which variables were recoded to create new ones
-- **Value labels**: Complete label definitions for all variables (original and new)
+- **All original variables**: Copied from input .sav file
+- **All newly created variables**: Created by PSPP RECODE commands
+- **Variable labels**: Complete labels for all variables
+- **Value labels**: Complete value definitions for all variables
+- **Variable types**: Numeric, string, etc. for all variables
+
+**Extraction Process** (Step 7):
+```python
+# After PSPP execution, read the new .sav file and extract metadata
+df, meta = pyreadstat.read_sav(new_data_path)
+new_metadata = {
+    "variable_labels": meta.variable_labels,
+    "value_labels": meta.value_labels,
+    "variable_types": meta.variable_types,
+    "variable_measurements": meta.variable_measurements
+}
+```
 
 **Benefits of This Design:**
 
-1. **Clean Linear Dependencies**: Phases 3-7 depend only on Phase 2 outputs, creating a simple Phase 1 → Phase 2 → Phases 3-7 chain
-2. **Independent Testing**: Phases 3-7 can be tested independently using only Phase 2 outputs, without needing to run Phase 1
+1. **Clean Linear Dependencies**: Phases 3-8 depend only on Phase 2 outputs, creating a simple Phase 1 → Phase 2 → Phases 3-8 chain
+2. **Independent Testing**: Phases 3-8 can be tested independently using only `new_data.sav`, without needing to run Phase 1
 3. **Clear Separation of Concerns**:
    - Phase 1: Extraction and metadata transformation
    - Phase 2: Data preparation and enrichment (produces analysis-ready package)
-   - Phases 3-7: Analysis and visualization
-4. **Single Source of Truth**: The `complete_metadata` is the authoritative variable catalog for all analysis phases
+   - Phases 3-8: Analysis and visualization
+4. **Single Source of Truth**: `new_data.sav` contains both data AND `new_metadata` (extracted via pyreadstat)
 
 **Implementation Note:**
 
-After PSPP executes the recoding syntax in Step 7, the system reads the resulting `recoded_data.sav` file using pyreadstat, extracts complete variable metadata (including newly created variables), and merges it with Phase 1's original metadata. This merged artifact becomes the `complete_metadata` field in `RecodingState`.
+After PSPP executes the recoding syntax in Step 7, the system reads the resulting `new_data.sav` file using pyreadstat and extracts complete variable metadata (including newly created variables). This extracted metadata becomes the `new_metadata` field in `RecodingState`.
+
+```python
+# Extraction process in Step 7
+df, meta = pyreadstat.read_sav(new_data_path)
+new_metadata = {
+    "variable_labels": meta.variable_labels,
+    "value_labels": meta.value_labels,
+    "variable_types": meta.variable_types,
+    "variable_measurements": meta.variable_measurements
+}
+```
 
 ### 2.4 LangGraph State Management
 
@@ -413,18 +501,19 @@ class RecodingState(TypedDict):
     recoding_rules_approved: bool            # Human approval status
     pspp_recoding_syntax: str                # Generated PSPP syntax
     pspp_recoding_syntax_path: str           # Saved syntax file
-    recoded_data_path: str                   # Path to recoded dataset
-    complete_metadata: List[Dict]            # Merged metadata: original + new variables
+    new_data_path: str                       # Path to new dataset (data + new_metadata)
+    new_metadata: Dict[str, Any]             # Complete metadata extracted from new_data.sav
 
 """
-The `complete_metadata` field contains:
-- All original variables from Phase 1's variable_centered_metadata
-- All newly created variables from PSPP recoding
-- Source-to-target variable mappings
-- Value labels for all variables (original and new)
+The `new_metadata` field contains metadata extracted from `new_data.sav` using pyreadstat:
+- All original variables (copied from input)
+- All newly created variables (from PSPP RECODE commands)
+- Variable labels for all variables
+- Value labels for all variables
+- Variable types and measurements
 
-This artifact is produced after PSPP execution by reading the recoded .sav file
-and extracting complete variable metadata, then merging with Phase 1 metadata.
+This artifact is produced after PSPP execution by reading `new_data.sav`
+and extracting complete variable metadata via pyreadstat.
 """
 
 
@@ -444,23 +533,35 @@ class CrossTableState(TypedDict):
     table_specs_approved: bool               # Human approval status
     pspp_table_syntax: str                   # Generated cross-table syntax
     pspp_table_syntax_path: str              # Saved syntax file
-    cross_table_sav_path: str                # Exported cross-table file
+    cross_table_csv_path: str                # Exported cross-table CSV file
+    cross_table_json_path: str               # Exported cross-table JSON file
 
 
 class StatisticalAnalysisState(TypedDict):
-    """Chi-square statistics and effect size computation - Step 12"""
+    """Python script generation and Chi-square statistics computation - Step 12a-12b"""
+    python_stats_script: str                 # Generated Python script for statistics
+    python_stats_script_path: str            # Saved Python script file
     all_small_tables: List[Dict]             # All tables with chi-square stats
+    statistical_summary_path: str             # Path to statistical_analysis_summary.json
+    statistical_summary: Dict[str, Any]       # Summary of all statistical tests
 
 
 class FilteringState(TypedDict):
-    """Significant tables selection by effect size - Step 13"""
+    """Filter list generation and significant tables selection - Step 13a-13b"""
+    # Step 13a: Generate filter list from statistical summary
+    filter_list: List[Dict]                  # Pass/fail status for all tables
+    filter_list_json_path: str               # Saved filter list
+
+    # Step 13b: Apply filter to cross-table results
     significant_tables: List[Dict]           # Tables filtered by Cramer's V + count
     significant_tables_json_path: str        # Saved filtered tables
 
 
 class PresentationState(TypedDict):
-    """Final output generation - Step 14-15"""
+    """Final output generation - Step 14-15 (Phases 7-8)"""
+    # Phase 7: PowerPoint (Step 14) - based on significant_tables
     powerpoint_path: str                     # Generated PowerPoint file
+    # Phase 8: HTML Dashboard (Step 15) - based on cross_table files (all tables)
     html_dashboard_path: str                 # Generated HTML dashboard
     charts_generated: List[Dict]             # Chart metadata
 
@@ -551,12 +652,13 @@ def generate_recoding(state: WorkflowState) -> WorkflowState:
 |------|-----------|------------------|
 | 0 | `InputState` | `spss_file_path`, `config` |
 | 1-3 | `ExtractionState` | `raw_data`, `variable_centered_metadata`, `filtered_metadata` |
-| 4-7 | `RecodingState` | `recoding_rules`, `recoded_data_path`, `complete_metadata` |
+| 4-7 | `RecodingState` | `recoding_rules`, `new_data_path`, `new_metadata` |
 | 8 | `IndicatorState` | `indicators`, `indicator_metadata` |
-| 9-11 | `CrossTableState` | `table_specifications`, `pspp_table_syntax`, `cross_table_sav_path` |
-| 12 | `StatisticalAnalysisState` | `all_small_tables` (with chi-square stats) |
-| 13 | `FilteringState` | `significant_tables` (filtered) |
-| 14-15 | `PresentationState` | `powerpoint_path`, `html_dashboard_path` |
+| 9-11 | `CrossTableState` | `table_specifications`, `pspp_table_syntax`, `cross_table_csv_path`, `cross_table_json_path` |
+| 12a-12b | `StatisticalAnalysisState` | `python_stats_script`, `python_stats_script_path`, `all_small_tables`, `statistical_summary_path`, `statistical_summary` |
+| 13 | `FilteringState` | `significant_tables`, `significant_tables_json_path`, `filter_list`, `filter_list_json_path` |
+| 14 | `PresentationState` (Phase 7) | `powerpoint_path`, `charts_generated` |
+| 15 | `PresentationState` (Phase 8) | `html_dashboard_path` |
 | All | `ApprovalState` | `approval_comments`, `pending_approval_step` |
 | All | `TrackingState` | `execution_log`, `errors`, `warnings` |
 
@@ -604,10 +706,10 @@ def main_workflow_step(state: WorkflowState) -> WorkflowState:
 
 The three-node pattern (Generate → Validate → Review) is a key architectural feature that provides multiple benefits:
 
-**Self-Verification**
-- AI validates its own output before human review
-- Catches objective errors (syntax, references, constraints) automatically
-- Reduces false positives that reach human review
+**Automated Validation (Python)**
+- Python code validates AI-generated output before human review
+- Catches objective errors: syntax issues, missing references, constraint violations
+- Reduces human review burden by filtering out clearly invalid outputs
 - Example: LLM references variable "age_groups" but metadata only has "age_group"
 
 **Quality Improvement**
@@ -788,9 +890,9 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
 
 **Nodes**: `generate_recoding`, `validate_recoding`, `review_recoding`
 
-**Node Names vs File Names**: The three-node pattern uses short internal node names (`generate_recoding`, `validate_recoding`, `review_recoding`) for code clarity. In the project structure (Section 6), these are implemented in file `04_generate_recoding_rules.py`, which contains all three node functions. The separate file `05_human_review_recoding.py` contains an OPTIONAL human review step that can be enabled for additional validation beyond the automatic self-verification loop.
+**Node Names vs File Names**: The three-node pattern uses short internal node names (`generate_recoding`, `validate_recoding`, `review_recoding`) for code clarity. In the project structure (Section 6), these are implemented in file `04_generate_recoding_rules.py`, which contains all three node functions. The separate file `05_human_review_recoding.py` contains an OPTIONAL human review step that can be enabled for additional validation beyond the automatic **Python validation loop**.
 
-**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 4 that work together in a self-verification loop. The workflow step numbering remains 1-15 as shown in the Phase Overview.
+**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 4 that work together in an **automated validation loop**. The Validate node uses Python code (not AI) to perform objective checks. The workflow step numbering remains 1-15 as shown in the Phase Overview.
 
 **Description**: Three-node pattern using LangGraph's explicit pattern. The LLM generates rules, Python validates them, and human optionally reviews. Routing functions control flow between nodes.
 
@@ -1337,10 +1439,10 @@ When a human reviewer rejects the recoding rules (Step 5):
 2. **State Update**: `recoding_rules_approved = False`, comments stored in `approval_comments`
 3. **Loop Back**: Workflow returns to Step 4 (`generate_recoding_rules_node`)
 4. **Feedback Integration**: The AI agent receives the previous rules + human feedback
-5. **Regeneration with Self-Verification**: AI generates new rules addressing the feedback and automatically validates them
+5. **Regeneration with Automated Validation**: AI generates new rules addressing the feedback, and Python code automatically validates them
 6. **Re-review**: Step 5 presents new rules for approval
 
-**Note**: Steps 6 and 7 from the old workflow (separate validation step) are no longer needed since Step 4 now includes automatic self-verification.
+**Note**: Steps 6 and 7 from the old workflow (separate validation step) are no longer needed since Step 4 now includes automated Python validation.
 
 ```python
 # Example feedback integration in Step 4
@@ -1395,7 +1497,7 @@ Please generate new recoding rules that address the feedback above.
 
 **Input**:
 - `recoding_rules`
-- `recoded_data_path`: Where to save recoded data
+- `new_data_path`: Where to save recoded data
 
 **PSPP Syntax Example**:
 ```spss
@@ -1415,7 +1517,7 @@ VARIABLE LABELS q5_rating_top2box 'Satisfaction - Top 2 Box'.
 VALUE LABELS q5_rating_top2box 0 'Others' 1 'Top 2 Box'.
 EXECUTE.
 
-SAVE OUTFILE='{recoded_data_path}'.
+SAVE OUTFILE='{new_data_path}'.
 ```
 
 **Output**:
@@ -1428,52 +1530,73 @@ SAVE OUTFILE='{recoded_data_path}'.
 
 **Node**: `execute_pspp_recoding_node`
 
-**Description**: Run PSPP to apply recoding rules
+**Description**: Run PSPP to apply recoding rules, then extract new_metadata from the output file
 
 **Input**:
 - `pspp_recoding_syntax_path`
 - `spss_file_path` (input)
-- `recoded_data_path` (output)
+- `new_data_path` (output)
 
 **Implementation**:
 ```python
 import subprocess
+import pyreadstat
 
 def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
+    # 1. Execute PSPP to create new_data.sav
     cmd = [
         "pspp",
         state["pspp_recoding_syntax_path"],
-        "-o", state["recoded_data_path"]
+        "-o", state["new_data_path"]
     ]
 
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode != 0:
         state["errors"].append(f"PSPP execution failed: {result.stderr}")
-    else:
-        state["execution_log"].append({
-            "step": "execute_pspp_recoding",
-            "status": "completed"
-        })
+        return state
+
+    state["execution_log"].append({
+        "step": "execute_pspp_recoding",
+        "status": "completed"
+    })
+
+    # 2. Extract new_metadata from new_data.sav using pyreadstat
+    df, meta = pyreadstat.read_sav(state["new_data_path"])
+
+    state["new_metadata"] = {
+        "variable_labels": meta.variable_labels,
+        "value_labels": meta.value_labels,
+        "variable_types": meta.variable_types,
+        "variable_measurements": meta.variable_measurements
+    }
+
+    state["execution_log"].append({
+        "step": "extract_new_metadata",
+        "status": "completed",
+        "total_variables": len(meta.variable_labels)
+    })
 
     return state
 ```
 
 **Output**:
-- `recoded_data_path`: Path to dataset with original + recoded variables
-- `complete_metadata`: Merged metadata containing:
-  * All original variables from Phase 1
-  * All newly created variables from recoding
-  * Source-to-target mappings
+- `new_data_path`: Path to `new_data.sav` with original + new variables
+- `new_metadata`: Complete metadata extracted from `new_data.sav`:
+  * All original variables (copied from input)
+  * All newly created variables (from RECODE commands)
+  * Variable labels for all variables
   * Value labels for all variables
+  * Variable types and measurements
 
-**Metadata Merging Process**:
+**Metadata Extraction Process**:
 
-After PSPP executes the recoding syntax and generates `recoded_data.sav`:
-1. Read the recoded .sav file using pyreadstat
-2. Extract complete variable metadata (original + new variables)
-3. Merge with Phase 1's `filtered_metadata` to preserve context
-4. Store in `state["complete_metadata"]` for use by Phases 3-7
+After PSPP executes the recoding syntax and generates `new_data.sav`:
+1. Read `new_data.sav` using pyreadstat
+2. Extract complete variable metadata (original + new variables) from the file
+3. Store in `state["new_metadata"]` for use by Phases 3-8
+
+**Note**: No manual merging is required — `new_data.sav` contains ALL variables (original and new) with complete metadata, which pyreadstat extracts automatically.
 
 ---
 
@@ -1483,7 +1606,7 @@ After PSPP executes the recoding syntax and generates `recoded_data.sav`:
 
 **Node Names vs File Names**: The three-node pattern uses short internal node names (`generate_indicators`, `validate_indicators`, `review_indicators`) for code clarity. In the project structure (Section 6), these are implemented in file `08_generate_indicators.py`, which contains all three node functions. The separate file `08_1_human_review_indicators.py` contains an OPTIONAL human review step for final approval.
 
-**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 8 that work together in a self-verification loop. The workflow step numbering remains 1-15 as shown in the Phase Overview.
+**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 8 that work together in an **automated validation loop**. The Validate node uses Python code (not AI) to perform objective checks. The workflow step numbering remains 1-15 as shown in the Phase Overview.
 
 **Description**: Three-node pattern using LangGraph's explicit pattern. LLM groups variables into semantic indicators, Python validates the structure, and human optionally reviews.
 
@@ -1531,18 +1654,18 @@ def generate_indicators(state: State) -> State:
     # Build prompt
     if feedback_source == "validation":
         prompt = build_validation_retry_prompt(
-            metadata=state["complete_metadata"],
+            metadata=state["new_metadata"],
             validation_result=feedback,
             iteration=iteration
         )
     elif feedback_source == "human":
         prompt = build_human_feedback_prompt(
-            metadata=state["complete_metadata"],
+            metadata=state["new_metadata"],
             human_feedback=feedback,
             iteration=iteration
         )
     else:
-        prompt = build_indicators_prompt(state["complete_metadata"])
+        prompt = build_indicators_prompt(state["new_metadata"])
 
     response = llm.invoke(prompt)
     indicators = parse_indicators(response)
@@ -1559,7 +1682,7 @@ def generate_indicators(state: State) -> State:
 ```python
 def validate_indicators(state: State) -> State:
     """Python validates indicator structure and references."""
-    validator = IndicatorValidator(state["complete_metadata"])
+    validator = IndicatorValidator(state["new_metadata"])
     result = validator.validate_all_indicators(state["indicators"])
 
     return {
@@ -1639,7 +1762,7 @@ def after_indicators_review(state: State) -> Literal[END, "generate_indicators"]
 
 **Input**:
 - `indicators`: AI-generated indicators
-- `complete_metadata`: Complete metadata from Phase 2
+- `new_metadata`: Complete metadata from Phase 2
 - `config`: Configuration parameters
 
 **Human Review Interface**:
@@ -1654,7 +1777,7 @@ def human_review_indicators_node(state: WorkflowState) -> WorkflowState:
     # Generate human-readable report
     review_report = generate_indicator_review_report(
         state["indicators"],
-        state["complete_metadata"]
+        state["new_metadata"]
     )
 
     # Save report for human review
@@ -1878,7 +2001,7 @@ For rejections, please indicate:
 
 **Node Names vs File Names**: The three-node pattern uses short internal node names (`generate_table_specs`, `validate_table_specs`, `review_table_specs`) for code clarity. In the project structure (Section 6), these are implemented in file `09_generate_table_specs.py`, which contains all three node functions. The separate file `09_1_human_review_table_specs.py` contains an OPTIONAL human review step for final approval.
 
-**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 9 that work together in a self-verification loop. The workflow step numbering remains 1-15 as shown in the Phase Overview.
+**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 9 that work together in an **automated validation loop**. The Validate node uses Python code (not AI) to perform objective checks. The workflow step numbering remains 1-15 as shown in the Phase Overview.
 
 **Description**: Three-node pattern using LangGraph's explicit pattern. LLM defines cross-table structure, Python validates references, and human optionally reviews.
 
@@ -1927,21 +2050,21 @@ def generate_table_specs(state: State) -> State:
     if feedback_source == "validation":
         prompt = build_validation_retry_prompt(
             indicators=state["indicators"],
-            metadata=state["complete_metadata"],
+            metadata=state["new_metadata"],
             validation_result=feedback,
             iteration=iteration
         )
     elif feedback_source == "human":
         prompt = build_human_feedback_prompt(
             indicators=state["indicators"],
-            metadata=state["complete_metadata"],
+            metadata=state["new_metadata"],
             human_feedback=feedback,
             iteration=iteration
         )
     else:
         prompt = build_table_specs_prompt(
             state["indicators"],
-            state["complete_metadata"]
+            state["new_metadata"]
         )
 
     response = llm.invoke(prompt)
@@ -2301,16 +2424,16 @@ For rejections, please indicate:
 
 **Node**: `generate_pspp_table_syntax_node`
 
-**Description**: Generate PSPP syntax for cross-tabulation
+**Description**: Generate PSPP syntax for cross-tabulation (export to CSV format)
 
 **Input**:
 - `table_specifications`
-- `recoded_data_path`
+- `new_data_path`
 
 **PSPP Syntax Example**:
 ```spss
 * Cross-tabulation (Chi-square tests computed separately in Python).
-GET FILE='{recoded_data_path}'.
+GET FILE='{new_data_path}'.
 
 * Apply weighting if specified.
 {if weighting_variable}
@@ -2326,8 +2449,10 @@ CTABLES
   /CATEGORIES VARIABLES=income_group ORDER=A KEY=VALUE EMPTY=INCLUDE
   /CRITERIA CILEVEL=95.
 
-* Export to SAV.
-SAVE OUTFILE='{cross_table_sav_path}'.
+* Export to CSV format for Python statistical analysis.
+EXPORT OUTFILE='{cross_table_csv_path}'
+  /TYPE=CSV
+  /MAP REPLACE.
 ```
 
 **Note**: Chi-square statistics are computed in Step 12 using Python (scipy.stats), not in PSPP. This provides better integration and more detailed statistical output (effect sizes, residuals).
@@ -2342,187 +2467,299 @@ SAVE OUTFILE='{cross_table_sav_path}'.
 
 **Node**: `execute_pspp_tables_node`
 
-**Description**: Run PSPP to generate cross-tabulation tables with observed counts (Chi-square statistics are computed separately in Step 12)
+**Description**: Run PSPP to generate cross-tabulation tables (CSV format) and export table specifications (JSON)
 
 **Input**:
 - `pspp_table_syntax_path`
-- `recoded_data_path` (input)
-- `cross_table_sav_path` (output)
+- `new_data_path` (input)
+- `table_specifications`
+- `cross_table_csv_path` (output)
+- `cross_table_json_path` (output - metadata)
 
 **Implementation**:
 ```python
 import subprocess
+import json
 
 def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
+    # 1. Execute PSPP to generate CSV
     cmd = [
         "pspp",
         state["pspp_table_syntax_path"],
-        "-o", state["cross_table_sav_path"]
+        "-o", state["cross_table_csv_path"]
     ]
 
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode != 0:
         state["errors"].append(f"PSPP execution failed: {result.stderr}")
-    else:
-        state["execution_log"].append({
-            "step": "execute_pspp_tables",
-            "status": "completed"
-        })
+        return state
+
+    state["execution_log"].append({
+        "step": "execute_pspp_tables",
+        "status": "completed"
+    })
+
+    # 2. Export table specifications to JSON for Python script reference
+    with open(state["cross_table_json_path"], "w") as f:
+        json.dump(state["table_specifications"], f, indent=2)
+
+    state["execution_log"].append({
+        "step": "export_table_specs",
+        "status": "completed"
+    })
 
     return state
 ```
 
 **Output**:
-- `cross_table_sav_path`: Path to exported cross-table file (.sav) containing observed counts and weighted data
-- Note: Chi-square statistics are NOT computed by PSPP; they are calculated in Step 12
+- `cross_table_csv_path`: Path to exported cross-table CSV file containing observed counts
+- `cross_table_json_path`: Path to exported table specifications JSON (metadata)
+- Note: Chi-square statistics are NOT computed by PSPP; they are calculated in Step 12a-12b
 
 ---
 
-### Step 12: Compute Chi-Square Statistics
+### Step 12a: Generate Python Statistics Script
 
-**Node**: `compute_chi_square_statistics_node`
+**Node**: `generate_python_stats_script_node`
 
-**Description**: Compute Chi-square test statistics for all cross-tables using Python statistical libraries. This step processes the observed contingency tables from PSPP and calculates statistical significance, effect sizes, and related metrics for each row-column combination.
+**Description**: Generate Python script for Chi-square analysis of cross-tabulation tables. The script will be executed in Step 12b to compute statistical tests.
 
 **Input**:
-- `recoded_data_path`: Path to recoded dataset with all variables
-- `table_specifications`: Table structure definitions (row/column indicators)
-- `config["significance_alpha"]`: Significance threshold (default: 0.05)
-- `weighting_variable`: Name of weighting variable (if applicable)
-- `indicators`: Indicator definitions for variable mapping
+- `cross_table_csv_path`: Path to cross-table CSV file
+- `cross_table_json_path`: Path to table specifications JSON
+- `table_specifications`: Table structure definitions
+- `config` containing:
+  - `min_expected_frequency`: Minimum expected frequency for Chi-square (default: 5)
+  - `cramers_v_min`: Minimum Cramer's V threshold (default: 0.1)
+  - `significance_alpha`: Significance threshold (default: 0.05)
 
-**Libraries**:
-- `scipy.stats.chi2_contingency`: Chi-square test computation
-- `pandas`: Data manipulation and contingency table construction
-- `numpy`: Numerical operations
-- `statsmodels` (optional): Additional statistics like Cramer's V
+**Output**:
+- `python_stats_script`: Generated Python script
+- `python_stats_script_path`: Path to saved .py file
 
 **Implementation**:
 ```python
+def generate_statistics_script(table_specifications: dict, csv_path: str, json_path: str, config: dict) -> str:
+    """Generate Python script for Chi-square statistical analysis."""
+    min_expected = config.get("min_expected_frequency", 5)
+    alpha = config.get("significance_alpha", 0.05)
+
+    return f'''"""
+Auto-generated Python script for statistical analysis of cross-tabulation tables.
+Computes Chi-square statistics, Cramer's V effect size, and standardized residuals.
+"""
+
 import pandas as pd
 import numpy as np
 from scipy.stats import chi2_contingency
-from typing import Dict, List, Any, Optional
+import json
+import argparse
 
-def compute_chi_square_statistics_node(state: WorkflowState) -> WorkflowState:
-    """
-    Compute Chi-square statistics for all cross-table combinations.
+def compute_single_chi_square(
+    df: pd.DataFrame,
+    row_var: str,
+    col_var: str,
+    weight_var: str,
+    alpha: float,
+    table_id: str
+) -> dict:
+    """Compute Chi-square statistics for a single contingency table."""
+    # Build contingency table (weighted or unweighted)
+    if weight_var and weight_var in df.columns:
+        crosstab = pd.crosstab(df[row_var], df[col_var], df[weight_var], aggfunc='sum')
+        sample_size = df[weight_var].sum()
+    else:
+        crosstab = pd.crosstab(df[row_var], df[col_var])
+        sample_size = len(df)
 
-    For each row indicator × column indicator pair:
-    1. Extract or compute the contingency table
-    2. Apply weighting if specified
-    3. Compute Chi-square test statistics
-    4. Calculate effect sizes and additional metrics
-    5. Store results with metadata
-    """
-    from pyreadstat import read_sav
+    # Filter low-frequency cells
+    crosstab = filter_low_frequency_cells(crosstab, min_expected={min_expected})
 
-    # Load recoded data for contingency table construction
-    df, _ = read_sav(state["recoded_data_path"])
+    # Skip if table is too small
+    if crosstab.shape[0] < 2 or crosstab.shape[1] < 2:
+        return create_empty_table_result(table_id)
 
-    # Get configuration
-    alpha = state["config"].get("significance_alpha", 0.05)
-    weighting_var = state.get("weighting_variable")
+    # Compute Chi-square test
+    chi2, p_value, dof, expected = chi2_contingency(crosstab)
 
-    # Get table specifications
-    table_specs = state["table_specifications"]
-    row_indicators = table_specs.get("row_indicators", [])
-    column_indicators = table_specs.get("column_indicators", [])
+    # Compute Cramer's V effect size
+    n = crosstab.sum().sum()
+    min_dim = min(crosstab.shape) - 1
+    cramers_v = np.sqrt(chi2 / (n * min_dim)) if n > 0 and min_dim > 0 else 0
 
-    # Get indicator metadata for variable names
-    indicators_map = {ind["id"]: ind for ind in state["indicators"]}
+    return {{
+        "table_id": table_id,
+        "chi_square_stats": {{
+            "chi_square": float(chi2),
+            "p_value": float(p_value),
+            "degrees_of_freedom": int(dof),
+            "is_significant": p_value < alpha
+        }},
+        "effect_size": {{
+            "cramers_v": float(cramers_v),
+            "interpretation": interpret_cramers_v(cramers_v)
+        }},
+        "sample_size": int(sample_size)
+    }}
 
-    # Process each row × column combination
-    all_tables = []
-    table_id = 0
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--csv", required=True)
+    parser.add_argument("--json", required=True)
+    parser.add_argument("--alpha", type=float, default={alpha})
+    parser.add_argument("--output", required=True)
+    args = parser.parse_args()
 
-    for row_ind_id in row_indicators:
-        for col_ind_id in column_indicators:
-            table_id += 1
+    # Load data
+    df = pd.read_csv(args.csv)
+    with open(args.json, "r") as f:
+        table_specs = json.load(f)
 
-            # Get variable names for this indicator pair
-            row_ind = indicators_map[row_ind_id]
-            col_ind = indicators_map[col_ind_id]
+    # Compute statistics for each table
+    results = []
+    for spec in table_specs["tables"]:
+        result = compute_single_chi_square(
+            df, spec["row_var"], spec["col_var"],
+            spec.get("weight_var"), args.alpha, spec["table_id"]
+        )
+        results.append(result)
 
-            # Get underlying variables and metric type
-            row_vars = row_ind.get("underlying_variables", [])
-            col_vars = col_ind.get("underlying_variables", [])
-            row_metric = row_ind.get("metric", "distribution")
-            col_metric = col_ind.get("metric", "distribution")
+    # Save results
+    with open(args.output, "w") as f:
+        json.dump(results, f, indent=2)
 
-            if not row_vars or not col_vars:
-                continue
+if __name__ == "__main__":
+    main()
+'''
 
-            # Handle multi-variable indicators based on metric type
-            # See Step 8: Generate Indicators for detailed explanation of three scenarios
-            if row_metric == "average" and len(row_vars) > 1:
-                # Scenario 1: Average metric - each variable becomes one row in the crosstab
-                # For matrix rating questions, compute mean for each variable by column categories
-                table_results = compute_average_metric_tables(
-                    df=df, row_vars=row_vars, col_var=col_vars[0],
-                    weight_var=weighting_var, alpha=alpha,
-                    table_id_base=f"TBL_{table_id:03d}",
-                    row_ind_name=row_ind["name"], col_ind_name=col_ind["name"]
-                )
-                all_tables.extend(table_results)
-                # Adjust table_id counter: subtract 1 since next iteration will increment
-                # Only adjust if results were returned to avoid negative adjustment
-                if len(table_results) > 0:
-                    table_id += len(table_results) - 1
+def generate_python_stats_script_node(state: WorkflowState) -> WorkflowState:
+    """Generate Python script for statistical analysis."""
+    python_script = generate_statistics_script(
+        table_specifications=state["table_specifications"],
+        csv_path=state["cross_table_csv_path"],
+        json_path=state["cross_table_json_path"],
+        config=state["config"]
+    )
 
-            elif row_metric == "percentage" and len(row_vars) > 1:
-                # Scenario 2: Percentage metric - combine as multiple response set
-                # For binary (0/1) variables, create one table with variables as rows
-                table_result = compute_percentage_metric_table(
-                    df=df, row_vars=row_vars, col_var=col_vars[0],
-                    weight_var=weighting_var, alpha=alpha,
-                    table_id=f"TBL_{table_id:03d}",
-                    row_ind_name=row_ind["name"], col_ind_name=col_ind["name"]
-                )
-                all_tables.append(table_result)
+    state["python_stats_script"] = python_script
+    state["python_stats_script_path"] = f"{state['config']['output_dir']}/python_stats_script.py"
 
-            elif row_metric == "distribution" and len(row_vars) > 1:
-                # Scenario 3: Distribution metric - each variable gets its own table
-                # For categorical variables, create separate tables per variable
-                for i, row_var in enumerate(row_vars):
-                    table_result = compute_single_chi_square(
-                        df=df,
-                        row_var=row_var,
-                        col_var=col_vars[0],
-                        weight_var=weighting_var,
-                        alpha=alpha,
-                        table_id=f"TBL_{table_id:03d}_{i+1}",
-                        row_ind_name=f"{row_ind['name']} - {row_var}",
-                        col_ind_name=col_ind["name"]
-                    )
-                    all_tables.append(table_result)
+    with open(state["python_stats_script_path"], "w") as f:
+        f.write(python_script)
 
-            else:
-                # Single variable indicator - use standard chi-square computation
-                table_result = compute_single_chi_square(
-                    df=df,
-                    row_var=row_vars[0],
-                    col_var=col_vars[0],
-                    weight_var=weighting_var,
-                    alpha=alpha,
-                    table_id=f"TBL_{table_id:03d}",
-                    row_ind_name=row_ind["name"],
-                    col_ind_name=col_ind["name"]
-                )
-                all_tables.append(table_result)
-
-    # Update state
-    state["all_small_tables"] = all_tables
     state["execution_log"].append({
-        "step": "compute_chi_square_statistics",
-        "status": "completed",
-        "total_tables_computed": len(all_tables),
-        "significant_tables": sum(1 for t in all_tables if t["chi_square_stats"]["is_significant"]),
-        "alpha": alpha
+        "step": "generate_python_stats_script",
+        "status": "completed"
     })
 
     return state
+```
+
+---
+
+### Step 12b: Execute Python Statistics Script
+
+**Node**: `execute_python_stats_node`
+
+**Description**: Execute the generated Python script to compute Chi-square statistics for all cross-tables. This step processes the observed contingency tables from the CSV file and calculates statistical significance, effect sizes, and related metrics for each row-column combination.
+
+**Input**:
+- `python_stats_script_path`: Path to generated Python script
+- `cross_table_csv_path`: Path to cross-table CSV file with observed counts
+- `cross_table_json_path`: Path to table specifications JSON (metadata)
+- `config["significance_alpha"]`: Significance threshold (default: 0.05)
+
+**Output**:
+- `all_small_tables`: List of all computed tables with Chi-square statistics, effect sizes, and residuals
+- `statistical_analysis_summary.json`: Summary containing total_tables, significant_tables count, tables_by_effect_size breakdown
+
+**Libraries**:
+- `scipy.stats.chi2_contingency`: Chi-square test computation (in generated script)
+- `pandas`: Data manipulation and contingency table construction (in generated script)
+- `numpy`: Numerical operations (in generated script)
+- `subprocess`: Execute the generated Python script
+
+**Implementation**:
+```python
+import subprocess
+import json
+import pandas as pd
+from typing import Dict, List, Any, Optional
+
+def execute_python_stats_node(state: WorkflowState) -> WorkflowState:
+    """
+    Execute the generated Python script to compute Chi-square statistics.
+
+    The script was generated in Step 12a and contains:
+    - Data loading from CSV and JSON
+    - Chi-square test computation for each table
+    - Effect size calculation (Cramer's V)
+    - Standardized residuals computation
+    - Results export to JSON
+    """
+    # Execute the generated Python script
+    cmd = [
+        "python",
+        state["python_stats_script_path"],
+        "--csv", state["cross_table_csv_path"],
+        "--json", state["cross_table_json_path"],
+        "--alpha", str(state["config"].get("significance_alpha", 0.05)),
+        "--output", f"{state['config']['output_dir']}/all_small_tables.json"
+    ]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        state["errors"].append(f"Statistical analysis failed: {result.stderr}")
+        return state
+
+    # Load the computed results
+    with open(f"{state['config']['output_dir']}/all_small_tables.json", "r") as f:
+        all_small_tables = json.load(f)
+
+    # Generate statistical summary
+    statistical_summary = {
+        "total_tables": len(all_small_tables),
+        "significant_tables": sum(1 for t in all_small_tables if t["chi_square_stats"]["is_significant"]),
+        "tables_by_effect_size": {
+            "negligible": sum(1 for t in all_small_tables if t.get("effect_size", {}).get("cramers_v", 0) < 0.1),
+            "small": sum(1 for t in all_small_tables if 0.1 <= t.get("effect_size", {}).get("cramers_v", 0) < 0.2),
+            "medium": sum(1 for t in all_small_tables if 0.2 <= t.get("effect_size", {}).get("cramers_v", 0) < 0.3),
+            "large": sum(1 for t in all_small_tables if t.get("effect_size", {}).get("cramers_v", 0) >= 0.3)
+        },
+        "alpha": state["config"].get("significance_alpha", 0.05),
+        "skipped_tables": sum(1 for t in all_small_tables if t.get("metadata", {}).get("skipped", False))
+    }
+
+    # Save statistical summary
+    summary_path = f"{state['config']['output_dir']}/statistical_analysis_summary.json"
+    with open(summary_path, "w") as f:
+        json.dump(statistical_summary, f, indent=2)
+
+    state["all_small_tables"] = all_small_tables
+    state["statistical_summary_path"] = summary_path
+    state["statistical_summary"] = statistical_summary
+
+    state["execution_log"].append({
+        "step": "execute_python_stats",
+        "status": "completed",
+        "total_tables_computed": len(all_small_tables),
+        "significant_tables": statistical_summary["significant_tables"],
+        "alpha": state["config"].get("significance_alpha", 0.05)
+    })
+
+    return state
+```
+
+---
+
+### Generated Python Script Reference
+
+The following shows the implementation that gets written to `python_stats_script.py` in Step 12a. This script is executed in Step 12b:
+
+```python
+# ... (existing helper functions: compute_single_chi_square, etc.)
 
 
 def compute_single_chi_square(
@@ -3071,16 +3308,21 @@ def compute_percentage_metric_table(
 
 ---
 
-### Step 13: Filter Significant Tables
+### Step 13a: Generate Filter List
 
-**Node**: `filter_significant_tables_node`
+**Node**: `generate_filter_list_node`
 
-**Description**: Filter tables using practical business criteria: Cramer's V effect size and minimum sample size. This approach is more interpretable for stakeholders than p-value filtering.
+**Description**: Generate filter list based on statistical analysis results. This step evaluates all tables against filtering criteria and produces a pass/fail status for each table, creating an audit trail before filtering.
 
 **Input**:
-- `all_small_tables`: List of all tables with Chi-square statistics from Step 12
+- `statistical_summary_path`: Path to statistical_analysis_summary.json from Step 12
+- `all_small_tables`: All tables with chi-square statistics from Step 12b
 - `config["cramers_v_min"]`: Minimum effect size threshold (default: 0.1)
 - `config["count_min"]`: Minimum total count in crosstab (default: 30)
+
+**Output**:
+- `filter_list`: List of all tables with pass/fail status and reasons
+- `filter_list_json_path`: Path to saved filter_list.json
 
 **Filtering Criteria**:
 
@@ -3097,7 +3339,91 @@ def compute_percentage_metric_table(
 
 **Implementation**:
 ```python
-def filter_significant_tables_node(state: WorkflowState) -> WorkflowState:
+def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
+    """Step 13a: Generate filter list from statistical summary"""
+    cramers_v_min = state["config"].get("cramers_v_min", 0.1)
+    count_min = state["config"].get("count_min", 30)
+
+    all_tables = state.get("all_small_tables", [])
+
+    # Build filter list with pass/fail status for each table
+    filter_list = []
+    for table in all_tables:
+        skipped = table.get("metadata", {}).get("skipped", False)
+        cramers_v = table.get("effect_size", {}).get("cramers_v", 0)
+        sample_size = table.get("metadata", {}).get("sample_size", 0)
+
+        # Determine pass/fail reasons
+        reasons = []
+        passed = True
+
+        if skipped:
+            passed = False
+            reasons.append("skipped")
+        if cramers_v < cramers_v_min:
+            passed = False
+            reasons.append(f"effect_size_too_low ({cramers_v:.3f} < {cramers_v_min})")
+        if sample_size < count_min:
+            passed = False
+            reasons.append(f"sample_size_too_small ({sample_size} < {count_min})")
+
+        filter_list.append({
+            "table_id": table["table_id"],
+            "row_indicator": table["row_indicator"],
+            "column_indicator": table["column_indicator"],
+            "passed": passed,
+            "reasons": reasons if not passed else ["passed"],
+            "cramers_v": cramers_v,
+            "sample_size": sample_size
+        })
+
+    # Save filter list to JSON
+    import json
+    filter_list_path = f"{state['config']['output_dir']}/filter_list.json"
+    with open(filter_list_path, "w") as f:
+        json.dump(filter_list, f, indent=2)
+
+    state["filter_list"] = filter_list
+    state["filter_list_json_path"] = filter_list_path
+
+    state["execution_log"].append({
+        "step": "generate_filter_list",
+        "status": "completed",
+        "total_tables": len(all_tables),
+        "filter_criteria": {
+            "cramers_v_min": cramers_v_min,
+            "count_min": count_min
+        }
+    })
+
+    return state
+```
+
+**Output**:
+- `filter_list`: Pass/fail status for all tables with reasons
+- `filter_list_json_path`: Saved filter list
+
+---
+
+### Step 13b: Apply Filter to Tables
+
+**Node**: `apply_filter_to_tables_node`
+
+**Description**: Apply filter list to cross-table results to get significant tables. This step uses the filter list generated in Step 13a to filter the cross-table data.
+
+**Input**:
+- `filter_list_json_path`: Path to filter_list.json (from Step 13a)
+- `cross_table_csv_path`: Path to cross_table.csv (from Phase 4)
+- `cross_table_json_path`: Path to cross_table.json (from Phase 4)
+
+**Output**:
+- `significant_tables`: Tables passing both filter criteria (Cramer's V ≥ 0.1, count ≥ 30), sorted by effect size
+- `significant_tables_json_path`: Path to saved significant_tables.json
+
+**Implementation**:
+```python
+def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
+    """Step 13b: Apply filter to cross-table results"""
     cramers_v_min = state["config"].get("cramers_v_min", 0.1)
     count_min = state["config"].get("count_min", 30)
 
@@ -3119,7 +3445,7 @@ def filter_significant_tables_node(state: WorkflowState) -> WorkflowState:
 
     state["significant_tables"] = significant
 
-    # Save to JSON
+    # Save significant tables to JSON
     import json
     significant_path = f"{state['config']['output_dir']}/significant_tables.json"
     with open(significant_path, "w") as f:
@@ -3128,7 +3454,7 @@ def filter_significant_tables_node(state: WorkflowState) -> WorkflowState:
     state["significant_tables_json_path"] = significant_path
 
     state["execution_log"].append({
-        "step": "filter_significant_tables",
+        "step": "apply_filter_to_tables",
         "status": "completed",
         "total_tables": len(all_tables),
         "skipped_tables": skipped_count,
@@ -3148,14 +3474,16 @@ def filter_significant_tables_node(state: WorkflowState) -> WorkflowState:
 
 ---
 
-### Step 14: Generate PowerPoint
+### Step 14: Generate PowerPoint (Phase 7: Executive Summary Presentation)
 
 **Node**: `generate_powerpoint_node`
 
-**Description**: Create PowerPoint presentation with tables and charts
+**Phase**: 7 - Executive Summary Presentation
+
+**Description**: Create PowerPoint presentation with significant tables only (executive summary)
 
 **Input**:
-- `significant_tables`
+- `significant_tables` (filtered output from Phase 6)
 - `config["ppt_template"]`: PowerPoint template path
 - `config["ppt_config"]`: Layout and styling preferences
 
@@ -3175,28 +3503,35 @@ Slide N+1: Conclusion
 ```
 
 **Output**:
-- `powerpoint_path`: Generated .pptx file
+- `powerpoint_path`: Generated .pptx file (significant tables only)
 - `charts_generated`: List of chart metadata
 
 ---
 
-### Step 15: Generate HTML Dashboard
+### Step 15: Generate HTML Dashboard (Phase 8: Full Report Dashboard)
 
 **Node**: `generate_html_dashboard_node`
 
-**Description**: Create interactive HTML dashboard
+**Phase**: 8 - Full Report Dashboard
+
+**Description**: Create interactive HTML dashboard showing ALL cross-tabulation tables (not just significant ones)
 
 **Input**:
-- `significant_tables`
+- `cross_table_csv_path`: Path to cross_table.csv (from Phase 4)
+- `cross_table_json_path`: Path to cross_table.json (from Phase 4)
 - `config["html_template"]`: HTML template path
 - `config["chart_library"]`: Chart library (default: ECharts)
+
+**Note**: HTML Dashboard shows ALL cross-table tables from Phase 4, providing a comprehensive reference. Tables are tagged with significance status for easy filtering.
 
 **Libraries**:
 - `jinja2`: HTML templating
 - `echarts` (via CDN): Interactive charts
 
 **Dashboard Features**:
-- Filterable table grid
+- **Comprehensive coverage**: Shows ALL cross-tabulation tables (not just significant ones)
+- **Significance indicators**: Tables are tagged with significance status for easy filtering
+- Filterable table grid (users can filter to show only significant tables)
 - Interactive charts
 - Export to CSV/PNG
 - Responsive design
@@ -3283,7 +3618,7 @@ When `create_timestamp_dir` is enabled (default), the workflow automatically cre
 | **PowerPoint** | python-pptx | Presentation generation |
 | **Charts** | matplotlib, seaborn, plotly | Visualization |
 | **HTML Dashboard** | Jinja2, ECharts | Interactive web output |
-| **Validation** | Pydantic, Python | Data validation, self-verification logic for recoding rules |
+| **Validation** | Pydantic, Python | Data validation, automated validation logic for recoding rules (Python checks, not AI) |
 
 ### 5.1 PSPP Reference
 
@@ -3313,7 +3648,7 @@ This workflow uses PSPP, the open-source alternative to SPSS. Complete PSPP synt
 │   │   ├── 01_extract_spss.py
 │   │   ├── 02_transform_metadata.py
 │   │   ├── 03_preliminary_filter.py
-│   │   ├── 04_generate_recoding_rules.py  # Includes self-verification logic
+│   │   ├── 04_generate_recoding_rules.py  # Includes automated validation logic (Python)
 │   │   ├── 05_human_review_recoding.py  # Optional semantic review
 │   │   ├── 06_generate_pspp_recoding_syntax.py
 │   │   ├── 07_execute_pspp_recoding.py
@@ -3336,7 +3671,7 @@ This workflow uses PSPP, the open-source alternative to SPSS. Complete PSPP synt
 │   │   ├── pspp_generator.py
 │   │   ├── metadata_transformer.py
 │   │   ├── ai_prompts.py
-│   │   ├── validators.py  # Used by Step 4 self-verification
+│   │   ├── validators.py  # Used by Step 4 automated validation (Python checks)
 │   │   ├── statistical_analysis.py    # Chi-square, effect sizes, residuals
 │   │   └── review_reporters.py
 │   └── main.py
@@ -3487,14 +3822,14 @@ The workflow includes three human review checkpoints, each positioned at the end
 
 | Phase | Step | Review Point | Purpose |
 |-------|------|--------------|---------|
-| **2** | 4 | Self-Verification | **Automatic**: AI validates and refines until all objective checks pass |
+| **2** | 4 | Automated Validation | **Automatic**: Python code validates AI output and refines until all objective checks pass |
 | **2** | 5 | Recoding Rules (Optional) | **Semantic**: Validate business logic appropriateness and research alignment |
 | **3** | 8.1 | Indicators | Ensure indicator groupings align with research objectives |
 | **4** | 9.1 | Table Specifications | Verify crosstab structure answers the research questions |
 
-**New Pattern for Phase 2**: **AI Generation → Self-Verification Loop (auto-refine) → Optional Semantic Review → Approval/Rejection**
+**New Pattern for Phase 2**: **AI Generation → Automated Validation Loop (Python) → Optional Semantic Review → Approval/Rejection**
 
-**Key Change**: Step 4 now includes automatic self-verification that handles all objective validation (syntax, structure, logic errors). Human review in Step 5 is optional and focuses only on semantic validation that requires domain expertise.
+**Key Change**: Step 4 now includes **automated Python validation** that handles all objective validation (syntax, structure, logic errors). Human review in Step 5 is optional and focuses only on semantic validation that requires domain expertise.
 
 ### 10.1 Approval Flow
 
