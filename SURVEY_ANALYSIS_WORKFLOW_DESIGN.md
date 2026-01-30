@@ -4,18 +4,21 @@
 
 # Table of Contents
 
-1. [Introduction](#1-overview)
+1. [Overview](#1-overview)
 2. [Workflow Architecture](#2-workflow-architecture)
-3. [State Management](#3-state-management)
-4. [Detailed Step Specifications](#4-detailed-step-specifications)
-5. [Configuration](#5-configuration)
-6. [Technology Stack](#6-technology-stack)
-7. [Project Structure](#7-project-structure)
-8. [Execution Guide](#8-execution-example)
-9. [Human-in-the-Loop Implementation](#10-human-in-the-loop-implementation)
-10. [Error Handling & Recovery](#8-error-handling--recovery)
-11. [Future Enhancements](#9-future-enhancements)
-12. [Appendix](#11-appendix)
+   - 2.1 [High-Level Pipeline](#21-high-level-pipeline)
+   - 2.2 [Phase Descriptions](#22-phase-descriptions)
+   - 2.3 [Three-Node Pattern for AI-Driven Steps](#23-three-node-pattern-for-ai-driven-steps)
+   - 2.4 [LangGraph State Management](#24-langgraph-state-management)
+3. [Detailed Step Specifications](#3-detailed-step-specifications)
+4. [Configuration](#4-configuration)
+5. [Technology Stack](#5-technology-stack)
+6. [Project Structure](#6-project-structure)
+7. [Execution Example](#7-execution-example)
+8. [Error Handling & Recovery](#8-error-handling--recovery)
+9. [Future Enhancements](#9-future-enhancements)
+10. [Human-in-the-Loop Implementation](#10-human-in-the-loop-implementation)
+11. [Appendix](#11-appendix)
 
 ---
 
