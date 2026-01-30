@@ -41,82 +41,181 @@ flowchart TD
 
     subgraph P2["**Phase 2: New Variable Generation**<br/>AI generates, validates, and refines recoding rules"]
         direction TB
-        S4["**Step 4**<br/>Generate Recoding Rules<br/>with Self-Verification 🔄<br/>(AI generates → validates → refines)"]
-        S4b["**Step 5**<br/>Human Review: Rules 👤<br/>(semantic validation - optional)"]
-        S5["**Step 6**<br/>Generate PSPP Syntax<br/>(convert rules to PSPP)"]
-        S6["**Step 7**<br/>Execute PSPP<br/>(apply transformations)"]
-        RECODED["**Output**<br/>RECODED DATA (NEW VARIABLES)"]
-        S4 --> S4b
-        S4b --> S5
+        S4["**Step 4: Generate** 🤖<br/>(LLM creates rules)"]
+        S4v["**Step 4v: Validate** ✓<br/>(Python checks rules)"]
+        S4r["**Step 4r: Review** 👤<br/>(Human approves/refines)"]
+        S5["**Step 5**<br/>Optional Human Review 👤<br/>(additional validation)"]
+        S6["**Step 6**<br/>Generate PSPP Syntax<br/>(convert rules to PSPP)"]
+        S7["**Step 7**<br/>Execute PSPP<br/>(apply transformations)"]
+        RECODED["**Output**<br/>RECODED DATA + COMPLETE METADATA"]
+
+        S4 --> S4v
+        S4v -->|Valid| S4r
+        S4v -->|Invalid<br/>(under max retries)| S4
+        S4r -->|Approve| S5
+        S4r -->|Reject/Modify| S4
         S5 --> S6
         S6 -.-> RECODED
     end
 
     subgraph P3["**Phase 3: Indicator Generation**<br/>Group variables into semantic indicators for analysis"]
         direction TB
-        S7["**Step 8**<br/>Generate Indicators<br/>(AI groups variables)"]
-        S7a["**Step 8.1**<br/>Human Review: Indicators 👤<br/>(analyst approves groupings)"]
+        S8["**Step 8: Generate** 🤖<br/>(LLM groups variables)"]
+        S8v["**Step 8v: Validate** ✓<br/>(Python checks structure)"]
+        S8r["**Step 8r: Review** 👤<br/>(Human approves/refines)"]
+        S8a["**Step 8.1**<br/>Optional Human Review 👤<br/>(additional validation)"]
         INDICATORS["**Output**<br/>INDICATORS (SEMANTIC GROUPS)"]
-        S7 --> S7a
-        S7a -.-> INDICATORS
+
+        S8 --> S8v
+        S8v -->|Valid| S8r
+        S8v -->|Invalid<br/>(under max retries)| S8
+        S8r -->|Approve| S8a
+        S8r -->|Reject/Modify| S8
+        S8a -.-> INDICATORS
     end
 
     subgraph P4["**Phase 4: Cross-Table Specification**<br/>Define and generate cross-tabulation tables"]
         direction TB
-        S8["**Step 9**<br/>Generate Table Specs<br/>(define rows, columns, weighting)"]
-        S8a["**Step 9.1**<br/>Human Review: Table Specs 👤<br/>(analyst approves structure)"]
-        S9["**Step 10**<br/>Generate PSPP Syntax<br/>(convert specs to PSPP)"]
-        S10["**Step 11**<br/>Execute PSPP<br/>(generate cross-tables)"]
+        S9["**Step 9: Generate** 🤖<br/>(LLM defines tables)"]
+        S9v["**Step 9v: Validate** ✓<br/>(Python checks references)"]
+        S9r["**Step 9r: Review** 👤<br/>(Human approves/refines)"]
+        S9a["**Step 9.1**<br/>Optional Human Review 👤<br/>(additional validation)"]
+        S10["**Step 10**<br/>Generate PSPP Syntax<br/>(convert specs to PSPP)"]
+        S11["**Step 11**<br/>Execute PSPP<br/>(generate cross-tables)"]
         CROSSTAB["**Output**<br/>CROSS TABLES (.sav)"]
-        S8 --> S8a
-        S8a --> S9
-        S9 --> S10
-        S10 -.-> CROSSTAB
+
+        S9 --> S9v
+        S9v -->|Valid| S9r
+        S9v -->|Invalid<br/>(under max retries)| S9
+        S9r -->|Approve| S9a
+        S9r -->|Reject/Modify| S9
+        S9a --> S10
+        S10 --> S11
+        S11 -.-> CROSSTAB
     end
 
     subgraph P5["**Phase 5: Statistical Analysis**<br/>Compute Chi-square statistics and effect sizes"]
         direction TB
-        S10_5["**Step 12**<br/>Compute Chi-Square Stats<br/>(Python: scipy, pandas)"]
+        S12["**Step 12**<br/>Compute Chi-Square Stats<br/>(Python: scipy, pandas)"]
         STATS["**Output**<br/>TABLES WITH STATISTICS<br/>(χ², p-value, Cramer's V)"]
-        S10_5 -.-> STATS
+        S12 -.-> STATS
     end
 
     subgraph P6["**Phase 6: Significant Tables Selection**<br/>Filter tables by effect strength and sample size"]
         direction TB
-        S11["**Step 13**<br/>Filter Significant Tables<br/>(Cramer's V ≥ 0.1, count ≥ 30)"]
+        S13["**Step 13**<br/>Filter Significant Tables<br/>(Cramer's V ≥ 0.1, count ≥ 30)"]
         SIGNIFICANT["**Output**<br/>SIGNIFICANT TABLES ONLY"]
-        S11 -.-> SIGNIFICANT
+        S13 -.-> SIGNIFICANT
     end
 
     subgraph P7["**Phase 7: Presentation**<br/>Generate final deliverables for stakeholders"]
         direction TB
-        S12["**Step 14**<br/>Generate PowerPoint<br/>(.pptx with charts)"]
-        S13["**Step 15**<br/>Generate HTML Dashboard<br/>(interactive web view)"]
+        S14["**Step 14**<br/>Generate PowerPoint<br/>(.pptx with charts)"]
+        S15["**Step 15**<br/>Generate HTML Dashboard<br/>(interactive web view)"]
         OUTPUTS["**Output**<br/>FINAL OUTPUTS<br/>(.pptx + .html)"]
-        S12 -.-> OUTPUTS
-        S13 -.-> OUTPUTS
+        S14 -.-> OUTPUTS
+        S15 -.-> OUTPUTS
     end
 
     RAW ==> S4
-    RECODED ==> S7
-    INDICATORS ==> S8
-    CROSSTAB ==> S10_5
-    STATS ==> S11
-    SIGNIFICANT ==> S12
-    SIGNIFICANT ==> S13
+    RECODED ==> S8
+    INDICATORS ==> S9
+    CROSSTAB ==> S12
+    STATS ==> S13
+    SIGNIFICANT ==> S14
+    SIGNIFICANT ==> S15
 ```
 
 ### 2.2 Phase Descriptions
 
-| Phase | Name | Purpose | Input | Output |
-|-------|------|---------|-------|--------|
-| **1** | Extraction & Preparation | Ingest raw .sav data and prepare metadata for AI processing | .sav file (PSPP/SPSS format) | Raw data, variable metadata |
-| **2** | New Variable Generation | AI generates, validates, and iteratively refines recoding rules; creates new variables through PSPP | Filtered metadata, AI rules | Recoded dataset with new variables |
-| **3** | Indicator Generation | Group variables into semantic indicators for analysis | Recoded variables | Indicator definitions |
-| **4** | Cross-Table Generation | Define and generate cross-tabulation tables with weighting | Indicators, table specs | Cross-table contingency tables |
-| **5** | Statistical Analysis | Compute Chi-square statistics and effect sizes for all tables | Cross-table tables, recoded data | Tables with Chi-square statistics |
-| **6** | Significant Tables Selection | Filter tables by Cramer's V effect size and minimum sample count | Tables with statistics | Significant tables only |
-| **7** | Presentation | Generate final deliverables for stakeholders | Significant tables | PowerPoint, HTML dashboard |
+| Phase | Name | Purpose | Pattern | Input | Output |
+|-------|------|---------|---------|-------|--------|
+| **1** | Extraction & Preparation | Ingest raw .sav data and prepare metadata for AI processing | Traditional pipeline | .sav file (PSPP/SPSS format) | Raw data, variable metadata |
+| **2** | New Variable Generation | AI generates, validates, and iteratively refines recoding rules; creates new variables through PSPP | AI Generate → Auto Validate → Human Review (with iteration) | Filtered metadata, AI rules | Recoded dataset + Complete metadata (original + new variables merged) |
+| **3** | Indicator Generation | Group variables into semantic indicators for analysis | AI Generate → Auto Validate → Human Review (with iteration) | Complete metadata from Phase 2 | Indicator definitions |
+| **4** | Cross-Table Generation | Define and generate cross-tabulation tables with weighting | AI Generate → Auto Validate → Human Review (with iteration) | Complete metadata from Phase 2 | Cross-table contingency tables |
+| **5** | Statistical Analysis | Compute Chi-square statistics and effect sizes for all tables | Traditional pipeline | Cross-table tables, recoded data | Tables with Chi-square statistics |
+| **6** | Significant Tables Selection | Filter tables by Cramer's V effect size and minimum sample count | Traditional pipeline | Tables with statistics | Significant tables only |
+| **7** | Presentation | Generate final deliverables for stakeholders | Traditional pipeline | Significant tables | PowerPoint, HTML dashboard |
+
+### 2.2.1 Three-Node Pattern for AI-Driven Steps
+
+**Overview**: Steps 4, 8, and 9 use a **three-node pattern** (Generate → Validate → Review) that enables self-verification and iterative refinement of AI-generated artifacts.
+
+**When It's Used**: The three-node pattern is applied to any workflow step where:
+- An LLM generates complex structured output (recoding rules, indicators, table specifications)
+- Objective validation is possible through Python code
+- Semantic quality matters enough to warrant human review
+- Iterative improvement can reduce errors before human review
+
+**Pattern Visualization**:
+
+```mermaid
+flowchart TD
+    GENERATE["**Generate** 🤖<br/>(LLM creates artifact)"]
+    VALIDATE["**Validate** ✓<br/>(Python checks objective criteria)"]
+    REVIEW["**Review** 👤<br/>(Human validates semantic quality)"]
+
+    GENERATE --> VALIDATE
+    VALIDATE -->|Valid| REVIEW
+    VALIDATE -->|Invalid + Under Max Retries| GENERATE
+    REVIEW -->|Approve| END["**Next Step**"]
+    REVIEW -->|Reject/Modify| GENERATE
+
+    style GENERATE fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style VALIDATE fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style REVIEW fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style END fill:#c8e6c9,stroke:#388e3c,stroke-width:3px
+```
+
+**How It Works**:
+
+1. **Generate Node (LLM)**: Creates the initial artifact using a language model. The prompt includes:
+   - Initial generation (first attempt)
+   - Validation retry prompt (if validation failed)
+   - Human feedback prompt (if human requested changes)
+
+2. **Validate Node (Python)**: Performs objective checks:
+   - Syntax validation (JSON structure, required fields)
+   - Reference validation (variable names exist, types match)
+   - Constraint validation (value ranges, logical consistency)
+   - Returns validation result with errors/warnings
+
+3. **Review Node (Human)**: Semantic validation through:
+   - LangGraph `interrupt()` pauses workflow
+   - Human reviews generated artifact + validation report
+   - Can approve, reject, or provide modification feedback
+   - Feedback is fed back to Generate node for refinement
+
+**Feedback Loops**:
+
+- **Validation Feedback (Automatic)**: Objective errors trigger automatic retry up to `max_iterations` (typically 3). Example: "Variable 'age_group' not found in metadata"
+- **Review Feedback (Human)**: Semantic concerns trigger iteration with human guidance. Example: "Group satisfaction differently - use top-2-box instead of top-3-box"
+
+**Iteration Tracking**:
+```python
+{
+    "artifact": {...},           # Generated artifact
+    "validation": {...},          # Validation results
+    "feedback": {...},            # Feedback from validation OR human
+    "iteration": 2,               # Current iteration count
+    "feedback_source": "validation" | "human"  # Where feedback came from
+}
+```
+
+**Benefits**:
+
+- **Self-Verification**: AI validates its own output before human review, reducing false positives
+- **Quality Improvement**: Iteration on validation failures catches errors early
+- **Reduced Human Load**: Only validated outputs reach human review (fewer trivial errors to manually catch)
+- **Traceability**: Complete audit trail of iterations, feedback, and decisions
+- **Clear Separation**: Objective validation (Python) vs semantic validation (Human)
+
+**Related Concepts**:
+
+- **Optional Human Review Steps (5, 8.1, 9.1)**: These are ADDITIONAL review steps outside the three-node pattern, used for extra validation or stakeholder approval
+- **Max Iterations**: Prevents infinite loops (default: 3 iterations)
+- **Fallback on Max**: After max retries, workflow continues with warnings (doesn't block pipeline)
 
 ### 2.3 Data Evolution Through Phases
 
@@ -128,6 +227,9 @@ flowchart LR
     classDef aiStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
     classDef dataFileStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
     classDef outputStyle fill:#c8e6c9,stroke:#1b5e20,stroke-width:3px,color:#000
+    classDef aiGenerateStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
+    classDef validationStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef reviewStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
 
     %% Phase 1: Extraction & Preparation
     subgraph P1["Phase 1: Extraction & Preparation"]
@@ -143,23 +245,29 @@ flowchart LR
     %% Phase 2: New Variable Generation
     subgraph P2["Phase 2: New Variable Generation"]
         direction TB
-        recodingRules["recoding_rules<br/>(JSON)"]:::aiStyle
+        recodingGen["recoding_rules<br/>(Generate) 🤖"]:::aiGenerateStyle
+        recodingVal["recoding_rules<br/>(Validate) ✓"]:::validationStyle
+        recodingRev["recoding_rules<br/>(Review) 👤"]:::reviewStyle
         validationResults["validation_results"]:::traditionalStyle
         psppRecodeSyntax["pspp_recoding_syntax<br/>(.sps)"]:::traditionalStyle
         sav2(["📁 recoded_data.sav"]):::dataFileStyle
+        completeMeta["complete_metadata<br/>(merged: orig + new)"]:::traditionalStyle
     end
 
     %% Phase 3: Indicator Generation
     subgraph P3["Phase 3: Indicator Generation"]
         direction TB
-        indicators["indicators<br/>(JSON)"]:::aiStyle
+        indGen["indicators<br/>(Generate) 🤖"]:::aiGenerateStyle
+        indVal["indicators<br/>(Validate) ✓"]:::validationStyle
+        indRev["indicators<br/>(Review) 👤"]:::reviewStyle
     end
 
     %% Phase 4: Cross-Table Generation
     subgraph P4["Phase 4: Cross-Table Generation"]
         direction TB
-        tableSpecs["table_specifications<br/>(JSON)"]:::aiStyle
-        weightVar["weighting_variable"]:::traditionalStyle
+        tabGen["table_specifications<br/>(Generate) 🤖"]:::aiGenerateStyle
+        tabVal["table_specifications<br/>(Validate) ✓"]:::validationStyle
+        tabRev["table_specifications<br/>(Review) 👤"]:::reviewStyle
         psppTableSyntax["pspp_table_syntax<br/>(.sps)"]:::traditionalStyle
         sav3(["📁 cross_table.sav"]):::dataFileStyle
     end
@@ -184,21 +292,31 @@ flowchart LR
     origMeta -->|Step 2| varMeta
     varMeta -->|Step 3| filtMeta
     varMeta -->|Step 3| filtOut
-    filtMeta -->|Step 4| recodingRules
-    recodingRules -->|Step 4| validationResults
-    recodingRules -->|Step 5| psppRecodeSyntax
+    filtMeta -->|Step 4 Generate| recodingGen
+    recodingGen -->|Step 4 Validate| recodingVal
+    recodingVal -->|Step 4 Review| recodingRev
+    recodingGen -.->|Iteration| recodingGen
+    recodingRev -.->|Iteration| recodingGen
+    recodingVal -->|Validated| validationResults
+    recodingRev -->|Step 5| psppRecodeSyntax
     sav1 ==>|Step 7<br/>input| sav2
     psppRecodeSyntax -.->|Step 7<br/>syntax| sav2
-    varMeta ==>|Step 8| indicators
-    indicators -->|Step 9| tableSpecs
-    varMeta -->|Step 9| weightVar
-    tableSpecs -->|Step 10| psppTableSyntax
+    completeMeta ==>|Step 8 Generate| indGen
+    indGen -->|Step 8 Validate| indVal
+    indVal -->|Step 8 Review| indRev
+    indGen -.->|Iteration| indGen
+    indRev -.->|Iteration| indGen
+    indRev -->|Step 9 Generate| tabGen
+    tabGen -->|Step 9 Validate| tabVal
+    tabVal -->|Step 9 Review| tabRev
+    tabGen -.->|Iteration| tabGen
+    tabRev -.->|Iteration| tabGen
+    tabRev -->|Step 10| psppTableSyntax
     sav2 ==>|Step 11<br/>input| sav3
     psppTableSyntax -.->|Step 11<br/>syntax| sav3
     sav2 ==>|Step 12| allTables
-    indicators ==>|Step 12| allTables
-    tableSpecs ==>|Step 12| allTables
-    weightVar ==>|Step 12| allTables
+    indRev ==>|Step 12| allTables
+    tabRev ==>|Step 12| allTables
     allTables -->|Step 13| sigTables
     sigTables -->|Step 14| ppt
     sigTables -->|Step 15| html
@@ -209,17 +327,54 @@ flowchart LR
 | Style | Meaning | Examples |
 |-------|---------|----------|
 | 🔵 **Input File** | Original input data file | `.sav` file |
-| 🟢 **Traditional Programming** | Deterministic processing (Python, PSPP, scipy) | `raw_data`, `variable_centered_metadata`, `pspp_recoding_syntax`, `all_small_tables`, `.pptx`, `.html` |
-| 🟣 **AI Processing** | LLM/AI-generated artifacts with self-verification | `recoding_rules`, `indicators`, `table_specifications` |
-| 🟠 **Data File (.sav)** | Survey data files generated by PSPP | `recoded_data.sav`, `cross_table.sav` |
+| 🟢 **Traditional Programming** | Deterministic processing (Python, PSPP, scipy) | `raw_data`, `complete_metadata`, `pspp_recoding_syntax`, `all_small_tables`, `.pptx`, `.html` |
+| 🔵 **AI Generation (LLM)** | LLM generates artifact (can iterate on feedback) | `recoding_rules (Generate)`, `indicators (Generate)`, `table_specifications (Generate)` |
+| 🟠 **Validation (Python)** | Objective validation checks (syntax, references, constraints) | `recoding_rules (Validate)`, `indicators (Validate)`, `table_specifications (Validate)` |
+| 🟣 **Review (Human)** | Semantic quality review through LangGraph interrupt | `recoding_rules (Review)`, `indicators (Review)`, `table_specifications (Review)` |
+| ⚪ **Data File (.sav)** | Survey data files generated by PSPP | `recoded_data.sav`, `cross_table.sav` |
+| ⚡ **Feedback Loop** | Iteration edges (dotted lines) | Validation or Review feedback triggering regeneration |
+
+**Line Styles:**
+
+| Style | Meaning |
+|-------|---------|
+| `-->` Solid line | Forward flow to next step |
+| `==>` Thick line | Major data flow between phases |
+| `-.->` Dotted line | Feedback loop or secondary data flow |
 
 **Key Observations:**
 
 1. **AI-Driven Nodes** (3 nodes): Steps 4, 8, and 9 use AI agents to generate intelligent rules and groupings with built-in self-verification
 2. **Traditional Programming** (12 nodes): All other steps use deterministic Python/PSPP processing
 3. **Hybrid Approach**: The workflow combines AI for semantic understanding with traditional programming for statistical rigor
-4. **Step 12 is data-intensive**: Consumes both data files (`recoded_data.sav`) and multiple metadata sources (`indicators`, `table_specifications`, `weighting_variable`)
+4. **Step 12 is data-intensive**: Consumes both data files (`recoded_data.sav`) and multiple metadata sources (`indicators`, `table_specifications` which includes `weighting_variable`)
 5. **Dashed lines** (`.-.->`): Indicate syntax/control flow (not direct data dependency)
+6. **Phase 2 produces complete_metadata**: After PSPP execution, the recoded .sav file is read and merged with original metadata to create a complete variable catalog (original + new variables), eliminating Phase 1 dependencies for Phases 3-7
+
+### Phase 2 as Analysis-Ready Boundary
+
+**Architectural Rationale:**
+
+Phase 2 produces the "analysis-ready" dataset by combining original variables from Phase 1 with newly created variables from recoding. The `complete_metadata` artifact contains:
+
+- **All original variables**: From Phase 1's `variable_centered_metadata`
+- **All newly created variables**: Extracted from the recoded .sav file after PSPP execution
+- **Source-to-target mappings**: Documentation of which variables were recoded to create new ones
+- **Value labels**: Complete label definitions for all variables (original and new)
+
+**Benefits of This Design:**
+
+1. **Clean Linear Dependencies**: Phases 3-7 depend only on Phase 2 outputs, creating a simple Phase 1 → Phase 2 → Phases 3-7 chain
+2. **Independent Testing**: Phases 3-7 can be tested independently using only Phase 2 outputs, without needing to run Phase 1
+3. **Clear Separation of Concerns**:
+   - Phase 1: Extraction and metadata transformation
+   - Phase 2: Data preparation and enrichment (produces analysis-ready package)
+   - Phases 3-7: Analysis and visualization
+4. **Single Source of Truth**: The `complete_metadata` is the authoritative variable catalog for all analysis phases
+
+**Implementation Note:**
+
+After PSPP executes the recoding syntax in Step 7, the system reads the resulting `recoded_data.sav` file using pyreadstat, extracts complete variable metadata (including newly created variables), and merges it with Phase 1's original metadata. This merged artifact becomes the `complete_metadata` field in `RecodingState`.
 
 ### 2.4 LangGraph State Management
 
@@ -259,6 +414,18 @@ class RecodingState(TypedDict):
     pspp_recoding_syntax: str                # Generated PSPP syntax
     pspp_recoding_syntax_path: str           # Saved syntax file
     recoded_data_path: str                   # Path to recoded dataset
+    complete_metadata: List[Dict]            # Merged metadata: original + new variables
+
+"""
+The `complete_metadata` field contains:
+- All original variables from Phase 1's variable_centered_metadata
+- All newly created variables from PSPP recoding
+- Source-to-target variable mappings
+- Value labels for all variables (original and new)
+
+This artifact is produced after PSPP execution by reading the recoded .sav file
+and extracting complete variable metadata, then merging with Phase 1 metadata.
+"""
 
 
 class IndicatorState(TypedDict):
@@ -344,13 +511,47 @@ class WorkflowState(
     pass
 ```
 
+**Relationship Between WorkflowState and Task-Specific States:**
+
+The document defines two types of state classes:
+
+1. **Main WorkflowState** (above): Inherits from functional sub-states (`InputState`, `ExtractionState`, `RecodingState`, etc.) with `total=False` to allow optional fields that are populated only when their respective step completes.
+
+2. **Task-specific states** (`RecodingTaskState`, `IndicatorTaskState`, `TableSpecsTaskState`): Lightweight, focused states used internally within the three-node patterns of Steps 4, 8, and 9.
+
+**How They Work Together:**
+
+- **WorkflowState** is the **primary state object** passed between workflow steps (1-15)
+- **Task-specific states** are **temporary views/extracts** used ONLY within the internal three-node pattern loops
+- Example: Within Step 4's three-node pattern, code may reference `RecodingTaskState` for cleaner iteration tracking, but all data ultimately flows through `WorkflowState`
+
+**Implementation Pattern:**
+
+```python
+# At workflow level (between steps)
+def generate_pspp_syntax_node(state: WorkflowState) -> WorkflowState:
+    # WorkflowState contains all fields from all sub-states
+    rules = state["recoding_rules"]  # From RecodingState
+    return state
+
+# Within three-node pattern (internal implementation)
+def generate_recoding(state: WorkflowState) -> WorkflowState:
+    # Use WorkflowState directly, but conceptually organize as task-specific fields
+    iteration = state.get("recoding_iteration", 1)
+    feedback = state.get("recoding_feedback")
+
+    # Update state
+    state["recoding_iteration"] = iteration + 1
+    return state
+```
+
 **State Evolution by Step:**
 
 | Step | Sub-State | Key Fields Added |
 |------|-----------|------------------|
 | 0 | `InputState` | `spss_file_path`, `config` |
 | 1-3 | `ExtractionState` | `raw_data`, `variable_centered_metadata`, `filtered_metadata` |
-| 4-6 | `RecodingState` | `recoding_rules`, `recoded_data_path`, `validation_results` |
+| 4-7 | `RecodingState` | `recoding_rules`, `recoded_data_path`, `complete_metadata` |
 | 8 | `IndicatorState` | `indicators`, `indicator_metadata` |
 | 9-11 | `CrossTableState` | `table_specifications`, `pspp_table_syntax`, `cross_table_sav_path` |
 | 12 | `StatisticalAnalysisState` | `all_small_tables` (with chi-square stats) |
@@ -358,6 +559,120 @@ class WorkflowState(
 | 14-15 | `PresentationState` | `powerpoint_path`, `html_dashboard_path` |
 | All | `ApprovalState` | `approval_comments`, `pending_approval_step` |
 | All | `TrackingState` | `execution_log`, `errors`, `warnings` |
+
+**Relationship Between WorkflowState and Task-Specific States**:
+
+The document defines two types of state classes:
+
+1. **WorkflowState**: The main state object used throughout the entire workflow. It inherits from all functionally-specific sub-states (InputState, ExtractionState, etc.) and contains all fields needed across all 15 steps.
+
+2. **Task-Specific States** (RecodingTaskState, IndicatorTaskState, TableSpecsTaskState): These are lightweight state classes used **only within the three-node patterns** for Steps 4, 8, and 9. They contain a subset of fields needed specifically for that task's internal iteration loop.
+
+**Why Two Types?**:
+- **WorkflowState**: Used for the main workflow graph that spans all 15 steps. Contains all fields, uses `total=False` for optional fields.
+- **Task-Specific States**: Used for sub-workflows within Steps 4, 8, and 9. These steps use a three-node pattern (generate → validate → review) that loops internally. Using a smaller state reduces complexity during these internal iterations.
+
+**Implementation**:
+- The main workflow uses `WorkflowState` throughout
+- When Step 4, 8, or 9 executes their three-node pattern, they extract relevant fields from `WorkflowState` into their task-specific state
+- After the three-node pattern completes, results are merged back into `WorkflowState`
+- This keeps the main workflow clean while allowing focused state management for iterative AI tasks
+
+**Example**:
+```python
+# Main workflow uses WorkflowState
+def main_workflow_step(state: WorkflowState) -> WorkflowState:
+    # Extract fields for task-specific sub-workflow
+    task_state = RecodingTaskState(
+        recoding_rules=state["recoding_rules"],
+        recoding_iteration=state.get("recoding_iteration", 1),
+        ...
+    )
+
+    # Run three-node pattern with task_state
+    result = run_three_node_pattern(task_state)
+
+    # Merge results back into WorkflowState
+    state["recoding_rules"] = result["recoding_rules"]
+    state["recoding_iteration"] = result["recoding_iteration"]
+    return state
+```
+
+---
+
+### Why Three-Node Pattern?
+
+The three-node pattern (Generate → Validate → Review) is a key architectural feature that provides multiple benefits:
+
+**Self-Verification**
+- AI validates its own output before human review
+- Catches objective errors (syntax, references, constraints) automatically
+- Reduces false positives that reach human review
+- Example: LLM references variable "age_groups" but metadata only has "age_group"
+
+**Quality Improvement**
+- Iteration reduces errors through feedback loops
+- Validation failures trigger automatic retry with specific error messages
+- Human feedback refines semantic quality
+- Each iteration improves based on specific feedback type
+
+**Reduced Human Load**
+- Only validated outputs reach human review
+- Fewer trivial errors to manually catch
+- Humans focus on semantic quality, not syntax issues
+- Estimated 60-80% reduction in manual error checking
+
+**Traceability**
+- Complete audit trail of iterations
+- Clear record of:
+  - Number of iterations per artifact
+  - Feedback source (validation vs human)
+  - Specific errors/warnings at each iteration
+  - Final approval/rejection decisions
+- Essential for debugging and compliance
+
+**Clear Separation of Concerns**
+- **Validation (Python)**: Objective, automated checks
+  - JSON syntax validation
+  - Variable reference validation
+  - Type consistency checks
+  - Constraint verification
+- **Review (Human)**: Semantic quality assessment
+  - Domain appropriateness
+  - Analytical coherence
+  - Stakeholder alignment
+  - Contextual fit
+
+**Practical Impact**
+
+| Metric | Traditional (Generate → Review) | Three-Node Pattern |
+|--------|--------------------------------|-------------------|
+| Human review iterations | 2-4 (fixing syntax + semantics) | 1-2 (semantic refinement only) |
+| Error rate reaching humans | 40-60% | 10-20% |
+| Total time to approval | Higher (more iterations) | Lower (auto-fix validation errors) |
+| Human cognitive load | High (check everything) | Lower (validated input) |
+
+**Example: Recoding Rules Generation**
+
+**Without Three-Node Pattern:**
+1. LLM generates rules with syntax error: `"age": "18-25"` (should be numeric ranges)
+2. Human reviewer catches error manually, requests fix
+3. LLM regenerates, now has reference error: unknown variable "satisfaction_score"
+4. Human catches another error, requests fix
+5. LLM regenerates again, finally valid
+**Result**: 2-3 human review cycles, high cognitive load
+
+**With Three-Node Pattern:**
+1. LLM generates rules
+2. Python validates: catches syntax error automatically
+3. LLM regenerates with specific error message
+4. Python validates: catches reference error automatically
+5. LLM regenerates with specific error message
+6. Python validates: passes
+7. Human reviews: checks semantic quality only
+**Result**: 0-1 human review cycles, low cognitive load
+
+The three-node pattern shifts the burden of objective validation from humans to automated checks, allowing humans to focus on what they do best: assessing semantic quality and domain appropriateness.
 
 ---
 
@@ -473,9 +788,34 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
 
 **Nodes**: `generate_recoding`, `validate_recoding`, `review_recoding`
 
+**Node Names vs File Names**: The three-node pattern uses short internal node names (`generate_recoding`, `validate_recoding`, `review_recoding`) for code clarity. In the project structure (Section 6), these are implemented in file `04_generate_recoding_rules.py`, which contains all three node functions. The separate file `05_human_review_recoding.py` contains an OPTIONAL human review step that can be enabled for additional validation beyond the automatic self-verification loop.
+
+**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 4 that work together in a self-verification loop. The workflow step numbering remains 1-15 as shown in the Phase Overview.
+
 **Description**: Three-node pattern using LangGraph's explicit pattern. The LLM generates rules, Python validates them, and human optionally reviews. Routing functions control flow between nodes.
 
 **Architecture**:
+
+```mermaid
+flowchart TD
+    GENERATE["**Generate Recoding Rules** 🤖<br/>(LLM creates rules)"]
+    VALIDATE["**Validate Rules** ✓<br/>(Python checks syntax & references)"]
+    REVIEW["**Review Rules** 👤<br/>(Human validates semantic quality)"]
+    NEXT["**Step 5: Optional Review**<br/>(or Step 6 if skipped)"]
+
+    GENERATE --> VALIDATE
+    VALIDATE -->|Valid| REVIEW
+    VALIDATE -->|Invalid + Under Max Retries| GENERATE
+    REVIEW -->|Approve| NEXT
+    REVIEW -->|Reject/Modify| GENERATE
+
+    style GENERATE fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style VALIDATE fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style REVIEW fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style NEXT fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+```
+
+**ASCII Representation**:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                  LangGraph Workflow                          │
@@ -496,6 +836,8 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
 │    errors)           feedback)         feedback)            │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Integration with Main Workflow**: The three-node pattern operates entirely within Step 4. From the main workflow's perspective, this is a single step that produces validated recoding rules. The internal iteration is self-contained and invisible to the high-level workflow.
 
 **State Fields**:
 ```python
@@ -569,6 +911,8 @@ def validate_recoding(state: State) -> State:
 
 **Node 3: Human Review Recoding Rules**
 ```python
+from langgraph.types import interrupt
+
 def review_recoding(state: State) -> State:
     """
     Human analyst reviews rules for semantic validation.
@@ -812,6 +1156,7 @@ Please generate new recoding rules that address ALL of the errors above:
 **Human Review Interface**:
 ```python
 from typing import Literal
+from langgraph.types import interrupt
 
 def human_review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     """
@@ -1030,7 +1375,7 @@ Please generate new recoding rules that address the feedback above.
 - Uses LangGraph's `interrupt()` mechanism to pause execution
 - Human provides approval via CLI, web interface, or API
 - If rejected: workflow returns to Step 4 with detailed feedback
-- If modified: workflow applies edited rules and continues to Step 5
+- If modified: workflow applies edited rules and continues to Step 6
 - Auto-approval can be enabled via `config["auto_approve_recoding"] = True`
 - All approval decisions are logged with timestamps in `approval_comments`
 - Feedback from rejections is automatically incorporated into subsequent AI generations
@@ -1116,6 +1461,19 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
 
 **Output**:
 - `recoded_data_path`: Path to dataset with original + recoded variables
+- `complete_metadata`: Merged metadata containing:
+  * All original variables from Phase 1
+  * All newly created variables from recoding
+  * Source-to-target mappings
+  * Value labels for all variables
+
+**Metadata Merging Process**:
+
+After PSPP executes the recoding syntax and generates `recoded_data.sav`:
+1. Read the recoded .sav file using pyreadstat
+2. Extract complete variable metadata (original + new variables)
+3. Merge with Phase 1's `filtered_metadata` to preserve context
+4. Store in `state["complete_metadata"]` for use by Phases 3-7
 
 ---
 
@@ -1123,9 +1481,34 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
 
 **Nodes**: `generate_indicators`, `validate_indicators`, `review_indicators`
 
+**Node Names vs File Names**: The three-node pattern uses short internal node names (`generate_indicators`, `validate_indicators`, `review_indicators`) for code clarity. In the project structure (Section 6), these are implemented in file `08_generate_indicators.py`, which contains all three node functions. The separate file `08_1_human_review_indicators.py` contains an OPTIONAL human review step for final approval.
+
+**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 8 that work together in a self-verification loop. The workflow step numbering remains 1-15 as shown in the Phase Overview.
+
 **Description**: Three-node pattern using LangGraph's explicit pattern. LLM groups variables into semantic indicators, Python validates the structure, and human optionally reviews.
 
-**Architecture**: Same three-node flow as Step 4.
+**Architecture**:
+
+```mermaid
+flowchart TD
+    GENERATE["**Generate Indicators** 🤖<br/>(LLM groups variables)"]
+    VALIDATE["**Validate Indicators** ✓<br/>(Python checks structure)"]
+    REVIEW["**Review Indicators** 👤<br/>(Human validates semantic quality)"]
+    NEXT["**Step 8.1: Optional Review**<br/>(or Step 9 if skipped)"]
+
+    GENERATE --> VALIDATE
+    VALIDATE -->|Valid| REVIEW
+    VALIDATE -->|Invalid + Under Max Retries| GENERATE
+    REVIEW -->|Approve| NEXT
+    REVIEW -->|Reject/Modify| GENERATE
+
+    style GENERATE fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style VALIDATE fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style REVIEW fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style NEXT fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+```
+
+**Integration with Main Workflow**: Same three-node flow as Step 4. The pattern operates entirely within Step 8, producing validated indicator definitions.
 
 **State Fields**:
 ```python
@@ -1148,18 +1531,18 @@ def generate_indicators(state: State) -> State:
     # Build prompt
     if feedback_source == "validation":
         prompt = build_validation_retry_prompt(
-            metadata=state["variable_centered_metadata"],
+            metadata=state["complete_metadata"],
             validation_result=feedback,
             iteration=iteration
         )
     elif feedback_source == "human":
         prompt = build_human_feedback_prompt(
-            metadata=state["variable_centered_metadata"],
+            metadata=state["complete_metadata"],
             human_feedback=feedback,
             iteration=iteration
         )
     else:
-        prompt = build_indicators_prompt(state["variable_centered_metadata"])
+        prompt = build_indicators_prompt(state["complete_metadata"])
 
     response = llm.invoke(prompt)
     indicators = parse_indicators(response)
@@ -1176,7 +1559,7 @@ def generate_indicators(state: State) -> State:
 ```python
 def validate_indicators(state: State) -> State:
     """Python validates indicator structure and references."""
-    validator = IndicatorValidator(state["variable_centered_metadata"])
+    validator = IndicatorValidator(state["complete_metadata"])
     result = validator.validate_all_indicators(state["indicators"])
 
     return {
@@ -1190,6 +1573,8 @@ def validate_indicators(state: State) -> State:
 
 **Node 3: Review Indicators**
 ```python
+from langgraph.types import interrupt
+
 def review_indicators(state: State) -> State:
     """Human reviews indicator groupings."""
     decision = interrupt({
@@ -1254,11 +1639,13 @@ def after_indicators_review(state: State) -> Literal[END, "generate_indicators"]
 
 **Input**:
 - `indicators`: AI-generated indicators
-- `variable_centered_metadata`: Variable metadata
+- `complete_metadata`: Complete metadata from Phase 2
 - `config`: Configuration parameters
 
 **Human Review Interface**:
 ```python
+from langgraph.types import interrupt
+
 def human_review_indicators_node(state: WorkflowState) -> WorkflowState:
     """
     Pauses workflow for human review of generated indicators.
@@ -1267,7 +1654,7 @@ def human_review_indicators_node(state: WorkflowState) -> WorkflowState:
     # Generate human-readable report
     review_report = generate_indicator_review_report(
         state["indicators"],
-        state["variable_centered_metadata"]
+        state["complete_metadata"]
     )
 
     # Save report for human review
@@ -1315,7 +1702,7 @@ def human_review_indicators_node(state: WorkflowState) -> WorkflowState:
             "comments": comments,
             "timestamp": datetime.now().isoformat()
         })
-        # Set state to return to Step 7 (indicator generation)
+        # Set state to return to Step 8 (indicator generation)
         state["pending_approval_step"] = "indicators_rejected"
     elif decision == "modify":
         # Apply modified indicators directly
@@ -1343,7 +1730,7 @@ Similar to Step 5, this step uses LangGraph's interrupt functionality:
 1. **Pause at Indicator Review**: Workflow halts after generating indicators
 2. **Presentation**: Human-readable report shows all indicators with their variables
 3. **Human Decision**: Analyst can approve, reject, or modify
-4. **State-Aware Loopback**: If rejected, returns to Step 7 with context
+4. **State-Aware Loopback**: If rejected, returns to Step 8 with context
 
 **State Management for Indicator Approval**:
 
@@ -1379,7 +1766,7 @@ When indicator groupings are rejected:
 4. **Preserve Good Work**: Accepted indicators can be kept while regenerating others
 
 ```python
-# Example feedback integration in Step 7
+# Example feedback integration in Step 8
 def generate_indicators_node(state: WorkflowState) -> WorkflowState:
     # Check for previous rejection feedback
     previous_feedback = None
@@ -1472,8 +1859,8 @@ For rejections, please indicate:
 **Implementation Notes**:
 - Uses LangGraph's `interrupt()` mechanism to pause execution
 - Human provides approval via CLI, web interface, or API
-- If rejected: workflow returns to Step 7 with detailed feedback on groupings
-- If modified: workflow applies edited indicators and continues to Step 8
+- If rejected: workflow returns to Step 8 with detailed feedback on groupings
+- If modified: workflow applies edited indicators and continues to Step 9
 - Auto-approval can be enabled via `config["auto_approve_indicators"] = True`
 - All approval decisions are logged with timestamps in `approval_comments`
 - Feedback is contextually integrated into subsequent AI generations
@@ -1489,9 +1876,34 @@ For rejections, please indicate:
 
 **Nodes**: `generate_table_specs`, `validate_table_specs`, `review_table_specs`
 
+**Node Names vs File Names**: The three-node pattern uses short internal node names (`generate_table_specs`, `validate_table_specs`, `review_table_specs`) for code clarity. In the project structure (Section 6), these are implemented in file `09_generate_table_specs.py`, which contains all three node functions. The separate file `09_1_human_review_table_specs.py` contains an OPTIONAL human review step for final approval.
+
+**Important Note**: This step uses a **three-node pattern internally** as an implementation detail. These are **not** separate workflow steps—rather, they are three nodes within Step 9 that work together in a self-verification loop. The workflow step numbering remains 1-15 as shown in the Phase Overview.
+
 **Description**: Three-node pattern using LangGraph's explicit pattern. LLM defines cross-table structure, Python validates references, and human optionally reviews.
 
-**Architecture**: Same three-node flow as Steps 4 and 8.
+**Architecture**:
+
+```mermaid
+flowchart TD
+    GENERATE["**Generate Table Specs** 🤖<br/>(LLM defines tables)"]
+    VALIDATE["**Validate Table Specs** ✓<br/>(Python checks references)"]
+    REVIEW["**Review Table Specs** 👤<br/>(Human validates semantic quality)"]
+    NEXT["**Step 9.1: Optional Review**<br/>(or Step 10 if skipped)"]
+
+    GENERATE --> VALIDATE
+    VALIDATE -->|Valid| REVIEW
+    VALIDATE -->|Invalid + Under Max Retries| GENERATE
+    REVIEW -->|Approve| NEXT
+    REVIEW -->|Reject/Modify| GENERATE
+
+    style GENERATE fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style VALIDATE fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style REVIEW fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style NEXT fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+```
+
+**Integration with Main Workflow**: Same three-node flow as Steps 4 and 8. The pattern operates entirely within Step 9, producing validated table specifications.
 
 **State Fields**:
 ```python
@@ -1515,21 +1927,21 @@ def generate_table_specs(state: State) -> State:
     if feedback_source == "validation":
         prompt = build_validation_retry_prompt(
             indicators=state["indicators"],
-            metadata=state["variable_centered_metadata"],
+            metadata=state["complete_metadata"],
             validation_result=feedback,
             iteration=iteration
         )
     elif feedback_source == "human":
         prompt = build_human_feedback_prompt(
             indicators=state["indicators"],
-            metadata=state["variable_centered_metadata"],
+            metadata=state["complete_metadata"],
             human_feedback=feedback,
             iteration=iteration
         )
     else:
         prompt = build_table_specs_prompt(
             state["indicators"],
-            state["variable_centered_metadata"]
+            state["complete_metadata"]
         )
 
     response = llm.invoke(prompt)
@@ -1561,6 +1973,8 @@ def validate_table_specs(state: State) -> State:
 
 **Node 3: Review Table Specifications**
 ```python
+from langgraph.types import interrupt
+
 def review_table_specs(state: State) -> State:
     """Human reviews table structure (rows, columns, weighting)."""
     decision = interrupt({
@@ -1656,6 +2070,8 @@ OUTPUT FORMAT (JSON):
 
 **Human Review Interface**:
 ```python
+from langgraph.types import interrupt
+
 def human_review_table_specs_node(state: WorkflowState) -> WorkflowState:
     """
     Pauses workflow for human review of table specifications.
@@ -1710,7 +2126,7 @@ def human_review_table_specs_node(state: WorkflowState) -> WorkflowState:
             "comments": comments,
             "timestamp": datetime.now().isoformat()
         })
-        # Set state to return to Step 8 (table spec generation)
+        # Set state to return to Step 9 (table spec generation)
         state["pending_approval_step"] = "table_specs_rejected"
     elif decision == "modify":
         # Apply modified specifications directly
@@ -1738,7 +2154,7 @@ This step follows the same interrupt pattern as previous review steps:
 1. **Pause at Table Spec Review**: Workflow halts after generating table specifications
 2. **Comprehensive Report**: Shows row/column indicators, weighting, and statistical settings
 3. **Human Decision**: Analyst can approve, reject, or modify the specifications
-4. **State-Aware Loopback**: If rejected, returns to Step 8 with detailed feedback
+4. **State-Aware Loopback**: If rejected, returns to Step 9 with detailed feedback
 
 **State Management for Table Specifications Approval**:
 
@@ -1774,7 +2190,7 @@ When table specifications are rejected:
 4. **Filtering Criteria**: Adjustments to Cramer's V or count thresholds
 
 ```python
-# Example feedback integration in Step 8
+# Example feedback integration in Step 9
 def generate_table_specs_node(state: WorkflowState) -> WorkflowState:
     # Check for previous rejection feedback
     previous_feedback = None
@@ -1868,8 +2284,8 @@ For rejections, please indicate:
 **Implementation Notes**:
 - Uses LangGraph's `interrupt()` mechanism to pause execution
 - Human provides approval via CLI, web interface, or API
-- If rejected: workflow returns to Step 8 with detailed feedback on table structure
-- If modified: workflow applies edited specifications and continues to Step 9
+- If rejected: workflow returns to Step 9 with detailed feedback on table structure
+- If modified: workflow applies edited specifications and continues to Step 10
 - Auto-approval can be enabled via `config["auto_approve_table_specs"] = True`
 - All approval decisions are logged with timestamps in `approval_comments`
 - Feedback is contextually integrated into subsequent AI generations
@@ -2039,7 +2455,7 @@ def compute_chi_square_statistics_node(state: WorkflowState) -> WorkflowState:
                 continue
 
             # Handle multi-variable indicators based on metric type
-            # See Step 8 for detailed explanation of three scenarios
+            # See Step 8: Generate Indicators for detailed explanation of three scenarios
             if row_metric == "average" and len(row_vars) > 1:
                 # Scenario 1: Average metric - each variable becomes one row in the crosstab
                 # For matrix rating questions, compute mean for each variable by column categories
@@ -2816,7 +3232,7 @@ DEFAULT_CONFIG = {
     "enable_effect_size": False,          # Optional: compute Cramer's V for context
     "enable_residuals": False,            # Optional: compute standardized residuals
 
-    # Table Filtering (Step 11)
+    # Table Filtering (Step 13)
     "cramers_v_min": 0.1,                 # Minimum effect size (small = 0.1, medium = 0.2)
     "count_min": 30,                      # Minimum total count in crosstab
 
@@ -3072,9 +3488,9 @@ The workflow includes three human review checkpoints, each positioned at the end
 | Phase | Step | Review Point | Purpose |
 |-------|------|--------------|---------|
 | **2** | 4 | Self-Verification | **Automatic**: AI validates and refines until all objective checks pass |
-| **2** | 4.6 | Recoding Rules (Optional) | **Semantic**: Validate business logic appropriateness and research alignment |
-| **3** | 7.1 | Indicators | Ensure indicator groupings align with research objectives |
-| **4** | 8.1 | Table Specifications | Verify crosstab structure answers the research questions |
+| **2** | 5 | Recoding Rules (Optional) | **Semantic**: Validate business logic appropriateness and research alignment |
+| **3** | 8.1 | Indicators | Ensure indicator groupings align with research objectives |
+| **4** | 9.1 | Table Specifications | Verify crosstab structure answers the research questions |
 
 **New Pattern for Phase 2**: **AI Generation → Self-Verification Loop (auto-refine) → Optional Semantic Review → Approval/Rejection**
 

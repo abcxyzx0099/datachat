@@ -1,0 +1,6 @@
+# Task monitor test outputs
+results/
+tasks/
+
+# Temporary files (per project guidelines)
+temp/

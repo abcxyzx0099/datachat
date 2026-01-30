@@ -15,13 +15,65 @@ Convert conversation context and user requirements into a structured task docume
 - **Context** - Project context (codebase, architecture, current state)
 - **Task intent** - What needs to be done (may be implied from conversation)
 
-## File Generation (4 Steps)
+## File Generation (5 Steps)
 
-### Step 1: Investigate & Understand (Before Writing)
+### Step 1: Verify Task Monitor Service Running
+
+**BEFORE creating any task document**, verify that the task monitoring service is running. If the service is not running, the task document will never be processed and will sit idle in the `tasks/` directory.
+
+**1.1 Check Service Status**
+
+```bash
+# Check if task monitor service is running
+task-monitor queue
+```
+
+**Expected output if running:**
+```
+Queue size: 0
+Processing: (task name or empty)
+```
+
+**Expected output if NOT running:**
+```
+Error: Task monitor service is not running
+```
+
+**1.2 If Service Is NOT Running - Ask User**
+
+If the service is not running, present options to the user:
+
+| Option | Action | When to Use |
+|--------|--------|-------------|
+| **Start service** | Run `task-monitor start` (if available) or start manually | User wants automation enabled |
+| **Create anyway** | Proceed with task creation, but warn user | User will start service later manually |
+| **Abort** | Stop task creation process | User wants to fix service first |
+
+**Example prompt to user:**
+```
+⚠️ Task monitor service is not running. The task document will not be processed automatically.
+
+Options:
+1. Start the service now (if available)
+2. Create task document anyway (will wait until service starts)
+3. Abort (you can start service and retry)
+
+Which option would you like? (1/2/3)
+```
+
+**1.3 Quality Gate**
+
+- **Do NOT proceed** to Step 2 unless user confirms they want to create the task document
+- If user chooses to abort, stop the process and guide them to start the service
+- If user chooses to create anyway, add a warning note in the conversation
+
+---
+
+### Step 2: Investigate & Understand (Before Writing)
 
 Before writing the task document, ensure you fully understand the context and requirements.
 
-**1.1 Analyze Conversation**
+**2.1 Analyze Conversation**
 
 Re-read the discussion to identify:
 - The original problem/request
@@ -30,14 +82,14 @@ Re-read the discussion to identify:
 - Acceptance criteria discussed
 - Any assumptions that need clarification
 
-**1.2 Clarify Task Intent**
+**2.2 Clarify Task Intent**
 
 Define what needs to be done:
 - Specific outcome required
 - Boundaries of the task (what's included/excluded)
 - Success metrics
 
-**1.3 Investigate Codebase**
+**2.3 Investigate Codebase**
 
 Use tools to gather technical context:
 
@@ -49,7 +101,7 @@ grep "keyword" --include="*.py"    # search for related code
 # Read key files to understand patterns
 ```
 
-**1.4 Identify Technical Context**
+**2.4 Identify Technical Context**
 
 Determine:
 - Current architecture/patterns used
@@ -57,7 +109,7 @@ Determine:
 - Potential edge cases
 - Integration points
 
-**1.5 Quality Gate**
+**2.5 Quality Gate**
 
 Before proceeding to write:
 - If anything is unclear → ask questions
@@ -66,7 +118,7 @@ Before proceeding to write:
 
 ---
 
-### Step 2: Write Temp File (AI Agent)
+### Step 3: Write Temp File (AI Agent)
 
 Once you fully understand the task, use the Write tool to create the task document with `.md.tmp` extension:
 
@@ -76,13 +128,13 @@ Once you fully understand the task, use the Write tool to create the task docume
 
 - Simple filename with description only
 - The `.tmp` extension prevents monitor from picking it up prematurely
-- Timestamp will be added to filename in Step 3
+- Timestamp will be added to filename in Step 4
 
 **Why `.md.tmp` first?** The task monitor watches for `.md` files only. By writing to `.md.tmp` first, we ensure the document is complete before the monitor sees it. This prevents race conditions where an incomplete file gets executed.
 
 ---
 
-### Step 3: Rename with Timestamp (Bash Script)
+### Step 4: Rename with Timestamp (Bash Script)
 
 Run the rename script to atomically rename the temp file:
 
@@ -103,7 +155,7 @@ tasks/task-fix-auth-timeout.md.tmp
 tasks/task-fix-auth-timeout-20260129-170500.md
 ```
 
-**Capture the output** - The script outputs the final file path, which can be captured and passed to Step 4:
+**Capture the output** - The script outputs the final file path, which can be captured and passed to Step 5:
 
 ```bash
 # Capture final file path
@@ -112,47 +164,74 @@ FINAL_FILE=$(bash .claude/skills/task-document-generator/scripts/rename_task.sh 
 
 ---
 
-### Step 4: Monitor Status (CLI)
+### Step 5: Monitor Status (CLI - Enhanced)
 
-Use the task-monitor CLI to check if the task monitor picked up the task:
+Use the task-monitor CLI to check the task processing status with detailed information:
 
 ```bash
-# Option 1: Monitor general status
+# Check full status (waiting + running tasks)
 task-monitor queue
 
-# Option 2: Monitor specific task (if task file exists)
+# Check specific task details (if task file exists)
 task-monitor task-xxx-20260130-hhmmss.md
 ```
 
 **What the CLI does:**
 1. Checks the queue state file (`state/queue_state.json`)
 2. Displays current task being processed
-3. Shows queue status and process information
+3. Shows tasks waiting in queue
+4. Shows process information
 
 **Output you'll see:**
+
 ```
-Queue size: 0
-Processing: task-implement-langgraph-three-node-pattern-20260130-005036.md
+┌─────────────────────────────────────────────┐
+│  Task Monitor Status                         │
+├─────────────────────────────────────────────┤
+│  Service: ✅ Running                         │
+│                                              │
+│  Currently Processing:                       │
+│  → task-refactor-phase2-20260130-110940.md  │
+│                                              │
+│  Waiting in Queue:                           │
+│  → task-another-task-20260130-111500.md     │
+│  → task-third-task-20260130-111600.md       │
+│                                              │
+│  Queue Size: 2                               │
+└─────────────────────────────────────────────┘
 ```
+
+**Interpreting the output:**
+
+| Field | Meaning |
+|-------|---------|
+| **Currently Processing** | Task that was dequeued and is being executed by Worker Agent |
+| **Waiting in Queue** | Tasks that have been created but not yet started |
+| **Queue Size** | Number of tasks waiting (not including the one being processed) |
 
 **Note**: The task-monitor CLI requires `~/.local/bin` to be in your PATH (already configured in `~/.bashrc`). If the command is not found, run `source ~/.bashrc` or open a new terminal.
 
 ## Full Example
 
 ```bash
-# Step 1: Investigate and understand (read conversation, explore codebase)
+# Step 1: Verify task monitor service is running
+task-monitor queue
+# Output: Service is running, proceed
 
-# Step 2: Write temp file using Write tool
+# Step 2: Investigate and understand (read conversation, explore codebase)
+
+# Step 3: Write temp file using Write tool
 # File: tasks/task-fix-auth-timeout.md.tmp
 # Content: (full task document)
 
-# Step 3: Rename with timestamp
+# Step 4: Rename with timestamp
 FINAL_FILE=$(bash .claude/skills/task-document-generator/scripts/rename_task.sh tasks/task-fix-auth-timeout.md.tmp)
 # Output: ✅ Task created: tasks/task-fix-auth-timeout-20260129-170500.md
 #         tasks/task-fix-auth-timeout-20260129-170500.md
 
-# Step 4: Monitor status
+# Step 5: Monitor status (shows both waiting and running)
 task-monitor queue
+# Output: Shows your task in "Currently Processing" or "Waiting in Queue"
 ```
 
 ## Document Structure
@@ -171,8 +250,9 @@ Use the template in [references/task-template.md](references/task-template.md) f
 
 ## Quality Checklist
 
-Before running the rename script (Step 3), ensure:
+Before running the rename script (Step 4), ensure:
 
+- [ ] **Service verified** - Task monitor is running (Step 1 passed)
 - [ ] **Task is clear** - One-line summary is unambiguous
 - [ ] **Context is provided** - Worker understands why this task exists
 - [ ] **Scope is defined** - Worker knows where to look
@@ -186,11 +266,13 @@ See [references/examples.md](references/examples.md) for good vs bad task docume
 
 ## Key Principles
 
-1. **Understand first** - Investigate before writing
-2. **Be specific** - Vague tasks produce vague results
-3. **Request investigation** - Worker Agents must do their own deep research before implementing
-4. **Define success** - Worker needs clear completion criteria
-5. **Provide context** - Worker should understand why the task exists
+1. **Verify system first** - Check service is running before creating tasks
+2. **Understand first** - Investigate before writing
+3. **Be specific** - Vague tasks produce vague results
+4. **Request investigation** - Worker Agents must do their own deep research before implementing
+5. **Define success** - Worker needs clear completion criteria
+6. **Provide context** - Worker should understand why the task exists
+7. **Monitor visibility** - Show both waiting and running tasks for complete status
 
 ## Related Skills
 

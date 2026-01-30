@@ -28,19 +28,79 @@ def show_status(task_id: str = None, project_root: Path = DEFAULT_PROJECT_ROOT):
 
 
 def show_queue(project_root: Path = DEFAULT_PROJECT_ROOT):
-    """Show current queue state."""
+    """Show current queue state with enhanced output showing both processing and waiting tasks."""
     state_file = project_root / "state" / "queue_state.json"
-    if state_file.exists():
-        with open(state_file, 'r') as f:
-            state = json.load(f)
-        print(f"Queue size: {state['queue_size']}")
-        print(f"Processing: {state.get('current_task', 'None')}")
-        if state.get('queued_tasks'):
-            print("Queued tasks:")
-            for i, task in enumerate(state['queued_tasks'], 1):
-                print(f"  {i}. {task}")
+    tasks_dir = project_root / "tasks"
+
+    if not state_file.exists():
+        print("┌─────────────────────────────────────────────┐")
+        print("│  Task Monitor Status                         │")
+        print("├─────────────────────────────────────────────┤")
+        print("│  Service: ❌ Not running                     │")
+        print("│                                              │")
+        print("│  Queue state not available.                  │")
+        print("│  Start the task monitor service to enable    │")
+        print("│  automatic task processing.                  │")
+        print("└─────────────────────────────────────────────┘")
+        return
+
+    with open(state_file, 'r') as f:
+        state = json.load(f)
+
+    # Build visual output
+    print("┌─────────────────────────────────────────────┐")
+    print("│  Task Monitor Status                         │")
+    print("├─────────────────────────────────────────────┤")
+
+    # Service status
+    is_processing = state.get('is_processing', False)
+    if is_processing:
+        print("│  Service: ✅ Running                         │")
     else:
-        print("Queue state not available (monitor may not be running)")
+        print("│  Service: ⏸️ Idle                            │")
+    print("│                                              │")
+
+    # Currently processing
+    current_task = state.get('current_task')
+    if current_task:
+        print("│  Currently Processing:                       │")
+        print(f"│  → {current_task[:44]:<44}│")
+    else:
+        print("│  Currently Processing: None                 │")
+
+    # Waiting in queue - read from tasks directory for actual files
+    print("│                                              │")
+    print("│  Waiting in Queue:                           │")
+
+    # Get actual task files from tasks directory
+    waiting_tasks = []
+    if tasks_dir.exists():
+        # Get all .md task files, excluding temp files
+        task_files = sorted(tasks_dir.glob("task-*.md"), key=lambda p: p.stat().st_mtime)
+        for task_file in task_files:
+            task_name = task_file.name
+            # Skip if this is the currently processing task
+            if current_task and task_name == current_task:
+                continue
+            waiting_tasks.append(task_name)
+
+    # Also check queued_tasks from state if available
+    if state.get('queued_tasks'):
+        for task_name in state['queued_tasks']:
+            if task_name not in waiting_tasks:
+                waiting_tasks.append(task_name)
+
+    if waiting_tasks:
+        for task in waiting_tasks[:10]:  # Show max 10 tasks
+            print(f"│  → {task[:44]:<44}│")
+        if len(waiting_tasks) > 10:
+            print(f"│  ... and {len(waiting_tasks) - 10} more                          │")
+    else:
+        print("│  → No tasks waiting                          │")
+
+    print("│                                              │")
+    print(f"│  Queue Size: {len(waiting_tasks):<31}│")
+    print("└─────────────────────────────────────────────┘")
 
 
 def main():
