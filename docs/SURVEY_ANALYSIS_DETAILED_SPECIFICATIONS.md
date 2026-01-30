@@ -57,7 +57,7 @@ class RecodingState(TypedDict):
     pspp_recoding_syntax: str                 # Generated PSPP syntax
     pspp_recoding_syntax_path: str            # Saved syntax file
     new_data_path: str                        # Path to new dataset (original + recoded variables)
-    new_metadata: Dict[str, Any]              # Complete metadata extracted from new_data.sav (aka updated_metadata)
+    new_metadata: Dict[str, Any]              # Complete metadata extracted from new_data.sav (all variables)
 
     # Shared configuration
     max_self_correction_iterations: int       # Maximum allowed (default: 3)
@@ -107,7 +107,7 @@ class StatisticalAnalysisState(TypedDict):
     python_stats_script_path: str            # Saved Python script file
     all_small_tables: List[Dict]             # All tables with chi-square stats
     statistical_summary_path: str             # Path to statistical_analysis_summary.json
-    statistical_summary: Dict[str, Any]       # Summary of all statistical tests
+    statistical_summary: List[Dict]           # Summary of all statistical tests (loaded from file)
 
 
 class FilteringState(TypedDict):
@@ -127,7 +127,7 @@ class PresentationState(TypedDict):
     powerpoint_path: str                     # Generated PowerPoint file
     # Phase 8: HTML Dashboard (Step 22) - based on cross_table files (all tables)
     html_dashboard_path: str                 # Generated HTML dashboard
-    charts_generated: List[Dict]             # Chart metadata
+    charts_generated: List[Dict]             # Chart metadata (populated in both Steps 21 and 22)
 
 
 class ApprovalState(TypedDict):
@@ -188,7 +188,7 @@ class WorkflowState(
 | 5 | `RecodingState` | `recoding_validation` | `recoding_feedback`, `recoding_approved` still None |
 | 6 | `RecodingState` | `recoding_approved` | May have `recoding_feedback` if rejected |
 | 7 | `RecodingState` | `pspp_recoding_syntax`, `pspp_recoding_syntax_path` | `new_data_path` still None |
-| 8 | `RecodingState` | `new_data_path`, `updated_metadata` | All recoding fields now populated |
+| 8 | `RecodingState` | `new_data_path`, `new_metadata` | All recoding fields now populated |
 | 9 | `IndicatorState` | `indicators`, `indicators_iteration` | Validation still pending |
 | 10 | `IndicatorState` | `indicators_validation` | Approval still pending |
 | 11 | `IndicatorState` | `indicators_approved` | All indicator fields populated |
@@ -210,6 +210,12 @@ class WorkflowState(
 def build_initial_recoding_prompt(filtered_metadata: List[Dict]) -> str:
     """
     Generate initial prompt for recoding rule creation.
+
+    Args:
+        filtered_metadata: List of variable dictionaries requiring recoding
+
+    Returns:
+        Formatted prompt string for LLM
     """
     prompt = f"""You are a market research data expert. Given survey variable metadata,
 generate intelligent recoding rules.
@@ -270,6 +276,14 @@ def build_validation_retry_prompt(
 ) -> str:
     """
     Generate prompt for retrying after validation failure.
+
+    Args:
+        metadata: Original metadata for reference
+        validation_result: Previous validation result with errors
+        iteration: Current iteration number
+
+    Returns:
+        Formatted prompt string with error context
     """
     errors = validation_result.get("errors", [])
     warnings = validation_result.get("warnings", [])
@@ -321,6 +335,14 @@ def build_human_feedback_prompt(
 ) -> str:
     """
     Generate prompt for incorporating human review feedback.
+
+    Args:
+        metadata: Original metadata for reference
+        human_feedback: Human review feedback with issues and suggestions
+        iteration: Current iteration number
+
+    Returns:
+        Formatted prompt string with human feedback context
     """
     issues = human_feedback.get("issues", [])
     suggestions = human_feedback.get("suggestions", [])
@@ -351,9 +373,15 @@ Please generate new recoding rules that address the human reviewer's feedback:
 #### Initial Prompt
 
 ```python
-def build_initial_indicators_prompt(updated_metadata: Dict) -> str:
+def build_initial_indicators_prompt(new_metadata: Dict) -> str:
     """
     Generate initial prompt for indicator grouping.
+
+    Args:
+        new_metadata: Complete metadata from new_data.sav
+
+    Returns:
+        Formatted prompt string for LLM
     """
     prompt = f"""You are a market research analyst. Group survey variables into semantic indicators.
 
@@ -364,7 +392,7 @@ PRINCIPLES:
 4. Limit to 3-7 variables per indicator
 
 INPUT METADATA:
-{format_metadata_for_llm(updated_metadata)}
+{format_metadata_for_llm(new_metadata)}
 
 OUTPUT FORMAT (JSON):
 {{
@@ -399,11 +427,18 @@ REQUIREMENTS:
 
 ```python
 def build_initial_table_specs_prompt(
-    updated_metadata: Dict,
+    new_metadata: Dict,
     indicators: List[Dict]
 ) -> str:
     """
     Generate initial prompt for table specification.
+
+    Args:
+        new_metadata: Complete metadata from new_data.sav
+        indicators: Approved indicator definitions
+
+    Returns:
+        Formatted prompt string for LLM
     """
     prompt = f"""You are a market research analyst. Define cross-tabulation tables for analysis.
 
@@ -414,7 +449,7 @@ PRINCIPLES:
 4. Limit to tables with meaningful relationships
 
 INPUT METADATA:
-{format_metadata_for_llm(updated_metadata)}
+{format_metadata_for_llm(new_metadata)}
 
 AVAILABLE INDICATORS:
 {format_indicators_for_llm(indicators)}
@@ -612,11 +647,21 @@ class RecodingValidator:
 
 class ValidationResult:
     """Validation result container."""
-    def __init__(self, is_valid: bool, errors: List[str], warnings: List[str], checks_performed: List[str]):
+
+    def __init__(self, is_valid: bool, errors: List[str], warnings: List[str], checks_performed: List[str] = None):
         self.is_valid = is_valid
         self.errors = errors
         self.warnings = warnings
-        self.checks_performed = checks_performed
+        self.checks_performed = checks_performed or []
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for state storage."""
+        return {
+            "is_valid": self.is_valid,
+            "errors": self.errors,
+            "warnings": self.warnings,
+            "checks_performed": self.checks_performed
+        }
 ```
 
 ### 3.2 Indicators Validation
@@ -625,9 +670,9 @@ class ValidationResult:
 class IndicatorValidator:
     """Validates AI-generated indicators."""
 
-    def __init__(self, metadata: Dict):
-        self.metadata = metadata
-        self.variable_names = {var["name"] for var in metadata.get("variables", [])}
+    def __init__(self, new_metadata: Dict):
+        self.new_metadata = new_metadata
+        self.variable_names = {var["name"] for var in new_metadata.get("variables", [])}
         self.errors = []
         self.warnings = []
 
@@ -704,9 +749,9 @@ class IndicatorValidator:
 class TableSpecValidator:
     """Validates AI-generated table specifications."""
 
-    def __init__(self, metadata: Dict):
-        self.metadata = metadata
-        self.variable_names = {var["name"] for var in metadata.get("variables", [])}
+    def __init__(self, new_metadata: Dict):
+        self.new_metadata = new_metadata
+        self.variable_names = {var["name"] for var in new_metadata.get("variables", [])}
         self.categorical_vars = self._get_categorical_variables()
         self.errors = []
         self.warnings = []
@@ -714,7 +759,7 @@ class TableSpecValidator:
     def _get_categorical_variables(self) -> set:
         """Get set of categorical variable names."""
         categorical = set()
-        for var in self.metadata.get("variables", []):
+        for var in self.new_metadata.get("variables", []):
             if var.get("type") in ["numeric", "string"] and len(var.get("values", [])) > 0:
                 categorical.add(var["name"])
         return categorical
@@ -910,10 +955,122 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
     return state
 ```
 
-### 4.3 Step 4: Generate Recoding Rules (Complete Implementation)
+### 4.3 Step 3: Preliminary Filtering (Complete Implementation)
+
+**Node**: `filter_metadata_node`
+
+**Purpose**: Filter out variables that don't need recoding to reduce AI context.
+
+**Input**:
+- `variable_centered_metadata`: All variables from transformed metadata
+- `config` containing:
+  - `cardinality_threshold`: Max distinct values (default: 30)
+  - `filter_binary`: Whether to filter binary variables (default: true)
+  - `filter_other_text`: Whether to filter "other" text fields (default: true)
+
+**Filtering Rules**:
+
+| Rule | Condition | Reason |
+|------|-----------|--------|
+| Binary variables | Exactly 2 distinct values | No room for recoding |
+| High cardinality | Distinct values > threshold | Typically IDs, open-ended |
+| Other text fields | Name contains "other" AND type is character | Open-ended feedback |
+
+**Output**:
+- `filtered_metadata`: Variables needing recoding
+- `filtered_out_variables`: Excluded variables with reasons
+
+**Implementation**:
+
+```python
+def filter_metadata_node(state: WorkflowState) -> WorkflowState:
+    """
+    Filter out variables that don't need recoding to reduce AI context.
+
+    Input:
+        - state["variable_centered_metadata"]: All variables from transformed metadata
+        - state["config"]: Configuration parameters
+
+    Output:
+        - state["filtered_metadata"]: Variables passing filters (need recoding)
+        - state["filtered_out_variables"]: Excluded variables with reasons
+    """
+    variable_centered_metadata = state["variable_centered_metadata"]
+    config = state.get("config", {})
+
+    # Get filtering configuration parameters
+    cardinality_threshold = config.get("cardinality_threshold", 30)
+    filter_binary = config.get("filter_binary", True)
+    filter_other_text = config.get("filter_other_text", True)
+
+    filtered_metadata = []
+    filtered_out_variables = []
+
+    for variable in variable_centered_metadata:
+        var_name = variable.get("name")
+        var_type = variable.get("type", "unknown")
+        values = variable.get("values", [])
+        num_distinct = len(values)
+
+        # Rule 1: Binary variables (exactly 2 distinct values)
+        if filter_binary and num_distinct == 2:
+            filtered_out_variables.append({
+                "name": var_name,
+                "reason": "Binary variable (2 distinct values) - no room for recoding",
+                "rule": "binary",
+                "distinct_count": num_distinct
+            })
+            continue
+
+        # Rule 2: High cardinality (distinct values > threshold)
+        if num_distinct > cardinality_threshold:
+            filtered_out_variables.append({
+                "name": var_name,
+                "reason": f"High cardinality ({num_distinct} distinct values) - typically IDs or open-ended",
+                "rule": "high_cardinality",
+                "distinct_count": num_distinct
+            })
+            continue
+
+        # Rule 3: Other text fields (name contains "other" AND type is character/string)
+        if filter_other_text and "other" in var_name.lower() and var_type in ["string", "character"]:
+            filtered_out_variables.append({
+                "name": var_name,
+                "reason": "Other text field - open-ended feedback",
+                "rule": "other_text",
+                "type": var_type
+            })
+            continue
+
+        # Variable passes all filters
+        filtered_metadata.append(variable)
+
+    # Store results in state
+    state["filtered_metadata"] = filtered_metadata
+    state["filtered_out_variables"] = filtered_out_variables
+
+    # Log execution
+    state["execution_log"].append({
+        "step": "filter_metadata",
+        "status": "completed",
+        "total_variables": len(variable_centered_metadata),
+        "filtered_in": len(filtered_metadata),
+        "filtered_out": len(filtered_out_variables),
+        "filters_applied": {
+            "binary": filter_binary,
+            "high_cardinality": f">{cardinality_threshold}",
+            "other_text": filter_other_text
+        }
+    })
+
+    return state
+```
+
+### 4.4 Step 4: Generate Recoding Rules (Complete Implementation)
 
 ```python
 from langchain_openai import ChatOpenAI
+import json
 
 def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     """
@@ -961,7 +1118,6 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         content = response.content
 
         # Parse JSON response
-        import json
         # Remove markdown code blocks if present
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0].strip()
@@ -978,7 +1134,6 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         state["recoding_iteration"] = iteration + 1
 
         # Save to file
-        import json
         rules_path = f"{state['config']['output_dir']}/recoding_rules_iter_{iteration}.json"
         with open(rules_path, 'w') as f:
             json.dump(rules, f, indent=2)
@@ -1003,7 +1158,7 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     return state
 ```
 
-### 4.4 Step 7: Generate PSPP Recoding Syntax (Complete Implementation)
+### 4.5 Step 7: Generate PSPP Recoding Syntax (Complete Implementation)
 
 ```python
 def generate_pspp_recoding_syntax_node(state: WorkflowState) -> WorkflowState:
@@ -1192,9 +1347,51 @@ CTABLES
 
 ## 6. Statistical Analysis
 
-### 6.1 Python Statistics Script Generation
+### 6.1 Helper Functions for Contingency Table Extraction
 
 ```python
+def extract_contingency_table_from_csv(
+    csv_data: pd.DataFrame,
+    table_name: str,
+    rows_var: str,
+    cols_var: str
+) -> pd.DataFrame:
+    """
+    Extract contingency table from cross-table CSV data.
+
+    Args:
+        csv_data: DataFrame containing cross-table data
+        table_name: Name of the table to extract
+        rows_var: Row variable name
+        cols_var: Column variable name
+
+    Returns:
+        Contingency table as DataFrame with counts
+    """
+    # Filter data for the specific table
+    table_data = csv_data[
+        (csv_data['table_name'] == table_name) &
+        (csv_data['row_var'] == rows_var) &
+        (csv_data['col_var'] == cols_var)
+    ]
+
+    # Pivot to create contingency table
+    contingency = table_data.pivot_table(
+        index='row_value',
+        columns='col_value',
+        values='count',
+        fill_value=0
+    )
+
+    return contingency
+```
+
+### 6.2 Python Statistics Script Generation
+
+```python
+import json
+import subprocess
+
 def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowState:
     """
     Generate Python script to compute Chi-square tests and Cramer's V.
@@ -1202,17 +1399,22 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
     Input:
         - state["table_specifications"]: Table definitions
         - state["cross_table_json_path"]: Cross-table metadata
+        - state["cross_table_csv_path"]: Cross-table data
+        - state["config"]["output_dir"]: Output directory
 
     Output:
         - state["python_stats_script"]: Generated Python script
         - state["python_stats_script_path"]: Path to .py file
     """
-    import json
 
     try:
         # Load table specifications
         with open(state["cross_table_json_path"], 'r') as f:
             table_data = json.load(f)
+
+        output_dir = state["config"].get("output_dir", "output")
+        csv_path = state["cross_table_csv_path"]
+        json_path = state["cross_table_json_path"]
 
         # Generate Python script
         script_lines = [
@@ -1243,10 +1445,10 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
             "        return 'large'",
             "",
             "# Load cross-table data",
-            "with open('" + state["cross_table_csv_path"] + "', 'r') as f:",
+            f"with open('{csv_path}', 'r') as f:",
             "    csv_data = pd.read_csv(f)",
             "",
-            "with open('" + state["cross_table_json_path"] + "', 'r') as f:",
+            f"with open('{json_path}', 'r') as f:",
             "    json_data = json.load(f)",
             "",
             "# Initialize results",
@@ -1281,7 +1483,7 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
             "    all_results.append(result)",
             "",
             "# Save results",
-            "with open('" + state["config"]["output_dir"] + "/statistical_analysis_summary.json', 'w') as f:",
+            f"with open('{output_dir}/statistical_analysis_summary.json', 'w') as f:",
             "    json.dump(all_results, f, indent=2)",
             "",
             "print(f'Processed {len(all_results)} tables')"
@@ -1290,7 +1492,7 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
         script = "\n".join(script_lines)
 
         # Save script
-        script_path = f"{state['config']['output_dir']}/python_stats_script.py"
+        script_path = f"{output_dir}/python_stats_script.py"
         with open(script_path, 'w') as f:
             f.write(script)
 
@@ -1305,6 +1507,63 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
 
     except Exception as e:
         state["errors"].append(f"Failed to generate statistics script: {str(e)}")
+        state["execution_log"].append({
+            "step": "generate_python_statistics_script",
+            "status": "failed",
+            "error": str(e)
+        })
+
+    return state
+
+
+def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState:
+    """
+    Execute generated Python script to compute statistical tests.
+
+    Input:
+        - state["python_stats_script_path"]: Path to Python script
+
+    Output:
+        - state["statistical_summary"]: Loaded from generated JSON file
+        - state["statistical_summary_path"]: Path to JSON file
+    """
+
+    try:
+        script_path = state["python_stats_script_path"]
+        output_dir = state["config"].get("output_dir", "output")
+        summary_path = f"{output_dir}/statistical_analysis_summary.json"
+
+        # Execute the Python script
+        result = subprocess.run(
+            ["python", script_path],
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+
+        if result.returncode != 0:
+            raise RuntimeError(f"Script execution failed: {result.stderr}")
+
+        # Load the generated statistical summary
+        with open(summary_path, 'r') as f:
+            statistical_summary = json.load(f)
+
+        state["statistical_summary"] = statistical_summary
+        state["statistical_summary_path"] = summary_path
+
+        state["execution_log"].append({
+            "step": "execute_python_statistics_script",
+            "status": "completed",
+            "tables_processed": len(statistical_summary)
+        })
+
+    except Exception as e:
+        state["errors"].append(f"Failed to execute statistics script: {str(e)}")
+        state["execution_log"].append({
+            "step": "execute_python_statistics_script",
+            "status": "failed",
+            "error": str(e)
+        })
 
     return state
 ```
@@ -1313,100 +1572,746 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
 
 ## 7. Output Generation
 
-### 7.1 PowerPoint Generation
+### 7.1 Helper Functions for PowerPoint
 
 ```python
-from pptx import Presentation
-from pptx.util import Inches
-
-def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
+def add_contingency_table_to_slide(slide, table_data: pd.DataFrame, position):
     """
-    Create PowerPoint presentation with charts from significant tables.
+    Add a contingency table to a PowerPoint slide.
 
-    Input:
-        - state["significant_tables_json_path"]: Filtered table data
-        - state["statistical_summary"]: Statistical test results
-
-    Output:
-        - state["powerpoint_path"]: Path to generated .pptx file
+    Args:
+        slide: PowerPoint slide object
+        table_data: DataFrame with the table data
+        position: Tuple of (left, top, width, height) in Inches
     """
-    import json
-    import pandas as pd
+    from pptx.util import Inches
 
-    try:
-        # Load data
-        with open(state["significant_tables_json_path"], 'r') as f:
-            tables = json.load(f)
+    left, top, width, height = position
 
-        with open(state["config"]["output_dir"] + "/statistical_analysis_summary.json", 'r') as f:
-            stats = json.load(f)
+    # Create table shape
+    rows, cols = table_data.shape
+    table_shape = slide.shapes.add_table(
+        rows + 1,  # +1 for header row
+        cols,
+        left,
+        top,
+        width,
+        height
+    )
 
-        # Create presentation
-        prs = Presentation()
+    # Get the table
+    table = table_shape.table
 
-        # Title slide
-        title_slide = prs.slides.add_slide(prs.slide_layouts[0])
-        title = title_slide.shapes.title
-        subtitle = title_slide.placeholders[1]
-        title.text = "Survey Analysis Results"
-        subtitle.text = f"Generated on {pd.Timestamp.now().strftime('%Y-%m-%d')}"
+    # Set header row
+    for col_idx, col_name in enumerate(table_data.columns):
+        cell = table.cell(0, col_idx)
+        cell.text = str(col_name)
+        # Apply header formatting
+        for paragraph in cell.text_frame.paragraphs:
+            paragraph.font.bold = True
 
-        # Add slides for each table
-        for table_data in tables:
-            table_name = table_data["name"]
+    # Fill data rows
+    for row_idx, (row_name, row_data) in enumerate(table_data.iterrows()):
+        # First column is the row name/index
+        table.cell(row_idx + 1, 0).text = str(row_name)
 
-            # Find matching statistics
-            table_stats = next((s for s in stats if s["table_name"] == table_name), None)
-
-            # Create slide
-            slide = prs.slides.add_slide(prs.slide_layouts[5])
-
-            # Add title
-            title_shape = slide.shapes.title
-            title_shape.text = table_name
-
-            # Add statistics summary
-            if table_stats:
-                stats_text = (
-                    f"Chi-Square: {table_stats['chi_square']:.3f}\n"
-                    f"p-value: {table_stats['p_value']:.4f}\n"
-                    f"Cramer's V: {table_stats['cramers_v']:.3f} ({table_stats['interpretation']})"
-                )
-
-                left = Inches(0.5)
-                top = Inches(1.5)
-                width = Inches(9)
-                height = Inches(1)
-                textbox = slide.shapes.add_textbox(left, top, width, height)
-                text_frame = textbox.text_frame
-                text_frame.text = stats_text
-
-            # Add table
-            # (Implementation depends on data structure)
-            # add_table_to_slide(slide, table_data)
-
-        # Save presentation
-        ppt_path = f"{state['config']['output_dir']}/survey_analysis.pptx"
-        prs.save(ppt_path)
-
-        state["powerpoint_path"] = ppt_path
-
-        state["execution_log"].append({
-            "step": "generate_powerpoint",
-            "status": "completed",
-            "ppt_path": ppt_path,
-            "tables_included": len(tables)
-        })
-
-    except Exception as e:
-        state["errors"].append(f"Failed to generate PowerPoint: {str(e)}")
-
-    return state
+        # Fill data cells
+        for col_idx, value in enumerate(row_data):
+            table.cell(row_idx + 1, col_idx + 1).text = str(int(value) if pd.notna(value) else "0")
 ```
 
-### 7.2 HTML Dashboard Generation
+### 7.2 PowerPoint Generation with Native Editable Charts
+
+> **Implementation File**: `workflow/nodes/presentation.py`
+
+This section describes the complete implementation of PowerPoint generation with **native editable charts** for cross-tabulation survey data. The implementation creates professional presentations with bar charts, stacked bar charts, and horizontal bar charts based on table dimensions.
+
+**Key Feature**: Charts are created using python-pptx's `add_chart()` API, making them **fully editable** in PowerPoint, LibreOffice Impress, and compatible applications. Users can:
+- Modify data directly in the spreadsheet editor
+- Change chart type (bar → line, pie, etc.)
+- Adjust styling, colors, and fonts
+- Edit labels and titles
+- All through the standard PowerPoint interface
+
+#### 7.2.1 Main Node Function
 
 ```python
+def generate_powerpoint(state: State) -> State:
+    """
+    Create PowerPoint presentation with native editable charts from significant tables.
+
+    This is the main node for Phase 7 (Step 21) of the workflow. It:
+    1. Loads significant tables from JSON file
+    2. Loads statistical summary (Chi-square, p-value, Cramer's V)
+    3. Generates a slide for each table with:
+       - Slide title
+       - Native PowerPoint bar chart or stacked bar chart (editable!)
+       - Statistical summary text below the chart
+
+    Charts are created using python-pptx's add_chart() API, making them fully
+    editable in PowerPoint, LibreOffice Impress, and other compatible applications.
+    Users can modify data, change chart types, adjust styling, and edit labels.
+
+    Input state fields:
+        - significant_tables_json_path: Path to filtered significant tables JSON
+        - statistical_summary_path: Path to statistical test results JSON
+        - config["output_dir"]: Output directory for PowerPoint file
+
+    Output state fields:
+        - powerpoint_path: Path to generated .pptx file
+        - charts_generated: List of chart metadata (table_name, chart_type, statistics)
+
+    Args:
+        state: Current workflow state
+
+    Returns:
+        Updated state with PowerPoint generation results
+    """
+    try:
+        output_dir = state.get("config", {}).get("output_dir", "output")
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        # Load data files
+        tables = _load_significant_tables(state["significant_tables_json_path"])
+        statistics = _load_statistical_summary(state["statistical_summary_path"])
+
+        if not tables:
+            return {
+                **state,
+                "warnings": state.get("warnings", []) + [
+                    "No significant tables found. PowerPoint generation skipped."
+                ],
+                "execution_log": state.get("execution_log", []) + [{
+                    "step": "generate_powerpoint",
+                    "status": "skipped",
+                    "reason": "no_significant_tables"
+                }]
+            }
+
+        # Create presentation with native charts
+        ppt_path, charts_generated = _create_presentation_with_native_charts(
+            tables=tables,
+            statistics=statistics,
+            output_dir=output_dir
+        )
+
+        return {
+            **state,
+            "powerpoint_path": ppt_path,
+            "charts_generated": charts_generated,
+            "messages": [
+                *state.get("messages", []),
+                {
+                    "role": "assistant",
+                    "content": f"Generated PowerPoint with {len(charts_generated)} native editable chart slides"
+                }
+            ],
+            "execution_log": state.get("execution_log", []) + [{
+                "step": "generate_powerpoint",
+                "status": "completed",
+                "ppt_path": ppt_path,
+                "charts_generated": len(charts_generated)
+            }]
+        }
+
+    except Exception as e:
+        return {
+            **state,
+            "errors": state.get("errors", []) + [
+                f"Failed to generate PowerPoint: {str(e)}"
+            ],
+            "execution_log": state.get("execution_log", []) + [{
+                "step": "generate_powerpoint",
+                "status": "failed",
+                "error": str(e)
+            }]
+        }
+```
+
+#### 7.2.2 Data Loading Functions
+
+```python
+def _load_significant_tables(json_path: str) -> List[Dict[str, Any]]:
+    """
+    Load significant tables from JSON file.
+
+    Args:
+        json_path: Path to significant_tables JSON file
+
+    Returns:
+        List of table dictionaries with structure:
+        {
+            "name": str,
+            "rows": str,  # row variable name
+            "columns": str,  # column variable name
+            "data": {
+                "row_labels": List[str],
+                "column_labels": List[str],
+                "counts": List[List[int]],  # 2D array of counts
+                "row_percentages": List[List[float]],  # optional
+                "column_percentages": List[List[float]]  # optional
+            }
+        }
+    """
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+
+    # Handle different JSON structures
+    if isinstance(data, dict):
+        if "tables" in data:
+            return data["tables"]
+        elif "significant_tables" in data:
+            return data["significant_tables"]
+        else:
+            # Assume the dict itself contains table data
+            return [data]
+    elif isinstance(data, list):
+        return data
+
+    raise ValueError(f"Unexpected JSON structure in {json_path}")
+
+
+def _load_statistical_summary(json_path: str) -> List[Dict[str, Any]]:
+    """
+    Load statistical summary from JSON file.
+
+    Args:
+        json_path: Path to statistical_analysis_summary JSON file
+
+    Returns:
+        List of statistical result dictionaries with structure:
+        {
+            "table_name": str,
+            "chi_square": float,
+            "p_value": float,
+            "degrees_of_freedom": int,
+            "cramers_v": float,
+            "interpretation": str,  # "negligible", "small", "medium", "large"
+            "sample_size": int
+        }
+    """
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+
+    if isinstance(data, dict) and "results" in data:
+        return data["results"]
+    elif isinstance(data, list):
+        return data
+
+    raise ValueError(f"Unexpected JSON structure in {json_path}")
+```
+
+#### 7.2.3 Native Chart Creation with add_chart()
+
+```python
+def _add_table_slide_with_native_chart(
+    prs,
+    table_data: Dict[str, Any],
+    statistics: Optional[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """
+    Add a slide with native editable PowerPoint chart for a single table.
+
+    Args:
+        prs: PowerPoint Presentation object
+        table_data: Table data including labels and counts
+        statistics: Statistical test results (optional)
+
+    Returns:
+        Chart metadata dictionary
+
+    Slide Layout:
+        - Title at top (0.3" from top)
+        - Native chart in center (1.0" to 4.0" from top, 9" wide)
+        - Statistics text at bottom (4.2" from top)
+    """
+    from pptx.util import Inches, Pt
+    from pptx.enum.chart import XL_CHART_TYPE
+    from pptx.chart.data import CategoryChartData
+
+    table_name = table_data.get("name", "Unnamed Table")
+
+    # Create blank slide
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+    # Add title
+    title_left = Inches(0.5)
+    title_top = Inches(0.3)
+    title_width = Inches(9)
+    title_height = Inches(0.5)
+
+    title_box = slide.shapes.add_textbox(title_left, title_top, title_width, title_height)
+    title_frame = title_box.text_frame
+    title_frame.text = table_name
+    title_para = title_frame.paragraphs[0]
+    title_para.font.size = Pt(28)
+    title_para.font.bold = True
+
+    # Extract table data
+    chart_data_input = table_data.get("data", {})
+    row_labels = chart_data_input.get("row_labels", [])
+    col_labels = chart_data_input.get("column_labels", [])
+    counts = chart_data_input.get("counts", [])
+
+    n_rows = len(row_labels)
+    n_cols = len(col_labels)
+
+    # Determine chart type based on table dimensions
+    chart_type, xl_chart_type = _determine_chart_type(n_rows, n_cols)
+
+    # Prepare chart data for python-pptx
+    category_chart_data = _prepare_category_chart_data(
+        row_labels=row_labels,
+        col_labels=col_labels,
+        counts=counts,
+        chart_type=chart_type
+    )
+
+    # Add native chart to slide using add_chart() API
+    chart_left = Inches(0.5)
+    chart_top = Inches(1.0)
+    chart_width = Inches(9)
+    chart_height = Inches(3.0)
+
+    chart = slide.shapes.add_chart(
+        xl_chart_type,
+        chart_left,
+        chart_top,
+        chart_width,
+        chart_height,
+        category_chart_data
+    ).chart
+
+    # Configure chart appearance
+    _configure_chart_style(chart, table_name, chart_type)
+
+    # Add statistics summary text box (bottom portion)
+    if statistics:
+        stats_left = Inches(0.5)
+        stats_top = Inches(4.2)
+        stats_width = Inches(9)
+        stats_height = Inches(1.2)
+
+        stats_text = (
+            f"Statistical Summary:\n"
+            f"Chi-Square: {statistics['chi_square']:.3f}  |  "
+            f"p-value: {statistics['p_value']:.4f}  |  "
+            f"Cramer's V: {statistics['cramers_v']:.3f} ({statistics['interpretation']})"
+        )
+
+        stats_box = slide.shapes.add_textbox(stats_left, stats_top, stats_width, stats_height)
+        stats_frame = stats_box.text_frame
+        stats_frame.word_wrap = True
+        stats_frame.text = stats_text
+
+        # Format statistics text
+        stats_para = stats_frame.paragraphs[0]
+        stats_para.font.size = Pt(14)
+        stats_para.font.color.rgb = _get_rgb_color(64, 64, 64)
+
+    # Return chart metadata
+    return {
+        "table_name": table_name,
+        "chart_type": chart_type,
+        "dimensions": f"{n_rows}x{n_cols}",
+        "statistics": statistics
+    }
+```
+
+#### 7.2.4 Chart Type Selection
+
+```python
+def _determine_chart_type(n_rows: int, n_cols: int) -> Tuple[str, int]:
+    """
+    Determine the best chart type based on table dimensions.
+
+    Args:
+        n_rows: Number of rows in the table
+        n_cols: Number of columns in the table
+
+    Returns:
+        Tuple of (chart_type_string, xl_chart_type_enum)
+        - chart_type_string: "bar", "stacked_bar", or "horizontal_bar"
+        - xl_chart_type_enum: XL_CHART_TYPE enum value
+    """
+    from pptx.enum.chart import XL_CHART_TYPE
+
+    # For 2x2 tables, use clustered column chart
+    if n_rows == 2 and n_cols == 2:
+        return "bar", XL_CHART_TYPE.COLUMN_CLUSTERED
+
+    # For tables with many rows, use horizontal bar chart
+    if n_rows > 5:
+        return "horizontal_bar", XL_CHART_TYPE.BAR_CLUSTERED
+
+    # For tables with many columns, use stacked bar chart
+    if n_cols > 4:
+        return "stacked_bar", XL_CHART_TYPE.COLUMN_STACKED_100
+
+    # Default to clustered column chart
+    return "bar", XL_CHART_TYPE.COLUMN_CLUSTERED
+```
+
+#### 7.2.5 Chart Data Preparation for CategoryChartData
+
+```python
+def _prepare_category_chart_data(
+    row_labels: List[str],
+    col_labels: List[str],
+    counts: List[List[int]],
+    chart_type: str
+) -> 'CategoryChartData':
+    """
+    Transform cross-tabulation data to python-pptx CategoryChartData format.
+
+    Args:
+        row_labels: Labels for row categories
+        col_labels: Labels for column categories
+        counts: 2D array of counts [row][col]
+        chart_type: Type of chart ("bar", "horizontal_bar", "stacked_bar")
+
+    Returns:
+        CategoryChartData object ready for add_chart()
+
+    Data Transformation:
+        - Row labels become chart categories (x-axis)
+        - Each column label becomes a data series
+        - Counts become series values
+    """
+    from pptx.chart.data import CategoryChartData
+
+    # Create chart data
+    chart_data = CategoryChartData()
+
+    # Add categories (row labels become chart categories)
+    chart_data.categories = row_labels
+
+    # For each column label, create a data series
+    for col_idx, col_label in enumerate(col_labels):
+        # Extract data for this series (one value per row/category)
+        series_data = [counts[row_idx][col_idx] for row_idx in range(len(row_labels))]
+
+        # Add series to chart data
+        chart_data.add_series(col_label, series_data)
+
+    return chart_data
+```
+
+**Example Data Transformation**:
+```
+Input Table:
+           Male  Female
+18-24       10      12
+25-34       25      28
+35-44       30      35
+
+Output CategoryChartData:
+- categories: ["18-24", "25-34", "35-44"]
+- series[0]: name="Male", data=[10, 25, 30]
+- series[1]: name="Female", data=[12, 28, 35]
+```
+
+#### 7.2.6 Chart Styling Configuration
+
+```python
+def _configure_chart_style(chart, table_name: str, chart_type: str) -> None:
+    """
+    Configure chart styling for professional presentation.
+
+    Args:
+        chart: PowerPoint chart object
+        table_name: Name for chart title
+        chart_type: Type of chart being configured
+    """
+    from pptx.util import Pt
+
+    # Set chart title
+    if chart.has_title:
+        title = chart.chart_title
+        title.text_frame.text = table_name
+        title.text_frame.paragraphs[0].font.size = Pt(14)
+        title.text_frame.paragraphs[0].font.bold = True
+
+    # Apply professional color scheme
+    _apply_chart_colors(chart, chart_type)
+
+    # Display legend
+    if chart.has_legend:
+        legend = chart.legend
+        legend.include_in_layout = False
+        legend.position = 2  # Right side
+
+    # Set axis titles if applicable
+    _set_axis_titles(chart, chart_type)
+```
+
+```python
+def _apply_chart_colors(chart, chart_type: str) -> None:
+    """
+    Apply professional color scheme to chart series.
+
+    Args:
+        chart: PowerPoint chart object
+        chart_type: Type of chart
+
+    Color Palette (Market Research Standard):
+        Blue:     #2E86AB (46, 134, 171)
+        Purple:   #A23B72 (162, 59, 114)
+        Orange:   #F18F01 (241, 143, 1)
+        Red:      #C73E1D (199, 62, 29)
+        Green:    #6A994E (106, 153, 78)
+        Maroon:   #BC4B51 (188, 75, 81)
+        Steel:    #5C6E8A (92, 110, 138)
+        Olive:    #88B04B (136, 176, 75)
+    """
+    # Market research professional color palette
+    colors_rgb = [
+        (46, 134, 171),   # Blue #2E86AB
+        (162, 59, 114),   # Purple #A23B72
+        (241, 143, 1),    # Orange #F18F01
+        (199, 62, 29),    # Red #C73E1D
+        (106, 153, 78),   # Green #6A994E
+        (188, 75, 81),    # Maroon #BC4B51
+        (92, 110, 138),   # Steel Blue #5C6E8A
+        (136, 176, 75),   # Olive Green #88B04B
+    ]
+
+    # Apply colors to each series
+    for idx, series in enumerate(chart.series):
+        if idx < len(colors_rgb):
+            r, g, b = colors_rgb[idx]
+            series.format.fill.solid()
+            series.format.fill.fore_color.rgb = _get_rgb_color(r, g, b)
+```
+
+#### 7.2.7 Title Slide Creation
+
+```python
+def _add_title_slide(prs) -> None:
+    """
+    Add title slide to presentation.
+
+    Args:
+        prs: PowerPoint Presentation object
+
+    Layout:
+        - "Survey Analysis Results" as main title
+        - Current date as subtitle
+        - Centered text
+        - Professional formatting
+    """
+    from pptx.util import Inches, Pt
+    from datetime import datetime
+
+    # Use blank layout for custom title slide
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+    # Add title
+    left = Inches(1)
+    top = Inches(2)
+    width = Inches(8)
+    height = Inches(1)
+
+    title_box = slide.shapes.add_textbox(left, top, width, height)
+    title_frame = title_box.text_frame
+    title_frame.text = "Survey Analysis Results"
+    title_para = title_frame.paragraphs[0]
+    title_para.font.size = Pt(44)
+    title_para.font.bold = True
+    title_para.alignment = 1  # Center
+
+    # Add subtitle with date
+    top = Inches(3.2)
+    subtitle_box = slide.shapes.add_textbox(left, top, width, height)
+    subtitle_frame = subtitle_box.text_frame
+    subtitle_frame.text = f"Generated on {datetime.now().strftime('%B %d, %Y')}"
+    subtitle_para = subtitle_frame.paragraphs[0]
+    subtitle_para.font.size = Pt(18)
+    subtitle_para.alignment = 1  # Center
+```
+
+#### 7.2.8 Error Handling
+
+```python
+def _add_error_slide(prs, table_name: str, error_message: str) -> None:
+    """
+    Add a slide with error message when chart generation fails.
+
+    Args:
+        prs: PowerPoint Presentation object
+        table_name: Name of the table that failed
+        error_message: Error message to display
+
+    This ensures the presentation is still generated even if
+    individual charts fail. The error slide documents what went
+    wrong for debugging purposes.
+    """
+    from pptx.util import Inches, Pt
+    from pptx.enum.text import PP_ALIGN
+
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+    # Add title
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.3), Inches(9), Inches(0.5))
+    title_frame = title_box.text_frame
+    title_frame.text = f"{table_name} - Chart Generation Failed"
+    title_para = title_frame.paragraphs[0]
+    title_para.font.size = Pt(24)
+    title_para.font.bold = True
+    title_para.font.color.rgb = _get_rgb_color(192, 0, 0)
+
+    # Add error message
+    error_box = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(8), Inches(2))
+    error_frame = error_box.text_frame
+    error_frame.text = f"Error: {error_message}"
+    error_para = error_frame.paragraphs[0]
+    error_para.font.size = Pt(14)
+    error_para.alignment = PP_ALIGN.CENTER
+```
+
+#### 7.2.9 RGB Color Helper
+
+```python
+def _get_rgb_color(r: int, g: int, b: int):
+    """
+    Create an RGB color object for python-pptx.
+
+    Args:
+        r: Red component (0-255)
+        g: Green component (0-255)
+        b: Blue component (0-255)
+
+    Returns:
+        RGB color object compatible with python-pptx
+    """
+    try:
+        from pptx.util import RGBColor as PptxRGBColor
+        return PptxRGBColor(r, g, b)
+    except ImportError:
+        # Fallback for older python-pptx versions
+        class RGBColor:
+            def __init__(self, r: int, g: int, b: int):
+                self.r = r
+                self.g = g
+                self.b = b
+        return RGBColor(r, g, b)
+```
+
+#### 7.2.10 Usage Example
+
+```python
+from workflow.nodes import generate_powerpoint
+
+# State should have these fields populated:
+state = {
+    "significant_tables_json_path": "output/significant_tables.json",
+    "statistical_summary_path": "output/statistical_analysis_summary.json",
+    "config": {
+        "output_dir": "output"
+    },
+    "messages": [],
+    "execution_log": [],
+    "errors": [],
+    "warnings": []
+}
+
+# Generate PowerPoint
+updated_state = generate_powerpoint(state)
+
+# Results:
+# - updated_state["powerpoint_path"] = "output/survey_analysis_with_charts.pptx"
+# - updated_state["charts_generated"] = [
+#     {
+#         "table_name": "Gender by Satisfaction",
+#         "chart_type": "bar",
+#         "dimensions": "2x5",
+#         "statistics": {...}
+#     },
+#     ...
+# ]
+```
+
+#### 7.2.11 Sample Data Format
+
+**significant_tables.json:**
+```json
+{
+    "tables": [
+        {
+            "name": "Gender by Satisfaction",
+            "rows": "gender",
+            "columns": "satisfaction",
+            "data": {
+                "row_labels": ["Male", "Female"],
+                "column_labels": ["Very Dissatisfied", "Dissatisfied", "Neutral", "Satisfied", "Very Satisfied"],
+                "counts": [
+                    [10, 15, 25, 40, 30],
+                    [12, 18, 20, 35, 45]
+                ]
+            }
+        }
+    ]
+}
+```
+
+**statistical_analysis_summary.json:**
+```json
+[
+    {
+        "table_name": "Gender by Satisfaction",
+        "chi_square": 2.456,
+        "p_value": 0.652,
+        "degrees_of_freedom": 4,
+        "cramers_v": 0.067,
+        "interpretation": "negligible",
+        "sample_size": 250
+    }
+]
+```
+
+#### 7.2.12 Dependencies
+
+Required Python packages:
+```bash
+pip install python-pptx
+```
+
+- **python-pptx**: PowerPoint file manipulation with native chart support
+  - `from pptx import Presentation`
+  - `from pptx.util import Inches, Pt`
+  - `from pptx.enum.chart import XL_CHART_TYPE`
+  - `from pptx.chart.data import CategoryChartData`
+
+**No matplotlib required** - charts are native PowerPoint objects!
+
+#### 7.2.13 Complete Implementation Location
+
+The complete implementation is located in:
+- **File**: `workflow/nodes/presentation.py`
+- **Export**: `workflow/nodes/__init__.py` (as `generate_powerpoint`)
+- **State**: Uses `State` from `workflow/state.py`
+
+The implementation includes:
+1. **Native chart generation** with `add_chart()` API (no matplotlib)
+2. **Smart chart type selection** based on table dimensions
+3. **Professional color scheme** for market research presentations
+4. **Editable charts** - modify data, change types, adjust styling in PowerPoint
+5. **Error handling** that continues on individual failures
+6. **CategoryChartData** transformation from cross-tabulation format
+7. **Title slide** with date
+8. **Statistical summary** display on each slide
+9. **Type hints and docstrings** throughout
+5. Temporary image cleanup after embedding in PowerPoint
+6. Statistical summary display on each slide
+7. Title slide with date
+8. Type hints and docstrings throughout
+
+### 7.3 HTML Dashboard Generation
+
+```python
+import json
+
 def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
     """
     Create interactive HTML dashboard with all tables.
@@ -1414,20 +2319,22 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
     Input:
         - state["cross_table_csv_path"]: All cross-table data
         - state["cross_table_json_path"]: Table metadata
-        - state["statistical_summary"]: Statistical results
+        - state["statistical_summary_path"]: Path to statistical results JSON
+        - state["config"]["output_dir"]: Output directory
 
     Output:
         - state["html_dashboard_path"]: Path to generated .html file
+        - state["charts_generated"]: List of chart metadata
     """
-    import json
-    import pandas as pd
 
     try:
+        output_dir = state["config"].get("output_dir", "output")
+
         # Load data
         with open(state["cross_table_json_path"], 'r') as f:
             tables = json.load(f)
 
-        with open(state["config"]["output_dir"] + "/statistical_analysis_summary.json", 'r') as f:
+        with open(state["statistical_summary_path"], 'r') as f:
             stats = json.load(f)
 
         # Generate HTML
@@ -1464,6 +2371,9 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
 
         html_content += "        </ul>\n    </div>\n\n    <div class=\"content\">\n"
 
+        # Generate chart metadata
+        charts_generated = []
+
         # Add tables
         for table_data in tables:
             table_name = table_data["name"]
@@ -1492,6 +2402,14 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
             </ul>
 """
 
+                # Add to chart metadata
+                charts_generated.append({
+                    "table_name": table_name,
+                    "table_id": table_id,
+                    "significant": is_sig,
+                    "statistics": table_stats
+                })
+
             # Add table (implementation depends on data structure)
             html_content += "            <table>\n"
             # ... add table rows
@@ -1507,7 +2425,6 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
                 // ... chart.js code
             </script>
 """
-
             html_content += "        </div>\n"
 
         html_content += """
@@ -1517,11 +2434,17 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
 """
 
         # Save HTML
-        html_path = f"{state['config']['output_dir']}/survey_dashboard.html"
+        html_path = f"{output_dir}/survey_dashboard.html"
         with open(html_path, 'w') as f:
             f.write(html_content)
 
         state["html_dashboard_path"] = html_path
+
+        # Add to existing charts_generated or create new
+        if "charts_generated" in state:
+            state["charts_generated"].extend(charts_generated)
+        else:
+            state["charts_generated"] = charts_generated
 
         state["execution_log"].append({
             "step": "generate_html_dashboard",
@@ -1603,9 +2526,60 @@ def should_approve_recoding(state: WorkflowState) -> str:
     if state["recoding_approved"]:
         return "generate_pspp_recoding_syntax"
     else:
+        state["recoding_feedback_source"] = "human"
         return "generate_recoding_rules"
+
+
+def should_retry_indicators(state: WorkflowState) -> str:
+    """Route based on indicators validation result."""
+    validation = state["indicators_validation"]
+    iteration = state["indicators_iteration"]
+    max_iterations = state["config"].get("max_self_correction_iterations", 3)
+
+    if validation["is_valid"]:
+        return "review_indicators"
+    elif iteration >= max_iterations:
+        return "review_indicators"
+    else:
+        state["indicators_feedback"] = validation
+        state["indicators_feedback_source"] = "validation"
+        return "generate_indicators"
+
+
+def should_approve_indicators(state: WorkflowState) -> str:
+    """Route based on human review decision for indicators."""
+    if state["indicators_approved"]:
+        return "generate_table_specifications"
+    else:
+        state["indicators_feedback_source"] = "human"
+        return "generate_indicators"
+
+
+def should_retry_table_specs(state: WorkflowState) -> str:
+    """Route based on table specs validation result."""
+    validation = state["table_specs_validation"]
+    iteration = state["table_specs_iteration"]
+    max_iterations = state["config"].get("max_self_correction_iterations", 3)
+
+    if validation["is_valid"]:
+        return "review_table_specifications"
+    elif iteration >= max_iterations:
+        return "review_table_specifications"
+    else:
+        state["table_specs_feedback"] = validation
+        state["table_specs_feedback_source"] = "validation"
+        return "generate_table_specifications"
+
+
+def should_approve_table_specs(state: WorkflowState) -> str:
+    """Route based on human review decision for table specs."""
+    if state["table_specs_approved"]:
+        return "generate_pspp_table_syntax"
+    else:
+        state["table_specs_feedback_source"] = "human"
+        return "generate_table_specifications"
 ```
 
 ---
 
-**Document Version**: This document provides complete implementation details for the Survey Analysis & Visualization Workflow. For architectural overview, see [Survey Analysis Workflow Design](./SURVEY_ANALYSIS_WORKFLOW_DESIGN.md).
+For the concise workflow design and architecture overview, see [Survey Analysis Workflow Design](./SURVEY_ANALYSIS_WORKFLOW_DESIGN.md).

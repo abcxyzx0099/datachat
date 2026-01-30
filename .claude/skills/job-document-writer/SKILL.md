@@ -167,53 +167,48 @@ FINAL_FILE=$(bash .claude/skills/job-document-writer/scripts/rename_job.sh jobs/
 
 ### Step 5: Monitor Status & Verify Results
 
-Track job progress and verify completion using both CLI commands and execution result files.
-
----
-
-#### Check Queue Status (CLI)
+Track job progress and verify completion using the job-monitor CLI.
 
 ```bash
-# Check current status (waiting + running jobs)
-job-monitor queue
+# Poll job status until "completed"
+job-monitor job-{timestamp}-{description}
 
-# Check specific job details (if job file exists)
-job-monitor job-xxx-20260130-hhmmss.md
+# Status: waiting | processing | completed | not_found
+# Poll every 30-60 seconds until "completed"
 ```
-
-**Output interpretation:**
-
-| Field | Meaning |
-|-------|---------|
-| **Currently Processing** | Job being executed by Worker Agent |
-| **Waiting in Queue** | Jobs created but not yet started |
-| **Queue Size** | Number of jobs waiting |
 
 ---
 
-#### Check Execution Results (`jobs/results/`)
+#### 5.1 Verify Results (MANDATORY)
 
-After job completion, detailed results are stored in `jobs/results/` as JSON files.
+**Once `"completed"`, check `jobs/results/` to confirm success:**
 
-**Available information:**
-- `status` - Job completion status: `"completed"`, `"failed"`, or `"cancelled"`
-- `duration_seconds` - Total execution time
-- `worker_output.summary` - Human-readable summary of what was done
-- `worker_output.usage` - Token counts and cost in USD
-- `error` - Error details if job failed
+```bash
+# View results
+job-monitor job-{timestamp}-{description}
 
-**Job directory reference:**
+# Or read JSON directly
+cat jobs/results/job-{timestamp}-{description}.json
+```
+
+**Check these fields:**
+
+| Field | Verify |
+|-------|--------|
+| `status` | `"completed"` (not `"failed"`) |
+| `error` | `null` |
+| `worker_output.summary` | Read what was implemented |
+
+**If failed**: Read `error` field, check summary, create fix job.
+
+**Directory structure:**
 ```
 jobs/
-├── items/          # Job documents (created by this skill)
-├── results/        # Execution results (JSON files)
-├── state/          # Queue state (queue_state.json)
-└── logs/           # Execution logs (if configured)
+├── items/    # Job documents
+├── results/  # ← CHECK HERE for completion details
+├── state/    # Queue state
+└── logs/     # Execution logs
 ```
-
-The AI agent knows how to read and parse these files to verify job completion and extract relevant information.
-
-**Note**: The job-monitor CLI requires `~/.local/bin` to be in your PATH (already configured in `~/.bashrc`).
 
 ## Full Example
 
@@ -241,11 +236,16 @@ FINAL_FILE=$(bash .claude/skills/job-document-writer/scripts/rename_job.sh jobs/
 # Output: ✅ Job created: jobs/items/job-20260129-170500-fix-auth-timeout.md
 #         jobs/items/job-20260129-170500-fix-auth-timeout.md
 
-# Step 5: Monitor status and verify results
-job-monitor queue
-# → Shows your job in "Currently Processing" or "Waiting in Queue"
+# Step 5: Monitor and verify results
 
-# After completion, check results in jobs/results/ for execution details
+# Poll until "completed"
+job-monitor job-20260129-170500-fix-auth-timeout
+# → Status: processing (poll again in 30-60s)
+
+# When "completed", verify results
+job-monitor job-20260129-170500-fix-auth-timeout
+# → Read summary, check error=null, verify output
+# Or: cat jobs/results/job-20260129-170500-fix-auth-timeout.json
 ```
 
 ## Document Structure
@@ -264,15 +264,24 @@ Use the template in [references/job-template.md](references/job-template.md) for
 
 ## Quality Checklist
 
-Before running the rename script (Step 4), ensure:
+### Before Job Creation (Steps 1-4)
 
-- [ ] **Service verified and running** - Job monitor is running (Step 1 - HARD REQUIREMENT)
-- [ ] **Job is clear** - One-line summary is unambiguous
-- [ ] **Context is provided** - Worker understands why this job exists
-- [ ] **Scope is defined** - Worker knows where to look
-- [ ] **Requirements are specific** - Not vague like "improve code"
-- [ ] **Investigation is requested** - Worker is told to do their own research
-- [ ] **Success criteria exist** - Worker knows when they're done
+- [ ] Service running (HARD REQUIREMENT)
+- [ ] Job is clear (unambiguous summary)
+- [ ] Context provided
+- [ ] Scope defined
+- [ ] Requirements specific
+- [ ] Investigation requested
+- [ ] Success criteria exist
+
+### After Job Completes (Step 5)
+
+**Verify results in `jobs/results/`:**
+
+- [ ] Status is `"completed"` (not `"failed"`)
+- [ ] Error field is `null`
+- [ ] Summary reviewed
+- [ ] Artifacts verified
 
 ## Examples
 
@@ -287,6 +296,7 @@ See [references/examples.md](references/examples.md) for good vs bad job documen
 5. **Define success** - Worker needs clear completion criteria
 6. **Provide context** - Worker should understand why the job exists
 7. **Monitor visibility** - Show both waiting and running jobs for complete status
+8. **Verify results** - ALWAYS check `jobs/results/` after completion to confirm success and understand what was done
 
 ## Related Skills
 

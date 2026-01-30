@@ -70,7 +70,7 @@ flowchart TD
         S7["**Step 7**<br/>Generate PSPP Syntax<br/>(convert rules to PSPP)"]
         S8["**Step 8**<br/>Execute PSPP<br/>(apply transformations)"]
         NEW_DATA_SAV["**Output 1**<br/>NEW_DATA.SAV"]
-        NEW_META["**Output 2**<br/>UPDATED_METADATA<br/>(all variables, via pyreadstat)"]
+        NEW_META["**Output 2**<br/>NEW_METADATA<br/>(all variables, via pyreadstat)"]
 
         S4 --> S5
         S5 -->|Valid| S6
@@ -169,9 +169,9 @@ flowchart TD
 | Phase | Description | Input | Output |
 |-------|-------------|-------|--------|
 | **1** | Extraction & Preparation | .sav file | Raw data, filtered metadata |
-| **2** | New Dataset Generation | Filtered metadata, original .sav file | new_data.sav (complete dataset) + updated_metadata (all variables via pyreadstat) |
-| **3** | Indicator Generation | updated_metadata from Phase 2 | Indicator definitions |
-| **4** | Cross-Table Generation | updated_metadata from Phase 2 | Cross-table CSV + JSON |
+| **2** | New Dataset Generation | Filtered metadata, original .sav file | new_data.sav (complete dataset) + new_metadata (all variables via pyreadstat) |
+| **3** | Indicator Generation | new_metadata from Phase 2 | Indicator definitions |
+| **4** | Cross-Table Generation | new_metadata from Phase 2 | Cross-table CSV + JSON |
 | **5** | Statistical Analysis | Cross-table CSV + JSON | Statistical summary (Chi-square, Cramer's V) |
 | **6** | Significant Tables Selection | Statistical summary + cross-table data | Significant tables only |
 | **7** | Executive Summary Presentation | Significant tables | PowerPoint presentation |
@@ -286,7 +286,7 @@ class RecodingState(TypedDict):
     # PSPP execution fields
     pspp_recoding_syntax: str
     new_data_path: str
-    updated_metadata: Dict[str, Any]  # Complete metadata from new_data.sav
+    new_metadata: Dict[str, Any]  # Complete metadata from new_data.sav
 
 # Similar states for: IndicatorState, CrossTableState, StatisticalAnalysisState,
 # FilteringState, PresentationState, ApprovalState, TrackingState
@@ -306,7 +306,7 @@ class WorkflowState(
 
 | Concept | Description |
 |---------|-------------|
-| **State fields** | Individual data items in the state object (e.g., `recoding_rules`, `updated_metadata`) |
+| **State fields** | Individual data items in the state object (e.g., `recoding_rules`, `new_metadata`) |
 | **State inheritance** | `WorkflowState` inherits from all sub-state classes, combining their fields |
 | **State evolution** | Fields are populated incrementally as steps complete (enabled by `total=False`) |
 | **Task-scoped state views** | Within three-node patterns, relevant fields are grouped logically (e.g., recoding fields for Steps 4-6) |
@@ -317,19 +317,19 @@ class WorkflowState(
 |------|-----------|------------------|
 | 0 | `InputState` | `spss_file_path`, `config` |
 | 1-3 | `ExtractionState` | `raw_data`, `variable_centered_metadata`, `filtered_metadata` |
-| 4-8 | `RecodingState` | `recoding_rules`, `pspp_recoding_syntax`, `new_data_path`, `updated_metadata` (complete metadata with all variables) |
+| 4-8 | `RecodingState` | `recoding_rules`, `pspp_recoding_syntax`, `new_data_path`, `new_metadata` (complete metadata with all variables) |
 | 9-11 | `IndicatorState` | `indicators`, `indicators_approved` |
 | 12-14 | `CrossTableState` | `table_specifications`, `table_specs_approved` |
 | 15-16 | `CrossTableState` | `pspp_table_syntax`, `cross_table_csv_path`, `cross_table_json_path` |
-| 17-18 | `StatisticalAnalysisState` | `python_stats_script`, `statistical_summary` |
-| 19-20 | `FilteringState` | `filter_list`, `significant_tables` |
-| 21-22 | `PresentationState` | `powerpoint_path`, `html_dashboard_path` |
+| 17-18 | `StatisticalAnalysisState` | `python_stats_script_path`, `statistical_summary`, `statistical_summary_path` |
+| 19-20 | `FilteringState` | `filter_list`, `filter_list_json_path`, `significant_tables`, `significant_tables_json_path` |
+| 21-22 | `PresentationState` | `powerpoint_path`, `html_dashboard_path`, `charts_generated` |
 
 **Metadata Evolution**:
 
 - **Steps 1-3**: Produce `variable_centered_metadata` (only variables needing recoding, filtered from original)
-- **Step 8**: Produces `updated_metadata` which contains ALL variables (original + recoded)
-- **Steps 9-22**: Use `updated_metadata` as the authoritative metadata source
+- **Step 8**: Produces `new_metadata` which contains ALL variables (original + recoded)
+- **Steps 9-22**: Use `new_metadata` as the authoritative metadata source
 
 This creates a clean architectural boundary: **Stage 1** (Steps 1-8) produces the analysis-ready dataset, **Stage 2** (Steps 9-22) consumes it.
 
@@ -373,7 +373,7 @@ flowchart TD
             recodingValidation["recoding_validation"]:::traditionalStyle
             psppRecodeSyntax["pspp_recoding_syntax<br/>(.sps)"]:::traditionalStyle
             sav2(["📁 new_data.sav"]):::dataFileStyle
-            updatedMeta["updated_metadata<br/>(all variables)"]:::traditionalStyle
+            newMetadata["new_metadata<br/>(all variables)"]:::traditionalStyle
         end
     end
 
@@ -437,10 +437,10 @@ flowchart TD
     recodingRev -->|Step 7| psppRecodeSyntax
     sav1 ==>|Step 8<br/>input| sav2
     psppRecodeSyntax -.->|Step 8<br/>syntax| sav2
-    sav2 ==>|pyreadstat<br/>extract| updatedMeta
+    sav2 ==>|pyreadstat<br/>extract| newMetadata
 
     %% Data flow edges - Stage 2 (Analysis & Reporting)
-    updatedMeta ==>|Phase 3<br/>Step 9| indGen
+    newMetadata ==>|Phase 3<br/>Step 9| indGen
     indGen -->|Step 10| indVal
     indVal -->|Valid| indRev
     indVal -.->|Invalid| indGen
@@ -470,11 +470,11 @@ flowchart TD
 |-------|---------|----------|
 | 📦 **Stage Label** | High-level workflow stage grouping | Stage 1: Data Preparation, Stage 2: Analysis & Reporting |
 | 🔵 **Input File** | Original input data file | `.sav` file |
-| 🟢 **Deterministic Processing** | Procedural code (Python, PSPP, scipy) | `raw_data`, `updated_metadata`, `pspp_recoding_syntax`, `all_small_tables`, `statistical_analysis_summary`, `filter_list`, `.pptx`, `.html` |
+| 🟢 **Deterministic Processing** | Procedural code (Python, PSPP, scipy) | `raw_data`, `new_metadata`, `pspp_recoding_syntax`, `all_small_tables`, `statistical_analysis_summary`, `filter_list`, `.pptx`, `.html` |
 | 🔵 **LLM-Orchestrated Generation** | LLM generates artifact (can iterate on feedback) | `recoding_rules (Generate)`, `indicators (Generate)`, `table_specifications (Generate)` |
 | 🟠 **Validation (Python)** | Objective validation checks (syntax, references, constraints) | `recoding_rules (Validate)`, `indicators (Validate)`, `table_specifications (Validate)` |
 | 🟣 **Review (Human)** | Semantic quality review through LangGraph interrupt | `recoding_rules (Review)`, `indicators (Review)`, `table_specifications (Review)` |
-| ⚪ **Data File (.sav + .csv + .json)** | Survey data files generated by PSPP/Python | `new_data.sav`, `updated_metadata` (all variables), `cross_table.csv` + `.json` |
+| ⚪ **Data File (.sav + .csv + .json)** | Survey data files generated by PSPP/Python | `new_data.sav`, `new_metadata` (all variables), `cross_table.csv` + `.json` |
 | 🟢 **Python Script** | Generated Python scripts for statistical analysis | `python_stats_script.py` |
 | ⚡ **Feedback Loop** | Iteration edges (dotted lines) | Validation or Review feedback triggering regeneration |
 
@@ -489,7 +489,7 @@ flowchart TD
 **Key Observations:**
 
 1. **Two-Stage Architecture**: The workflow is organized into two distinct stages:
-   - **Stage 1 (Data Preparation)**: Phases 1-2 transform raw .sav data into an analysis-ready dataset (`new_data.sav`) with complete metadata (`updated_metadata`)
+   - **Stage 1 (Data Preparation)**: Phases 1-2 transform raw .sav data into an analysis-ready dataset (`new_data.sav`) with complete metadata (`new_metadata`)
    - **Stage 2 (Analysis & Reporting)**: Phases 3-8 consume the analysis-ready dataset to generate indicators, tables, statistics, and reports
 
 2. **LLM-Orchestrated Steps with Separate Validation/Review Steps**: Steps 4-6 (Recoding Rules), 9-11 (Indicators), and 12-14 (Table Specifications) use the three-node pattern as separate workflow steps
@@ -502,11 +502,11 @@ flowchart TD
 
 6. **Dashed lines** (`.-.->`): Indicate syntax/control flow (not direct data dependency)
 
-7. **Phase 2 produces the analysis-ready boundary**: `new_data.sav` (generated by PSPP) contains original variables plus newly created variables. `updated_metadata` is extracted from this file via pyreadstat and contains descriptions for ALL variables. These two outputs eliminate Phase 1 dependencies for all subsequent phases.
+7. **Phase 2 produces the analysis-ready boundary**: `new_data.sav` (generated by PSPP) contains original variables plus newly created variables. `new_metadata` is extracted from this file via pyreadstat and contains descriptions for ALL variables. These two outputs eliminate Phase 1 dependencies for all subsequent phases.
 
 8. **Phase 6 creates an audit trail**: Step 19 generates filter criteria from statistical summary, then Step 20 applies it to data - this allows inspection of the filter list before applying it and makes debugging easier
 
-9. **Clean Dependency Chain**: Stage 2 depends only on Stage 1 outputs (`new_data.sav` + `updated_metadata`), not on intermediate Phase 1 artifacts like `variable_centered_metadata`
+9. **Clean Dependency Chain**: Stage 2 depends only on Stage 1 outputs (`new_data.sav` + `new_metadata`), not on intermediate Phase 1 artifacts like `variable_centered_metadata`
 
 ---
 
@@ -562,19 +562,32 @@ This section provides concise specifications for each workflow step. For complet
 
 **Node**: `filter_metadata_node`
 
-**Purpose**: Filter out variables that don't need recoding (system variables, metadata-only fields).
+**Purpose**: Filter out variables that don't need recoding to reduce AI context.
 
 **Input**:
 - `variable_centered_metadata`: All variables from transformed metadata
+- `config` containing:
+  - `cardinality_threshold`: Max distinct values (default: 30)
+  - `filter_binary`: Whether to filter binary variables (default: true)
+  - `filter_other_text`: Whether to filter "other" text fields (default: true)
+
+**Filtering Rules**:
+
+| Rule | Condition | Reason |
+|------|-----------|--------|
+| Binary variables | Exactly 2 distinct values | No room for recoding |
+| High cardinality | Distinct values > threshold | Typically IDs, open-ended |
+| Other text fields | Name contains "other" AND type is character | Open-ended feedback |
 
 **Output**:
 - `filtered_metadata`: Variables needing recoding
 - `filtered_out_variables`: Excluded variables with reasons
 
 **Logic**:
-1. Identify filter patterns (e.g., variables starting with "$", "record", "time")
-2. Separate variables into filtered and filtered_out lists
-3. Record reasons for exclusions
+
+1. Apply filtering rules to identify variables not needing recoding (see table above)
+2. Separate variables into filtered and filtered_out lists based on rules
+3. Record reasons for each excluded variable
 4. Store both lists in state
 
 ### Step 4: Generate Recoding Rules (LLM)
@@ -687,7 +700,7 @@ This section provides concise specifications for each workflow step. For complet
 
 **Output**:
 - `new_data_path`: Path to new_data.sav
-- `updated_metadata`: Complete metadata extracted from new_data.sav
+- `new_metadata`: Complete metadata extracted from new_data.sav
 
 **Logic**:
 1. Construct PSPP command:
@@ -698,9 +711,9 @@ This section provides concise specifications for each workflow step. For complet
    ```
 2. Execute PSPP via subprocess
 3. Extract metadata from new_data.sav using pyreadstat
-4. Store new_data_path and updated_metadata in state
+4. Store new_data_path and new_metadata in state
 
-**Key Output**: The `updated_metadata` field contains **all variables** (original + recoded) and becomes the authoritative metadata source for all subsequent phases.
+**Key Output**: The `new_metadata` field contains **all variables** (original + recoded) and becomes the authoritative metadata source for all subsequent phases.
 
 ### Step 9: Generate Indicators (LLM)
 
@@ -709,7 +722,7 @@ This section provides concise specifications for each workflow step. For complet
 **Purpose**: LLM groups variables into semantic indicators. First step of three-node pattern for indicators.
 
 **Input**:
-- `updated_metadata`: Complete metadata from new_data.sav
+- `new_metadata`: Complete metadata from new_data.sav
 - `indicators_feedback`: Feedback from previous iteration
 - `indicators_iteration`: Current iteration count
 
@@ -741,14 +754,14 @@ This section provides concise specifications for each workflow step. For complet
 
 **Input**:
 - `indicators`: Generated indicator definitions
-- `updated_metadata`: Complete metadata for reference validation
+- `new_metadata`: Complete metadata for reference validation
 
 **Output**:
 - `indicators_validation`: Validation results (valid/invalid, errors)
 
 **Logic**:
 1. **Structure validation**: Check required fields (name, variables, description)
-2. **Reference validation**: Verify all indicator variables exist in updated_metadata
+2. **Reference validation**: Verify all indicator variables exist in new_metadata
 3. **Uniqueness validation**: Ensure indicator names are unique
 4. **Non-empty validation**: Ensure each indicator has at least 2 variables
 5. Build validation report
@@ -783,7 +796,7 @@ This section provides concise specifications for each workflow step. For complet
 **Purpose**: LLM defines cross-tabulation table structures. First step of three-node pattern for tables.
 
 **Input**:
-- `updated_metadata`: Complete metadata
+- `new_metadata`: Complete metadata
 - `table_specs_feedback`: Feedback from previous iteration
 - `table_specs_iteration`: Current iteration count
 
@@ -817,7 +830,7 @@ This section provides concise specifications for each workflow step. For complet
 
 **Input**:
 - `table_specifications`: Generated table definitions
-- `updated_metadata`: Complete metadata for reference validation
+- `new_metadata`: Complete metadata for reference validation
 
 **Output**:
 - `table_specs_validation`: Validation results
@@ -932,8 +945,7 @@ This section provides concise specifications for each workflow step. For complet
 - `cross_table_json_path`: Table metadata
 
 **Output**:
-- `statistical_summary`: Statistical test results
-- `statistical_summary_path`: Path to JSON output
+- `statistical_summary_path`: Path to JSON output (loaded into `statistical_summary` field)
 
 **Logic**:
 1. Execute Python script via subprocess:
@@ -1021,10 +1033,11 @@ This section provides concise specifications for each workflow step. For complet
 
 **Input**:
 - `significant_tables_json_path`: Filtered table data
-- `statistical_summary`: Statistical test results
+- `statistical_summary_path`: Path to statistical test results JSON
 
 **Output**:
 - `powerpoint_path`: Path to generated .pptx file
+- `charts_generated`: List of chart metadata
 
 **Logic**:
 1. Load significant tables
@@ -1048,13 +1061,14 @@ This section provides concise specifications for each workflow step. For complet
 **Input**:
 - `cross_table_csv_path`: All cross-table data
 - `cross_table_json_path`: All table metadata
-- `statistical_summary`: Statistical results
+- `statistical_summary_path`: Path to statistical results JSON
 
 **Output**:
 - `html_dashboard_path`: Path to generated .html file
+- `charts_generated`: List of chart metadata
 
 **Logic**:
-1. Load all cross-table data and metadata
+1. Load all cross-table data, metadata, and statistical summary
 2. Generate HTML with:
    - Navigation sidebar with table list
    - Interactive tables with sorting/filtering
@@ -1081,6 +1095,11 @@ DEFAULT_CONFIG = {
     # Three-Node Pattern Configuration
     "max_self_correction_iterations": 3,
     "enable_human_review": True,
+
+    # Step 3: Preliminary Filtering Configuration
+    "cardinality_threshold": 30,     # Max distinct values before filtering as high-cardinality (default: 30)
+    "filter_binary": True,            # Filter out binary variables - exactly 2 distinct values (default: true)
+    "filter_other_text": True,        # Filter out "other" text fields - open-ended feedback (default: true)
 
     # PSPP Configuration
     "pspp_path": "/usr/bin/pspp",
@@ -1276,10 +1295,12 @@ result = app.invoke(None, config=config)
 
 ### 8.2 Logging
 
-All steps log:
+All steps log to `state["execution_log"]`:
 - **Info**: Step start, completion, key outputs
 - **Warning**: Validation failures, skipped items
 - **Error**: Exceptions, failures with stack traces
+
+Errors and warnings also stored in `state["errors"]` and `state["warnings"]` lists.
 
 Logs stored in `output/logs/` with timestamps.
 
@@ -1392,7 +1413,7 @@ This document provides the concise workflow architecture and step specifications
 | **LLM-orchestrated step** | Workflow step where LLM generates artifact (can iterate on feedback) |
 | **Deterministic processing** | Procedural code execution with predictable outputs |
 | **Three-node pattern** | Generate (LLM) → Validate (Python) → Review (Human) architectural pattern |
-| **updated_metadata** | Complete metadata extracted from new_data.sav (all variables) |
+| **new_metadata** | Complete metadata extracted from new_data.sav (all variables) |
 | **LangGraph interrupt** | Mechanism to pause workflow for human input |
 | **State evolution** | Incremental population of state fields as steps complete |
 | **Task-scoped state view** | Logical grouping of state fields for specific workflow phases |

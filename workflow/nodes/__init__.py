@@ -29,6 +29,9 @@ from .table_specs import (
     after_table_specs_validation,
     after_table_specs_review,
 )
+from .presentation import (
+    generate_powerpoint,
+)
 
 __all__ = [
     # Recoding nodes (Step 4)
@@ -49,4 +52,6 @@ __all__ = [
     "review_table_specs",
     "after_table_specs_validation",
     "after_table_specs_review",
+    # Presentation nodes (Phase 7: Step 21)
+    "generate_powerpoint",
 ]
