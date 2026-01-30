@@ -1,6 +1,6 @@
 {
   "project": "datachat",
   "queue_size": 0,
-  "current_task": null,
-  "is_processing": false
+  "current_task": "job-20260130-235000-refactor-workflow-docs.md",
+  "is_processing": true
 }
