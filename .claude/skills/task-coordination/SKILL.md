@@ -1,6 +1,6 @@
 ---
 name: task-coordination
-description: "Two-agent workflow coordinator with AUTOMATIC iteration. Orchestrates Implementation Agent and Auditor Agent using a pre-existing task document. Automatically iterates based on audit feedback until quality threshold is met (max 3 iterations). Use when: you have a task document created by task-document-generator; you need end-to-end task execution with quality assurance; you want automatic retry based on audit feedback; you need a single entry point that coordinates implementation and audit."
+description: "Two-agent workflow coordinator with AUTOMATIC iteration. Orchestrates Implementation Agent and Auditor Agent using a pre-existing task document. Automatically iterates based on audit feedback until quality threshold is met (max 3 iterations). Use when: you have a task document created by task-document-writer; you need end-to-end task execution with quality assurance; you want automatic retry based on audit feedback; you need a single entry point that coordinates implementation and audit."
 ---
 
 # Task Coordination
@@ -72,7 +72,7 @@ This skill is designed to work with the **task document monitoring workflow**:
 ## When to Use
 
 Call this skill when:
-- A task document has already been created (by `task-document-generator` skill)
+- A task document has already been created (by `task-document-writer` skill)
 - You need automatic iteration based on audit feedback
 - You want implementation and audit coordinated with automatic retry
 - You need a single entry point for execution and quality assurance
@@ -651,7 +651,7 @@ Work must meet quality standards (PASS or APPROVED) to complete.
 
 ## Task Document Format
 
-This skill expects task documents in the following format (created by `task-document-generator` skill):
+This skill expects task documents in the following format (created by `task-document-writer` skill):
 
 ```markdown
 # Task: [One-line summary]

@@ -1,13 +1,13 @@
 ---
-name: task-document-generator
-description: "Generates structured task documents from conversation context for delegation to Worker Agents via the task monitoring system. Use when: a task identified in conversation needs to be implemented by another agent; you need to convert user requirements into a clear, actionable task document; the task should be queued for sequential processing."
+name: job-document-writer
+description: "Generates structured job documents from conversation context for delegation to Worker Agents via the job monitoring system. Use when: a task identified in conversation needs to be implemented by another agent; you need to convert user requirements into a clear, actionable job document; the job should be queued for sequential processing."
 ---
 
-# Task Document Generator
+# Job Document Writer
 
 ## Workflow
 
-Convert conversation context and user requirements into a structured task document, then save it to the `tasks/` directory for pickup by the task monitoring system.
+Convert conversation context and user requirements into a structured job document, then save it to the `jobs/items/` directory for pickup by the task monitoring system.
 
 ### Input
 
@@ -19,13 +19,13 @@ Convert conversation context and user requirements into a structured task docume
 
 ### Step 1: Verify Task Monitor Service Running
 
-**BEFORE creating any task document**, verify that the task monitoring service is running. If the service is not running, the task document will never be processed and will sit idle in the `tasks/` directory.
+**BEFORE creating any job document**, verify that the task monitoring service is running. If the service is not running, the job document will never be processed and will sit idle in the `jobs/items/` directory.
 
 **1.1 Check Service Status**
 
 ```bash
 # Check if task monitor service is running
-task-monitor queue
+job-monitor queue
 ```
 
 **Expected output if running:**
@@ -48,12 +48,12 @@ Error: Task monitor service is not running
 ⚠️ **STOP and ask the user**:
 
 ```
-⚠️ Task monitor service is not running. The task document will not be processed automatically.
+⚠️ Task monitor service is not running. The job document will not be processed automatically.
 
 Would you like me to start the task monitor service now? Please confirm, and I will start it before continuing with task creation.
 ```
 
-- If user confirms → Start the service using `task-monitor start` or appropriate command, then verify it's running
+- If user confirms → Start the service using `job-monitor start` or appropriate command, then verify it's running
 - Only proceed to Step 2 **after** the service is confirmed running
 
 **1.4 Quality Gate**
@@ -65,7 +65,7 @@ Would you like me to start the task monitor service now? Please confirm, and I w
 
 ### Step 2: Investigate & Understand (Before Writing)
 
-Before writing the task document, ensure you fully understand the context and requirements.
+Before writing the job document, ensure you fully understand the context and requirements.
 
 **2.1 Analyze Conversation**
 
@@ -114,17 +114,17 @@ Before proceeding to write:
 
 ### Step 3: Write Temp File (AI Agent)
 
-Once you fully understand the task, use the Write tool to create the task document with `.md.tmp` extension:
+Once you fully understand the task, use the Write tool to create the job document with `.md.tmp` extension:
 
-**Temp file pattern**: `tasks/task-{description}.md.tmp`
+**Temp file pattern**: `jobs/items/job-{timestamp}-{description}.md.tmp`
 
-**Example**: `tasks/task-fix-auth-timeout.md.tmp`
+**Example**: `jobs/items/job-20260130-170500-fix-auth-timeout.md.tmp`
 
-- Simple filename with description only
+- Filename with timestamp first (for chronological sorting)
 - The `.tmp` extension prevents monitor from picking it up prematurely
-- Timestamp will be added to filename in Step 4
+- Final filename in Step 4 will have full timestamp
 
-**Why `.md.tmp` first?** The task monitor watches for `.md` files only. By writing to `.md.tmp` first, we ensure the document is complete before the monitor sees it. This prevents race conditions where an incomplete file gets executed.
+**Why `.md.tmp` first?** The job monitor watches for `.md` files only. By writing to `.md.tmp` first, we ensure the document is complete before the monitor sees it. This prevents race conditions where an incomplete file gets executed.
 
 ---
 
@@ -133,63 +133,63 @@ Once you fully understand the task, use the Write tool to create the task docume
 Run the rename script to atomically rename the temp file:
 
 ```bash
-bash .claude/skills/task-document-generator/scripts/rename_task.sh /path/to/temp/file.md.tmp
+bash .claude/skills/job-document-writer/scripts/rename_job.sh /path/to/temp/file.md.tmp
 ```
 
 **What the script does:**
-1. Extracts description from temp filename
-2. Gets current timestamp: `YYYYMMDD-HHMMSS`
-3. Renames `task-{description}.md.tmp` → `task-{description}-{TIMESTAMP}.md`
+1. Extracts timestamp and description from temp filename
+2. Final filename is already in correct format: `job-{timestamp}-{description}.md`
+3. Simply removes the `.tmp` extension
 4. Outputs the final file path
 
 **Example transformation:**
 ```
-tasks/task-fix-auth-timeout.md.tmp
+jobs/items/job-20260129-170500-fix-auth-timeout.md.tmp
     ↓
-tasks/task-fix-auth-timeout-20260129-170500.md
+jobs/items/job-20260129-170500-fix-auth-timeout.md
 ```
 
 **Capture the output** - The script outputs the final file path, which can be captured and passed to Step 5:
 
 ```bash
 # Capture final file path
-FINAL_FILE=$(bash .claude/skills/task-document-generator/scripts/rename_task.sh tasks/task-xxx.md.tmp)
+FINAL_FILE=$(bash .claude/skills/job-document-writer/scripts/rename_job.sh jobs/items/job-xxx.md.tmp)
 ```
 
 ---
 
 ### Step 5: Monitor Status (CLI - Enhanced)
 
-Use the task-monitor CLI to check the task processing status with detailed information:
+Use the job-monitor CLI to check the job processing status with detailed information:
 
 ```bash
-# Check full status (waiting + running tasks)
-task-monitor queue
+# Check full status (waiting + running jobs)
+job-monitor queue
 
-# Check specific task details (if task file exists)
-task-monitor task-xxx-20260130-hhmmss.md
+# Check specific job details (if job file exists)
+job-monitor job-xxx-20260130-hhmmss.md
 ```
 
 **What the CLI does:**
-1. Checks the queue state file (`state/queue_state.json`)
-2. Displays current task being processed
-3. Shows tasks waiting in queue
+1. Checks the queue state file (`jobs/state/queue_state.json`)
+2. Displays current job being processed
+3. Shows jobs waiting in queue
 4. Shows process information
 
 **Output you'll see:**
 
 ```
 ┌─────────────────────────────────────────────┐
-│  Task Monitor Status                         │
+│  Job Monitor Status                         │
 ├─────────────────────────────────────────────┤
 │  Service: ✅ Running                         │
 │                                              │
 │  Currently Processing:                       │
-│  → task-refactor-phase2-20260130-110940.md  │
+│  → job-refactor-phase2-20260130-110940.md  │
 │                                              │
 │  Waiting in Queue:                           │
-│  → task-another-task-20260130-111500.md     │
-│  → task-third-task-20260130-111600.md       │
+│  → job-another-job-20260130-111500.md     │
+│  → job-third-job-20260130-111600.md       │
 │                                              │
 │  Queue Size: 2                               │
 └─────────────────────────────────────────────┘
@@ -199,50 +199,50 @@ task-monitor task-xxx-20260130-hhmmss.md
 
 | Field | Meaning |
 |-------|---------|
-| **Currently Processing** | Task that was dequeued and is being executed by Worker Agent |
-| **Waiting in Queue** | Tasks that have been created but not yet started |
-| **Queue Size** | Number of tasks waiting (not including the one being processed) |
+| **Currently Processing** | Job that was dequeued and is being executed by Worker Agent |
+| **Waiting in Queue** | Jobs that have been created but not yet started |
+| **Queue Size** | Number of jobs waiting (not including the one being processed) |
 
-**Note**: The task-monitor CLI requires `~/.local/bin` to be in your PATH (already configured in `~/.bashrc`). If the command is not found, run `source ~/.bashrc` or open a new terminal.
+**Note**: The job-monitor CLI requires `~/.local/bin` to be in your PATH (already configured in `~/.bashrc`). If the command is not found, run `source ~/.bashrc` or open a new terminal.
 
 ## Full Example
 
 ```bash
-# Step 1: Verify task monitor service is running
-task-monitor queue
+# Step 1: Verify job monitor service is running
+job-monitor queue
 
 # IF RUNNING:
 # Output: Service is running, proceed to Step 2
 
 # IF NOT RUNNING:
-# ⚠️ Task monitor service is not running. The task document will not be processed automatically.
-# Would you like me to start the task monitor service now?
+# ⚠️ Job monitor service is not running. The job document will not be processed automatically.
+# Would you like me to start the job monitor service now?
 # (After user confirms and service starts)
 # Output: Service is running, proceed to Step 2
 
 # Step 2: Investigate and understand (read conversation, explore codebase)
 
 # Step 3: Write temp file using Write tool
-# File: tasks/task-fix-auth-timeout.md.tmp
-# Content: (full task document)
+# File: jobs/items/job-20260129-170500-fix-auth-timeout.md.tmp
+# Content: (full job document)
 
 # Step 4: Rename with timestamp
-FINAL_FILE=$(bash .claude/skills/task-document-generator/scripts/rename_task.sh tasks/task-fix-auth-timeout.md.tmp)
-# Output: ✅ Task created: tasks/task-fix-auth-timeout-20260129-170500.md
-#         tasks/task-fix-auth-timeout-20260129-170500.md
+FINAL_FILE=$(bash .claude/skills/job-document-writer/scripts/rename_job.sh jobs/items/job-20260129-170500-fix-auth-timeout.md.tmp)
+# Output: ✅ Job created: jobs/items/job-20260129-170500-fix-auth-timeout.md
+#         jobs/items/job-20260129-170500-fix-auth-timeout.md
 
 # Step 5: Monitor status (shows both waiting and running)
-task-monitor queue
-# Output: Shows your task in "Currently Processing" or "Waiting in Queue"
+job-monitor queue
+# Output: Shows your job in "Currently Processing" or "Waiting in Queue"
 ```
 
 ## Document Structure
 
-Use the template in [references/task-template.md](references/task-template.md) for the document structure.
+Use the template in [references/job-template.md](references/job-template.md) for the document structure.
 
 **Required sections**:
 - Task (one-line summary)
-- Context (why this task exists)
+- Context (why this job exists)
 - Scope (directories, files, dependencies)
 - Requirements (specific, actionable)
 - Deliverables (what Worker produces)
@@ -254,9 +254,9 @@ Use the template in [references/task-template.md](references/task-template.md) f
 
 Before running the rename script (Step 4), ensure:
 
-- [ ] **Service verified and running** - Task monitor is running (Step 1 - HARD REQUIREMENT)
-- [ ] **Task is clear** - One-line summary is unambiguous
-- [ ] **Context is provided** - Worker understands why this task exists
+- [ ] **Service verified and running** - Job monitor is running (Step 1 - HARD REQUIREMENT)
+- [ ] **Job is clear** - One-line summary is unambiguous
+- [ ] **Context is provided** - Worker understands why this job exists
 - [ ] **Scope is defined** - Worker knows where to look
 - [ ] **Requirements are specific** - Not vague like "improve code"
 - [ ] **Investigation is requested** - Worker is told to do their own research
@@ -264,19 +264,19 @@ Before running the rename script (Step 4), ensure:
 
 ## Examples
 
-See [references/examples.md](references/examples.md) for good vs bad task document examples.
+See [references/examples.md](references/examples.md) for good vs bad job document examples.
 
 ## Key Principles
 
 1. **Service must be running** - HARD STOP if service not running; ask user to start it before proceeding
 2. **Understand first** - Investigate before writing
-3. **Be specific** - Vague tasks produce vague results
+3. **Be specific** - Vague jobs produce vague results
 4. **Request investigation** - Worker Agents must do their own deep research before implementing
 5. **Define success** - Worker needs clear completion criteria
-6. **Provide context** - Worker should understand why the task exists
-7. **Monitor visibility** - Show both waiting and running tasks for complete status
+6. **Provide context** - Worker should understand why the job exists
+7. **Monitor visibility** - Show both waiting and running jobs for complete status
 
 ## Related Skills
 
-- `task-monitor-system`: Creates the task monitoring system that processes these task documents
-- `task-coordination`: Executes tasks with worker-auditor workflow (called by monitor)
+- `job-monitor-system`: Creates the job monitoring system that processes these job documents
+- `task-coordination`: Executes jobs with worker-auditor workflow (called by monitor)

@@ -8,18 +8,18 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 # System root for monitor code
-MONITOR_SYSTEM_ROOT = Path("/opt/task-monitor")
+MONITOR_SYSTEM_ROOT = Path("/opt/job-monitor")
 sys.path.insert(0, str(MONITOR_SYSTEM_ROOT))
 
-from task_executor import TaskExecutor
-from models import TaskStatus
+from job_executor import JobExecutor
+from models import JobStatus
 
 # Configuration
-REGISTRY_FILE = Path.home() / ".config" / "task-monitor" / "registered.json"
+REGISTRY_FILE = Path.home() / ".config" / "job-monitor" / "registered.json"
 
 
 class MultiProjectMonitor:
-    """Monitor multiple projects, each with their own tasks directory."""
+    """Monitor multiple projects, each with their own jobs/items directory."""
 
     def __init__(self):
         self.projects = {}  # {project_name: {path, executor, queue, observer, event_handler}}
@@ -48,10 +48,10 @@ class MultiProjectMonitor:
             return False
 
         # Create directories
-        tasks_dir = project_path / "tasks"
-        results_dir = project_path / "results"
-        logs_dir = project_path / "logs"
-        state_dir = project_path / "state"
+        tasks_dir = project_path / "jobs" / "items"
+        results_dir = project_path / "jobs" / "results"
+        logs_dir = project_path / "jobs" / "logs"
+        state_dir = project_path / "jobs" / "state"
 
         tasks_dir.mkdir(parents=True, exist_ok=True)
         results_dir.mkdir(parents=True, exist_ok=True)
@@ -59,10 +59,10 @@ class MultiProjectMonitor:
         state_dir.mkdir(parents=True, exist_ok=True)
 
         # Create project-specific queue
-        queue = ProjectTaskQueue(name, project_path, state_dir)
+        queue = ProjectJobQueue(name, project_path, state_dir)
 
         # Create project-specific executor
-        executor = TaskExecutor(
+        executor = JobExecutor(
             tasks_dir=str(tasks_dir),
             results_dir=str(results_dir),
             project_root=str(project_path)
@@ -90,13 +90,13 @@ class MultiProjectMonitor:
         global logger
         logger = logging.getLogger(__name__)
 
-        logger.info("Starting Multi-Project Task Monitor")
+        logger.info("Starting Multi-Project Job Monitor")
 
         # Load registry and setup all projects
         projects_config = self.load_registry()
 
         if not projects_config:
-            logger.warning("No projects registered. Add projects with: task-monitor-control register <path>")
+            logger.warning("No projects registered. Add projects with: job-monitor-control register <path>")
             return
 
         for name, config in projects_config.items():
@@ -121,8 +121,8 @@ class MultiProjectMonitor:
 
         # Create observers and event handlers with access to event loop
         for name, project in self.projects.items():
-            tasks_dir = project["path"] / "tasks"
-            event_handler = TaskFileHandler(
+            tasks_dir = project["path"] / "jobs" / "items"
+            event_handler = JobFileHandler(
                 project["queue"],
                 name,
                 project["path"],
@@ -137,7 +137,7 @@ class MultiProjectMonitor:
         # Start all observers
         for name, project in self.projects.items():
             project["observer"].start()
-            logging.info(f"Observer started for '{name}': {project['path'] / 'tasks'}")
+            logging.info(f"Observer started for '{name}': {project['path'] / 'jobs' / 'items'}")
 
         # Start queue processors for all projects
         await self._run_all_queues()
@@ -166,7 +166,7 @@ class MultiProjectMonitor:
             logging.info("Queue processors stopped")
 
     async def _process_project_queue(self, name: str, project: dict):
-        """Process tasks for a specific project."""
+        """Process jobs for a specific project."""
         logger = logging.getLogger(__name__)
         queue = project["queue"]
         executor = project["executor"]
@@ -182,39 +182,39 @@ class MultiProjectMonitor:
                         timeout=1.0
                     )
 
-                    logger.info(f"[{name}] Starting task: {task_file}")
+                    logger.info(f"[{name}] Starting job: {task_file}")
                     queue.is_processing = True
                     queue.current_task = task_file
                     queue._save_state()
 
-                    # Execute task
+                    # Execute job
                     try:
-                        result = await executor.execute_task(task_file)
+                        result = await executor.execute_job(task_file)
                         if result.completed_at:
                             duration = (result.completed_at - result.started_at).total_seconds()
                         else:
                             duration = 0
                         logger.info(
-                            f"[{name}] Task completed: {task_file} - "
+                            f"[{name}] Job completed: {task_file} - "
                             f"status={result.status}, "
                             f"duration={duration:.1f}s"
                         )
                     except Exception as e:
-                        logger.error(f"[{name}] Task failed: {task_file} - {e}")
+                        logger.error(f"[{name}] Job failed: {task_file} - {e}")
 
-                    # Mark as ready for next task
+                    # Mark as ready for next job
                     queue.current_task = None
                     queue.is_processing = False
                     queue._save_state()
 
-                    # Small delay before next task
+                    # Small delay before next job
                     await asyncio.sleep(0.5)
 
                 except asyncio.TimeoutError:
-                    # No task in queue, continue waiting
+                    # No job in queue, continue waiting
                     continue
                 except Exception as e:
-                    logger.error(f"[{name}] Error processing task: {e}")
+                    logger.error(f"[{name}] Error processing job: {e}")
                     queue.current_task = None
                     queue.is_processing = False
                     queue._save_state()
@@ -252,8 +252,8 @@ class MultiProjectMonitor:
         logging.info("Monitor stopped")
 
 
-class ProjectTaskQueue:
-    """Task queue for a specific project."""
+class ProjectJobQueue:
+    """Job queue for a specific project."""
 
     def __init__(self, project_name: str, project_path: Path, state_dir: Path):
         self.project_name = project_name
@@ -264,18 +264,18 @@ class ProjectTaskQueue:
         self.STATE_FILE = state_dir / "queue_state.json"
         self.STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-    async def put(self, task_file: str):
-        """Add a task to the queue."""
-        await self.queue.put(task_file)
-        logging.info(f"[{self.project_name}] Task queued: {task_file} (queue size: {self.queue.qsize()})")
+    async def put(self, job_file: str):
+        """Add a job to the queue."""
+        await self.queue.put(job_file)
+        logging.info(f"[{self.project_name}] Job queued: {job_file} (queue size: {self.queue.qsize()})")
         self._save_state()
 
     async def get_next(self) -> str:
-        """Get the next task from the queue."""
-        task = await self.queue.get()
-        logging.info(f"[{self.project_name}] Task retrieved: {task}")
+        """Get the next job from the queue."""
+        job = await self.queue.get()
+        logging.info(f"[{self.project_name}] Job retrieved: {job}")
         self._save_state()
-        return task
+        return job
 
     @property
     def size(self) -> int:
@@ -305,11 +305,11 @@ class ProjectTaskQueue:
             json.dump(state, f, indent=2)
 
 
-class TaskFileHandler(FileSystemEventHandler):
-    """Handles task file creation events for a specific project."""
+class JobFileHandler(FileSystemEventHandler):
+    """Handles job file creation events for a specific project."""
 
-    def __init__(self, task_queue: ProjectTaskQueue, project_name: str, project_path: Path, event_loop: asyncio.AbstractEventLoop):
-        self.task_queue = task_queue
+    def __init__(self, job_queue: ProjectJobQueue, project_name: str, project_path: Path, event_loop: asyncio.AbstractEventLoop):
+        self.job_queue = job_queue
         self.project_name = project_name
         self.project_path = project_path
         self.event_loop = event_loop
@@ -320,35 +320,17 @@ class TaskFileHandler(FileSystemEventHandler):
             return
 
         file_path = Path(event.src_path)
-        if file_path.match(r"task-*-????????-??????.md"):
-            logging.info(f"[{self.project_name}] New task detected: {file_path.name}")
+        if file_path.match(r"job-????????-??????-*.md"):
+            logging.info(f"[{self.project_name}] New job detected: {file_path.name}")
             try:
                 # Add to project's queue (non-blocking)
                 future = asyncio.run_coroutine_threadsafe(
-                    self.task_queue.put(file_path.name),
+                    self.job_queue.put(file_path.name),
                     self.event_loop
                 )
-                logging.info(f"[{self.project_name}] Task queued successfully: {file_path.name}")
+                logging.info(f"[{self.project_name}] Job queued successfully: {file_path.name}")
             except Exception as e:
-                logging.error(f"[{self.project_name}] Failed to queue task {file_path.name}: {e}")
-
-    def on_moved(self, event):
-        """Called when a file is moved or renamed."""
-        if event.is_directory:
-            return
-
-        dest_path = Path(event.dest_path)
-        if dest_path.match(r"task-*-????????-??????.md"):
-            logging.info(f"[{self.project_name}] Task detected (moved): {dest_path.name}")
-            try:
-                # Add to project's queue (non-blocking)
-                future = asyncio.run_coroutine_threadsafe(
-                    self.task_queue.put(dest_path.name),
-                    self.event_loop
-                )
-                logging.info(f"[{self.project_name}] Task queued successfully: {dest_path.name}")
-            except Exception as e:
-                logging.error(f"[{self.project_name}] Failed to queue task {dest_path.name}: {e}")
+                logging.error(f"[{self.project_name}] Failed to queue job {file_path.name}: {e}")
 
 
 if __name__ == "__main__":
