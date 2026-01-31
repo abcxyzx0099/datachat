@@ -48,13 +48,13 @@ This document provides quick access to reference materials used in the survey an
 
 | Document | Description | Location |
 |----------|-------------|----------|
+| **Product Features and Usage** | Product introduction for end users | [`user-guide.md`](./user-guide.md) |
+| **Web Interface** | Agent Chat UI setup and usage | [`web-interface.md`](./web-interface.md) |
 | **Data Flow** | High-level workflow design and phases | [`data-flow.md`](./data-flow.md) |
+| **Data Schema** | Data structures and file formats | [`data-schema.md`](./data-schema.md) |
 | **System Architecture** | System components and architecture | [`system-architecture.md`](./system-architecture.md) |
 | **Deployment** | Installation, environment configuration, and operations | [`deployment.md`](./deployment.md) |
 | **Technology Stack** | Technologies and versions | [`technology-stack.md`](./technology-stack.md) |
 | **Configuration** | Configuration options | [`configuration.md`](./configuration.md) |
-| **Usage** | User guide and examples | [`usage.md`](./usage.md) |
 | **Implementation Specifications** | Detailed implementation specifications | [`implementation-specifications.md`](./implementation-specifications.md) |
 | **Project Structure** | Directory structure and file locations | [`project-structure.md`](./project-structure.md) |
-| **Code Organization** | Naming conventions and design principles | [`code-organization.md`](./code-organization.md) |
-| **Task Tracking** | Implementation task breakdown | [`task-tracking.md`](./task-tracking.md) |

@@ -245,3 +245,4 @@ python -m agent.graph --input survey.sav
 | **[Project Structure](./project-structure.md)** | Directory structure and file locations |
 | **[Configuration](./configuration.md)** | Configuration options and usage |
 | **[Data Flow](./data-flow.md)** | Workflow design and step specifications |
+| **[Web Interface](./web-interface.md)** | Agent Chat UI setup and usage |

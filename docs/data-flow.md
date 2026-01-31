@@ -334,8 +334,8 @@ The workflow maintains a single evolving state object (`WorkflowState`) organize
 |----------|---------|
 | **[implementation-specifications.md](./implementation-specifications.md)** | Detailed implementation with code examples |
 | **[project-structure.md](./project-structure.md)** | Complete directory structure and file locations |
-| **[code-organization.md](./code-organization.md)** | Naming conventions and design principles |
 | **[system-architecture.md](./system-architecture.md)** | System components, deployment, and troubleshooting |
 | **[technology-stack.md](./technology-stack.md)** | Technologies and versions |
 | **[configuration.md](./configuration.md)** | Configuration options and usage examples |
-| **[product-features-and-usage.md](./product-features-and-usage.md)** | Product introduction for end users |
+| **[user-guide.md](./user-guide.md)** | Product introduction for end users |
+| **[web-interface.md](./web-interface.md)** | Agent Chat UI setup and usage |
