@@ -784,4 +784,4 @@ DEFAULT_CONFIG = {
 | **[Implementation Specifications](./implementation-specifications.md)** | Technical implementation details |
 | **[Project Structure](./project-structure.md)** | Directory structure and file locations |
 | **[Web Interface](./web-interface.md)** | Agent Chat UI setup and usage |
-| **[Product Features and Usage](./user-guide.md)** | Product introduction for end users |
+| **[User Guide](./user-guide.md)** | Product introduction for end users |
