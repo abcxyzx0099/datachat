@@ -499,7 +499,7 @@ This section provides concise specifications for each workflow step. For complet
 3. Parse response into structured recoding rules
 4. Update state with rules and incremented iteration
 
-> **For detailed prompt templates and recoding rule structure, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#step-4-generate-recoding-rules)**
+> **For detailed prompt templates and recoding rule structure, see [implementation-guide.md](./implementation-guide.md)**
 
 ### Step 5: Validate Recoding Rules (Python)
 
@@ -522,7 +522,7 @@ This section provides concise specifications for each workflow step. For complet
 5. Build validation report with errors/warnings
 6. Update state with validation results
 
-> **For detailed validation specifications and error examples, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#step-5-validate-recoding-rules)**
+> **For detailed validation specifications and error examples, see [implementation-guide.md](./implementation-guide.md)**
 
 ### Step 6: Review Recoding Rules (Human)
 
@@ -571,7 +571,7 @@ This section provides concise specifications for each workflow step. For complet
 4. Write to .sps file
 5. Store syntax and file path in state
 
-> **For PSPP syntax examples and conversion logic, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#step-7-generate-pspp-recoding-syntax)**
+> **For PSPP syntax examples and conversion logic, see [implementation-guide.md](./implementation-guide.md)**
 
 ### Step 8: Execute PSPP Recoding
 
@@ -769,7 +769,7 @@ This section provides concise specifications for each workflow step. For complet
 4. Write to .sps file
 5. Store in state
 
-> **For PSPP CTABLES syntax examples, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#step-15-generate-pspp-table-syntax)**
+> **For PSPP CTABLES syntax examples, see [implementation-guide.md](./implementation-guide.md)**
 
 ### Step 16: Execute PSPP Tables
 
@@ -816,7 +816,7 @@ This section provides concise specifications for each workflow step. For complet
 3. Write script to file
 4. Store in state
 
-> **For complete statistics script implementation, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#step-17-generate-python-statistics-script)**
+> **For complete statistics script implementation, see [implementation-guide.md](./implementation-guide.md)**
 
 ### Step 18: Execute Python Statistics Script
 
@@ -935,7 +935,7 @@ This section provides concise specifications for each workflow step. For complet
 4. Add title slide with analysis summary
 5. Save presentation
 
-> **For PowerPoint generation implementation, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#step-21-generate-powerpoint)**
+> **For PowerPoint generation implementation, see [implementation-guide.md](./implementation-guide.md)**
 
 ### Step 22: Generate HTML Dashboard
 
@@ -962,7 +962,7 @@ This section provides concise specifications for each workflow step. For complet
 3. Embed CSS for styling
 4. Save HTML file
 
-> **For HTML dashboard implementation details, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#step-22-generate-html-dashboard)**
+> **For HTML dashboard implementation details, see [implementation-guide.md](./implementation-guide.md)**
 
 ---
 
@@ -1063,8 +1063,8 @@ survey-analysis-workflow/
 │   ├── test_validation.py
 │   └── test_integration.py
 ├── docs/
-│   ├── SURVEY_ANALYSIS_WORKFLOW_DESIGN.md
-│   └── SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md
+│   ├── workflow-architecture.md
+│   └── implementation-guide.md
 ├── pyproject.toml
 ├── README.md
 └── .env                      # API keys, paths
