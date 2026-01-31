@@ -48,7 +48,7 @@ This document provides quick access to reference materials used in the survey an
 
 | Document | Description | Location |
 |----------|-------------|----------|
-| **Product Features and Usage** | Product introduction for end users | [`user-guide.md`](./user-guide.md) |
+| **Product Features and Usage** | Product introduction for end users | [`features-and-usage.md`](./features-and-usage.md) |
 | **Web Interface** | Agent Chat UI setup and usage | [`web-interface.md`](./web-interface.md) |
 | **Data Flow** | High-level workflow design and phases | [`data-flow.md`](./data-flow.md) |
 | **Data Schema** | Data structures and file formats | [`data-schema.md`](./data-schema.md) |
