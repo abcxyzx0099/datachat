@@ -227,6 +227,6 @@ pydantic>=2.0.0
 - **[Project Structure](./project-structure.md)** - Complete directory structure and file locations
 - **[Data Flow](./data-flow.md)** - Workflow design and step specifications
 - **[System Architecture](./system-architecture.md)** - System components and architecture
-- **[Configuration](./configuration.md)** - Configuration options
+- **[Configuration](./system-configuration.md)** - Configuration options
 - **[Product Features and Usage](./features-and-usage.md)** - Product introduction for end users
 - **[Useful References](./useful-references.md)** - External documentation links

@@ -560,4 +560,4 @@ flowchart TD
 | **[Data Schema](./data-schema.md)** | All data structures and file formats |
 | **[State Management](./state-management.md)** | State evolution and lifecycle |
 | **[Data Flow](./data-flow.md)** | Workflow design and step specifications |
-| **[Configuration](./configuration.md)** | Configuration options and usage |
+| **[Configuration](./system-configuration.md)** | Configuration options and usage |

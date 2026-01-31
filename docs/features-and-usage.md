@@ -229,6 +229,6 @@ If you encounter issues:
 ## Document Navigation
 
 - **[Deployment](./deployment.md)** - Installation, deployment, and troubleshooting
-- **[Configuration](./configuration.md)** - Configuration options and usage examples
+- **[Configuration](./system-configuration.md)** - Configuration options and usage examples
 - **[Web Interface](./web-interface.md)** - Agent Chat UI setup and usage
 - **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation details

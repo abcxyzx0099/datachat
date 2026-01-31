@@ -55,6 +55,6 @@ This document provides quick access to reference materials used in the survey an
 | **System Architecture** | System components and architecture | [`system-architecture.md`](./system-architecture.md) |
 | **Deployment** | Installation, environment configuration, and operations | [`deployment.md`](./deployment.md) |
 | **Technology Stack** | Technologies and versions | [`technology-stack.md`](./technology-stack.md) |
-| **Configuration** | Configuration options | [`configuration.md`](./configuration.md) |
+| **System Configuration** | Configuration options | [`system-configuration.md`](./system-configuration.md) |
 | **Implementation Specifications** | Detailed implementation specifications | [`implementation-specifications.md`](./implementation-specifications.md) |
 | **Project Structure** | Directory structure and file locations | [`project-structure.md`](./project-structure.md) |

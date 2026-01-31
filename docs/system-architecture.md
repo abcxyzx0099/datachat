@@ -179,6 +179,6 @@ python -m agent.graph --input survey.sav
 - **[Project Structure](./project-structure.md)** - Complete directory structure and file locations
 - **[Data Flow](./data-flow.md)** - Workflow design and step specifications
 - **[Technology Stack](./technology-stack.md)** - Technologies and versions
-- **[Configuration](./configuration.md)** - Configuration options and usage examples
+- **[Configuration](./system-configuration.md)** - Configuration options and usage examples
 - **[Product Features and Usage](./features-and-usage.md)** - Product introduction for end users
 - **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation details

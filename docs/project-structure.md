@@ -304,7 +304,7 @@ DEFAULT_CONFIG = {
 | Document | Content |
 |----------|---------|
 | **[Deployment](./deployment.md)** | Installation, environment configuration, and production deployment |
-| **[Configuration](./configuration.md)** | Configuration options and environment variables |
+| **[Configuration](./system-configuration.md)** | Configuration options and environment variables |
 | **[Data Flow](./data-flow.md)** | Workflow design and steps |
 | **[System Architecture](./system-architecture.md)** | System components and architecture |
 | **[Web Interface](./web-interface.md)** | Agent Chat UI setup and usage |

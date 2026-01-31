@@ -780,7 +780,7 @@ DEFAULT_CONFIG = {
 |----------|---------|
 | **[Data Flow](./data-flow.md)** | Workflow design and step specifications |
 | **[System Architecture](./system-architecture.md)** | System components, deployment, and troubleshooting |
-| **[Configuration](./configuration.md)** | Configuration options and usage examples |
+| **[Configuration](./system-configuration.md)** | Configuration options and usage examples |
 | **[Implementation Specifications](./implementation-specifications.md)** | Technical implementation details |
 | **[Project Structure](./project-structure.md)** | Directory structure and file locations |
 | **[Web Interface](./web-interface.md)** | Agent Chat UI setup and usage |

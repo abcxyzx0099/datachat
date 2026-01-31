@@ -253,6 +253,6 @@ Upload survey files directly through the interface:
 ## Related Documents
 
 - **[Product Features and Usage](./features-and-usage.md)** - Product introduction for end users
-- **[Configuration](./configuration.md)** - Configuration options and settings
+- **[Configuration](./system-configuration.md)** - Configuration options and settings
 - **[System Architecture](./system-architecture.md)** - System components and architecture
 - **[Deployment](./deployment.md)** - Installation and environment setup
