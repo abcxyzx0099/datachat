@@ -537,7 +537,7 @@ A table is **included** in `significant_tables` if:
 
 ```mermaid
 flowchart TD
-    START["Table Dimensions"] CHECK1{"2 rows<br/>× 2 cols?"}
+    START["Table Dimensions"] --> CHECK1{"2 rows<br/>× 2 cols?"}
     CHECK1 -->|Yes| BAR["Clustered Column Chart"]
     CHECK1 -->|No| CHECK2{"> 5 rows?"}
     CHECK2 -->|Yes| HBAR["Horizontal Bar Chart"]
