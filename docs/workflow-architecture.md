@@ -50,7 +50,7 @@ Design and implement an automated workflow for market research survey data analy
 
 ### 2.1 Workflow Diagram
 
-The workflow consists of **22 steps** organized into **8 phases** across **2 stages**:
+The workflow consists of **22 steps** organized into **8 phases** across **3 stages**:
 
 ```mermaid
 flowchart TD
@@ -90,10 +90,10 @@ flowchart TD
         end
     end
 
-    %% STAGE 2: Analysis & Reporting (Phases 3-8)
+    %% STAGE 2: Analysis (Phases 3-6)
     subgraph STAGE2[" "]
         direction TB
-        stage2_label["**STAGE 2: Analysis & Reporting**<br/>Generate indicators, tables, statistics, and reports"]:::stageLabelStyle
+        stage2_label["**STAGE 2: Analysis**<br/>Generate indicators, tables, and statistical analysis"]:::stageLabelStyle
 
         %% Phase 3: Indicator Generation
         subgraph P3["**Phase 3: Indicator Generation**<br/>Three-Node Pattern (Steps 9-11)"]
@@ -125,6 +125,12 @@ flowchart TD
             S20["**Step 20**<br/>Apply Filter to Tables"]:::traditionalStyle
             sigTables["significant_tables<br/>(filtered)"]:::traditionalStyle
         end
+    end
+
+    %% STAGE 3: Reporting (Phases 7-8)
+    subgraph STAGE3[" "]
+        direction TB
+        stage3_label["**STAGE 3: Reporting**<br/>Generate PowerPoint and HTML reports"]:::stageLabelStyle
 
         %% Phase 7: Executive Summary Presentation
         subgraph P7["**Phase 7: Executive Summary**"]
@@ -155,7 +161,7 @@ flowchart TD
     S8 -.->|Step 8<br/>syntax| sav2
     sav2 ==>|pyreadstat| newMetadata
 
-    %% Data flow edges - Stage 2 (Analysis & Reporting)
+    %% Data flow edges - Stage 2 (Analysis)
     newMetadata ==>|Step 9| S9
     S9 -->|Step 10| S10
     S10 -->|Valid| S11
@@ -178,7 +184,9 @@ flowchart TD
     S19 --> S20
     crossTableFiles ==>|Step 20<br/>data| S20
     S20 --> sigTables
-    sigTables -->|Step 21| S21
+
+    %% Data flow edges - Stage 3 (Reporting)
+    sigTables ==>|Step 21| S21
     S21 --> ppt
     crossTableFiles ==>|Step 22| S22
     S22 --> html
@@ -198,7 +206,7 @@ flowchart TD
 
 | Style | Meaning | Examples |
 |-------|---------|----------|
-| 📦 **Stage Label** | High-level workflow stage grouping | Stage 1: Data Preparation, Stage 2: Analysis & Reporting |
+| 📦 **Stage Label** | High-level workflow stage grouping | Stage 1: Data Preparation, Stage 2: Analysis, Stage 3: Reporting |
 | 🔵 **Input File** | Original input data file | `.sav` file |
 | 🟢 **Deterministic Processing** | Procedural code (Python, PSPP, scipy) | Steps 1-3, 7-8, 15-22 |
 | 🔵 **LLM-Orchestrated Generation** | LLM generates artifact (can iterate on feedback) | Steps 4, 9, 12 |
@@ -214,13 +222,14 @@ flowchart TD
 
 **Key Observations:**
 
-1. **Two-Stage Architecture**: The workflow is organized into two distinct stages:
+1. **Three-Stage Architecture**: The workflow is organized into three distinct stages:
    - **Stage 1 (Data Preparation)**: Phases 1-2 transform raw .sav data into an analysis-ready dataset (`new_data.sav`) with complete metadata (`new_metadata`)
-   - **Stage 2 (Analysis & Reporting)**: Phases 3-8 consume the analysis-ready dataset to generate indicators, tables, statistics, and reports
+   - **Stage 2 (Analysis)**: Phases 3-6 consume the analysis-ready dataset to generate indicators, cross-tables, and statistical analysis
+   - **Stage 3 (Reporting)**: Phases 7-8 generate PowerPoint and HTML reports from analysis results
 
 2. **Three-Node Pattern**: Steps 4-6, 9-11, and 12-14 follow the Generate → Validate → Review pattern for AI-orchestrated artifacts
 
-3. **Clean Dependency Chain**: Stage 2 depends only on Stage 1 outputs (`new_data.sav` + `new_metadata`), not on intermediate Phase 1 artifacts
+3. **Clean Dependency Chain**: Each stage depends only on outputs from the previous stage, creating clear boundaries between data preparation, analysis, and reporting
 
 ### 2.2 Phase Descriptions
 
@@ -389,9 +398,12 @@ class WorkflowState(
 - **Step 8**: Produces `new_metadata` which contains ALL variables (original + recoded)
 - **Steps 9-22**: Use `new_metadata` as the authoritative metadata source
 
-This creates a clean architectural boundary: **Stage 1** (Steps 1-8) produces the analysis-ready dataset, **Stage 2** (Steps 9-22) consumes it.
+This creates clean architectural boundaries between the three stages:
+- **Stage 1 (Data Preparation)**: Steps 1-8 produce the analysis-ready dataset (`new_data.sav` + `new_metadata`)
+- **Stage 2 (Analysis)**: Steps 9-20 perform indicator generation, cross-table creation, and statistical analysis
+- **Stage 3 (Reporting)**: Steps 21-22 generate the final PowerPoint and HTML reports
 
-> **For complete TypedDict definitions and detailed field descriptions, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#state-management)**
+> **For complete TypedDict definitions and detailed field descriptions, see [implementation-guide.md](./implementation-guide.md#state-management)**
 
 
 ## 3. Step Specifications
