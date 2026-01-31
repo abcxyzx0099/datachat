@@ -54,144 +54,134 @@ The workflow consists of **22 steps** organized into **8 phases** across **3 sta
 
 ```mermaid
 flowchart TD
-    %% Define styles
-    classDef inputFileStyle fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000
-    classDef traditionalStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef dataFileStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
-    classDef outputStyle fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
-    classDef aiGenerateStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
-    classDef validationStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-    classDef reviewStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    %% Define styles - SHAPE indicates type (Processing vs Artifact), COLOR indicates method (AI vs Deterministic)
+    classDef processingGreen fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef processingBlue fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef processingOrange fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef processingPurple fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef artifactStyle fill:#fff8e1,stroke:#f57c00,stroke-width:2px,color:#000
     classDef stageLabelStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,stroke-dasharray: 5 5,color:#424242
 
     %% STAGE 1: Data Preparation (Phases 1-2)
     subgraph STAGE1[" "]
         direction TB
-        stage1_label["**STAGE 1: Data Preparation**<br/>Extract raw data and enrich with new variables"]:::stageLabelStyle
+        stage1_label["**STAGE 1: Data Preparation**"]:::stageLabelStyle
 
         %% Phase 1: Extraction & Preparation
         subgraph P1["**Phase 1: Extraction & Preparation**"]
-            sav1(["📁 .sav File<br/>(Input)"]):::inputFileStyle
-            S1["**Step 1**<br/>Extract .sav File"]:::traditionalStyle
-            S2["**Step 2**<br/>Transform Metadata"]:::traditionalStyle
-            S3["**Step 3**<br/>Filter Metadata"]:::traditionalStyle
-            rawData["raw_data<br/>variable_centered_metadata<br/>filtered_metadata"]:::traditionalStyle
+            sav1[(".sav File")]:::artifactStyle
+            S1["Step 1<br/>Extract .sav File"]:::processingGreen
+            S2["Step 2<br/>Transform Metadata"]:::processingGreen
+            S3["Step 3<br/>Filter Metadata"]:::processingGreen
+            rawData[("raw_data")]:::artifactStyle
         end
 
         %% Phase 2: New Dataset Generation
-        subgraph P2["**Phase 2: New Dataset Generation**<br/>Three-Node Pattern (Steps 4-6)"]
-            S4["**Step 4**<br/>Generate Recoding Rules 🤖"]:::aiGenerateStyle
-            S5["**Step 5**<br/>Validate Recoding Rules ✓"]:::validationStyle
-            S6["**Step 6**<br/>Review Recoding Rules 👤"]:::reviewStyle
-            S7["**Step 7**<br/>Generate PSPP Syntax"]:::traditionalStyle
-            S8["**Step 8**<br/>Execute PSPP"]:::traditionalStyle
-            sav2(["📁 new_data.sav"]):::dataFileStyle
-            newMetadata["new_metadata<br/>(all variables)"]:::traditionalStyle
+        subgraph P2["**Phase 2: New Dataset Generation**"]
+            S4["Step 4<br/>Generate Recoding Rules"]:::processingBlue
+            S5["Step 5<br/>Validate"]:::processingOrange
+            S6["Step 6<br/>Review"]:::processingPurple
+            S7["Step 7<br/>Generate PSPP Syntax"]:::processingGreen
+            S8["Step 8<br/>Execute PSPP"]:::processingGreen
+            sav2[("new_data.sav")]:::artifactStyle
+            newMetadata[("new_metadata")]:::artifactStyle
         end
     end
 
     %% STAGE 2: Analysis (Phases 3-6)
     subgraph STAGE2[" "]
         direction TB
-        stage2_label["**STAGE 2: Analysis**<br/>Generate indicators, tables, and statistical analysis"]:::stageLabelStyle
+        stage2_label["**STAGE 2: Analysis**"]:::stageLabelStyle
 
         %% Phase 3: Indicator Generation
-        subgraph P3["**Phase 3: Indicator Generation**<br/>Three-Node Pattern (Steps 9-11)"]
-            S9["**Step 9**<br/>Generate Indicators 🤖"]:::aiGenerateStyle
-            S10["**Step 10**<br/>Validate Indicators ✓"]:::validationStyle
-            S11["**Step 11**<br/>Review Indicators 👤"]:::reviewStyle
+        subgraph P3["**Phase 3: Indicator Generation**"]
+            S9["Step 9<br/>Generate Indicators"]:::processingBlue
+            S10["Step 10<br/>Validate"]:::processingOrange
+            S11["Step 11<br/>Review"]:::processingPurple
         end
 
         %% Phase 4: Cross-Table Generation
-        subgraph P4["**Phase 4: Cross-Table Generation**<br/>Three-Node Pattern (Steps 12-14)"]
-            S12["**Step 12**<br/>Generate Table Specs 🤖"]:::aiGenerateStyle
-            S13["**Step 13**<br/>Validate Table Specs ✓"]:::validationStyle
-            S14["**Step 14**<br/>Review Table Specs 👤"]:::reviewStyle
-            S15["**Step 15**<br/>Generate PSPP Syntax"]:::traditionalStyle
-            S16["**Step 16**<br/>Execute PSPP"]:::traditionalStyle
-            crossTableFiles(["📁 cross_table<br/>(.csv + .json)"]):::dataFileStyle
+        subgraph P4["**Phase 4: Cross-Table Generation**"]
+            S12["Step 12<br/>Generate Table Specs"]:::processingBlue
+            S13["Step 13<br/>Validate"]:::processingOrange
+            S14["Step 14<br/>Review"]:::processingPurple
+            S15["Step 15<br/>Generate PSPP Syntax"]:::processingGreen
+            S16["Step 16<br/>Execute PSPP"]:::processingGreen
+            crossTable[("cross_table.csv/.json")]:::artifactStyle
         end
 
         %% Phase 5: Statistical Analysis
         subgraph P5["**Phase 5: Statistical Analysis**"]
-            S17["**Step 17**<br/>Generate Python Stats Script"]:::traditionalStyle
-            S18["**Step 18**<br/>Execute Python Stats Script"]:::traditionalStyle
-            statsSummary["statistical_analysis_summary<br/>(Chi-square, Cramer's V)"]:::traditionalStyle
+            S17["Step 17<br/>Generate Stats Script"]:::processingGreen
+            S18["Step 18<br/>Execute Stats Script"]:::processingGreen
+            statsSummary[("statistical_summary.json")]:::artifactStyle
         end
 
         %% Phase 6: Significant Tables Selection
-        subgraph P6["**Phase 6: Significant Tables Selection**"]
-            S19["**Step 19**<br/>Generate Filter List"]:::traditionalStyle
-            S20["**Step 20**<br/>Apply Filter to Tables"]:::traditionalStyle
-            sigTables["significant_tables<br/>(filtered)"]:::traditionalStyle
+        subgraph P6["**Phase 6: Significant Tables**"]
+            S19["Step 19<br/>Generate Filter List"]:::processingGreen
+            S20["Step 20<br/>Apply Filter"]:::processingGreen
+            sigTables[("significant_tables")]:::artifactStyle
         end
     end
 
     %% STAGE 3: Reporting (Phases 7-8)
     subgraph STAGE3[" "]
         direction TB
-        stage3_label["**STAGE 3: Reporting**<br/>Generate PowerPoint and HTML reports"]:::stageLabelStyle
+        stage3_label["**STAGE 3: Reporting**"]:::stageLabelStyle
 
         %% Phase 7: Executive Summary Presentation
         subgraph P7["**Phase 7: Executive Summary**"]
-            S21["**Step 21**<br/>Generate PowerPoint"]:::traditionalStyle
-            ppt(["📊 .pptx"]):::outputStyle
+            S21["Step 21<br/>Generate PowerPoint"]:::processingGreen
+            ppt[("presentation.pptx")]:::artifactStyle
         end
 
         %% Phase 8: Full Report Dashboard
         subgraph P8["**Phase 8: Full Report**"]
-            S22["**Step 22**<br/>Generate HTML Dashboard"]:::traditionalStyle
-            html(["🌐 .html"]):::outputStyle
+            S22["Step 22<br/>Generate HTML Dashboard"]:::processingGreen
+            html[("dashboard.html")]:::artifactStyle
         end
     end
 
-    %% Data flow edges - Stage 1 (Data Preparation)
-    sav1 -->|Step 1| S1
-    S1 --> S2
-    S2 --> S3
-    S3 --> rawData
-    rawData ==>|Step 4| S4
-    S4 -->|Step 5| S5
+    %% Data flow edges
+    sav1 --> S1
+    S1 --> S2 --> S3 --> rawData
+    rawData ==> S4
+    S4 --> S5
     S5 -->|Valid| S6
     S5 -.->|Invalid| S4
     S6 -->|Approve| S7
     S6 -.->|Reject| S4
     S7 --> S8
-    sav1 ==>|Step 8<br/>input| sav2
-    S8 -.->|Step 8<br/>syntax| sav2
-    sav2 ==>|pyreadstat| newMetadata
+    sav1 ==> S8
+    S8 -.-> sav2
+    sav2 ==> newMetadata
 
-    %% Data flow edges - Stage 2 (Analysis)
-    newMetadata ==>|Step 9| S9
-    S9 -->|Step 10| S10
+    newMetadata ==> S9
+    S9 --> S10
     S10 -->|Valid| S11
     S10 -.->|Invalid| S9
     S11 -->|Approve| S12
     S11 -.->|Reject| S9
-    S12 -->|Step 13| S13
+    S12 --> S13
     S13 -->|Valid| S14
     S13 -.->|Invalid| S12
     S14 -->|Approve| S15
     S14 -.->|Reject| S12
     S15 --> S16
-    sav2 ==>|Step 16| crossTableFiles
-    S16 -.->|Step 16<br/>syntax| crossTableFiles
-    crossTableFiles ==>|Step 17| S17
-    S17 --> S18
-    crossTableFiles ==>|Step 18<br/>data| S18
+    sav2 ==> S16
+    S16 -.-> crossTable
+    crossTable ==> S17 --> S18
+    crossTable ==> S18
     S18 --> statsSummary
-    statsSummary ==>|Step 19| S19
-    S19 --> S20
-    crossTableFiles ==>|Step 20<br/>data| S20
+    statsSummary ==> S19 --> S20
+    crossTable ==> S20
     S20 --> sigTables
 
-    %% Data flow edges - Stage 3 (Reporting)
-    sigTables ==>|Step 21| S21
-    S21 --> ppt
-    crossTableFiles ==>|Step 22| S22
-    S22 --> html
+    sigTables ==> S21 --> ppt
+    crossTable ==> S22 --> html
 
-    %% Styling
+    %% Phase styling
     style P1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     style P2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style P3 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
@@ -204,32 +194,34 @@ flowchart TD
 
 **Legend:**
 
-| Style | Meaning | Examples |
+| Shape | Meaning |
+|-------|---------|
+| `Rectangle` | **Processing Node** (Action/Step) |
+| `Cylinder` | **Data Artifact** (Output/File) |
+
+| Color | Meaning | Examples |
 |-------|---------|----------|
-| 📦 **Stage Label** | High-level workflow stage grouping | Stage 1: Data Preparation, Stage 2: Analysis, Stage 3: Reporting |
-| 🔵 **Input File** | Original input data file | `.sav` file |
-| 🟢 **Deterministic Processing** | Procedural code (Python, PSPP, scipy) | Steps 1-3, 7-8, 15-22 |
-| 🔵 **LLM-Orchestrated Generation** | LLM generates artifact (can iterate on feedback) | Steps 4, 9, 12 |
-| 🟠 **Validation (Python)** | Objective validation checks (syntax, references, constraints) | Steps 5, 10, 13 |
-| 🟣 **Review (Human)** | Semantic quality review through LangGraph interrupt | Steps 6, 11, 14 |
-| ⚪ **Data File** | Survey data files generated by PSPP/Python | `new_data.sav`, `cross_table.csv` + `.json` |
-| 🟢 **Output Files** | Final presentation outputs | `.pptx`, `.html` |
+| 🔵 **Blue** | AI-Orchestrated Processing (LLM generates artifact) | Steps 4, 9, 12 |
+| 🟢 **Green** | Deterministic Processing (Python, PSPP, scipy) | Steps 1-3, 7-8, 15-22 |
+| 🟠 **Orange** | Validation (Python checks syntax/references) | Steps 5, 10, 13 |
+| 🟣 **Purple** | Review (Human validates semantic quality) | Steps 6, 11, 14 |
+| 🟡 **Yellow** | Data Artifacts (Files and outputs) | `.sav`, `.csv`, `.json`, `.pptx`, `.html` |
 
 **Line Styles:**
 - `-->` Solid line: Forward flow to next step
-- `==>` Thick line: Major data flow between phases/stages
+- `==>` Thick line: Major data flow between stages
 - `-.->` Dotted line: Feedback loop (validation/review triggering regeneration)
 
 **Key Observations:**
 
-1. **Three-Stage Architecture**: The workflow is organized into three distinct stages:
-   - **Stage 1 (Data Preparation)**: Phases 1-2 transform raw .sav data into an analysis-ready dataset (`new_data.sav`) with complete metadata (`new_metadata`)
-   - **Stage 2 (Analysis)**: Phases 3-6 consume the analysis-ready dataset to generate indicators, cross-tables, and statistical analysis
-   - **Stage 3 (Reporting)**: Phases 7-8 generate PowerPoint and HTML reports from analysis results
+1. **Three-Stage Architecture**:
+   - **Stage 1 (Data Preparation)**: Steps 1-8 produce `new_data.sav` + `new_metadata`
+   - **Stage 2 (Analysis)**: Steps 9-20 generate indicators, tables, and statistics
+   - **Stage 3 (Reporting)**: Steps 21-22 create PowerPoint and HTML reports
 
-2. **Three-Node Pattern**: Steps 4-6, 9-11, and 12-14 follow the Generate → Validate → Review pattern for AI-orchestrated artifacts
+2. **Three-Node Pattern**: Steps 4-6, 9-11, and 12-14 follow Generate (🔵 AI) → Validate (🟠 Python) → Review (🟣 Human)
 
-3. **Clean Dependency Chain**: Each stage depends only on outputs from the previous stage, creating clear boundaries between data preparation, analysis, and reporting
+3. **Visual Clarity**: Shape = "What is it?" (Processing vs Data), Color = "How is it done?" (AI vs Code vs Human)
 
 ### 2.2 Phase Descriptions
 
