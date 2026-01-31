@@ -4,8 +4,9 @@
 
 **Project**: SPSS Survey Data Analyzer
 **Reference Documents**:
-- [Workflow Architecture](./workflow-architecture.md)
+- [Data Flow](./data-flow.md)
 - [Implementation Specifications](./implementation-specifications.md)
+- [Project Structure](./project-structure.md)
 **Created**: 2026-01-31
 
 ---
@@ -42,51 +43,13 @@
 Create the project structure for the LangGraph-based survey analysis workflow.
 
 **Directory Structure**:
-```
-agent/
-├── __init__.py
-├── graph.py          # Main workflow graph definition
-├── edges.py          # Conditional routing functions
-├── state.py          # WorkflowState TypedDict definitions
-├── config.py         # Configuration constants
-│
-├── nodes/            # Node implementations (phase-based)
-│   ├── __init__.py
-│   ├── phase1_extraction.py      # Steps 1-3
-│   ├── phase2_recoding.py        # Steps 4-8
-│   ├── phase3_indicators.py      # Steps 9-11
-│   ├── phase4_tables.py          # Steps 12-16
-│   ├── phase5_statistics.py      # Steps 17-18
-│   ├── phase6_filtering.py       # Steps 19-20
-│   ├── phase7_powerpoint.py      # Step 21
-│   └── phase8_html_dashboard.py  # Step 22
-│
-├── utils/            # Module-specific utilities
-│   ├── __init__.py
-│   ├── pspp_wrapper.py
-│   ├── file_io.py
-│   └── statistics.py
-│
-├── validation/       # Validation functions
-│   ├── __init__.py
-│   ├── recoding.py
-│   ├── indicators.py
-│   └── tables.py
-│
-└── llm/              # LLM modules
-    ├── __init__.py
-    ├── prompts.py
-    └── clients.py
 
-output/
-├── logs/             # Execution logs
-├── reviews/          # Human review documents
-└── temp/             # Temporary files
+See [project-structure.md](./project-structure.md) for the complete project directory structure and file organization.
 
-config/
-├── default.py        # DEFAULT_CONFIG
-└── langgraph.json    # LangGraph configuration
-```
+**Key directories for this task**:
+- `agent/` - Application code with nodes, utils, validation, llm modules
+- `config/` - Configuration files (langgraph.json, default.py)
+- `output/` - Generated outputs (logs, reviews, temp files)
 
 **Requirements**:
 - Create all directories with `__init__.py` where needed
@@ -419,7 +382,7 @@ Create `agent/graph.py` with the complete workflow graph.
 - Support SqliteSaver for persistence
 - Enable resume after human interrupt
 
-**Reference**: `docs/workflow-architecture.md` section 6 (LangGraph Configuration)
+**Reference**: `docs/data-flow.md` section 6 (LangGraph Configuration)
 
 ---
 

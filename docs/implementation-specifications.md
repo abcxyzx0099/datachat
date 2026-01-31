@@ -1,6 +1,6 @@
 # Survey Analysis Detailed Specifications
 
-> This document contains complete implementation details for the Survey Analysis & Visualization Workflow. For the concise workflow design and architecture overview, refer to [Workflow Architecture](./workflow-architecture.md).
+> This document contains complete implementation details for the Survey Analysis & Visualization Workflow. For the concise workflow design and architecture overview, refer to [Data Flow](./data-flow.md).
 
 # Table of Contents
 
