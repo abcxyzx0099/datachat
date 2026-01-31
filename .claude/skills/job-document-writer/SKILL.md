@@ -301,4 +301,4 @@ See [references/examples.md](references/examples.md) for good vs bad job documen
 ## Related Skills
 
 - `job-monitor-system`: Creates the job monitoring system that processes these job documents
-- `task-coordination`: Executes jobs with worker-auditor workflow (called by monitor)
+- `task-implementation`: Executes jobs with worker-auditor workflow (called by monitor)

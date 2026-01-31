@@ -354,4 +354,4 @@ This creates:
 ## Related Skills
 
 - `job-document-writer`: Creates job documents with correct naming pattern
-- `task-coordination`: Executes jobs with worker-auditor workflow
+- `task-implementation`: Executes jobs with worker-auditor workflow

@@ -1,9 +1,9 @@
 ---
-name: task-coordination
-description: "Two-agent workflow coordinator with AUTOMATIC iteration. Orchestrates Implementation Agent and Auditor Agent using a pre-existing task document. Automatically iterates based on audit feedback until quality threshold is met (max 3 iterations). Use when: you have a task document created by task-document-writer; you need end-to-end task execution with quality assurance; you want automatic retry based on audit feedback; you need a single entry point that coordinates implementation and audit."
+name: task-implementation
+description: "Two-agent workflow coordinator with AUTOMATIC iteration. Orchestrates Implementation Agent and Auditor Agent using a pre-existing task document. Automatically iterates based on audit feedback until quality threshold is met (max 3 iterations). Use when: you have a task document created by job-document-writer; you need end-to-end task execution with quality assurance; you want automatic retry based on audit feedback; you need a single entry point that coordinates implementation and audit."
 ---
 
-# Task Coordination
+# Task Implementation
 
 A two-agent workflow that **automatically iterates** until the work meets quality standards, using a **pre-existing task document**.
 
@@ -20,7 +20,7 @@ The Coordinator acts as the central orchestrator that:
 
 ```mermaid
 flowchart TD
-    Coordinator["TASK COORDINATION<br/>- Receives task document path/content<br/>- Spawns sub-agents via Task tool<br/>- Tracks state and results<br/>- Makes routing decisions<br/>- Coordinates until task complete"]
+    Coordinator["TASK IMPLEMENTATION<br/>- Receives task document path/content<br/>- Spawns sub-agents via Task tool<br/>- Tracks state and results<br/>- Makes routing decisions<br/>- Coordinates until task complete"]
 
     Input["INPUT<br/>Task Document<br/>pre-created"]
     Impl["SUB-AGENT 1<br/>Implementation<br/>Worker"]
@@ -52,7 +52,7 @@ flowchart LR
     TaskGen["task-document<br/>generator"]
     Monitor["Monitor Daemon<br/>(watchdog)"]
     SDK["Claude Agent SDK<br/>invokes this skill"]
-    Coord["task-coordination<br/>(this skill)"]
+    Coord["task-implementation<br/>(this skill)"]
     Doc["Task document created<br/>(e.g., tasks/task-001.md)"]
 
     User --> TaskGen
@@ -72,7 +72,7 @@ flowchart LR
 ## When to Use
 
 Call this skill when:
-- A task document has already been created (by `task-document-writer` skill)
+- A task document has already been created (by `job-document-writer` skill)
 - You need automatic iteration based on audit feedback
 - You want implementation and audit coordinated with automatic retry
 - You need a single entry point for execution and quality assurance
@@ -518,7 +518,7 @@ def coordinate_workflow(task_document_path, max_iterations=3):
 The Coordinator **MUST** provide clear progress updates during execution:
 
 ```markdown
-🚀 Task Coordination Started
+🚀 Task Implementation Started
 📋 Task document: tasks/task-001.md
 
 📋 Iteration 1/3
@@ -555,7 +555,7 @@ The Coordinator will iterate up to `max_iterations` times:
 All audit reports are saved to:
 
 ```
-results/task-coordination/
+results/task-implementation/
 └── {task_id}/
     ├── audit-report-iteration-1.md
     ├── audit-report-iteration-2.md
@@ -574,7 +574,7 @@ async def execute_task(self, task_file: str):
     task_path = self.tasks_dir / task_file
 
     async with ClaudeSDKClient(options=options) as client:
-        await client.query(f"/task-coordination {task_path}")
+        await client.query(f"/task-implementation {task_path}")
 
         async for message in client.receive_messages():
             # Process results...
@@ -662,7 +662,7 @@ Work must meet quality standards (PASS or APPROVED) to complete.
 ## File Structure
 
 ```
-.claude/skills/task-coordination/
+.claude/skills/task-implementation/
 ├── SKILL.md                    # This file
 └── references/
     ├── worker-instructions.md  # Implementation agent guidance

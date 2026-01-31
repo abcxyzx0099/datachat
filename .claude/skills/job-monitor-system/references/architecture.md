@@ -162,7 +162,7 @@ project-c:       [task-1───] [task-2─────] [task-3]
 
 **Key Features:**
 - Uses `query()` function from Claude Agent SDK
-- Invokes `/task-coordination` skill
+- Invokes `/task-implementation` skill
 - Saves results to project's results directory
 - **Critical**: `cwd=str(project_root)` for correct context
 

@@ -30,7 +30,7 @@ class JobExecutor:
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
     async def execute_job(self, job_file: str) -> JobResult:
-        """Execute a job by directly invoking task-coordination skill."""
+        """Execute a job by directly invoking task-implementation skill."""
         job_id = Path(job_file).stem
         job_path = self.tasks_dir / job_file
 
@@ -62,7 +62,7 @@ class JobExecutor:
         try:
             # Create query object
             q = query(
-                prompt=f"""/task-coordination
+                prompt=f"""/task-implementation
 
 Execute the following job:
 
