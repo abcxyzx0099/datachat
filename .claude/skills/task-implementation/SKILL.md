@@ -53,7 +53,7 @@ flowchart LR
     Monitor["Monitor Daemon<br/>(watchdog)"]
     SDK["Claude Agent SDK<br/>invokes this skill"]
     Coord["task-implementation<br/>(this skill)"]
-    Doc["Task document created<br/>(e.g., tasks/task-001.md)"]
+    Doc["Task document created<br/>(e.g., tasks/task-monitor/pending/task-20260131-204500-fix-auth-timeout.md)"]
 
     User --> TaskGen
     TaskGen --> Monitor
@@ -81,7 +81,7 @@ Call this skill when:
 
 You will receive:
 - **Task document** - Either:
-  - **File path**: Path to the task document (e.g., `tasks/task-001.md`)
+  - **File path**: Path to the task document (e.g., `tasks/task-monitor/pending/task-20260131-204500-fix-auth-timeout.md`)
   - **Document content**: The full markdown content of the task document
 - **Task context** - Optional additional context about the task
 - **Max iterations** - Optional override (default: 3)
@@ -94,7 +94,7 @@ You will receive:
 
 ```python
 # If given a file path
-Read(file_path="tasks/task-001.md")
+Read(file_path="tasks/task-monitor/pending/task-20260131-204500-fix-auth-timeout.md")
 
 # If given document content directly
 # (content is already provided)
@@ -261,7 +261,7 @@ The Coordinator returns a comprehensive result:
 
 ```json
 {
-  "task_document_file": "tasks/task-001.md",
+  "task_document_file": "tasks/task-monitor/pending/task-20260131-204500-fix-auth-timeout.md",
   "task_summary": "One-line summary of the task",
   "workflow_state": "completed",
   "iterations": [
@@ -296,7 +296,7 @@ The Coordinator returns a comprehensive result:
 
 ```json
 {
-  "task_document_file": "tasks/task-002.md",
+  "task_document_file": "tasks/task-monitor/pending/task-20260131-210000-add-jwt-auth.md",
   "task_summary": "Add JWT authentication to API",
   "workflow_state": "completed",
   "iterations": [
@@ -339,7 +339,7 @@ The Coordinator returns a comprehensive result:
 
 ```json
 {
-  "task_document_file": "tasks/task-003.md",
+  "task_document_file": "tasks/task-monitor/pending/task-20260131-220000-add-jwt-auth.md",
   "task_summary": "Add JWT authentication to API",
   "workflow_state": "max_iterations_reached",
   "iterations": [
@@ -519,7 +519,7 @@ The Coordinator **MUST** provide clear progress updates during execution:
 
 ```markdown
 🚀 Task Implementation Started
-📋 Task document: tasks/task-001.md
+📋 Task document: tasks/task-monitor/pending/task-20260131-204500-fix-auth-timeout.md
 
 📋 Iteration 1/3
    🔧 Reading task document...
@@ -550,18 +550,6 @@ The Coordinator will iterate up to `max_iterations` times:
 - If audit fails, retry with feedback
 - After max iterations, return with final verdict
 
-### Output Directory
-
-All audit reports are saved to:
-
-```
-results/task-implementation/
-└── {task_id}/
-    ├── audit-report-iteration-1.md
-    ├── audit-report-iteration-2.md
-    └── workflow-result.json
-```
-
 ## Example Usage
 
 ### Called from Monitor Daemon
@@ -582,7 +570,7 @@ async def execute_task(self, task_file: str):
 
 ### Example Execution Flow
 
-**Task document:** `tasks/task-001.md`
+**Task document:** `tasks/task-monitor/pending/task-20260131-204500-add-jwt-auth.md`
 
 ```markdown
 # Task: Add authentication to the API endpoints
@@ -607,7 +595,7 @@ Need to add JWT-based authentication to existing REST API.
 
 **Coordinator workflow:**
 
-1. **Read task document** from `tasks/task-001.md`
+1. **Read task document** from `tasks/task-monitor/pending/task-20260131-204500-add-jwt-auth.md`
 
 2. **Iteration 1**:
    - Spawn Implementation Agent
@@ -667,6 +655,18 @@ Work must meet quality standards (PASS or APPROVED) to complete.
 └── references/
     ├── worker-instructions.md  # Implementation agent guidance
     └── audit-criteria.md       # Auditor evaluation criteria
+```
+
+**Output Directory Structure**
+
+All audit reports and workflow results are saved to:
+
+```
+tasks/task-implementation/
+└── {task_id}/
+    ├── audit-report-iteration-1.md
+    ├── audit-report-iteration-2.md
+    └── workflow-result.json
 ```
 
 ## Task Document Format

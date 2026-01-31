@@ -24,12 +24,15 @@
 └── registered.json                    # Project registry
 
 {project-root}/                        # Per-project (multiple projects)
-├── tasks/                             # Task documents
-│   ├── pending/                       # Input (watchdog monitors this)
-│   ├── results/                       # Execution results (JSON)
-│   ├── state/                         # Queue state (per project)
-│   ├── logs/                          # Log files (per project)
-│   └── archive/                       # Completed tasks
+├── tasks/                            # Centralized task directory
+│   ├── task-monitor/                 # Task monitoring system
+│   │   ├── pending/                  # Input (watchdog monitors this)
+│   │   ├── results/                  # Execution results (JSON)
+│   │   ├── state/                    # Queue state (per project)
+│   │   ├── logs/                     # Log files (per project)
+│   │   └── archive/                  # Completed tasks
+│   ├── task-planning/                # Task planning documents
+│   └── task-implementation/          # Detailed workflow reports
 └── .claude/
     └── skills/                        # Project-specific skills
 ```
@@ -137,7 +140,7 @@ project-c:       [task-1───] [task-2─────] [task-3]
                            - Executor for each project (with correct cwd)
                            ↓
 4. For each project independently:
-   - Watchdog monitors {project}/tasks/
+   - Watchdog monitors {project}/tasks/task-monitor/
    - On file creation → Queued to project's queue
    - Sequential execution within project
    - Results saved to {project}/results/
@@ -156,7 +159,7 @@ project-c:       [task-1───] [task-2─────] [task-3]
 - `TaskFileHandler`: Handles file events per project
 
 **Each Project Gets:**
-- Observer (watchdog) monitoring `{project}/tasks/`
+- Observer (watchdog) monitoring `{project}/tasks/task-monitor/`
 - Queue for sequential task processing
 - Executor with correct `cwd={project_root}`
 
@@ -324,8 +327,8 @@ ANTHROPIC_AUTH_TOKEN=your_token_here
 | Location | Type | Content | Access |
 |----------|------|---------|--------|
 | **user systemd journal** | Service logs | All service output with task events | `journalctl --user -u task-monitor.service -f` |
-| **{project}/tasks/results/** | Task results | JSON with stdout/stderr/duration | `cat {project}/tasks/results/{task_id}.json` |
-| **{project}/tasks/logs/** | Project logs | Monitor daemon logs | `tail -f {project}/tasks/logs/monitor.log` |
+| **{project}/tasks/task-monitor/results/** | Task results | JSON with stdout/stderr/duration | `cat {project}/tasks/task-monitor/results/{task_id}.json` |
+| **{project}/tasks/task-monitor/logs/** | Project logs | Monitor daemon logs | `tail -f {project}/tasks/task-monitor/logs/monitor.log` |
 
 **Task Result JSON Structure:**
 ```json
@@ -353,10 +356,10 @@ journalctl --user -u task-monitor.service --since "1 hour ago"  # Since 1 hour a
 journalctl --user -u task-monitor.service -f | grep "task-xxx"  # Filter by task
 
 # Task execution results with full output
-cat /home/admin/workspaces/datachat/tasks/results/task-xxx-xxx.json | jq '.stdout'
+cat /home/admin/workspaces/datachat/tasks/task-monitor/results/task-xxx-xxx.json | jq '.stdout'
 
 # Project logs (optional - for convenience)
-tail -f /home/admin/workspaces/datachat/tasks/logs/monitor.log
+tail -f /home/admin/workspaces/datachat/tasks/task-monitor/logs/monitor.log
 ```
 
 **Logging Design:**

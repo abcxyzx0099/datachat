@@ -1,13 +1,13 @@
 ---
 name: task-monitor-setup
-description: "Create and configure the multi-project task monitoring system with watchdog file monitoring and Claude Agent SDK integration. Use when: setting up a new task monitor system; installing from scratch; understanding system architecture; troubleshooting service issues; configuring the monitor; registering new projects. For detailed architecture, see [architecture.md](references/architecture.md). For troubleshooting, see [troubleshooting.md](references/troubleshooting.md)."
+description: "Create and configure the multi-project task monitoring system with watchdog file monitoring and Claude Agent SDK integration. Use when: setting up a new task monitor system; installing from scratch; understanding system architecture; configuring the monitor; registering new projects. For detailed architecture, see [architecture.md](references/architecture.md)."
 ---
 
 # Multi-Project Task Monitor System
 
 ## Quick Overview
 
-Single service that monitors multiple projects, watching each project's `/tasks/pending/` directory and executing tasks **sequentially within each project** (but **parallel across projects**).
+Single service that monitors multiple projects, watching each project's `/tasks/task-monitor/pending/` directory and executing tasks **sequentially within each project** (but **parallel across projects**).
 
 ## Execution Model
 
@@ -162,10 +162,10 @@ WantedBy=default.target
 2. Start service → task-monitor.service
                           ↓
 3. For each project:
-   - Watchdog monitors {project}/tasks/pending/
+   - Watchdog monitors {project}/tasks/task-monitor/pending/
    - Tasks queued in project-specific FIFO queue
    - Sequential execution within project
-   - Results saved to {project}/tasks/results/
+   - Results saved to {project}/task-monitor/results/
 ```
 
 ## Directory Structure
@@ -234,7 +234,7 @@ WantedBy=default.target
 
 ```bash
 # Create required directories manually
-mkdir -p /path/to/project/tasks/{pending,results,state,logs}
+mkdir -p /path/to/project/task-monitor/{pending,results,state,logs}
 
 # Add to registry (~/.config/task-monitor/registered.json)
 # Then restart service
@@ -247,17 +247,17 @@ systemctl --user restart task-monitor
 1. Verify project path exists
          ↓
 2. Create required directories:
-   - {project}/tasks/pending/ (task documents)
-   - {project}/tasks/results/ (execution results)
-   - {project}/tasks/state/   (queue state)
-   - {project}/tasks/logs/    (monitor logs)
+   - {project}/tasks/task-monitor/pending/ (task documents)
+   - {project}/tasks/task-monitor/results/ (execution results)
+   - {project}/tasks/task-monitor/state/   (queue state)
+   - {project}/tasks/task-monitor/logs/    (monitor logs)
          ↓
 3. Add to ~/.config/task-monitor/registered.json
          ↓
 4. Restart task-monitor.service
          ↓
 5. Service creates:
-   - Watchdog observer for {project}/tasks/pending/
+   - Watchdog observer for {project}/tasks/task-monitor/pending/
    - Project-specific queue
    - Project-specific executor (with correct cwd)
 ```
@@ -269,15 +269,18 @@ systemctl --user restart task-monitor
 journalctl --user -u task-monitor | grep "Observer started"
 
 # Verify project structure
-ls -la /home/admin/workspaces/myproject/tasks/pending/
-ls -la /home/admin/workspaces/myproject/tasks/results/
-ls -la /home/admin/workspaces/myproject/tasks/state/
+ls -la /home/admin/workspaces/myproject/tasks/task-monitor/pending/
+ls -la /home/admin/workspaces/myproject/tasks/task-monitor/pending/
+ls -la /home/admin/workspaces/myproject/tasks/task-monitor/results/
+ls -la /home/admin/workspaces/myproject/tasks/task-monitor/state/
 ```
 
 ## Detailed Information
 
 - **Full Architecture**: [architecture.md](references/architecture.md) - System layout, multi-project design, file descriptions
-- **Troubleshooting**: [troubleshooting.md](references/troubleshooting.md) - Common issues and solutions
+## Documentation
+
+- **Architecture**: [architecture.md](references/architecture.md) - System architecture and design
 - **Install Script**: [scripts/install-service.sh](scripts/install-service.sh) - Complete installation script
 - **Source Code**: All Python modules included in `scripts/`:
   - [scripts/monitor_daemon.py](scripts/monitor_daemon.py) - Multi-project watchdog daemon

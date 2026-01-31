@@ -1,16 +1,17 @@
 import asyncio
 import sys
 import logging
+import shutil
 from pathlib import Path
 from datetime import datetime
 from claude_agent_sdk import query, ClaudeAgentOptions
 
 # Add paths for module imports
 PROJECT_ROOT = Path("/home/admin/workspaces/datachat")
-MONITOR_SYSTEM_ROOT = Path("/opt/task-monitor")
+MONITOR_SYSTEM_ROOT = Path("/home/admin/workspaces/task-monitor")
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(MONITOR_SYSTEM_ROOT))
-from models import TaskResult, TaskStatus
+from task_monitor.models import TaskResult, TaskStatus
 
 # Configure logging to systemd journal (standard for Linux services)
 logging.basicConfig(
@@ -28,9 +29,12 @@ class TaskExecutor:
         self.results_dir = Path(results_dir)
         self.project_root = Path(project_root).resolve()
         self.results_dir.mkdir(parents=True, exist_ok=True)
+        # Archive is in task-monitor subdirectory
+        self.archive_dir = self.project_root / 'tasks' / 'task-monitor' / 'archive'
+        self.archive_dir.mkdir(parents=True, exist_ok=True)
 
     async def execute_task(self, task_file: str) -> TaskResult:
-        """Execute a task by directly invoking task-implementation skill."""
+        """Execute a task by directly invoking task-coordination skill."""
         task_id = Path(task_file).stem
         task_path = self.tasks_dir / task_file
 
@@ -114,6 +118,8 @@ Execute the following task:
 
             # Save result after consuming all messages naturally
             self._save_result(result)
+            # Archive task document
+            self._archive_task(task_file)
 
         except asyncio.CancelledError:
             # Handle task cancellation gracefully
@@ -124,6 +130,7 @@ Execute the following task:
                 result.duration_seconds = (result.completed_at - start_time).total_seconds()
                 result.error = "Task cancelled"
                 self._save_result(result)
+                self._archive_task(task_file)
             # Re-raise to allow proper cleanup
             raise
 
@@ -135,6 +142,7 @@ Execute the following task:
                 result.error = f"{type(e).__name__}: {str(e)}"
                 logger.error(f"[{task_id}] Task exception: {result.error}")
                 self._save_result(result)
+                self._archive_task(task_file)
 
         return result
 
@@ -151,3 +159,16 @@ Execute the following task:
         output_file = self.results_dir / f"{result.task_id}.json"
         with open(output_file, "w") as f:
             f.write(result.model_dump_json(indent=2))
+
+    def _archive_task(self, task_file: str):
+        """Move completed task document to archive."""
+        # Only archive .md files
+        if not task_file.endswith('.md'):
+            return
+
+        # Move task document to archive (flat structure)
+        src_path = self.tasks_dir / task_file
+        if src_path.exists():
+            dest_path = self.archive_dir / task_file
+            shutil.move(str(src_path), str(dest_path))
+            logging.info(f"Archived task document: {task_file}")

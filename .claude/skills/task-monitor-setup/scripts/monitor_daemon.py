@@ -8,21 +8,21 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 # System root for monitor code
-MONITOR_SYSTEM_ROOT = Path("/opt/task-monitor")
+MONITOR_SYSTEM_ROOT = Path("/home/admin/workspaces/task-monitor")
 sys.path.insert(0, str(MONITOR_SYSTEM_ROOT))
 
-from task_executor import TaskExecutor
-from models import TaskStatus
+from task_monitor.task_executor import TaskExecutor
+from task_monitor.models import TaskStatus
 
 # Configuration
 REGISTRY_FILE = Path.home() / ".config" / "task-monitor" / "registered.json"
 
 
 class MultiProjectMonitor:
-    """Monitor multiple projects, each with their own tasks/pending directory."""
+    """Monitor multiple projects, each with their own tasks/task-monitor/pending directory."""
 
     def __init__(self):
-        self.projects = {}  # {project_name: {path, executor, queue, observer, event_handler}}
+        self.projects = {}  # {project_name: {path, executor, queue, observer, event_handler, started}}
         self.running = False
         self.observers = []
         self.event_loop = None
@@ -48,10 +48,10 @@ class MultiProjectMonitor:
             return False
 
         # Create directories
-        tasks_dir = project_path / "tasks" / "pending"
-        results_dir = project_path / "tasks" / "results"
-        logs_dir = project_path / "tasks" / "logs"
-        state_dir = project_path / "tasks" / "state"
+        tasks_dir = project_path / "tasks" / "task-monitor" / "pending"
+        results_dir = project_path / "tasks" / "task-monitor" / "results"
+        logs_dir = project_path / "tasks" / "task-monitor" / "logs"
+        state_dir = project_path / "tasks" / "task-monitor" / "state"
 
         tasks_dir.mkdir(parents=True, exist_ok=True)
         results_dir.mkdir(parents=True, exist_ok=True)
@@ -73,7 +73,8 @@ class MultiProjectMonitor:
             "executor": executor,
             "queue": queue,
             "observer": None,
-            "event_handler": None
+            "event_handler": None,
+            "started": False
         }
 
         logging.info(f"Project '{name}' configured: {project_path}")
@@ -87,7 +88,6 @@ class MultiProjectMonitor:
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             handlers=[logging.StreamHandler()]
         )
-        global logger
         logger = logging.getLogger(__name__)
 
         logger.info("Starting Multi-Project Task Monitor")
@@ -121,7 +121,7 @@ class MultiProjectMonitor:
 
         # Create observers and event handlers with access to event loop
         for name, project in self.projects.items():
-            tasks_dir = project["path"] / "tasks" / "pending"
+            tasks_dir = project["path"] / "tasks" / "task-monitor" / "pending"
             event_handler = TaskFileHandler(
                 project["queue"],
                 name,
@@ -137,7 +137,7 @@ class MultiProjectMonitor:
         # Start all observers
         for name, project in self.projects.items():
             project["observer"].start()
-            logging.info(f"Observer started for '{name}': {project['path'] / 'tasks' / 'pending'}")
+            logging.info(f"Observer started for '{name}': {project['path'] / 'tasks' / 'task-monitor' / 'pending'}")
 
         # Start queue processors for all projects
         await self._run_all_queues()
@@ -244,9 +244,9 @@ class MultiProjectMonitor:
             if project.get("observer"):
                 project["observer"].stop()
 
-        # Wait for observers to finish
+        # Wait for observers to finish (only those that were started)
         for project in self.projects.values():
-            if project.get("observer"):
+            if project.get("observer") and project.get("started", False):
                 project["observer"].join()
 
         logging.info("Monitor stopped")
@@ -320,17 +320,45 @@ class TaskFileHandler(FileSystemEventHandler):
             return
 
         file_path = Path(event.src_path)
+        logging.info(f"[{self.project_name}] File event detected: {file_path.name}")
+
         if file_path.match(r"task-????????-??????-*.md"):
-            logging.info(f"[{self.project_name}] New task detected: {file_path.name}")
+            logging.info(f"[{self.project_name}] Task file matches pattern: {file_path.name}")
             try:
                 # Add to project's queue (non-blocking)
                 future = asyncio.run_coroutine_threadsafe(
                     self.task_queue.put(file_path.name),
                     self.event_loop
                 )
+                future.result(timeout=5)  # Wait for confirmation
                 logging.info(f"[{self.project_name}] Task queued successfully: {file_path.name}")
             except Exception as e:
-                logging.error(f"[{self.project_name}] Failed to queue task {file_path.name}: {e}")
+                logging.error(f"[{self.project_name}] Failed to queue task {file_path.name}: {e}", exc_info=True)
+        else:
+            logging.debug(f"[{self.project_name}] File does not match task pattern: {file_path.name}")
+
+    def on_moved(self, event):
+        """Called when a file is moved/renamed."""
+        if event.is_directory:
+            return
+
+        dest_path = Path(event.dest_path)
+        logging.info(f"[{self.project_name}] File moved/renamed: {dest_path.name}")
+
+        if dest_path.match(r"task-????????-??????-*.md"):
+            logging.info(f"[{self.project_name}] Moved task file matches pattern: {dest_path.name}")
+            try:
+                # Add to project's queue (non-blocking)
+                future = asyncio.run_coroutine_threadsafe(
+                    self.task_queue.put(dest_path.name),
+                    self.event_loop
+                )
+                future.result(timeout=5)  # Wait for confirmation
+                logging.info(f"[{self.project_name}] Moved task queued successfully: {dest_path.name}")
+            except Exception as e:
+                logging.error(f"[{self.project_name}] Failed to queue moved task {dest_path.name}: {e}", exc_info=True)
+        else:
+            logging.debug(f"[{self.project_name}] Moved file does not match task pattern: {dest_path.name}")
 
 
 if __name__ == "__main__":

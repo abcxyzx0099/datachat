@@ -1,11 +1,11 @@
 ---
-name: task-breakdown
-description: "Generate organized task lists from documentation. Discovers all docs, analyzes project complexity, and creates tasks using TaskCreate. Simple projects get flat lists; medium projects get phase-based organization; complex projects get module-based organization. Use when: starting a development wave; planning implementation; decomposing requirements into actionable tasks."
+name: task-planning
+description: "Generate organized task lists from documentation. Discovers all docs, analyzes project complexity, and creates task planning documents. Simple projects get flat lists; medium projects get phase-based organization; complex projects get module-based organization. Output goes to tasks/task-planning/. Use when: starting a development wave; planning implementation; decomposing requirements into actionable tasks."
 ---
 
-# Task Breakdown
+# Task Planning
 
-Generate organized task lists from project documentation.
+Generate organized task planning documents from project documentation.
 
 ## Overview
 
@@ -13,7 +13,7 @@ Generate organized task lists from project documentation.
 2. **Assess Complexity** - Analyze project characteristics (features, integrations, roles)
 3. **Choose Organization** - Select flat, phase-based, or module-based structure
 4. **Generate Tasks** - Create tasks using TaskCreate tool
-5. **Save Output** - Write to `implementation-artifacts/{wave-name}-tasks.md`
+5. **Save Output** - Write to `tasks/task-planning/{descriptive-name}.md`
 
 ## Architecture
 
@@ -32,7 +32,7 @@ flowchart LR
     Phase --> Generate
     Module --> Generate
 
-    Generate --> Save[Save to<br/>implementation-artifacts/]
+    Generate --> Save[Save to<br/>tasks/task-planning/]
     Save --> End([End])
 
     style Decide fill:#fff9c4,stroke:#f57f17,stroke-width:2px
@@ -54,7 +54,7 @@ Call this skill when:
 
 - **Requirements** - Project description or user request
 - **Source** - ALL `.md` files in `docs/` (discovered dynamically via Glob)
-- **Output** - `implementation-artifacts/{wave-name}-tasks.md`
+- **Output** - `tasks/task-planning/{descriptive-name}.md`
 
 ## Workflow
 
@@ -99,14 +99,14 @@ TaskCreate(
 )
 ```
 
-**Determine wave name** from user request (2-4 words, lowercase, hyphenated):
-- "Add CSV file import" → `csv-import`
-- "Build user authentication" → `authentication`
-- "Fix memory leak in PSPP" → `pspp-memory-fix`
+**Determine descriptive name** from user request (clear, descriptive, kebab-case):
+- "Add CSV file import" → `csv-import-feature`
+- "Build user authentication" → `user-authentication-system`
+- "Fix memory leak in PSPP" → `pspp-memory-leak-fix`
 
 ## Output Format
 
-Save to `implementation-artifacts/{wave-name}-tasks.md`:
+Save to `tasks/task-planning/{descriptive-name}.md`:
 
 ```markdown
 # Task List: {Project Name}
@@ -281,7 +281,7 @@ Adding CSV file import capability to existing SPSS (.sav) file support.
 ## Related Skills
 
 - **task-implementation**: Executes tasks with audit iteration
-- **task-document-writer**: Generates task documents for delegation
+- **task-document-writer**: Generates task documents for delegation to the monitoring system
 
 ---
 
