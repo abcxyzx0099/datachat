@@ -6,9 +6,8 @@
 2. [Workflow Architecture](#2-workflow-architecture)
    - 2.1 [Workflow Diagram](#21-workflow-diagram)
    - 2.2 [Phase Descriptions](#22-phase-descriptions)
-   - 2.3 [Key Architectural Patterns](#23-key-architectural-patterns)
-     - 2.3.1 [Three-Node Pattern](#231-three-node-pattern)
-     - 2.3.2 [State Management](#232-state-management)
+   - 2.3 [Three-Node Pattern](#23-three-node-pattern)
+   - 2.4 [State Management](#24-state-management)
 3. [Step Specifications](#3-step-specifications)
 4. [Configuration](#4-configuration)
 5. [Technology Stack](#5-technology-stack)
@@ -236,9 +235,7 @@ flowchart TD
 | **7** | Executive Summary Presentation | Significant tables | PowerPoint presentation |
 | **8** | Full Report Dashboard | Cross-table data (all tables) | HTML dashboard |
 
-### 2.3 Key Architectural Patterns
-
-#### 2.3.1 Three-Node Pattern
+### 2.3 Three-Node Pattern
 
 **Overview**: The three-node pattern (Generate → Validate → Review) is implemented as **separate workflow steps** for three LLM-orchestrated processes:
 
@@ -307,7 +304,7 @@ flowchart TD
 
 > **For detailed implementation examples, prompts, and validation specifications, see [implementation-guide.md](./implementation-guide.md)**
 
-#### 2.3.2 State Management
+### 2.4 State Management
 
 The workflow maintains a single state object (`WorkflowState`) that evolves through each node. State fields are organized into functionally-specific sub-states to reduce complexity.
 
