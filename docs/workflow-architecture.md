@@ -73,7 +73,7 @@ flowchart TD
             S1["Step 1<br/>Extract .sav File"]:::processingGreen
             S2["Step 2<br/>Transform Metadata"]:::processingGreen
             S3["Step 3<br/>Filter Metadata"]:::processingGreen
-            rawData[("raw_data")]:::artifactStyle
+            filteredMeta[("filtered_metadata")]:::artifactStyle
         end
 
         %% Phase 2: New Dataset Generation
@@ -145,8 +145,8 @@ flowchart TD
 
     %% Data flow edges
     sav1 --> S1
-    S1 --> S2 --> S3 --> rawData
-    rawData ==> S4
+    S1 --> S2 --> S3 --> filteredMeta
+    filteredMeta ==> S4
     S4 --> S5
     S5 -->|Valid| S6
     S5 -.->|Invalid| S4
