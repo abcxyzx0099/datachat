@@ -5,7 +5,7 @@ Test job to verify the enhanced CLI can show job status.
 
 ## Scope
 - Create a simple job
-- Test `job-monitor <job_id>` command
+- Test `task-monitor <job_id>` command
 
 ## Requirements
 Create a test file to verify the CLI enhancement works.
@@ -14,4 +14,4 @@ Create a test file to verify the CLI enhancement works.
 - Test output showing job status
 
 ## Success Criteria
-- `job-monitor <job_id>` shows status correctly
+- `task-monitor <job_id>` shows status correctly

@@ -38,7 +38,7 @@ Documents belong in `knowledge/` when they meet these criteria:
 |---------------|-----------------|--------|
 | **Product Architecture** | `product/system-layer-docs/` | High-level design, not reference |
 | **External Official Docs** | `reference/external-official-manual/` | Third-party documentation |
-| **User Stories** | `implementation/user-stories/` | Feature requirements |
+| **User Stories** | `implementation-artifacts/user-stories/` | Feature requirements |
 | **Meta-Governance** | `meta-governance/` | Cross-project rules |
 | **Working Artifacts** | `working/` | Temporary/active work |
 
@@ -55,7 +55,7 @@ knowledge/          →  Detailed technical knowledge (THIS DIRECTORY)
                       ↓
 reference/          →  External official documentation
                       ↓
-implementation/      →  User stories (feature coding)
+implementation-artifacts/      →  User stories (feature coding)
                       ↓
 working/            →  Active/temporary work
 ```
@@ -135,7 +135,7 @@ working/            →  Active/temporary work
 |-----------|---------|---------------------------|
 | **[`../product/`](../product/)** | dataflow design & architecture | Knowledge supports product design |
 | **[`../reference/`](../reference/)** | External official docs | Knowledge adapts external docs for dataflow |
-| **[`../implementation/user-stories/`](../implementation/user-stories/)** | Feature requirements | Knowledge helps implement user stories |
+| **[`../implementation-artifacts/user-stories/`](../implementation-artifacts/user-stories/)** | Feature requirements | Knowledge helps implement user stories |
 | **[`../meta-governance/`](../meta-governance/)** | Documentation standards | Knowledge follows meta-governance rules |
 
 ---

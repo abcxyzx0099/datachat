@@ -1,28 +1,28 @@
 ---
-name: job-monitor-system
-description: "Create and configure the multi-project job monitoring system with watchdog file monitoring and Claude Agent SDK integration. Use when: setting up a new job monitor system; installing from scratch; understanding system architecture; troubleshooting service issues; configuring the monitor; registering new projects. For detailed architecture, see [architecture.md](references/architecture.md). For troubleshooting, see [troubleshooting.md](references/troubleshooting.md)."
+name: task-monitor-system
+description: "Create and configure the multi-project task monitoring system with watchdog file monitoring and Claude Agent SDK integration. Use when: setting up a new task monitor system; installing from scratch; understanding system architecture; troubleshooting service issues; configuring the monitor; registering new projects. For detailed architecture, see [architecture.md](references/architecture.md). For troubleshooting, see [troubleshooting.md](references/troubleshooting.md)."
 ---
 
-# Multi-Project Job Monitor System
+# Multi-Project Task Monitor System
 
 ## Quick Overview
 
-Single service that monitors multiple projects, watching each project's `/jobs/pending/` directory and executing jobs **sequentially within each project** (but **parallel across projects**).
+Single service that monitors multiple projects, watching each project's `/tasks/pending/` directory and executing tasks **sequentially within each project** (but **parallel across projects**).
 
 ## Execution Model
 
 ```
 Project A (sequential) ──┐
-                         ├─→ PARALLEL ──→ Jobs execute independently
+                         ├─→ PARALLEL ──→ Tasks execute independently
 Project B (sequential) ──┘
 ```
 
-- **Within project**: Sequential FIFO queue (one job at a time)
+- **Within project**: Sequential FIFO queue (one task at a time)
 - **Across projects**: Parallel execution (projects run independently)
 
 ---
 
-## Creating the Job Monitor System
+## Creating the Task Monitor System
 
 ### Quick Install
 
@@ -30,11 +30,11 @@ The install script is included in this skill at [references/install-service.sh](
 
 ```bash
 # Run the install script
-sudo bash /opt/job-monitor/install-service.sh
+sudo bash /opt/task-monitor/install-service.sh
 ```
 
 This will:
-1. Create virtual environment at `/opt/job-monitor/.venv/`
+1. Create virtual environment at `/opt/task-monitor/.venv/`
 2. Install dependencies (claude-agent-sdk, watchdog, pydantic)
 3. Create `pyproject.toml` for CLI installation
 4. Install CLI command via `pip install --user`
@@ -47,69 +47,69 @@ If you prefer to install manually:
 
 ```bash
 # 1. Create virtual environment
-sudo python3 -m venv /opt/job-monitor/.venv
+sudo python3 -m venv /opt/task-monitor/.venv
 
 # 2. Install dependencies
-sudo /opt/job-monitor/.venv/bin/pip install claude-agent-sdk watchdog pydantic
+sudo /opt/task-monitor/.venv/bin/pip install claude-agent-sdk watchdog pydantic
 
 # 3. Create pyproject.toml (see references/install-service.sh for content)
 
 # 4. Install CLI
-pip install --user --break-system-packages /opt/job-monitor
+pip install --user --break-system-packages /opt/task-monitor
 
 # 5. Create systemd user service (see references/install-service.sh for content)
 
 # 6. Start service
-systemctl --user enable job-monitor
-systemctl --user start job-monitor
+systemctl --user enable task-monitor
+systemctl --user start task-monitor
 ```
 
 ### Verify Installation
 
 ```bash
 # Check service status
-systemctl --user status job-monitor
+systemctl --user status task-monitor
 
 # Test CLI
-job-monitor --help
+task-monitor --help
 
 # Check queue status
-job-monitor queue
+task-monitor queue
 ```
 
 ---
 
-## Job Naming Convention
+## Task Naming Convention
 
-**Format:** `job-YYYYMMDD-HHMMSS-<description>.md`
+**Format:** `task-YYYYMMDD-HHMMSS-<description>.md`
 
-**Example:** `job-20260130-143000-system-verification.md`
+**Example:** `task-20260130-143000-system-verification.md`
 
-- `job-` - Fixed prefix
+- `task-` - Fixed prefix
 - `YYYYMMDD-HHMMSS` - Timestamp (for chronological sorting)
 - `<description>` - Short, kebab-case description
 - `.md` - Markdown document
 
-**Pattern (glob):** `job-????????-??????-*.md`
+**Pattern (glob):** `task-????????-??????-*.md`
 
 ## Key Paths
 
 | Purpose | Path |
 |---------|------|
-| Install script | `.claude/skills/job-monitor-system/references/install-service.sh` |
-| System service | `~/.config/systemd/user/job-monitor.service` |
-| Monitor daemon | `/opt/job-monitor/` (system-level) |
-| Configuration | `~/.config/job-monitor/` |
-| CLI command | `~/.local/bin/job-monitor` (installed via `pip install --user`) |
-| CLI source | `/opt/job-monitor/cli.py` (with `main()` entry point) |
-| Package config | `/opt/job-monitor/pyproject.toml` (defines `[project.scripts]`) |
+| Install script | `.claude/skills/task-monitor-system/references/install-service.sh` |
+| System service | `~/.config/systemd/user/task-monitor.service` |
+| Monitor daemon | `/opt/task-monitor/` (system-level) |
+| Configuration | `~/.config/task-monitor/` |
+| CLI command | `~/.local/bin/task-monitor` (installed via `pip install --user`) |
+| CLI source | `/opt/task-monitor/cli.py` (with `main()` entry point) |
+| Package config | `/opt/task-monitor/pyproject.toml` (defines `[project.scripts]`) |
 
 ## Project Structure (Each Project)
 
 ```
 {project-root}/
-├── jobs/
-│   ├── pending/       # Job documents (watched by monitor)
+├── tasks/
+│   ├── pending/       # Task documents (watched by monitor)
 │   ├── results/       # Execution results (JSON)
 │   ├── state/         # Queue state per project
 │   └── logs/          # Monitor logs per project
@@ -121,30 +121,30 @@ job-monitor queue
 
 ```bash
 # Service management
-systemctl --user status job-monitor       # Check status
-systemctl --user restart job-monitor      # Restart service
+systemctl --user status task-monitor       # Check status
+systemctl --user restart task-monitor      # Restart service
 
-# Query jobs (per project)
-job-monitor queue                         # Show queue status (uses default project)
-job-monitor -p /path/to/project queue     # Show queue for specific project
-job-monitor job-id                        # Show job status
-job-monitor --help                        # Show all options
+# Query tasks (per project)
+task-monitor queue                         # Show queue status (uses default project)
+task-monitor -p /path/to/project queue     # Show queue for specific project
+task-monitor task-id                       # Show task status
+task-monitor --help                        # Show all options
 ```
 
 ## Systemd Service
 
-**File:** `~/.config/systemd/user/job-monitor.service`
+**File:** `~/.config/systemd/user/task-monitor.service`
 
 ```ini
 [Unit]
-Description=Job Monitor Daemon (SDK)
+Description=Task Monitor Daemon (SDK)
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/job-monitor
-Environment="PATH=/opt/job-monitor/.venv/bin:/usr/bin"
-ExecStart=/opt/job-monitor/.venv/bin/python /opt/job-monitor/monitor_daemon.py
+WorkingDirectory=/opt/task-monitor
+Environment="PATH=/opt/task-monitor/.venv/bin:/usr/bin"
+ExecStart=/opt/task-monitor/.venv/bin/python /opt/task-monitor/monitor_daemon.py
 Restart=always
 RestartSec=10
 
@@ -152,29 +152,29 @@ RestartSec=10
 WantedBy=default.target
 ```
 
-**Single service** monitoring all registered projects. Uses dedicated virtual environment at `/opt/job-monitor/.venv/`.
+**Single service** monitoring all registered projects. Uses dedicated virtual environment at `/opt/task-monitor/.venv/`.
 
 ## Workflow
 
 ```
-1. Register project(s) → ~/.config/job-monitor/registered.json
+1. Register project(s) → ~/.config/task-monitor/registered.json
                           ↓
-2. Start service → job-monitor.service
+2. Start service → task-monitor.service
                           ↓
 3. For each project:
-   - Watchdog monitors {project}/jobs/pending/
-   - Jobs queued in project-specific FIFO queue
+   - Watchdog monitors {project}/tasks/pending/
+   - Tasks queued in project-specific FIFO queue
    - Sequential execution within project
-   - Results saved to {project}/jobs/results/
+   - Results saved to {project}/tasks/results/
 ```
 
 ## Directory Structure
 
 ```
 ~/.config/systemd/user/
-└── job-monitor.service            # User service for all projects
+└── task-monitor.service            # User service for all projects
 
-/opt/job-monitor/                  # System-level infrastructure
+/opt/task-monitor/                  # System-level infrastructure
 ├── .venv/                         # Dedicated virtual environment
 │   ├── bin/
 │   │   ├── python → python3       # Python interpreter for service
@@ -186,22 +186,22 @@ WantedBy=default.target
 │               ├── watchdog/
 │               └── pydantic/
 ├── monitor_daemon.py              # Multi-project monitor daemon
-├── job_executor.py                # Job executor (with project cwd)
+├── task_executor.py               # Task executor (with project cwd)
 ├── models.py                      # Data models
 ├── cli.py                         # Status CLI source (with main() entry point)
 ├── pyproject.toml                 # Package config (defines [project.scripts])
 └── install-service.sh             # Installation script
 
-~/.config/job-monitor/             # User configuration
+~/.config/task-monitor/             # User configuration
 └── registered.json                # Project registry
 
 ~/.local/
 └── bin/
-    └── job-monitor                # CLI wrapper (installed via pip install --user)
+    └── task-monitor                # CLI wrapper (installed via pip install --user)
 
 {project-root}/                    # Per-project (can be multiple)
-└── jobs/
-    ├── pending/                   # Job documents
+└── tasks/
+    ├── pending/                   # Task documents
     ├── results/                   # Execution results
     ├── state/                     # Queue state
     └── logs/                      # Log files
@@ -209,7 +209,7 @@ WantedBy=default.target
 
 ## Project Registry
 
-**Location:** `~/.config/job-monitor/registered.json`
+**Location:** `~/.config/task-monitor/registered.json`
 
 ```json
 {
@@ -234,11 +234,11 @@ WantedBy=default.target
 
 ```bash
 # Create required directories manually
-mkdir -p /path/to/project/jobs/{pending,results,state,logs}
+mkdir -p /path/to/project/tasks/{pending,results,state,logs}
 
-# Add to registry (~/.config/job-monitor/registered.json)
+# Add to registry (~/.config/task-monitor/registered.json)
 # Then restart service
-systemctl --user restart job-monitor
+systemctl --user restart task-monitor
 ```
 
 ### What Happens During Registration
@@ -247,17 +247,17 @@ systemctl --user restart job-monitor
 1. Verify project path exists
          ↓
 2. Create required directories:
-   - {project}/jobs/pending/ (job documents)
-   - {project}/jobs/results/ (execution results)
-   - {project}/jobs/state/   (queue state)
-   - {project}/jobs/logs/    (monitor logs)
+   - {project}/tasks/pending/ (task documents)
+   - {project}/tasks/results/ (execution results)
+   - {project}/tasks/state/   (queue state)
+   - {project}/tasks/logs/    (monitor logs)
          ↓
-3. Add to ~/.config/job-monitor/registered.json
+3. Add to ~/.config/task-monitor/registered.json
          ↓
-4. Restart job-monitor.service
+4. Restart task-monitor.service
          ↓
 5. Service creates:
-   - Watchdog observer for {project}/jobs/pending/
+   - Watchdog observer for {project}/tasks/pending/
    - Project-specific queue
    - Project-specific executor (with correct cwd)
 ```
@@ -266,12 +266,12 @@ systemctl --user restart job-monitor
 
 ```bash
 # Check service logs
-journalctl --user -u job-monitor | grep "Observer started"
+journalctl --user -u task-monitor | grep "Observer started"
 
 # Verify project structure
-ls -la /home/admin/workspaces/myproject/jobs/pending/
-ls -la /home/admin/workspaces/myproject/jobs/results/
-ls -la /home/admin/workspaces/myproject/jobs/state/
+ls -la /home/admin/workspaces/myproject/tasks/pending/
+ls -la /home/admin/workspaces/myproject/tasks/results/
+ls -la /home/admin/workspaces/myproject/tasks/state/
 ```
 
 ## Detailed Information
@@ -281,32 +281,32 @@ ls -la /home/admin/workspaces/myproject/jobs/state/
 - **Install Script**: [scripts/install-service.sh](scripts/install-service.sh) - Complete installation script
 - **Source Code**: All Python modules included in `scripts/`:
   - [scripts/monitor_daemon.py](scripts/monitor_daemon.py) - Multi-project watchdog daemon
-  - [scripts/job_executor.py](scripts/job_executor.py) - Job executor with Claude Agent SDK
+  - [scripts/task_executor.py](scripts/task_executor.py) - Task executor with Claude Agent SDK
   - [scripts/models.py](scripts/models.py) - Pydantic data models
   - [scripts/cli.py](scripts/cli.py) - Command-line interface
 
 ## Recreating the System from Scratch
 
-If the job monitor system is completely deleted, you can recreate it using only this skill:
+If the task monitor system is completely deleted, you can recreate it using only this skill:
 
 ```bash
 # 1. Create the system directory
-sudo mkdir -p /opt/job-monitor
+sudo mkdir -p /opt/task-monitor
 
 # 2. Copy source files from this skill's scripts/
-sudo cp .claude/skills/job-monitor-system/scripts/*.py /opt/job-monitor/
-sudo cp .claude/skills/job-monitor-system/scripts/install-service.sh /opt/job-monitor/
+sudo cp .claude/skills/task-monitor-system/scripts/*.py /opt/task-monitor/
+sudo cp .claude/skills/task-monitor-system/scripts/install-service.sh /opt/task-monitor/
 
 # 3. Run the install script
-sudo bash /opt/job-monitor/install-service.sh
+sudo bash /opt/task-monitor/install-service.sh
 
 # 4. Register your project
-# (Manually edit ~/.config/job-monitor/registered.json)
+# (Manually edit ~/.config/task-monitor/registered.json)
 ```
 
 ## Dependencies
 
-The job monitor uses a **dedicated virtual environment** at `/opt/job-monitor/.venv/` for independence from project-specific environments.
+The task monitor uses a **dedicated virtual environment** at `/opt/task-monitor/.venv/` for independence from project-specific environments.
 
 **Installed dependencies (in venv):**
 ```
@@ -321,37 +321,37 @@ The CLI is installed via `pyproject.toml` using setuptools entry points:
 
 ```toml
 [project.scripts]
-job-monitor = "cli:main"
+task-monitor = "cli:main"
 ```
 
 **To install/reinstall the CLI:**
 ```bash
 # Install to user site-packages (requires --break-system-packages on Debian)
-pip install --user --break-system-packages /opt/job-monitor
+pip install --user --break-system-packages /opt/task-monitor
 
 # Or using a temp directory to avoid permission issues
-TEMP_DIR=$(mktemp -d) && cp -r /opt/job-monitor/* "$TEMP_DIR/" && \
+TEMP_DIR=$(mktemp -d) && cp -r /opt/task-monitor/* "$TEMP_DIR/" && \
 pip install --user --break-system-packages "$TEMP_DIR" && rm -rf "$TEMP_DIR"
 ```
 
 This creates:
-- `~/.local/bin/job-monitor` - Native wrapper script
+- `~/.local/bin/task-monitor` - Native wrapper script
 - `~/.local/lib/python3.13/site-packages/cli.py` - CLI module (with main())
 - `~/.local/lib/python3.13/site-packages/models.py` - Data models
 - `~/.local/lib/python3.13/site-packages/monitor_daemon.py` - Monitor daemon
-- `~/.local/lib/python3.13/site-packages/job_executor.py` - Job executor
+- `~/.local/lib/python3.13/site-packages/task_executor.py` - Task executor
 
 ## Key Design Principles
 
-1. **Single Service**: One `job-monitor.service` for all projects
-2. **Dedicated Virtual Environment**: Self-contained venv at `/opt/job-monitor/.venv/` for independence
+1. **Single Service**: One `task-monitor.service` for all projects
+2. **Dedicated Virtual Environment**: Self-contained venv at `/opt/task-monitor/.venv/` for independence
 3. **Per-Project Isolation**: Each project has its own queue, executor, and watchdog observer
-4. **Sequential Within Project**: Jobs in same project execute one at a time (FIFO)
+4. **Sequential Within Project**: Tasks in same project execute one at a time (FIFO)
 5. **Parallel Across Projects**: Different projects execute simultaneously
-6. **Project-Specific CWD**: Each job executes with its project root as working directory
+6. **Project-Specific CWD**: Each task executes with its project root as working directory
 7. **Registration-Based**: Projects registered via config file, service reloads automatically
 
 ## Related Skills
 
-- `job-document-writer`: Creates job documents with correct naming pattern
-- `task-implementation`: Executes jobs with worker-auditor workflow
+- `task-document-writer`: Creates task documents with correct naming pattern
+- `task-implementation`: Executes tasks with worker-auditor workflow

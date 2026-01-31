@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# rename_job.sh - Rename job temp file to final name with generated timestamp
+# rename_task.sh - Rename task temp file to final name with generated timestamp
 #
-# Usage: bash scripts/rename_job.sh /path/to/job-{description}.md.tmp
+# Usage: bash scripts/rename_task.sh /path/to/task-{description}.md.tmp
 #
 # This script:
 # 1. Generates a timestamp using date command
@@ -14,15 +14,15 @@ set -e
 
 # Configuration
 PROJECT_ROOT="${PROJECT_ROOT:-/home/admin/workspaces/datachat}"
-JOBS_DIR="${JOBS_DIR:-${PROJECT_ROOT}/jobs/pending}"
-JOB_PREFIX="job"
+TASKS_DIR="${TASKS_DIR:-${PROJECT_ROOT}/tasks/pending}"
+TASK_PREFIX="task"
 
 # Get temp file path from argument
 TEMP_FILE="$1"
 
 if [ -z "$TEMP_FILE" ]; then
     echo "❌ Error: No temp file specified"
-    echo "Usage: bash scripts/rename_job.sh /path/to/${JOB_PREFIX}-{description}.md.tmp"
+    echo "Usage: bash scripts/rename_task.sh /path/to/${TASK_PREFIX}-{description}.md.tmp"
     exit 1
 fi
 
@@ -36,17 +36,17 @@ fi
 TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
 
 # Extract description from temp file name
-# Format: job-{description}.md.tmp (no timestamp)
+# Format: task-{description}.md.tmp (no timestamp)
 TEMP_FILENAME=$(basename "$TEMP_FILE")
-DESCRIPTION="${TEMP_FILENAME#${JOB_PREFIX}-}"  # Remove "job-" prefix
+DESCRIPTION="${TEMP_FILENAME#${TASK_PREFIX}-}"  # Remove "task-" prefix
 DESCRIPTION="${DESCRIPTION%.md.tmp}"  # Remove ".md.tmp" extension
 
 # Build final filename with generated timestamp
-FINAL_FILE="${JOBS_DIR}/${JOB_PREFIX}-${TIMESTAMP}-${DESCRIPTION}.md"
+FINAL_FILE="${TASKS_DIR}/${TASK_PREFIX}-${TIMESTAMP}-${DESCRIPTION}.md"
 
 # Move to final location
 mv "$TEMP_FILE" "$FINAL_FILE"
 
 # Output result (can be captured by caller)
-echo "✅ Job created: $FINAL_FILE"
+echo "✅ Task created: $FINAL_FILE"
 echo "$FINAL_FILE"
