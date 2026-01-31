@@ -43,7 +43,7 @@ class TaskExecutor:
         # Configure SDK
         options = ClaudeAgentOptions(
             cwd=str(self.project_root),  # Set working directory
-            permission_mode="acceptEdits",  # Auto-accept file edits
+            permission_mode="bypassPermissions",  # Full autonomous execution
             setting_sources=["project"],  # Load project settings (including skills)
         )
 

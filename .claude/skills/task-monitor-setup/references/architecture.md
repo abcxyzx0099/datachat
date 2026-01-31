@@ -3,49 +3,54 @@
 ## System Layout
 
 ```
-/etc/systemd/system/
-└── task-monitor.service           # Single service for all projects
+/home/admin/workspaces/task-monitor/    # Source code (editable install)
+├── .venv/                             # Virtual environment
+│   └── bin/
+│       └── task-monitor               # CLI entry point
+├── task_monitor/
+│   ├── __init__.py
+│   ├── monitor_daemon.py              # Multi-project daemon
+│   ├── task_executor.py               # Task executor (project-aware cwd)
+│   ├── models.py                      # Data models
+│   └── cli.py                         # Status CLI
+├── tests/                             # Unit tests
+└── pyproject.toml                     # Package config
 
-/opt/task-monitor/                 # System-level infrastructure
-├── .venv/                         # Dedicated virtual environment (self-contained)
-│   ├── bin/
-│   │   └── python → python3       # Python interpreter
-│   └── lib/
-│       └── python3.13/site-packages/
-│           ├── claude_agent_sdk/
-│           ├── watchdog/
-│           └── pydantic/
-├── monitor_daemon.py              # Multi-project daemon
-├── task_executor.py               # Task executor (project-aware cwd)
-├── models.py                      # Data models
-├── cli.py                         # Status CLI source (with main() entry point)
-├── pyproject.toml                 # Package config (defines [project.scripts])
-└── install-service.sh             # Installation script
+~/.config/systemd/user/                # User systemd services
+└── task-monitor.service               # Monitor daemon service
 
-~/.config/task-monitor/            # User configuration
-├── .env                           # API credentials
-└── registered.json                # Project registry
+~/.config/task-monitor/                # User configuration
+├── .env                               # API credentials
+└── registered.json                    # Project registry
 
-~/.local/
-├── bin/
-│   └── task-monitor               # CLI command (installed via pip install --user)
-└── lib/python3.13/site-packages/
-    ├── cli.py                     # CLI module (with main() entry point)
-    ├── models.py                  # Data models
-    ├── monitor_daemon.py          # Monitor daemon (for reference)
-    ├── task_executor.py           # Task executor (for reference)
-    └── task_monitor-1.0.0.dist-info/  # Package metadata
-
-/usr/local/bin/
-└── task-monitor-control           # Management CLI
-
-{project-root}/                    # Per-project (multiple projects)
-├── tasks/                         # Task documents
-├── results/                       # Execution results
-├── state/                         # Queue state (per project)
-├── logs/                          # Log files (per project)
+{project-root}/                        # Per-project (multiple projects)
+├── tasks/                             # Task documents
+│   ├── pending/                       # Input (watchdog monitors this)
+│   ├── results/                       # Execution results (JSON)
+│   ├── state/                         # Queue state (per project)
+│   ├── logs/                          # Log files (per project)
+│   └── archive/                       # Completed tasks
 └── .claude/
-    └── skills/                    # Project-specific skills
+    └── skills/                        # Project-specific skills
+```
+
+## Installation
+
+**Editable install** (development mode):
+```bash
+cd /home/admin/workspaces/task-monitor
+pip install -e .
+```
+
+**PATH configuration** (in `~/.bashrc`):
+```bash
+export PATH="$HOME/workspaces/task-monitor/.venv/bin:$PATH"
+```
+
+**Service enablement**:
+```bash
+systemctl --user enable task-monitor.service
+systemctl --user start task-monitor.service
 ```
 
 ## Task Naming Convention
@@ -124,7 +129,7 @@ project-c:       [task-1───] [task-2─────] [task-3]
 ```
 1. Register project(s) → ~/.config/task-monitor/registered.json
                            ↓
-2. Start service → sudo systemctl start task-monitor
+2. Start service → systemctl --user start task-monitor.service
                            ↓
 3. Service loads registry → Creates per-project components:
                            - Observer (watchdog) for each tasks/
@@ -143,7 +148,7 @@ project-c:       [task-1───] [task-2─────] [task-3]
 ### monitor_daemon.py
 **Purpose:** Multi-project watchdog daemon.
 
-**Location:** `/opt/task-monitor/monitor_daemon.py`
+**Location:** `/home/admin/workspaces/task-monitor/task_monitor/monitor_daemon.py`
 
 **Key Components:**
 - `MultiProjectMonitor`: Main orchestrator
@@ -158,7 +163,7 @@ project-c:       [task-1───] [task-2─────] [task-3]
 ### task_executor.py
 **Purpose:** Executes tasks using Claude Agent SDK with project-specific working directory.
 
-**Location:** `/opt/task-monitor/task_executor.py`
+**Location:** `/home/admin/workspaces/task-monitor/task_monitor/task_executor.py`
 
 **Key Features:**
 - Uses `query()` function from Claude Agent SDK
@@ -170,24 +175,32 @@ project-c:       [task-1───] [task-2─────] [task-3]
 ```python
 options = ClaudeAgentOptions(
     cwd=str(project_root),              # Project-specific working directory
-    permission_mode="acceptEdits",       # Auto-accept edits
+    permission_mode="bypassPermissions", # Full autonomous execution
     setting_sources=["project"],         # Load project settings
 )
 ```
 
-### task-monitor-control
-**Purpose:** CLI tool for managing project registrations.
+### task-monitor CLI
+**Purpose:** CLI tool for querying task status.
 
-**Location:** `/usr/local/bin/task-monitor-control`
+**Location:** `/home/admin/workspaces/task-monitor/.venv/bin/task-monitor`
+
+**Access:** Added to PATH via `~/.bashrc`:
+```bash
+export PATH="$HOME/workspaces/task-monitor/.venv/bin:$PATH"
+```
+
+**Entry Point:** Defined in `pyproject.toml`:
+```toml
+[project.scripts]
+task-monitor = "task_monitor.cli:main"
+```
 
 **Commands:**
 ```bash
-task-monitor-control register /path/to/project          # Add project
-task-monitor-control register /path/to/project --name X  # Custom name
-task-monitor-control unregister project-name            # Remove project
-task-monitor-control list                              # List all
-task-monitor-control enable/disable project-name        # Toggle
-task-monitor-control restart                            # Reload service
+task-monitor -p /path/to/project              # List all tasks
+task-monitor -p /path/to/project task-001     # Show specific task
+task-monitor queue                            # Show queue state
 ```
 
 ### registered.json
@@ -211,7 +224,7 @@ task-monitor-control restart                            # Reload service
 ### models.py
 **Purpose:** Pydantic data models for task management.
 
-**Location:** `/opt/task-monitor/models.py`
+**Location:** `/home/admin/workspaces/task-monitor/task_monitor/models.py`
 
 **Models:**
 - `TaskStatus`: Enum (QUEUED, RUNNING, COMPLETED, FAILED, RETRYING)
@@ -233,16 +246,63 @@ started_at, completed_at: datetime     # Timestamps
 ### cli.py
 **Purpose:** Command-line interface for querying task status.
 
-**Location:** `/opt/task-monitor/cli.py`
+**Location:** `/home/admin/workspaces/task-monitor/task_monitor/cli.py`
 
-**Installation:** Installed via `pip install --user` to `~/.local/bin/task-monitor`
+**Default Project:** `/home/admin/workspaces/datachat` (hardcoded in CLI)
 
 **Usage:**
 ```bash
-task-monitor -p /path/to/project              # List all tasks
-task-monitor -p /path/to/project task-001     # Show specific task
-task-monitor queue                            # Show queue state (uses default project)
-task-monitor -p /path/to/project queue        # Show queue for specific project
+task-monitor                              # List all tasks (default project)
+task-monitor -p /path/to/project          # List all tasks (specific project)
+task-monitor task-001                     # Show specific task status
+task-monitor queue                        # Show queue state
+task-monitor -p /path/to/project queue    # Show queue for specific project
+```
+
+### task-monitor.service
+**Purpose:** User systemd service for running the monitor daemon.
+
+**Location:** `~/.config/systemd/user/task-monitor.service`
+
+**Service File Content:**
+```ini
+[Unit]
+Description=Multi-Project Task Monitor Daemon
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/workspaces/task-monitor
+Environment="PATH=%h/workspaces/task-monitor/.venv/bin:/usr/bin"
+Environment="PYTHONPATH=%h/workspaces/task-monitor"
+EnvironmentFile=%h/.config/task-monitor/.env
+ExecStart=%h/workspaces/task-monitor/.venv/bin/python -m task_monitor.monitor_daemon
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+```
+
+**Service Management:**
+```bash
+# Enable service (start on login)
+systemctl --user enable task-monitor.service
+
+# Start service immediately
+systemctl --user start task-monitor.service
+
+# Stop service
+systemctl --user stop task-monitor.service
+
+# Restart service
+systemctl --user restart task-monitor.service
+
+# Check status
+systemctl --user status task-monitor.service
+
+# View logs
+journalctl --user -u task-monitor.service -f
 ```
 
 ### .env (Configuration)
@@ -263,9 +323,9 @@ ANTHROPIC_AUTH_TOKEN=your_token_here
 
 | Location | Type | Content | Access |
 |----------|------|---------|--------|
-| **systemd journal** | Service logs | All service output with task events | `sudo journalctl -u task-monitor -f` |
-| **{project}/results/** | Task results | JSON with stdout/stderr/duration | `cat {project}/results/{task_id}.json` |
-| **{project}/logs/monitor.log** | Project logs | Monitor daemon logs | `tail -f {project}/logs/monitor.log` |
+| **user systemd journal** | Service logs | All service output with task events | `journalctl --user -u task-monitor.service -f` |
+| **{project}/tasks/results/** | Task results | JSON with stdout/stderr/duration | `cat {project}/tasks/results/{task_id}.json` |
+| **{project}/tasks/logs/** | Project logs | Monitor daemon logs | `tail -f {project}/tasks/logs/monitor.log` |
 
 **Task Result JSON Structure:**
 ```json
@@ -286,21 +346,21 @@ ANTHROPIC_AUTH_TOKEN=your_token_here
 
 **Viewing Logs:**
 ```bash
-# Service logs (systemd journal - primary source)
-sudo journalctl -u task-monitor -f           # Follow logs
-sudo journalctl -u task-monitor -n 100       # Last 100 lines
-sudo journalctl -u task-monitor --since "1 hour ago"  # Since 1 hour ago
-sudo journalctl -u task-monitor -f grep "task-xxx"  # Filter by task
+# Service logs (user systemd journal - primary source)
+journalctl --user -u task-monitor.service -f           # Follow logs
+journalctl --user -u task-monitor.service -n 100       # Last 100 lines
+journalctl --user -u task-monitor.service --since "1 hour ago"  # Since 1 hour ago
+journalctl --user -u task-monitor.service -f | grep "task-xxx"  # Filter by task
 
 # Task execution results with full output
-cat /home/admin/workspaces/datachat/results/task-xxx-xxx.json | jq '.stdout'
+cat /home/admin/workspaces/datachat/tasks/results/task-xxx-xxx.json | jq '.stdout'
 
 # Project logs (optional - for convenience)
-tail -f /home/admin/workspaces/datachat/logs/monitor.log
+tail -f /home/admin/workspaces/datachat/tasks/logs/monitor.log
 ```
 
 **Logging Design:**
-1. **systemd journal** - Primary log destination (auto-rotated, searchable, persistent)
+1. **user systemd journal** - Primary log destination (auto-rotated, searchable, persistent)
 2. **Task stdout/stderr** - Captured in result JSON for complete audit trail
 3. **Duration tracking** - Each task logs execution time
 4. **Structured logging** - Task events logged with `[task_id]` prefix for filtering
@@ -348,24 +408,25 @@ tail -f /home/admin/workspaces/datachat/logs/monitor.log
 | **Service reload** | Auto-applies changes |
 | **Names** | Friendly project names vs full paths |
 
-### Why /opt/task-monitor/?
+### Why User-Space Installation?
 
 | Reason | Explanation |
 |--------|-------------|
-| **Standard location** | `/opt/` is for optional/add-on software |
+| **No sudo required** | User can install and update without root privileges |
+| **Development friendly** | Source code in user workspace for easy editing |
 | **Infrastructure code** | Monitor serves multiple projects |
 | **Clear separation** | Separate from project code |
 | **Reusable** | Works with any project |
-| **Self-contained** | Dedicated venv at `.venv/` for independence |
+| **pip install --user** | Standard Python user-space installation |
 
 ## Key Design Principles
 
-1. **Single Service**: One `task-monitor.service` for all projects
-2. **Dedicated Virtual Environment**: Self-contained venv at `.venv/` for independence
+1. **User-Space Installation**: No root required, uses `pip install --user`
+2. **Development Workflow**: Source code in workspace, installed to ~/.local/
 3. **Per-Project Isolation**: Separate queue, executor, observer per project
 4. **Sequential Within Project**: FIFO queue, one task at a time
 5. **Parallel Across Projects**: Projects execute independently
 6. **Project-Specific CWD**: Each task runs with correct working directory
-7. **Registration-Based**: Easy project management via CLI
+7. **Configuration-Based**: Project registry in ~/.config/task-monitor/
 8. **State Persistence**: Queue state saved per project
-9. **Standard Locations**: Follows Linux conventions
+9. **Standard Python Locations**: Follows Python packaging conventions

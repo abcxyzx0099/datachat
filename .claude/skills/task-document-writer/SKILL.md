@@ -524,5 +524,5 @@ task-monitor queue
 ## Related Skills
 
 - `task-breakdown`: Generates breakdown documents for Scenario 2
-- `task-monitor-system`: Creates the monitoring system that processes task documents
+- `task-monitor-setup`: Creates the monitoring system that processes task documents
 - `task-implementation`: Executes tasks with worker-auditor workflow (called by monitor)

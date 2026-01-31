@@ -62,7 +62,7 @@ The Task Monitor System is an asynchronous, background task execution architectu
 │   │                                                                  │   │
 │   │  options = ClaudeAgentOptions(                                  │   │
 │   │      cwd=str(project_root),        # Project context           │   │
-│   │      permission_mode="acceptEdits", # Auto-accept file edits   │   │
+│   │      permission_mode="bypassPermissions", # Full autonomous    │   │
 │   │      setting_sources=["project"],    # Load project skills     │   │
 │   │  )                                                               │   │
 │   │                                                                  │   │
@@ -150,7 +150,7 @@ The Task Monitor System is an asynchronous, background task execution architectu
         ├── task-breakdown/
         ├── task-document-writer/
         ├── task-implementation/
-        └── task-monitor-system/
+        └── task-monitor-setup/
 ```
 
 ---
@@ -235,7 +235,7 @@ The Task Monitor System is an asynchronous, background task execution architectu
 
 ---
 
-### 4. task-monitor-system
+### 4. task-monitor-setup
 **Purpose:** Infrastructure for task monitoring and execution
 
 **Components:**
@@ -244,9 +244,11 @@ The Task Monitor System is an asynchronous, background task execution architectu
 - **models.py**: Pydantic data models
 - **cli.py**: Status CLI tool
 
-**System Location:** `/opt/task-monitor/`
+**System Location:** `/home/admin/workspaces/task-monitor/` (editable install)
 
-**Service:** `task-monitor.service` (systemd)
+**CLI:** `/home/admin/workspaces/task-monitor/.venv/bin/task-monitor`
+
+**Service:** `~/.config/systemd/user/task-monitor.service` (user systemd service)
 
 ---
 
@@ -311,7 +313,7 @@ task-monitor
 cat tasks/results/task-20260131-204500-fix-auth-timeout.json
 
 # View monitor logs
-sudo journalctl -u task-monitor -f
+journalctl --user -u task-monitor.service -f
 ```
 
 ---
@@ -320,19 +322,22 @@ sudo journalctl -u task-monitor -f
 
 ```bash
 # Start service
-sudo systemctl start task-monitor
+systemctl --user start task-monitor.service
 
 # Stop service
-sudo systemctl stop task-monitor
+systemctl --user stop task-monitor.service
 
 # Restart service
-sudo systemctl restart task-monitor
+systemctl --user restart task-monitor.service
 
 # Check status
-sudo systemctl status task-monitor
+systemctl --user status task-monitor.service
 
-# Enable at boot
-sudo systemctl enable task-monitor
+# Enable at login
+systemctl --user enable task-monitor.service
+
+# View logs
+journalctl --user -u task-monitor.service -f
 ```
 
 ---

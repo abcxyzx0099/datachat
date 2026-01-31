@@ -1,5 +1,5 @@
 ---
-name: task-monitor-system
+name: task-monitor-setup
 description: "Create and configure the multi-project task monitoring system with watchdog file monitoring and Claude Agent SDK integration. Use when: setting up a new task monitor system; installing from scratch; understanding system architecture; troubleshooting service issues; configuring the monitor; registering new projects. For detailed architecture, see [architecture.md](references/architecture.md). For troubleshooting, see [troubleshooting.md](references/troubleshooting.md)."
 ---
 
@@ -96,13 +96,13 @@ task-monitor queue
 
 | Purpose | Path |
 |---------|------|
-| Install script | `.claude/skills/task-monitor-system/references/install-service.sh` |
+| Skill directory | `.claude/skills/task-monitor-setup/` |
+| Source code | `/home/admin/workspaces/task-monitor/` |
 | System service | `~/.config/systemd/user/task-monitor.service` |
-| Monitor daemon | `/opt/task-monitor/` (system-level) |
 | Configuration | `~/.config/task-monitor/` |
-| CLI command | `~/.local/bin/task-monitor` (installed via `pip install --user`) |
-| CLI source | `/opt/task-monitor/cli.py` (with `main()` entry point) |
-| Package config | `/opt/task-monitor/pyproject.toml` (defines `[project.scripts]`) |
+| CLI command | `/home/admin/workspaces/task-monitor/.venv/bin/task-monitor` |
+| CLI source | `/home/admin/workspaces/task-monitor/task_monitor/cli.py` |
+| Package config | `/home/admin/workspaces/task-monitor/pyproject.toml` |
 
 ## Project Structure (Each Project)
 
@@ -287,26 +287,62 @@ ls -la /home/admin/workspaces/myproject/tasks/state/
 
 ## Recreating the System from Scratch
 
-If the task monitor system is completely deleted, you can recreate it using only this skill:
+If the task monitor system is completely deleted, you can recreate it:
 
 ```bash
-# 1. Create the system directory
-sudo mkdir -p /opt/task-monitor
+# 1. Clone or navigate to the task-monitor source
+cd /home/admin/workspaces/task-monitor
 
-# 2. Copy source files from this skill's scripts/
-sudo cp .claude/skills/task-monitor-system/scripts/*.py /opt/task-monitor/
-sudo cp .claude/skills/task-monitor-system/scripts/install-service.sh /opt/task-monitor/
+# 2. Create virtual environment and install
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
 
-# 3. Run the install script
-sudo bash /opt/task-monitor/install-service.sh
+# 3. Create user systemd service
+mkdir -p ~/.config/systemd/user
+cat > ~/.config/systemd/user/task-monitor.service << 'EOF'
+[Unit]
+Description=Multi-Project Task Monitor Daemon
+After=network.target
 
-# 4. Register your project
-# (Manually edit ~/.config/task-monitor/registered.json)
+[Service]
+Type=simple
+WorkingDirectory=%h/workspaces/task-monitor
+Environment="PATH=%h/workspaces/task-monitor/.venv/bin:/usr/bin"
+Environment="PYTHONPATH=%h/workspaces/task-monitor"
+EnvironmentFile=%h/.config/task-monitor/.env
+ExecStart=%h/workspaces/task-monitor/.venv/bin/python -m task_monitor.monitor_daemon
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+EOF
+
+# 4. Create configuration
+mkdir -p ~/.config/task-monitor
+cat > ~/.config/task-monitor/.env << 'EOF'
+ANTHROPIC_BASE_URL=https://open.bigmodel.cn/api/anthropic
+ANTHROPIC_MODEL=glm-4.7
+ANTHROPIC_AUTH_TOKEN=your_token_here
+EOF
+
+# 5. Create project registry
+cat > ~/.config/task-monitor/registered.json << 'EOF'
+{
+  "projects": {}
+}
+EOF
+
+# 6. Enable and start service
+systemctl --user daemon-reload
+systemctl --user enable task-monitor.service
+systemctl --user start task-monitor.service
 ```
 
 ## Dependencies
 
-The task monitor uses a **dedicated virtual environment** at `/opt/task-monitor/.venv/` for independence from project-specific environments.
+The task monitor uses the virtual environment at `/home/admin/workspaces/task-monitor/.venv/` for independence from project-specific environments.
 
 **Installed dependencies (in venv):**
 ```
