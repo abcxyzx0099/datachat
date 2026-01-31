@@ -49,7 +49,8 @@ This document provides quick access to reference materials used in the survey an
 | Document | Description | Location |
 |----------|-------------|----------|
 | **Data Flow** | High-level workflow design and phases | [`data-flow.md`](./data-flow.md) |
-| **System Architecture** | System components and deployment | [`system-architecture.md`](./system-architecture.md) |
+| **System Architecture** | System components and architecture | [`system-architecture.md`](./system-architecture.md) |
+| **Deployment** | Installation, environment configuration, and operations | [`deployment.md`](./deployment.md) |
 | **Technology Stack** | Technologies and versions | [`technology-stack.md`](./technology-stack.md) |
 | **Configuration** | Configuration options | [`configuration.md`](./configuration.md) |
 | **Usage** | User guide and examples | [`usage.md`](./usage.md) |

@@ -235,10 +235,60 @@ Examples:
 
 ---
 
+## 5. Usage Examples
+
+### 5.1 Custom Filtering Rules
+
+```python
+config = DEFAULT_CONFIG.copy()
+config["cardinality_threshold"] = 50  # Filter fewer variables
+config["filter_binary"] = False       # Keep binary variables
+config["filter_other_text"] = False   # Keep "other" fields
+```
+
+### 5.2 Adjust Statistical Thresholds
+
+```python
+config = DEFAULT_CONFIG.copy()
+config["significance_level"] = 0.01    # More strict (p < 0.01)
+config["min_cramers_v"] = 0.2          # Larger effect size required
+config["min_cell_count"] = 20          # Larger sample size required
+```
+
+### 5.3 Automatic Mode (No Human Review)
+
+```python
+config = DEFAULT_CONFIG.copy()
+config["enable_human_review"] = False
+```
+
+**Use when**: Testing, batch processing, trusted surveys.
+
+### 5.4 Apply Configuration via Command Line
+
+```bash
+# Basic analysis with default config
+python -m agent.graph --input data/input/survey.sav
+
+# Custom output directory
+python -m agent.graph --input data/input/survey.sav --output-dir results/
+
+# Disable human review (for testing)
+python -m agent.graph --input data/input/survey.sav --no-human-review
+
+# Resume from checkpoint
+python -m agent.graph --thread-id survey_001 --resume
+```
+
+---
+
 ## Related Documents
 
+- **[Deployment](./deployment.md)** - Installation, environment configuration, and operations
+- **[Web Interface](./web-interface.md)** - Agent Chat UI setup and usage
 - **[Project Structure](./project-structure.md)** - Complete directory structure, file paths, and output locations
 - **[Data Flow](./data-flow.md)** - Workflow design and steps
-- **[System Architecture](./system-architecture.md)** - System components and deployment
+- **[System Architecture](./system-architecture.md)** - System components and architecture
 - **[Technology Stack](./technology-stack.md)** - Technologies and versions
-- **[Usage](./usage.md)** - User guide and examples
+- **[Product Features and Usage](./product-features-and-usage.md)** - Product introduction for end users
+- **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation and Python API

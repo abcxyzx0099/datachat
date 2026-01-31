@@ -222,8 +222,9 @@ pydantic>=2.0.0
 
 ## Related Documents
 
+- **[Deployment](./deployment.md)** - Installation, environment configuration, and operations
 - **[Project Structure](./project-structure.md)** - Complete directory structure and file locations
 - **[Data Flow](./data-flow.md)** - Workflow design and step specifications
-- **[System Architecture](./system-architecture.md)** - System components and deployment
+- **[System Architecture](./system-architecture.md)** - System components and architecture
 - **[Configuration](./configuration.md)** - Configuration options
 - **[Useful References](./useful-references.md)** - External documentation links

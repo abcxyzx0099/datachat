@@ -2582,4 +2582,100 @@ def should_approve_table_specs(state: WorkflowState) -> str:
 
 ---
 
-For the concise workflow design and architecture overview, see [Survey Analysis Workflow Design](./SURVEY_ANALYSIS_WORKFLOW_DESIGN.md).
+## 8. Python API Usage
+
+### 8.1 Basic Workflow Execution
+
+```python
+from agent.graph import create_survey_analysis_graph
+from agent.config import DEFAULT_CONFIG
+
+# Create workflow
+graph = create_survey_analysis_graph()
+
+# Run analysis
+result = graph.invoke({
+    "spss_file_path": "data/input/survey.sav",
+    "config": DEFAULT_CONFIG
+})
+
+print(f"PowerPoint: {result['powerpoint_path']}")
+print(f"Dashboard: {result['html_dashboard_path']}")
+```
+
+### 8.2 Custom Configuration
+
+```python
+from agent.graph import create_survey_analysis_graph
+from agent.config import DEFAULT_CONFIG
+
+# Create custom configuration
+config = DEFAULT_CONFIG.copy()
+config["significance_level"] = 0.01
+config["min_cramers_v"] = 0.2
+config["enable_human_review"] = False
+
+# Run with custom config
+graph = create_survey_analysis_graph()
+result = graph.invoke({
+    "spss_file_path": "data/input/survey.sav",
+    "config": config
+})
+```
+
+### 8.3 Resume from Checkpoint
+
+```python
+from agent.graph import create_survey_analysis_graph
+
+# Create graph with checkpointer
+graph = create_survey_analysis_graph()
+
+# Resume from existing thread
+config = {
+    "configurable": {
+        "thread_id": "survey_001"
+    }
+}
+
+result = graph.invoke(None, config)
+```
+
+### 8.4 Handle Human Review Programmatically
+
+```python
+from agent.graph import create_survey_analysis_graph
+
+graph = create_survey_analysis_graph()
+
+# Start analysis (will interrupt at review points)
+result = graph.invoke({
+    "spss_file_path": "data/input/survey.sav",
+    "config": DEFAULT_CONFIG
+})
+
+# After interrupt, review and approve/reject
+# Get the current state
+state = graph.get_state(config)
+
+# Update with approval decision
+state.values["recoding_approved"] = True
+state.values["recoding_feedback"] = None
+
+# Or reject with feedback
+state.values["recoding_approved"] = False
+state.values["recoding_feedback"] = {
+    "issues": ["Grouping doesn't match survey intent"],
+    "suggestions": ["Group satisfaction questions by top-2-box"],
+    "specific_changes": {
+        "q5_satisfaction": "Use: Low(1-2), Medium(3), High(4-5)"
+    }
+}
+
+# Resume workflow
+result = graph.invoke(None, config)
+```
+
+---
+
+For the concise workflow design and architecture overview, see [Data Flow](./data-flow.md).

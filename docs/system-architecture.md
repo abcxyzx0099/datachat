@@ -1,6 +1,8 @@
 # System Architecture
 
-This document describes the system architecture, components, and deployment for the Survey Analysis & Visualization Workflow.
+This document describes the system architecture and components for the Survey Analysis & Visualization Workflow.
+
+> **For deployment, installation, and environment configuration**, see [Deployment](./deployment.md).
 
 ---
 
@@ -9,8 +11,7 @@ This document describes the system architecture, components, and deployment for 
 1. [System Overview](#1-system-overview)
 2. [Component Architecture](#2-component-architecture)
 3. [Module Organization](#3-module-organization)
-4. [Deployment Architecture](#4-deployment-architecture)
-5. [Error Handling & Recovery](#5-error-handling--recovery)
+4. [Error Handling & Recovery](#4-error-handling--recovery)
 
 ---
 
@@ -101,45 +102,7 @@ flowchart LR
 
 ---
 
-## 4. Deployment Architecture
-
-### 4.1 Deployment Modes
-
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| **Local** | Single-machine execution | Development, small-scale analysis |
-| **Containerized** | Docker container with PSPP pre-installed | Production, reproducible environments |
-| **Cloud** | Cloud-based deployment with remote PSPP service | Multi-user SaaS |
-
-### 4.2 Local Deployment Requirements
-
-| Requirement | Specification |
-|-------------|---------------|
-| **Python** | 3.10+ |
-| **PSPP** | 1.6+ (installed at `/usr/bin/pspp`) |
-| **Memory** | 4GB+ recommended |
-| **Disk** | 10GB+ for temporary files |
-| **API Keys** | OpenAI API key |
-
-### 4.3 Environment Setup
-
-```bash
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Install PSPP (Ubuntu/Debian)
-sudo apt-get install pspp
-
-# Configure environment
-export OPENAI_API_KEY="your-key-here"
-export PSPP_PATH="/usr/bin/pspp"
-```
-
-> **For deployment directory structure and file locations**, see [Project Structure](./project-structure.md).
-
----
-
-## 5. Error Handling & Recovery
+## 4. Error Handling & Recovery
 
 ### 5.1 Error Categories
 
@@ -171,10 +134,51 @@ export PSPP_PATH="/usr/bin/pspp"
 
 ---
 
+## 5. Troubleshooting
+
+### 6.1 Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| **PSPP not found** | PSPP not installed or wrong path | Install PSPP or set `PSPP_PATH` |
+| **API key error** | Missing/invalid OpenAI key | Check `.env` file |
+| **Memory error** | Large survey file | Increase available RAM |
+| **Validation loop** | LLM generates invalid output | Increase `max_self_correction_iterations` |
+| **Permission denied** | Cannot write to output directory | Check directory permissions |
+
+### 6.2 Error Messages
+
+| Error | Meaning | Action |
+|-------|---------|--------|
+| `Variable not found in metadata` | LLM referenced non-existent variable | Review will catch this; approve with feedback |
+| `PSPP syntax error` | Generated PSPP code is invalid | Check `output/pspp_logs.txt` |
+| `Insufficient sample size` | Cell count too small for chi-square | Table marked as invalid; continues |
+| `Max iterations exceeded` | Validation keeps failing | Review manually; provide guidance |
+
+### 6.3 Getting Help
+
+1. **Check logs**: `output/logs/` for detailed error messages
+2. **Review PSPP output**: `output/pspp_logs.txt` for PSPP errors
+3. **Verify input**: Ensure .sav file is valid SPSS format
+4. **Check configuration**: Verify all required config values are set
+
+### 6.4 Debug Mode
+
+```bash
+# Enable debug logging
+export LOG_LEVEL=DEBUG
+python -m agent.graph --input survey.sav
+```
+
+---
+
 ## Related Documents
 
+- **[Deployment](./deployment.md)** - Installation, environment configuration, and operations
+- **[Web Interface](./web-interface.md)** - Agent Chat UI setup and usage
 - **[Project Structure](./project-structure.md)** - Complete directory structure and file locations
 - **[Data Flow](./data-flow.md)** - Workflow design and step specifications
 - **[Technology Stack](./technology-stack.md)** - Technologies and versions
-- **[Configuration](./configuration.md)** - Configuration options and langgraph.json
-- **[Usage](./usage.md)** - User guide and examples
+- **[Configuration](./configuration.md)** - Configuration options and usage examples
+- **[Product Features and Usage](./product-features-and-usage.md)** - Product introduction for end users
+- **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation and Python API

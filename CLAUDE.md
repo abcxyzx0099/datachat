@@ -1,17 +1,15 @@
-# dataflow - SPSS Analyzer Web Application
+# DataChat - SPSS Analyzer Web Application
 
 
-## 2. Communication Rules
+## 1. Communication Rules
 
 - **Request Clarification**: The user is a non-native English speaker using voice input. Requests may contain grammatical errors or misinterpreted words. Infer the intended meaning from context and present a refined version using the pattern: `**Your Request**: "[Refined version]"`. Only seek clarification when intent cannot be determined.
 
 ---
 
-### 4.1 Temporary Files
+## 2. Temporary Files
 
 Scripts or files that are created for **one-time or temporary use** (e.g., migration scripts, test utilities, experimental code) should be placed in the `temp/` directory at the project root:
-
-```
 
 **Examples of temporary files:**
 - Database migration scripts (run once, then can be deleted)
@@ -27,7 +25,7 @@ Scripts or files that are created for **one-time or temporary use** (e.g., migra
 
 When a temporary file has served its purpose, it can be safely deleted.
 
-### 4.2 Git Branch Management
+## 3. Git Branch Management
 
 **CRITICAL RULE**: Always work on the `main` branch unless explicitly requested otherwise.
 
@@ -47,7 +45,7 @@ If the current branch is NOT `main` and no explicit request was made:
 1. Notify the user: "Currently on `{branch_name}`, switching back to `main`"
 2. Switch back: `git checkout main` or `git switch main`
 
-### 4.4 Documentation Conventions
+## 4. Documentation Conventions
 
 **CRITICAL RULE**: Never include version, change log, or date metadata in documentation files.
 
@@ -66,7 +64,7 @@ git log --follow docs/application-design/my-document.md
 git blame docs/application-design/my-document.md
 ```
 
-### 4.5 Archive Guidelines
+## 5. Archive Guidelines
 
 **Archive pattern**: `history/{document-type}/Archive-{description}-{timestamp}/`
 
@@ -85,7 +83,7 @@ Use the `material-archiver` skill for archiving development projects.
 
 ---
 
-## 8. MCP Servers Configuration
+## 6. MCP Servers Configuration
 
 This project uses 3 MCP (Model Context Protocol) servers configured in `.mcp.json`:
 
@@ -103,7 +101,7 @@ This project uses 3 MCP (Model Context Protocol) servers configured in `.mcp.jso
 
 ---
 
-## 9. External AI Assistance
+## 7. External AI Assistance
 
 When uncertain about information, solutions, or implementation approaches, the Development Agent can leverage the **`ask-the-deepseek`** skill to get recommendations and double-confirm decisions from another AI agent.
 

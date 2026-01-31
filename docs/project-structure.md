@@ -14,7 +14,6 @@ This document defines the complete project structure, directory organization, an
 6. [Configuration Files](#6-configuration-files)
 7. [File Naming Conventions](#7-file-naming-conventions)
 8. [Data Flow Between Directories](#8-data-flow-between-directories)
-9. [Deployment Directory Structure](#9-deployment-directory-structure)
 
 ---
 
@@ -300,61 +299,11 @@ DEFAULT_CONFIG = {
 
 ---
 
-## 9. Deployment Directory Structure
-
-### 9.1 Production Deployment Structure
-
-For production deployments (e.g., `/opt/survey-analyzer/`):
-
-```
-/opt/survey-analyzer/
-├── agent/                  # Application code
-├── config/                 # Configuration files
-├── output/                 # Generated outputs
-│   ├── logs/              # Execution logs
-│   ├── reviews/           # Human review documents
-│   └── temp/              # Temporary files
-├── data/
-│   └── input/             # Input .sav files
-├── checkpoints.db         # State persistence
-└── .env                   # Environment variables (production)
-```
-
-### 9.2 Development vs Production Paths
-
-| Item | Development | Production |
-|------|-------------|------------|
-| **Project Root** | `~/workspaces/datachat/` | `/opt/survey-analyzer/` |
-| **Input Data** | `data/input/` | `/var/lib/survey-analyzer/input/` |
-| **Output** | `output/` | `/var/lib/survey-analyzer/output/` |
-| **Checkpoints** | `checkpoints.db` | `/var/lib/survey-analyzer/checkpoints.db` |
-| **PSPP** | `/usr/bin/pspp` | `/usr/bin/pspp` |
-
-### 9.3 Environment-Specific Configuration
-
-**Development (.env)**:
-```bash
-OPENAI_API_KEY=sk-dev-key...
-OUTPUT_DIR=output
-TEMP_DIR=temp
-LOG_LEVEL=DEBUG
-```
-
-**Production (.env.production)**:
-```bash
-OPENAI_API_KEY=sk-prod-key...
-OUTPUT_DIR=/var/lib/survey-analyzer/output
-TEMP_DIR=/var/lib/survey-analyzer/temp
-LOG_LEVEL=INFO
-```
-
----
-
 ## Related Documents
 
 | Document | Content |
 |----------|---------|
-| **[Code Organization](./code-organization.md)** | Naming conventions, design principles |
+| **[Deployment](./deployment.md)** | Installation, environment configuration, and production deployment |
 | **[Configuration](./configuration.md)** | Configuration options and environment variables |
-| **[Data Flow](./data-flow.md)** - Workflow design and steps |
-| **[System Architecture](./system-architecture.md)** - System components and deployment |
+| **[Data Flow](./data-flow.md)** | Workflow design and steps |
+| **[System Architecture](./system-architecture.md)** | System components and architecture |
