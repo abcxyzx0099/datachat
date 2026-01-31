@@ -11,7 +11,7 @@
 3. [Step Specifications](#3-step-specifications)
 4. [Configuration](#4-configuration)
 5. [Technology Stack](#5-technology-stack)
-6. [Project Structure](#6-project-structure)
+6. [LangGraph Configuration](#6-langgraph-configuration)
 7. [Execution Example](#7-execution-example)
 8. [Error Handling & Recovery](#8-error-handling--recovery)
 9. [Future Enhancements](#9-future-enhancements)
@@ -1032,45 +1032,7 @@ PSPP is a free, open-source alternative to SPSS. Key features:
 
 ---
 
-## 6. Project Structure
-
-```
-survey-analysis-workflow/
-├── agent/
-│   ├── __init__.py
-│   ├── nodes.py              # LangGraph node implementations
-│   ├── edges.py              # Conditional edge routing
-│   ├── graph.py              # LangGraph StateGraph definition
-│   ├── state.py              # WorkflowState TypedDict definitions
-│   ├── validation.py         # Validation functions
-│   ├── prompts.py            # LLM prompt templates
-│   └── config.py             # Configuration management
-│
-├── data/
-│   └── input/                # Input .sav files
-│
-├── output/
-│   ├── pspp/                 # Generated PSPP syntax files
-│   ├── data/                 # Generated datasets (new_data.sav)
-│   ├── tables/               # Cross-table CSV/JSON exports
-│   ├── stats/                # Statistical analysis results
-│   ├── reports/              # PowerPoint and HTML outputs
-│   └── logs/                 # Execution logs
-│
-├── temp/                     # Temporary files
-├── tests/
-│   ├── test_nodes.py
-│   ├── test_validation.py
-│   └── test_integration.py
-├── docs/
-│   ├── workflow-architecture.md
-│   └── implementation-guide.md
-├── pyproject.toml
-├── README.md
-└── .env                      # API keys, paths
-```
-
-### 6.1 LangGraph Configuration (`langgraph.json`)
+## 6. LangGraph Configuration (`langgraph.json`)
 
 ```json
 {
