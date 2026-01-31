@@ -302,7 +302,7 @@ flowchart TD
 - **Traceability**: Complete audit trail of iterations, feedback, and decisions
 - **Clear separation**: Objective validation (Python) vs semantic validation (Human)
 
-> **For detailed implementation examples, prompts, and validation specifications, see [implementation-guide.md](./implementation-guide.md)**
+> **For detailed implementation examples, prompts, and validation specifications, see [implementation-specifications.md](./implementation-specifications.md)**
 
 ### 2.4 State Management
 
@@ -392,12 +392,12 @@ This creates clean architectural boundaries between the three stages:
 - **Stage 2 (Analysis)**: Steps 9-20 perform indicator generation, cross-table creation, and statistical analysis
 - **Stage 3 (Reporting)**: Steps 21-22 generate the final PowerPoint and HTML reports
 
-> **For complete TypedDict definitions and detailed field descriptions, see [implementation-guide.md](./implementation-guide.md#state-management)**
+> **For complete TypedDict definitions and detailed field descriptions, see [implementation-specifications.md](./implementation-specifications.md#state-management)**
 
 
 ## 3. Step Specifications
 
-This section provides concise specifications for each workflow step. For complete implementation details including full code examples, prompt templates, and validation logic, refer to [implementation-guide.md](./implementation-guide.md).
+This section provides concise specifications for each workflow step. For complete implementation details including full code examples, prompt templates, and validation logic, refer to [implementation-specifications.md](./implementation-specifications.md).
 
 ### Step 1: Extract .sav File
 
@@ -499,7 +499,7 @@ This section provides concise specifications for each workflow step. For complet
 3. Parse response into structured recoding rules
 4. Update state with rules and incremented iteration
 
-> **For detailed prompt templates and recoding rule structure, see [implementation-guide.md](./implementation-guide.md)**
+> **For detailed prompt templates and recoding rule structure, see [implementation-specifications.md](./implementation-specifications.md)**
 
 ### Step 5: Validate Recoding Rules (Python)
 
@@ -522,7 +522,7 @@ This section provides concise specifications for each workflow step. For complet
 5. Build validation report with errors/warnings
 6. Update state with validation results
 
-> **For detailed validation specifications and error examples, see [implementation-guide.md](./implementation-guide.md)**
+> **For detailed validation specifications and error examples, see [implementation-specifications.md](./implementation-specifications.md)**
 
 ### Step 6: Review Recoding Rules (Human)
 
@@ -571,7 +571,7 @@ This section provides concise specifications for each workflow step. For complet
 4. Write to .sps file
 5. Store syntax and file path in state
 
-> **For PSPP syntax examples and conversion logic, see [implementation-guide.md](./implementation-guide.md)**
+> **For PSPP syntax examples and conversion logic, see [implementation-specifications.md](./implementation-specifications.md)**
 
 ### Step 8: Execute PSPP Recoding
 
@@ -769,7 +769,7 @@ This section provides concise specifications for each workflow step. For complet
 4. Write to .sps file
 5. Store in state
 
-> **For PSPP CTABLES syntax examples, see [implementation-guide.md](./implementation-guide.md)**
+> **For PSPP CTABLES syntax examples, see [implementation-specifications.md](./implementation-specifications.md)**
 
 ### Step 16: Execute PSPP Tables
 
@@ -816,7 +816,7 @@ This section provides concise specifications for each workflow step. For complet
 3. Write script to file
 4. Store in state
 
-> **For complete statistics script implementation, see [implementation-guide.md](./implementation-guide.md)**
+> **For complete statistics script implementation, see [implementation-specifications.md](./implementation-specifications.md)**
 
 ### Step 18: Execute Python Statistics Script
 
@@ -935,7 +935,7 @@ This section provides concise specifications for each workflow step. For complet
 4. Add title slide with analysis summary
 5. Save presentation
 
-> **For PowerPoint generation implementation, see [implementation-guide.md](./implementation-guide.md)**
+> **For PowerPoint generation implementation, see [implementation-specifications.md](./implementation-specifications.md)**
 
 ### Step 22: Generate HTML Dashboard
 
@@ -962,7 +962,7 @@ This section provides concise specifications for each workflow step. For complet
 3. Embed CSS for styling
 4. Save HTML file
 
-> **For HTML dashboard implementation details, see [implementation-guide.md](./implementation-guide.md)**
+> **For HTML dashboard implementation details, see [implementation-specifications.md](./implementation-specifications.md)**
 
 ---
 
@@ -1039,28 +1039,28 @@ PSPP is a free, open-source alternative to SPSS. Key features:
   "graphs": {
     "survey_analysis": {
       "nodes": {
-        "extract_spss": "agent.nodes:extract_spss_node",
-        "transform_metadata": "agent.nodes:transform_metadata_node",
-        "filter_metadata": "agent.nodes:filter_metadata_node",
-        "generate_recoding_rules": "agent.nodes:generate_recoding_rules_node",
-        "validate_recoding_rules": "agent.nodes:validate_recoding_rules_node",
-        "review_recoding_rules": "agent.nodes:review_recoding_rules_node",
-        "generate_pspp_recoding_syntax": "agent.nodes:generate_pspp_recoding_syntax_node",
-        "execute_pspp_recoding": "agent.nodes:execute_pspp_recoding_node",
-        "generate_indicators": "agent.nodes:generate_indicators_node",
-        "validate_indicators": "agent.nodes:validate_indicators_node",
-        "review_indicators": "agent.nodes:review_indicators_node",
-        "generate_table_specifications": "agent.nodes:generate_table_specifications_node",
-        "validate_table_specifications": "agent.nodes:validate_table_specifications_node",
-        "review_table_specifications": "agent.nodes:review_table_specifications_node",
-        "generate_pspp_table_syntax": "agent.nodes:generate_pspp_table_syntax_node",
-        "execute_pspp_tables": "agent.nodes:execute_pspp_tables_node",
-        "generate_python_statistics_script": "agent.nodes:generate_python_statistics_script_node",
-        "execute_python_statistics_script": "agent.nodes:execute_python_statistics_script_node",
-        "generate_filter_list": "agent.nodes:generate_filter_list_node",
-        "apply_filter_to_tables": "agent.nodes:apply_filter_to_tables_node",
-        "generate_powerpoint": "agent.nodes:generate_powerpoint_node",
-        "generate_html_dashboard": "agent.nodes:generate_html_dashboard_node"
+        "extract_spss": "agent.nodes.phase1_extraction:extract_spss_node",
+        "transform_metadata": "agent.nodes.phase1_extraction:transform_metadata_node",
+        "filter_metadata": "agent.nodes.phase1_extraction:filter_metadata_node",
+        "generate_recoding_rules": "agent.nodes.phase2_recoding:generate_recoding_rules_node",
+        "validate_recoding_rules": "agent.nodes.phase2_recoding:validate_recoding_rules_node",
+        "review_recoding_rules": "agent.nodes.phase2_recoding:review_recoding_rules_node",
+        "generate_pspp_recoding_syntax": "agent.nodes.phase2_recoding:generate_pspp_recoding_syntax_node",
+        "execute_pspp_recoding": "agent.nodes.phase2_recoding:execute_pspp_recoding_node",
+        "generate_indicators": "agent.nodes.phase3_indicators:generate_indicators_node",
+        "validate_indicators": "agent.nodes.phase3_indicators:validate_indicators_node",
+        "review_indicators": "agent.nodes.phase3_indicators:review_indicators_node",
+        "generate_table_specifications": "agent.nodes.phase4_tables:generate_table_specifications_node",
+        "validate_table_specifications": "agent.nodes.phase4_tables:validate_table_specifications_node",
+        "review_table_specifications": "agent.nodes.phase4_tables:review_table_specifications_node",
+        "generate_pspp_table_syntax": "agent.nodes.phase4_tables:generate_pspp_table_syntax_node",
+        "execute_pspp_tables": "agent.nodes.phase4_tables:execute_pspp_tables_node",
+        "generate_python_statistics_script": "agent.nodes.phase5_statistics:generate_python_statistics_script_node",
+        "execute_python_statistics_script": "agent.nodes.phase5_statistics:execute_python_statistics_script_node",
+        "generate_filter_list": "agent.nodes.phase6_filtering:generate_filter_list_node",
+        "apply_filter_to_tables": "agent.nodes.phase6_filtering:apply_filter_to_tables_node",
+        "generate_powerpoint": "agent.nodes.phase7_powerpoint:generate_powerpoint_node",
+        "generate_html_dashboard": "agent.nodes.phase8_html_dashboard:generate_html_dashboard_node"
       },
       "edges": {
         "extract_spss": "transform_metadata",
@@ -1079,6 +1079,8 @@ PSPP is a free, open-source alternative to SPSS. Key features:
   }
 }
 ```
+
+**Note**: Node paths use the format `agent.nodes.{phase_file}:{node_function}` to reference the specific phase file containing each node implementation.
 
 ---
 
@@ -1230,7 +1232,7 @@ config = {
 
 This document provides the concise workflow architecture and step specifications. For complete implementation details, refer to:
 
-- **[implementation-guide.md](./implementation-guide.md)**
+- **[implementation-specifications.md](./implementation-specifications.md)**
   - Complete TypedDict state definitions
   - Full code implementations for all 22 steps
   - LLM prompt templates (initial, validation retry, human feedback variants)

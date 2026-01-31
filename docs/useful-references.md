@@ -49,6 +49,5 @@ This document provides quick access to reference materials used in the survey an
 | Document | Description | Location |
 |----------|-------------|----------|
 | **Workflow Architecture** | High-level workflow design and phases | [`workflow-architecture.md`](./workflow-architecture.md) |
-| **Implementation Guide** | Detailed implementation specifications | [`implementation-guide.md`](./implementation-guide.md) |
-| **Project Structure** | Directory organization and module layout | [`project-structure.md`](./project-structure.md) |
-| **Testing Strategy** | Test organization and coverage goals | [`testing-strategy.md`](./testing-strategy.md) |
+| **Implementation Specifications** | Detailed implementation specifications | [`implementation-specifications.md`](./implementation-specifications.md) |
+| **Code Organization** | Directory organization and module layout | [`code-organization.md`](./code-organization.md) |

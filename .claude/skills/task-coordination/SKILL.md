@@ -18,55 +18,55 @@ The Coordinator acts as the central orchestrator that:
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    TASK COORDINATION                            │
-│  - Receives task document (path/content)                        │
-│  - Spawns sub-agents via Task tool                              │
-│  - Tracks state and results                                     │
-│  - Makes routing decisions                                      │
-│  - Coordinates until task complete                              │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │
-        ┌───────────────────┴───────────────────┐
-        ▼                   ▼                   ▼
-┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│ INPUT         │   │ SUB-AGENT 1   │   │ SUB-AGENT 2   │
-│ Task Document │──▶│ Implementation│──▶│   Auditor     │
-│ (pre-created) │   │   (Worker)    │   │               │
-└───────────────┘   └───────────────┘   └───────────────┘
-                            │                   │
-                            └───────────────────┴───────────────────┘
-                                            │
-                                    ┌───────┴────────┐
-                                    │ Coordinator   │
-                                    │ Decision Loop │
-                                    └────────────────┘
+```mermaid
+flowchart TD
+    Coordinator["TASK COORDINATION<br/>- Receives task document path/content<br/>- Spawns sub-agents via Task tool<br/>- Tracks state and results<br/>- Makes routing decisions<br/>- Coordinates until task complete"]
+
+    Input["INPUT<br/>Task Document<br/>pre-created"]
+    Impl["SUB-AGENT 1<br/>Implementation<br/>Worker"]
+    Auditor["SUB-AGENT 2<br/>Auditor"]
+    Decision["Coordinator<br/>Decision Loop"]
+
+    Coordinator --> Input
+    Coordinator --> Impl
+    Coordinator --> Auditor
+
+    Input --> Impl
+    Impl --> Auditor
+    Auditor --> Decision
+
+    style Coordinator fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    style Input fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Impl fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style Auditor fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    style Decision fill:#fce4ec,stroke:#880e4f,stroke-width:2px
 ```
 
 ## Workflow Context
 
 This skill is designed to work with the **task document monitoring workflow**:
 
-```
-┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│ User            │─────▶│ task-document   │─────▶│ Monitor Daemon  │
-│ (creates task)  │      │ -generator      │      │ (watchdog)      │
-└─────────────────┘      └─────────────────┘      └────────┬────────┘
-                                                          │
-                                    Task document created │
-                                    (e.g., tasks/task-001.md)│
-                                                          ▼
-                                               ┌─────────────────────┐
-                                               │ Claude Agent SDK    │
-                                               │ invokes this skill │
-                                               └────────┬────────────┘
-                                                        │
-                                                        ▼
-                                              ┌─────────────────────┐
-                                              │ task-coordination   │
-                                              │ (this skill)        │
-                                              └─────────────────────┘
+```mermaid
+flowchart LR
+    User["User<br/>(creates task)"]
+    TaskGen["task-document<br/>generator"]
+    Monitor["Monitor Daemon<br/>(watchdog)"]
+    SDK["Claude Agent SDK<br/>invokes this skill"]
+    Coord["task-coordination<br/>(this skill)"]
+    Doc["Task document created<br/>(e.g., tasks/task-001.md)"]
+
+    User --> TaskGen
+    TaskGen --> Monitor
+    Monitor -->|detects| Doc
+    Doc --> SDK
+    SDK --> Coord
+
+    style User fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style TaskGen fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style Monitor fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    style Doc fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style SDK fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style Coord fill:#fff9c4,stroke:#f57f17,stroke-width:2px
 ```
 
 ## When to Use
@@ -187,25 +187,39 @@ Task(
 
 **CRITICAL:** After receiving audit results, the Coordinator **MUST** automatically iterate based on the verdict. Do NOT return results immediately if the audit fails - continue the workflow until approval or max iterations.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│         AUTOMATIC ITERATION PROTOCOL                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  WHILE iteration <= max_iterations:                         │
-│    1. Run Implementation Agent                             │
-│    2. Run Auditor Agent                                     │
-│    3. Check verdict:                                        │
-│       IF verdict == PASS OR APPROVED:                       │
-│         → RETURN final result (workflow complete)          │
-│       ELSE IF verdict == FAIL OR NEEDS_REVISION:           │
-│         → Analyze audit findings                           │
-│         → Increment iteration counter                      │
-│         → CONTINUE to next iteration (do NOT return)       │
-│    4. IF iteration > max_iterations:                       │
-│         → RETURN with final verdict and recommendations    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Start(["Start Iteration Loop"])
+    Init["iteration = 1"]
+    ImplAgent["Run Implementation Agent"]
+    AuditAgent["Run Auditor Agent"]
+    CheckVerdict{"Check verdict"}
+
+    PassReturn["RETURN final result<br/>(workflow complete)"]
+    AnalyzeFail["Analyze audit findings"]
+    Increment["Increment iteration counter"]
+    ContinueNextIter["CONTINUE to next iteration<br/>(do NOT return)"]
+    MaxIterCheck{"iteration > max_iterations?"}
+    MaxIterReturn["RETURN with final verdict<br/>and recommendations"]
+
+    Start --> Init
+    Init --> ImplAgent
+    ImplAgent --> AuditAgent
+    AuditAgent --> CheckVerdict
+
+    CheckVerdict -->|PASS or APPROVED| PassReturn
+    CheckVerdict -->|FAIL or NEEDS_REVISION| AnalyzeFail
+
+    AnalyzeFail --> Increment
+    Increment --> MaxIterCheck
+    MaxIterCheck -->|No| ContinueNextIter
+    ContinueNextIter --> ImplAgent
+    MaxIterCheck -->|Yes| MaxIterReturn
+
+    style CheckVerdict fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    style MaxIterCheck fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    style PassReturn fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style MaxIterReturn fill:#ffcdd2,stroke:#c62828,stroke-width:2px
 ```
 
 **Feedback Format for Next Iteration:**
@@ -372,55 +386,61 @@ The Coordinator returns a comprehensive result:
 
 ### Step-by-Step Execution
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    COORDINATOR EXECUTION FLOW                   │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Init ["1. INITIALIZE"]
+        ReadDoc["Read task document from file path or content"]
+        SetIter["Set iteration = 1"]
+        SetMaxIter["Set max_iterations = 3 default"]
+        InitArray["Initialize empty iterations array"]
+    end
 
-1. INITIALIZE
-   - Read task document (from file path or content)
-   - Set iteration = 1
-   - Set max_iterations = 3 (default)
-   - Initialize empty iterations array
+    subgraph IterLoop ["2. BEGIN ITERATION LOOP"]
+        direction TB
+        subgraph Phase2 ["PHASE 2: Implementation"]
+            P2_1["Spawn Implementation Agent"]
+            P2_2["Pass task document"]
+            P2_3["If iteration > 1: include audit feedback from previous"]
+            P2_4["Store implementation_result"]
+        end
 
-2. BEGIN ITERATION LOOP
+        subgraph Phase3 ["PHASE 3: Audit"]
+            P3_1["Spawn Auditor Agent"]
+            P3_2["Pass task document + implementation_result"]
+            P3_3["Store audit_result verdict, rating, issues"]
+        end
 
-   FOR each iteration from 1 to max_iterations:
+        subgraph CheckVerdictBlock ["CHECK VERDICT"]
+            VerdictCheck{"Verdict type"}
+            PassApproved["PASS or APPROVED"]
+            FailRevision["FAIL or NEEDS_REVISION"]
+            ReturnComplete["Store iteration data<br/>COMPLETED! Return final result<br/>STOP"]
+            CheckMaxIter{"iteration < max_iterations?"}
+            StoreIterData["Store iteration data"]
+            IncrementAndContinue["Increment iteration counter<br/>CONTINUE to next iteration go to PHASE 2"]
+            ReturnMaxReached["Max iterations reached<br/>return with final verdict<br/>STOP"]
+        end
+    end
 
-   ┌─────────────────────────────────────────────────────────────┐
-   │  PHASE 2: Implementation                                    │
-   │  → Spawn Implementation Agent                              │
-   │  → Pass task document                                      │
-   │  → If iteration > 1: include audit feedback from previous  │
-   │  → Store implementation_result                              │
-   └─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-   ┌─────────────────────────────────────────────────────────────┐
-   │  PHASE 3: Audit                                             │
-   │  → Spawn Auditor Agent                                      │
-   │  → Pass task document + implementation_result              │
-   │  → Store audit_result (includes verdict, rating, issues)    │
-   └─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-   ┌─────────────────────────────────────────────────────────────┐
-   │  CHECK VERDICT                                              │
-   │                                                             │
-   │  IF verdict == "PASS" OR "APPROVED":                        │
-   │    → Store iteration data                                   │
-   │    → COMPLETED! Return final result with all iterations     │
-   │    → (STOP - do not continue loop)                          │
-   │                                                             │
-   │  ELSE (verdict == "FAIL" OR "NEEDS_REVISION"):             │
-   │    → Store iteration data                                   │
-   │    → IF iteration < max_iterations:                         │
-   │        → Increment iteration counter                        │
-   │        → CONTINUE to next iteration (go to PHASE 2)         │
-   │      ELSE:                                                  │
-   │        → Max iterations reached, return with final verdict  │
-   │        → (STOP - loop ends)                                 │
-   └─────────────────────────────────────────────────────────────┘
+    Init --> IterLoop
+    ReadDoc --> SetIter --> SetMaxIter --> InitArray --> P2_1
+    P2_1 --> P2_2 --> P2_3 --> P2_4 --> P3_1
+    P3_1 --> P3_2 --> P3_3 --> VerdictCheck
+
+    VerdictCheck -->|PASS or APPROVED| PassApproved --> ReturnComplete
+    VerdictCheck -->|FAIL or NEEDS_REVISION| FailRevision --> StoreIterData
+    StoreIterData --> CheckMaxIter
+    CheckMaxIter -->|Yes| IncrementAndContinue --> P2_1
+    CheckMaxIter -->|No| ReturnMaxReached
+
+    style Init fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style Phase2 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style Phase3 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    style CheckVerdictBlock fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style VerdictCheck fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    style CheckMaxIter fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    style ReturnComplete fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+    style ReturnMaxReached fill:#ffcdd2,stroke:#c62828,stroke-width:3px
 ```
 
 ### Coordinator Implementation Pseudocode
