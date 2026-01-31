@@ -4,12 +4,11 @@
 
 1. [Overview](#1-overview)
 2. [Workflow Architecture](#2-workflow-architecture)
-   - 2.1 [High-Level Pipeline](#21-high-level-pipeline)
+   - 2.1 [Workflow Diagram](#21-workflow-diagram)
    - 2.2 [Phase Descriptions](#22-phase-descriptions)
    - 2.3 [Key Architectural Patterns](#23-key-architectural-patterns)
      - 2.3.1 [Three-Node Pattern](#231-three-node-pattern)
      - 2.3.2 [State Management](#232-state-management)
-   - 2.4 [Data Flow Diagram](#24-data-flow-diagram)
 3. [Step Specifications](#3-step-specifications)
 4. [Configuration](#4-configuration)
 5. [Technology Stack](#5-technology-stack)
@@ -49,109 +48,140 @@ Design and implement an automated workflow for market research survey data analy
 
 ## 2. Workflow Architecture
 
-### 2.1 High-Level Pipeline
+### 2.1 Workflow Diagram
+
+The workflow consists of **22 steps** organized into **8 phases** across **2 stages**:
 
 ```mermaid
 flowchart TD
-    subgraph P1["**Phase 1: Extraction & Preparation**<br/>Ingest raw .sav data and prepare metadata"]
-        S1["**Step 1**<br/>Extract .sav File<br/>(.sav file → raw data + metadata)"]
-        S2["**Step 2**<br/>Transform Metadata<br/>(section-based → variable-centered)"]
-        S3["**Step 3**<br/>Filter Metadata<br/>(remove variables not needing recoding)"]
-        RAW["**Output**<br/>RAW DATA & FILTERED METADATA"]
-        S1 --> S2
-        S2 --> S3
-        S3 -.-> RAW
+    %% Define styles
+    classDef inputFileStyle fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000
+    classDef traditionalStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef dataFileStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
+    classDef outputStyle fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+    classDef aiGenerateStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
+    classDef validationStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef reviewStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef stageLabelStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,stroke-dasharray: 5 5,color:#424242
+
+    %% STAGE 1: Data Preparation (Phases 1-2)
+    subgraph STAGE1[" "]
+        direction TB
+        stage1_label["**STAGE 1: Data Preparation**<br/>Extract raw data and enrich with new variables"]:::stageLabelStyle
+
+        %% Phase 1: Extraction & Preparation
+        subgraph P1["**Phase 1: Extraction & Preparation**"]
+            sav1(["📁 .sav File<br/>(Input)"]):::inputFileStyle
+            S1["**Step 1**<br/>Extract .sav File"]:::traditionalStyle
+            S2["**Step 2**<br/>Transform Metadata"]:::traditionalStyle
+            S3["**Step 3**<br/>Filter Metadata"]:::traditionalStyle
+            rawData["raw_data<br/>variable_centered_metadata<br/>filtered_metadata"]:::traditionalStyle
+        end
+
+        %% Phase 2: New Dataset Generation
+        subgraph P2["**Phase 2: New Dataset Generation**<br/>Three-Node Pattern (Steps 4-6)"]
+            S4["**Step 4**<br/>Generate Recoding Rules 🤖"]:::aiGenerateStyle
+            S5["**Step 5**<br/>Validate Recoding Rules ✓"]:::validationStyle
+            S6["**Step 6**<br/>Review Recoding Rules 👤"]:::reviewStyle
+            S7["**Step 7**<br/>Generate PSPP Syntax"]:::traditionalStyle
+            S8["**Step 8**<br/>Execute PSPP"]:::traditionalStyle
+            sav2(["📁 new_data.sav"]):::dataFileStyle
+            newMetadata["new_metadata<br/>(all variables)"]:::traditionalStyle
+        end
     end
 
-    subgraph P2["**Phase 2: New Dataset Generation**<br/>LLM generates, validates, and reviews recoding rules (3 separate steps)"]
-        S4["**Step 4: Generate Recoding Rules** 🤖<br/>(LLM creates rules)"]
-        S5["**Step 5: Validate Recoding Rules** ✓<br/>(Python checks rules)"]
-        S6["**Step 6: Review Recoding Rules** 👤<br/>(Human approves/refines)"]
-        S7["**Step 7**<br/>Generate PSPP Syntax<br/>(convert rules to PSPP)"]
-        S8["**Step 8**<br/>Execute PSPP<br/>(apply transformations)"]
-        NEW_DATA_SAV["**Output 1**<br/>NEW_DATA.SAV"]
-        NEW_META["**Output 2**<br/>NEW_METADATA<br/>(all variables, via pyreadstat)"]
+    %% STAGE 2: Analysis & Reporting (Phases 3-8)
+    subgraph STAGE2[" "]
+        direction TB
+        stage2_label["**STAGE 2: Analysis & Reporting**<br/>Generate indicators, tables, statistics, and reports"]:::stageLabelStyle
 
-        S4 --> S5
-        S5 -->|Valid| S6
-        S5 -->|Invalid<br/>(under max retries)| S4
-        S6 -->|Approve| S7
-        S6 -->|Reject/Modify| S4
-        S7 --> S8
-        S8 -.-> NEW_DATA_SAV
-        NEW_DATA_SAV ==>|pyreadstat| NEW_META
+        %% Phase 3: Indicator Generation
+        subgraph P3["**Phase 3: Indicator Generation**<br/>Three-Node Pattern (Steps 9-11)"]
+            S9["**Step 9**<br/>Generate Indicators 🤖"]:::aiGenerateStyle
+            S10["**Step 10**<br/>Validate Indicators ✓"]:::validationStyle
+            S11["**Step 11**<br/>Review Indicators 👤"]:::reviewStyle
+        end
+
+        %% Phase 4: Cross-Table Generation
+        subgraph P4["**Phase 4: Cross-Table Generation**<br/>Three-Node Pattern (Steps 12-14)"]
+            S12["**Step 12**<br/>Generate Table Specs 🤖"]:::aiGenerateStyle
+            S13["**Step 13**<br/>Validate Table Specs ✓"]:::validationStyle
+            S14["**Step 14**<br/>Review Table Specs 👤"]:::reviewStyle
+            S15["**Step 15**<br/>Generate PSPP Syntax"]:::traditionalStyle
+            S16["**Step 16**<br/>Execute PSPP"]:::traditionalStyle
+            crossTableFiles(["📁 cross_table<br/>(.csv + .json)"]):::dataFileStyle
+        end
+
+        %% Phase 5: Statistical Analysis
+        subgraph P5["**Phase 5: Statistical Analysis**"]
+            S17["**Step 17**<br/>Generate Python Stats Script"]:::traditionalStyle
+            S18["**Step 18**<br/>Execute Python Stats Script"]:::traditionalStyle
+            statsSummary["statistical_analysis_summary<br/>(Chi-square, Cramer's V)"]:::traditionalStyle
+        end
+
+        %% Phase 6: Significant Tables Selection
+        subgraph P6["**Phase 6: Significant Tables Selection**"]
+            S19["**Step 19**<br/>Generate Filter List"]:::traditionalStyle
+            S20["**Step 20**<br/>Apply Filter to Tables"]:::traditionalStyle
+            sigTables["significant_tables<br/>(filtered)"]:::traditionalStyle
+        end
+
+        %% Phase 7: Executive Summary Presentation
+        subgraph P7["**Phase 7: Executive Summary**"]
+            S21["**Step 21**<br/>Generate PowerPoint"]:::traditionalStyle
+            ppt(["📊 .pptx"]):::outputStyle
+        end
+
+        %% Phase 8: Full Report Dashboard
+        subgraph P8["**Phase 8: Full Report**"]
+            S22["**Step 22**<br/>Generate HTML Dashboard"]:::traditionalStyle
+            html(["🌐 .html"]):::outputStyle
+        end
     end
 
-    subgraph P3["**Phase 3: Indicator Generation**<br/>LLM generates, validates, and reviews indicators (3 separate steps)"]
-        S9["**Step 9: Generate Indicators** 🤖<br/>(LLM groups variables)"]
-        S10["**Step 10: Validate Indicators** ✓<br/>(Python checks structure)"]
-        S11["**Step 11: Review Indicators** 👤<br/>(Human approves/refines)"]
-        INDICATORS["**Output**<br/>INDICATORS (SEMANTIC GROUPS)"]
+    %% Data flow edges - Stage 1 (Data Preparation)
+    sav1 -->|Step 1| S1
+    S1 --> S2
+    S2 --> S3
+    S3 --> rawData
+    rawData ==>|Step 4| S4
+    S4 -->|Step 5| S5
+    S5 -->|Valid| S6
+    S5 -.->|Invalid| S4
+    S6 -->|Approve| S7
+    S6 -.->|Reject| S4
+    S7 --> S8
+    sav1 ==>|Step 8<br/>input| sav2
+    S8 -.->|Step 8<br/>syntax| sav2
+    sav2 ==>|pyreadstat| newMetadata
 
-        S9 --> S10
-        S10 -->|Valid| S11
-        S10 -->|Invalid<br/>(under max retries)| S9
-        S11 -->|Approve| S12
-        S11 -->|Reject/Modify| S9
-    end
-
-    subgraph P4["**Phase 4: Cross-Table Generation**<br/>LLM generates, validates, and reviews table specs, then generates PSPP syntax"]
-        S12["**Step 12: Generate Table Specs** 🤖<br/>(LLM defines tables)"]
-        S13["**Step 13: Validate Table Specs** ✓<br/>(Python checks references)"]
-        S14["**Step 14: Review Table Specs** 👤<br/>(Human approves/refines)"]
-        S15["**Step 15**<br/>Generate PSPP Syntax<br/>(convert specs to PSPP)"]
-        S16["**Step 16**<br/>Execute PSPP<br/>(generate CSV/JSON)"]
-        CROSSTAB["**Output**<br/>CROSS TABLES (.csv + .json)"]
-
-        S12 --> S13
-        S13 -->|Valid| S14
-        S13 -->|Invalid<br/>(under max retries)| S12
-        S14 -->|Approve| S15
-        S14 -->|Reject/Modify| S12
-        S15 --> S16
-        S16 -.-> CROSSTAB
-    end
-
-    subgraph P5["**Phase 5: Statistical Analysis**<br/>Compute Chi-square and effect sizes"]
-        S17["**Step 17**<br/>Generate Python Stats Script<br/>(create script)"]
-        S18["**Step 18**<br/>Execute Python Stats Script<br/>(run analysis)"]
-        STATS["**Output**<br/>STATISTICAL SUMMARY<br/>(Chi-square, Cramer's V)"]
-
-        S17 --> S18
-        S18 -.-> STATS
-    end
-
-    subgraph P6["**Phase 6: Significant Tables Selection**<br/>Filter tables by statistical significance"]
-        S19["**Step 19**<br/>Generate Filter List<br/>(create filter criteria)"]
-        S20["**Step 20**<br/>Apply Filter to Tables<br/>(select significant)"]
-        FILTERED["**Output**<br/>SIGNIFICANT TABLES<br/>(filtered results)"]
-
-        S19 --> S20
-        S20 -.-> FILTERED
-    end
-
-    subgraph P7["**Phase 7: Executive Summary**<br/>Generate PowerPoint presentation"]
-        S21["**Step 21**<br/>Generate PowerPoint<br/>(create PPT)"]
-        PPT["**Output**<br/>PRESENTATION (.pptx)"]
-
-        S21 -.-> PPT
-    end
-
-    subgraph P8["**Phase 8: Full Report**<br/>Generate HTML dashboard"]
-        S22["**Step 22**<br/>Generate HTML Dashboard<br/>(create HTML)"]
-        HTML["**Output**<br/>DASHBOARD (.html)"]
-
-        S22 -.-> HTML
-    end
-
-    %% Phase connections
-    RAW ==> S4
-    NEW_META ==> S9
-    INDICATORS ==> S12
-    CROSSTAB ==> S17
-    STATS ==> S19
-    FILTERED ==> S21
-    CROSSTAB ==> S22
+    %% Data flow edges - Stage 2 (Analysis & Reporting)
+    newMetadata ==>|Step 9| S9
+    S9 -->|Step 10| S10
+    S10 -->|Valid| S11
+    S10 -.->|Invalid| S9
+    S11 -->|Approve| S12
+    S11 -.->|Reject| S9
+    S12 -->|Step 13| S13
+    S13 -->|Valid| S14
+    S13 -.->|Invalid| S12
+    S14 -->|Approve| S15
+    S14 -.->|Reject| S12
+    S15 --> S16
+    sav2 ==>|Step 16| crossTableFiles
+    S16 -.->|Step 16<br/>syntax| crossTableFiles
+    crossTableFiles ==>|Step 17| S17
+    S17 --> S18
+    crossTableFiles ==>|Step 18<br/>data| S18
+    S18 --> statsSummary
+    statsSummary ==>|Step 19| S19
+    S19 --> S20
+    crossTableFiles ==>|Step 20<br/>data| S20
+    S20 --> sigTables
+    sigTables -->|Step 21| S21
+    S21 --> ppt
+    crossTableFiles ==>|Step 22| S22
+    S22 --> html
 
     %% Styling
     style P1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
@@ -163,6 +193,34 @@ flowchart TD
     style P7 fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px
     style P8 fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px
 ```
+
+**Legend:**
+
+| Style | Meaning | Examples |
+|-------|---------|----------|
+| 📦 **Stage Label** | High-level workflow stage grouping | Stage 1: Data Preparation, Stage 2: Analysis & Reporting |
+| 🔵 **Input File** | Original input data file | `.sav` file |
+| 🟢 **Deterministic Processing** | Procedural code (Python, PSPP, scipy) | Steps 1-3, 7-8, 15-22 |
+| 🔵 **LLM-Orchestrated Generation** | LLM generates artifact (can iterate on feedback) | Steps 4, 9, 12 |
+| 🟠 **Validation (Python)** | Objective validation checks (syntax, references, constraints) | Steps 5, 10, 13 |
+| 🟣 **Review (Human)** | Semantic quality review through LangGraph interrupt | Steps 6, 11, 14 |
+| ⚪ **Data File** | Survey data files generated by PSPP/Python | `new_data.sav`, `cross_table.csv` + `.json` |
+| 🟢 **Output Files** | Final presentation outputs | `.pptx`, `.html` |
+
+**Line Styles:**
+- `-->` Solid line: Forward flow to next step
+- `==>` Thick line: Major data flow between phases/stages
+- `-.->` Dotted line: Feedback loop (validation/review triggering regeneration)
+
+**Key Observations:**
+
+1. **Two-Stage Architecture**: The workflow is organized into two distinct stages:
+   - **Stage 1 (Data Preparation)**: Phases 1-2 transform raw .sav data into an analysis-ready dataset (`new_data.sav`) with complete metadata (`new_metadata`)
+   - **Stage 2 (Analysis & Reporting)**: Phases 3-8 consume the analysis-ready dataset to generate indicators, tables, statistics, and reports
+
+2. **Three-Node Pattern**: Steps 4-6, 9-11, and 12-14 follow the Generate → Validate → Review pattern for AI-orchestrated artifacts
+
+3. **Clean Dependency Chain**: Stage 2 depends only on Stage 1 outputs (`new_data.sav` + `new_metadata`), not on intermediate Phase 1 artifacts
 
 ### 2.2 Phase Descriptions
 
@@ -246,7 +304,7 @@ flowchart TD
 - **Traceability**: Complete audit trail of iterations, feedback, and decisions
 - **Clear separation**: Objective validation (Python) vs semantic validation (Human)
 
-> **For detailed implementation examples, prompts, and validation specifications, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md)**
+> **For detailed implementation examples, prompts, and validation specifications, see [implementation-guide.md](./implementation-guide.md)**
 
 #### 2.3.2 State Management
 
@@ -335,184 +393,10 @@ This creates a clean architectural boundary: **Stage 1** (Steps 1-8) produces th
 
 > **For complete TypedDict definitions and detailed field descriptions, see [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md#state-management)**
 
-### 2.4 Data Flow Diagram
-
-```mermaid
-flowchart TD
-    %% Define styles
-    classDef inputFileStyle fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000
-    classDef traditionalStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef aiStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
-    classDef dataFileStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
-    classDef outputStyle fill:#c8e6c9,stroke:#1b5e20,stroke-width:3px,color:#000
-    classDef aiGenerateStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
-    classDef validationStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-    classDef reviewStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
-    classDef stageLabelStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,stroke-dasharray: 5 5,color:#424242
-
-    %% STAGE 1: Data Preparation (Phases 1-2)
-    subgraph STAGE1[" "]
-        direction TB
-        stage1_label["**STAGE 1: Data Preparation**<br/>Extract raw data and enrich with new variables"]:::stageLabelStyle
-
-        %% Phase 1: Extraction & Preparation
-        subgraph P1["Phase 1: Extraction & Preparation"]
-            sav1(["📁 .sav File<br/>(Input)"]):::inputFileStyle
-            rawData["raw_data<br/>(DataFrame)"]:::traditionalStyle
-            origMeta["original_metadata"]:::traditionalStyle
-            varMeta["variable_centered_metadata"]:::traditionalStyle
-            filtMeta["filtered_metadata"]:::traditionalStyle
-            filtOut["filtered_out_variables"]:::traditionalStyle
-        end
-
-        %% Phase 2: New Dataset Generation
-        subgraph P2["Phase 2: New Dataset Generation"]
-            recodingGen["recoding_rules<br/>(Generate) 🤖"]:::aiGenerateStyle
-            recodingVal["recoding_rules<br/>(Validate) ✓"]:::validationStyle
-            recodingRev["recoding_rules<br/>(Review) 👤"]:::reviewStyle
-            recodingValidation["recoding_validation"]:::traditionalStyle
-            psppRecodeSyntax["pspp_recoding_syntax<br/>(.sps)"]:::traditionalStyle
-            sav2(["📁 new_data.sav"]):::dataFileStyle
-            newMetadata["new_metadata<br/>(all variables)"]:::traditionalStyle
-        end
-    end
-
-    %% STAGE 2: Analysis & Reporting (Phases 3-8)
-    subgraph STAGE2[" "]
-        direction TB
-        stage2_label["**STAGE 2: Analysis & Reporting**<br/>Generate indicators, tables, statistics, and reports"]:::stageLabelStyle
-
-        %% Phase 3: Indicator Generation
-        subgraph P3["Phase 3: Indicator Generation"]
-            indGen["indicators<br/>(Generate) 🤖"]:::aiGenerateStyle
-            indVal["indicators<br/>(Validate) ✓"]:::validationStyle
-            indRev["indicators<br/>(Review) 👤"]:::reviewStyle
-        end
-
-        %% Phase 4: Cross-Table Generation
-        subgraph P4["Phase 4: Cross-Table Generation"]
-            tabGen["table_specifications<br/>(Generate) 🤖"]:::aiGenerateStyle
-            tabVal["table_specifications<br/>(Validate) ✓"]:::validationStyle
-            tabRev["table_specifications<br/>(Review) 👤"]:::reviewStyle
-            psppTableSyntax["pspp_table_syntax<br/>(.sps)"]:::traditionalStyle
-            crossTableFiles(["📁 cross_table<br/>(.csv + .json)"]):::dataFileStyle
-        end
-
-        %% Phase 5: Statistical Analysis
-        subgraph P5["Phase 5: Statistical Analysis"]
-            pythonStatsScript["python_stats_script<br/>(.py)"]:::traditionalStyle
-            allTables["all_small_tables<br/>(with Chi-Square)"]:::traditionalStyle
-            statsSummary["statistical_analysis_summary<br/>(.json)"]:::traditionalStyle
-        end
-
-        %% Phase 6: Significant Tables Selection
-        subgraph P6["Phase 6: Significant Tables Selection"]
-            filterList["filter_list<br/>(.json)"]:::traditionalStyle
-            sigTables["significant_tables<br/>(filtered)"]:::traditionalStyle
-        end
-
-        %% Phase 7: Executive Summary Presentation
-        subgraph P7["Phase 7: Executive Summary Presentation"]
-            ppt(["📊 .pptx<br/>(significant tables)"]):::outputStyle
-        end
-
-        %% Phase 8: Full Report Dashboard
-        subgraph P8["Phase 8: Full Report Dashboard"]
-            html(["🌐 .html<br/>(all tables)"]):::outputStyle
-        end
-    end
-
-    %% Data flow edges - Stage 1 (Data Preparation)
-    sav1 -->|Step 1| rawData
-    sav1 -->|Step 1| origMeta
-    origMeta -->|Step 2| varMeta
-    varMeta -->|Step 3| filtMeta
-    varMeta -->|Step 3| filtOut
-    filtMeta -->|Step 4| recodingGen
-    recodingGen -->|Step 5| recodingVal
-    recodingVal -->|Valid| recodingRev
-    recodingVal -.->|Invalid| recodingGen
-    recodingRev -.->|Reject| recodingGen
-    recodingVal -->|Validated| recodingValidation
-    recodingRev -->|Step 7| psppRecodeSyntax
-    sav1 ==>|Step 8<br/>input| sav2
-    psppRecodeSyntax -.->|Step 8<br/>syntax| sav2
-    sav2 ==>|pyreadstat<br/>extract| newMetadata
-
-    %% Data flow edges - Stage 2 (Analysis & Reporting)
-    newMetadata ==>|Phase 3<br/>Step 9| indGen
-    indGen -->|Step 10| indVal
-    indVal -->|Valid| indRev
-    indVal -.->|Invalid| indGen
-    indRev -.->|Reject| indGen
-    indRev -->|Phase 4<br/>Step 12| tabGen
-    tabGen -->|Step 13| tabVal
-    tabVal -->|Valid| tabRev
-    tabVal -.->|Invalid| tabGen
-    tabRev -.->|Reject| tabGen
-    tabRev -->|Step 15| psppTableSyntax
-    sav2 ==>|Step 16<br/>input| crossTableFiles
-    psppTableSyntax -.->|Step 16<br/>syntax| crossTableFiles
-    crossTableFiles ==>|Step 17<br/>generate| pythonStatsScript
-    pythonStatsScript ==>|Step 18<br/>execute| allTables
-    crossTableFiles ==>|Step 18<br/>data| allTables
-    allTables --> statsSummary
-    statsSummary ==>|Step 19<br/>generate| filterList
-    filterList ==>|Step 20<br/>apply| sigTables
-    crossTableFiles ==>|Step 20<br/>data| sigTables
-    sigTables -->|Phase 7<br/>Step 21| ppt
-    crossTableFiles ==>|Phase 8<br/>Step 22| html
-```
-
-**Legend:**
-
-| Style | Meaning | Examples |
-|-------|---------|----------|
-| 📦 **Stage Label** | High-level workflow stage grouping | Stage 1: Data Preparation, Stage 2: Analysis & Reporting |
-| 🔵 **Input File** | Original input data file | `.sav` file |
-| 🟢 **Deterministic Processing** | Procedural code (Python, PSPP, scipy) | `raw_data`, `new_metadata`, `pspp_recoding_syntax`, `all_small_tables`, `statistical_analysis_summary`, `filter_list`, `.pptx`, `.html` |
-| 🔵 **LLM-Orchestrated Generation** | LLM generates artifact (can iterate on feedback) | `recoding_rules (Generate)`, `indicators (Generate)`, `table_specifications (Generate)` |
-| 🟠 **Validation (Python)** | Objective validation checks (syntax, references, constraints) | `recoding_rules (Validate)`, `indicators (Validate)`, `table_specifications (Validate)` |
-| 🟣 **Review (Human)** | Semantic quality review through LangGraph interrupt | `recoding_rules (Review)`, `indicators (Review)`, `table_specifications (Review)` |
-| ⚪ **Data File (.sav + .csv + .json)** | Survey data files generated by PSPP/Python | `new_data.sav`, `new_metadata` (all variables), `cross_table.csv` + `.json` |
-| 🟢 **Python Script** | Generated Python scripts for statistical analysis | `python_stats_script.py` |
-| ⚡ **Feedback Loop** | Iteration edges (dotted lines) | Validation or Review feedback triggering regeneration |
-
-**Line Styles:**
-
-| Style | Meaning |
-|-------|---------|
-| `-->` Solid line | Forward flow to next step |
-| `==>` Thick line | Major data flow between phases/stages |
-| `-.->` Dotted line | Feedback loop or secondary data flow |
-
-**Key Observations:**
-
-1. **Two-Stage Architecture**: The workflow is organized into two distinct stages:
-   - **Stage 1 (Data Preparation)**: Phases 1-2 transform raw .sav data into an analysis-ready dataset (`new_data.sav`) with complete metadata (`new_metadata`)
-   - **Stage 2 (Analysis & Reporting)**: Phases 3-8 consume the analysis-ready dataset to generate indicators, tables, statistics, and reports
-
-2. **LLM-Orchestrated Steps with Separate Validation/Review Steps**: Steps 4-6 (Recoding Rules), 9-11 (Indicators), and 12-14 (Table Specifications) use the three-node pattern as separate workflow steps
-
-3. **Deterministic Processing** (13 steps): All other steps use procedural Python/PSPP processing
-
-4. **Hybrid Approach**: The workflow combines LLMs for semantic understanding with procedural code for statistical rigor
-
-5. **Step 17 generates Python script**: Creates `python_stats_script.py` from cross-table specifications; Step 18 executes it with `cross_table.csv` and `cross_table.json` to compute Chi-square statistics
-
-6. **Dashed lines** (`.-.->`): Indicate syntax/control flow (not direct data dependency)
-
-7. **Phase 2 produces the analysis-ready boundary**: `new_data.sav` (generated by PSPP) contains original variables plus newly created variables. `new_metadata` is extracted from this file via pyreadstat and contains descriptions for ALL variables. These two outputs eliminate Phase 1 dependencies for all subsequent phases.
-
-8. **Phase 6 creates an audit trail**: Step 19 generates filter criteria from statistical summary, then Step 20 applies it to data - this allows inspection of the filter list before applying it and makes debugging easier
-
-9. **Clean Dependency Chain**: Stage 2 depends only on Stage 1 outputs (`new_data.sav` + `new_metadata`), not on intermediate Phase 1 artifacts like `variable_centered_metadata`
-
----
 
 ## 3. Step Specifications
 
-This section provides concise specifications for each workflow step. For complete implementation details including full code examples, prompt templates, and validation logic, refer to [Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md).
+This section provides concise specifications for each workflow step. For complete implementation details including full code examples, prompt templates, and validation logic, refer to [implementation-guide.md](./implementation-guide.md).
 
 ### Step 1: Extract .sav File
 
@@ -1383,7 +1267,7 @@ config = {
 
 This document provides the concise workflow architecture and step specifications. For complete implementation details, refer to:
 
-- **[Survey Analysis Detailed Specifications](./SURVEY_ANALYSIS_DETAILED_SPECIFICATIONS.md)**
+- **[implementation-guide.md](./implementation-guide.md)**
   - Complete TypedDict state definitions
   - Full code implementations for all 22 steps
   - LLM prompt templates (initial, validation retry, human feedback variants)
