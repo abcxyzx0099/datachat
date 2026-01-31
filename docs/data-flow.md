@@ -332,7 +332,7 @@ The workflow maintains a single evolving state object (`WorkflowState`) organize
 
 | Document | Content |
 |----------|---------|
-| **[implementation-specifications.md](./implementation-specifications.md)** | Detailed implementation with code examples and Python API |
+| **[implementation-specifications.md](./implementation-specifications.md)** | Detailed implementation with code examples |
 | **[project-structure.md](./project-structure.md)** | Complete directory structure and file locations |
 | **[code-organization.md](./code-organization.md)** | Naming conventions and design principles |
 | **[system-architecture.md](./system-architecture.md)** | System components, deployment, and troubleshooting |

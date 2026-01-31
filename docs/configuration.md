@@ -291,4 +291,4 @@ python -m agent.graph --thread-id survey_001 --resume
 - **[System Architecture](./system-architecture.md)** - System components and architecture
 - **[Technology Stack](./technology-stack.md)** - Technologies and versions
 - **[Product Features and Usage](./product-features-and-usage.md)** - Product introduction for end users
-- **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation and Python API
+- **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation details
