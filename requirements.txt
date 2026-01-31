@@ -1,3 +1,7 @@
+# =============================================================================
+# Existing Dependencies
+# =============================================================================
+
 # Claude Agent SDK - core library
 # Note: Message types (AssistantMessage, ResultMessage, TextBlock) are NOT directly exported
 # Use hasattr() checks instead of isinstance() for message type detection
@@ -11,3 +15,31 @@ aiohttp>=3.9.0
 
 # Data validation and models
 pydantic>=2.0.0
+
+# =============================================================================
+# Survey Analysis Workflow Dependencies
+# =============================================================================
+
+# LangGraph - Workflow orchestration
+langgraph>=0.2.0
+langchain-openai>=0.2.0
+
+# LLM Client
+openai>=1.0.0
+
+# Data processing
+pyreadstat>=1.2.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Statistical analysis
+scipy>=1.10.0
+
+# Output generation
+python-pptx>=1.0.0
+
+# Validation
+jsonschema>=4.20.0
+
+# Environment variables
+python-dotenv>=1.0.0

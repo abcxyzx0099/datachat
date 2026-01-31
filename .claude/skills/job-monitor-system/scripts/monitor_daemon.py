@@ -19,7 +19,7 @@ REGISTRY_FILE = Path.home() / ".config" / "job-monitor" / "registered.json"
 
 
 class MultiProjectMonitor:
-    """Monitor multiple projects, each with their own jobs/items directory."""
+    """Monitor multiple projects, each with their own jobs/pending directory."""
 
     def __init__(self):
         self.projects = {}  # {project_name: {path, executor, queue, observer, event_handler}}
@@ -48,7 +48,7 @@ class MultiProjectMonitor:
             return False
 
         # Create directories
-        tasks_dir = project_path / "jobs" / "items"
+        tasks_dir = project_path / "jobs" / "pending"
         results_dir = project_path / "jobs" / "results"
         logs_dir = project_path / "jobs" / "logs"
         state_dir = project_path / "jobs" / "state"
@@ -121,7 +121,7 @@ class MultiProjectMonitor:
 
         # Create observers and event handlers with access to event loop
         for name, project in self.projects.items():
-            tasks_dir = project["path"] / "jobs" / "items"
+            tasks_dir = project["path"] / "jobs" / "pending"
             event_handler = JobFileHandler(
                 project["queue"],
                 name,
@@ -137,7 +137,7 @@ class MultiProjectMonitor:
         # Start all observers
         for name, project in self.projects.items():
             project["observer"].start()
-            logging.info(f"Observer started for '{name}': {project['path'] / 'jobs' / 'items'}")
+            logging.info(f"Observer started for '{name}': {project['path'] / 'jobs' / 'pending'}")
 
         # Start queue processors for all projects
         await self._run_all_queues()

@@ -14,7 +14,7 @@ set -e
 
 # Configuration
 PROJECT_ROOT="${PROJECT_ROOT:-/home/admin/workspaces/datachat}"
-JOBS_DIR="${JOBS_DIR:-${PROJECT_ROOT}/jobs/items}"
+JOBS_DIR="${JOBS_DIR:-${PROJECT_ROOT}/jobs/pending}"
 JOB_PREFIX="job"
 
 # Get temp file path from argument

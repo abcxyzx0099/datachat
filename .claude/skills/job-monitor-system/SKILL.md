@@ -7,7 +7,7 @@ description: "Create and configure the multi-project job monitoring system with 
 
 ## Quick Overview
 
-Single service that monitors multiple projects, watching each project's `/jobs/items/` directory and executing jobs **sequentially within each project** (but **parallel across projects**).
+Single service that monitors multiple projects, watching each project's `/jobs/pending/` directory and executing jobs **sequentially within each project** (but **parallel across projects**).
 
 ## Execution Model
 
@@ -109,7 +109,7 @@ job-monitor queue
 ```
 {project-root}/
 ├── jobs/
-│   ├── items/         # Job documents (watched by monitor)
+│   ├── pending/       # Job documents (watched by monitor)
 │   ├── results/       # Execution results (JSON)
 │   ├── state/         # Queue state per project
 │   └── logs/          # Monitor logs per project
@@ -162,7 +162,7 @@ WantedBy=default.target
 2. Start service → job-monitor.service
                           ↓
 3. For each project:
-   - Watchdog monitors {project}/jobs/items/
+   - Watchdog monitors {project}/jobs/pending/
    - Jobs queued in project-specific FIFO queue
    - Sequential execution within project
    - Results saved to {project}/jobs/results/
@@ -201,7 +201,7 @@ WantedBy=default.target
 
 {project-root}/                    # Per-project (can be multiple)
 └── jobs/
-    ├── items/                     # Job documents
+    ├── pending/                   # Job documents
     ├── results/                   # Execution results
     ├── state/                     # Queue state
     └── logs/                      # Log files
@@ -234,7 +234,7 @@ WantedBy=default.target
 
 ```bash
 # Create required directories manually
-mkdir -p /path/to/project/jobs/{items,results,state,logs}
+mkdir -p /path/to/project/jobs/{pending,results,state,logs}
 
 # Add to registry (~/.config/job-monitor/registered.json)
 # Then restart service
@@ -247,7 +247,7 @@ systemctl --user restart job-monitor
 1. Verify project path exists
          ↓
 2. Create required directories:
-   - {project}/jobs/items/   (job documents)
+   - {project}/jobs/pending/ (job documents)
    - {project}/jobs/results/ (execution results)
    - {project}/jobs/state/   (queue state)
    - {project}/jobs/logs/    (monitor logs)
@@ -257,7 +257,7 @@ systemctl --user restart job-monitor
 4. Restart job-monitor.service
          ↓
 5. Service creates:
-   - Watchdog observer for {project}/jobs/items/
+   - Watchdog observer for {project}/jobs/pending/
    - Project-specific queue
    - Project-specific executor (with correct cwd)
 ```
@@ -269,7 +269,7 @@ systemctl --user restart job-monitor
 journalctl --user -u job-monitor | grep "Observer started"
 
 # Verify project structure
-ls -la /home/admin/workspaces/myproject/jobs/items/
+ls -la /home/admin/workspaces/myproject/jobs/pending/
 ls -la /home/admin/workspaces/myproject/jobs/results/
 ls -la /home/admin/workspaces/myproject/jobs/state/
 ```

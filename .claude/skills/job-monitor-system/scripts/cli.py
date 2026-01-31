@@ -50,7 +50,7 @@ def main():
     parser.add_argument("command", nargs="?", default="status", help="Command: status, queue, or job_id")
     args = parser.parse_args()
 
-    # Project root - where jobs/items, jobs/results, jobs/state directories are located
+    # Project root - where jobs/pending, jobs/results, jobs/state directories are located
     project_root = Path(args.project_path) if args.project_path else DEFAULT_PROJECT_ROOT
 
     if args.command == "queue":
