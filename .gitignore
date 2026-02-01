@@ -4,3 +4,11 @@ tasks/
 
 # Temporary files (per project guidelines)
 temp/
+
+# Coverage reports (HTML is generated, not committed)
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+coverage.json
+!pyproject.toml  # Keep coverage config in pyproject.toml

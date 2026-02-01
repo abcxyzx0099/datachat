@@ -1,0 +1,107 @@
+# =============================================================================
+# DataChat SPSS Analyzer - Docker Compose Configuration
+# =============================================================================
+version: '3.8'
+
+services:
+  # -------------------------------------------------------------------------
+  # Main Application Service
+  # -------------------------------------------------------------------------
+  datachat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: datachat-app
+    hostname: datachat
+    ports:
+      # LangGraph server port
+      - "8123:8123"
+    volumes:
+      # Input data directory (read-only)
+      - ./data:/app/data:ro
+      # Output directory for generated files
+      - ./output:/app/output
+      # Temporary files directory
+      - ./temp:/app/temp
+      # Logs directory
+      - ./logs:/app/logs
+      # Checkpoint database for LangGraph state persistence
+      - ./checkpoints.db:/app/checkpoints.db
+    environment:
+      # LLM Provider Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-ZHIPU}
+      - ZHIPU_API_KEY=${ZHIPU_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - KIMI_API_KEY=${KIMI_API_KEY}
+
+      # LLM API Settings
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.1}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-4000}
+      - LLM_MAX_SELF_CORRECTION_ITERATIONS=${LLM_MAX_SELF_CORRECTION_ITERATIONS:-3}
+
+      # Filtering Thresholds
+      - HIGH_CARDINALITY_THRESHOLD=${HIGH_CARDINALITY_THRESHOLD:-30}
+      - FILTER_BINARY=${FILTER_BINARY:-true}
+      - FILTER_OTHER_TEXT=${FILTER_OTHER_TEXT:-true}
+
+      # Statistical Significance Thresholds
+      - SIGNIFICANCE_LEVEL=${SIGNIFICANCE_LEVEL:-0.05}
+      - MIN_CRAMERS_V=${MIN_CRAMERS_V:-0.1}
+      - MIN_CELL_COUNT=${MIN_CELL_COUNT:-10}
+
+      # Paths
+      - PSPP_PATH=/usr/bin/pspp
+      - OUTPUT_DIR=/app/output
+      - TEMP_DIR=/app/temp
+
+      # Human Review Configuration
+      - ENABLE_HUMAN_REVIEW=${ENABLE_HUMAN_REVIEW:-true}
+
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - datachat-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import agent.graph; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # -------------------------------------------------------------------------
+  # Optional: PostgreSQL for production (commented out by default)
+  # Uncomment this section if you want to use PostgreSQL instead of SQLite
+  # -------------------------------------------------------------------------
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: datachat-db
+  #   environment:
+  #     POSTGRES_DB: datachat
+  #     POSTGRES_USER: datachat
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - datachat-network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U datachat"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+# -------------------------------------------------------------------------
+# Networks
+# -------------------------------------------------------------------------
+networks:
+  datachat-network:
+    driver: bridge
+
+# -------------------------------------------------------------------------
+# Volumes
+# -------------------------------------------------------------------------
+# volumes:
+#   postgres-data:

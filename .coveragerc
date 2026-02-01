@@ -1,0 +1,79 @@
+# Coverage.py configuration file
+# See https://coverage.readthedocs.io/en/latest/config.html
+
+[run]
+# Source directories to measure coverage for
+source =
+    agent
+    utils
+
+# Omit files from coverage reporting
+omit =
+    */tests/*
+    */test_*.py
+    */__pycache__/*
+    */site-packages/*
+
+# Branch coverage: measure both branches of conditional statements
+branch = True
+
+# Data file location
+data_file = .coverage
+
+# Parallel mode allows combining coverage from multiple processes
+parallel = True
+
+[report]
+# Minimum coverage percentage (fails if below this)
+# Baseline: 69.6% (as of 2026-02-01)
+# Goal: 70% overall, 80% for new code
+fail_under = 69.0
+
+# Exclude lines of code from coverage analysis
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    def __str__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+    @abc\.abstractmethod
+    \.\.\.
+
+# Include branch coverage in reports
+show_missing = True
+
+# Sort report by coverage percentage (worst first)
+sort = Cover
+
+# Precision for coverage percentages
+precision = 1
+
+# Skip empty files (no executable code)
+skip_empty = True
+
+# Skip covered files that are 100% covered (reduces noise)
+skip_covered = False
+
+[html]
+# HTML report output directory
+directory = htmlcov
+
+# Page title for HTML report
+title = DataChat SPSS Analyzer - Coverage Report
+
+# Show context of code in HTML report (helps understand coverage)
+show_contexts = True
+
+[xml]
+# XML report output (for CI/CD integration)
+output = coverage.xml
+
+[json]
+# JSON report output (for programmatic access)
+output = coverage.json
+
+# Pretty print JSON
+pretty_print = True

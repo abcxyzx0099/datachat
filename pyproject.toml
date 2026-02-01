@@ -1,14 +1,66 @@
 [project]
-name = "task-monitor-cli"
+name = "datachat-spss-analyzer"
 version = "1.0.0"
-description = "Task Monitor CLI"
-
-[project.scripts]
-task-monitor = "cli:main"
+description = "DataChat SPSS Analyzer - LangGraph-based survey analysis tool"
+requires-python = ">=3.13"
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-py-modules = ["cli"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--verbose --strict-markers --strict-config"
+markers = [
+    "unit: Unit tests (fast, isolated)",
+    "integration: Integration tests (slower, may use external services)",
+    "e2e: End-to-end tests (slowest, full workflow)",
+    "slow: Slow-running tests",
+    "llm: Tests that call LLM APIs (requires API keys)",
+]
+
+[tool.coverage.run]
+source = ["agent", "utils"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+branch = true
+parallel = true
+
+[tool.coverage.report]
+fail_under = 69.0
+show_missing = true
+sort = "Cover"
+precision = 1
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+    "@abc.abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "DataChat SPSS Analyzer - Coverage Report"
+show_contexts = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
+branch_coverage = true
+
+[tool.coverage.json]
+output = "coverage.json"
+pretty_print = true
+branch_coverage = true
