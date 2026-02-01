@@ -65,32 +65,39 @@ To use **Scenario 2** (bulk generation from planning), you must **explicitly req
 
 **This is the DEFAULT behavior** - no special keywords required.
 
-### Input
+### Input Sources
 
-- **Conversation history** - The full discussion between user and AI
-- **Context** - Project context (codebase, architecture, current state)
-- **Task intent** - What needs to be done
+**Primary Source:**
+- **Conversation context** - The full discussion between user and AI
+
+**Auxiliary Sources:**
+1. **Design/Project Documentation** (`docs/` directory)
+   - System architecture, data flow, business rules
+   - Technology stack, configuration, deployment
+   - Features, usage, project structure
+
+2. **Codebase Investigation** (Glob/Grep)
+   - Find files relevant to the task
+   - Understand current implementation patterns
+   - Identify files that need modification
 
 ### Workflow (5 Steps)
 
-#### Step 1: Verify Task Monitor Service Running
+#### Step 1: Verify Task Monitor Service Running AND Set Project Path
 
-**BEFORE creating any task document**, verify that the task monitoring service is running.
+**BEFORE creating any task document**, verify the service is running and set the correct project path.
 
 ```bash
-# Check if task monitor service is running
-task-monitor queue
+# 1. Check if task monitor service is running
+task-monitor status
+
+# 2. Set current project to working directory
+task-monitor use "$(pwd)"
 ```
 
-**Expected output if running:**
+**Expected output from status:**
 ```
-Queue size: 0
-Processing: (task name or empty)
-```
-
-**Expected output if NOT running:**
-```
-Error: Task monitor service is not running
+Running
 ```
 
 **If service is NOT running - STOP and ask the user:**
@@ -106,25 +113,19 @@ Would you like me to start the task monitor service now?
 
 Before writing the task document, ensure you fully understand the context and requirements.
 
-**2.1 Analyze Conversation**
-- The original problem/request
-- Decisions made during discussion
-- Constraints mentioned
-- Acceptance criteria discussed
+**2.1 Analyze Primary Source**
+- **Scenario 1**: Conversation context - the original problem/request, decisions made, constraints, acceptance criteria
+- **Scenario 2**: Planning document - task breakdown, organization, source documents referenced
 
-**2.2 Clarify Task Intent**
-- Specific outcome required
-- Boundaries of the task (what's included/excluded)
-- Success metrics
+**2.2 Review Design/Project Documentation**
+- Read relevant documents from `docs/` directory
+- Understand architecture, patterns, and conventions
+- Extract relevant business rules and constraints
 
 **2.3 Investigate Codebase**
-```bash
-# Find relevant files
-glob "**/*.py"
-grep "keyword" --include="*.py"
-
-# Read key files to understand patterns
-```
+- Find relevant files using Glob/Grep
+- Understand current implementation patterns
+- Identify files that need modification or creation
 
 **2.4 Quality Gate**
 - If anything is unclear → ask questions
@@ -147,9 +148,21 @@ Use the Write tool to create the task document with `.md.tmp` extension:
 
 #### Step 4: Rename with Timestamp
 
+**Single file mode** (one file):
 ```bash
 bash .claude/skills/task-document-writer/scripts/rename_task.sh /path/to/temp/file.md.tmp
 ```
+
+**Batch mode** (all .md.tmp files in directory):
+```bash
+# Scans all .md.tmp files, sorts by creation time, renames in order
+bash .claude/skills/task-document-writer/scripts/rename_task.sh
+```
+
+**Batch mode advantages:**
+- Uses file creation time for timestamp (not current time)
+- Maintains chronological order
+- 1-second delay between files prevents timestamp collisions
 
 **Example transformation:**
 ```
@@ -163,11 +176,20 @@ tasks/task-monitor/pending/task-20260129-170500-fix-auth-timeout.md
 #### Step 5: Verify Task Started
 
 ```bash
-# Check if task has started processing
+# First, check queue status
+task-monitor queue
+
+# Second, check specific task status
 task-monitor task-{timestamp}-{description}
 ```
 
-Expected output if started:
+Expected output for queue:
+```
+Queue size: 0
+Processing: task-{timestamp}-{description}.md
+```
+
+Expected output for task status:
 ```
 Status: processing
 Task: task-{timestamp}-{description}.md
@@ -192,39 +214,55 @@ cat tasks/task-monitor/results/task-{timestamp}-{description}.json
 
 **This requires EXPLICIT request** - see "Scenario Detection" table above for trigger phrases.
 
-### Input
+### Input Sources
 
+**Primary Source:**
 - **Planning document** - `tasks/task-planning/{descriptive-name}.md`
-- **Project context** - Codebase, architecture, current state
+  - Contains task breakdown and organization
+  - Lists source documents that were read
+
+**Auxiliary Sources:**
+1. **Design/Project Documentation** (`docs/` directory)
+   - All documents listed in planning document under "## Source Documents"
+   - System architecture, data flow, business rules
+   - Technology stack, configuration, deployment
+   - Features, usage, project structure
+
+2. **Codebase Investigation** (Glob/Grep)
+   - Find files relevant to each task
+   - Understand current implementation patterns
+   - Identify files that need modification
 
 ### Workflow (5 Steps)
 
-#### Step 1: Verify Task Monitor Service Running
+#### Step 1: Verify Task Monitor Service Running AND Set Project Path
 
 Same as Scenario 1, Step 1.
 
 ```bash
-task-monitor queue
+# 1. Check if task monitor service is running
+task-monitor status
+
+# 2. Set current project to working directory
+task-monitor use "$(pwd)"
 ```
 
 **If service is NOT running - STOP and ask user to start it.**
 
 ---
 
-#### Step 2: Read & Parse Breakdown Document
+#### Step 2: Read & Parse Planning Document
 
-**2.1 Locate the Planning Document**
+**2.1 Locate and Read Planning Document**
 
 The planning document is located at:
 ```
 tasks/task-planning/{descriptive-name}.md
 ```
 
-**2.2 Read the Document**
-
 Use the Read tool to read the entire planning document.
 
-**2.3 Parse Task Structure**
+**2.2 Parse Task Structure**
 
 The planning document contains tasks organized by structure type:
 
@@ -234,7 +272,7 @@ The planning document contains tasks organized by structure type:
 | **IMPLEMENTATION_PHASE** | Tasks grouped by phase |
 | **FEATURE_MODULE** | Tasks grouped by module |
 
-**2.4 Extract Task Information**
+**2.3 Extract Task Information**
 
 For each task in the planning document, extract:
 - **Subject/Title** - Brief task description
@@ -242,7 +280,21 @@ For each task in the planning document, extract:
 - **Active Form** - Present continuous form for status display
 - **Phase/Module** (if applicable) - For organization
 
-**2.5 Validate Breakdown**
+**2.4 Review Design/Project Documentation**
+
+Read all documents listed in the planning document under "## Source Documents":
+- System architecture, data flow, business rules
+- Technology stack, configuration, deployment
+- Features, usage, project structure
+
+**2.5 Investigate Codebase**
+
+For each task, find relevant files:
+- Use Glob/Grep to locate files that need modification
+- Understand current implementation patterns
+- Identify dependencies and integration points
+
+**2.6 Validate Breakdown**
 
 Before proceeding:
 - [ ] Document exists and is readable
@@ -307,17 +359,33 @@ Before proceeding to Step 4:
 
 #### Step 4: Rename All Files with Timestamps
 
-**4.1 Rename Each Temp File**
+**4.1 Batch Rename All Temp Files** (Recommended)
 
-For each temp file, run the rename script:
+Use batch mode to rename all files at once, sorted by creation time:
 
 ```bash
-bash .claude/skills/task-document-writer/scripts/rename_task.sh tasks/task-monitor/pending/task-{description}.md.tmp
+bash .claude/skills/task-document-writer/scripts/rename_task.sh
 ```
 
-**4.2 Track Created Tasks**
+This will:
+- Scan all `.md.tmp` files in the pending directory
+- Sort them by file creation time
+- Rename each using its original creation time as the timestamp
+- Sleep 1 second between files to prevent timestamp collisions
 
-Maintain a list of all task files created with their timestamps and numbers:
+**4.2 Alternative: Loop Individual Files** (Not recommended)
+
+Only use if you need custom logic per file:
+
+```bash
+for file in tasks/task-monitor/pending/task-*.md.tmp; do
+  bash .claude/skills/task-document-writer/scripts/rename_task.sh "$file"
+done
+```
+
+**4.3 Track Created Tasks**
+
+The batch mode outputs all created files:
 
 **Single task (no numbering):**
 ```
@@ -357,14 +425,24 @@ Expected output should show the number of tasks queued.
 Verify all tasks have started processing:
 
 ```bash
-# Check queue status
+# First, check queue status
 task-monitor queue
+
+# Second, check specific task status
+task-monitor task-{timestamp}-{description}
 ```
 
-Expected output if tasks are processing:
+Expected output for queue:
 ```
 Queue size: 0
 Processing: task-{timestamp}-{description}.md
+```
+
+Expected output for task status:
+```
+Status: processing
+Task: task-{timestamp}-{description}.md
+Started: [timestamp or Unknown]
 ```
 
 That's it! The tasks are now queued and will be processed by Worker Agents.
@@ -549,9 +627,11 @@ Matches files with or without optional numbering.
 ### Scenario 1 Example: Single Task from Conversation
 
 ```bash
-# Step 1: Verify service running
-task-monitor queue
-# Output: Queue size: 0, Processing: none
+# Step 1: Verify service running and set project path
+task-monitor status
+# Output: Running
+task-monitor use "$(pwd)"
+# Output: Current project set to: /home/admin/workspaces/datachat
 
 # Step 2: Investigate and understand (read conversation, explore codebase)
 
@@ -563,6 +643,8 @@ bash .claude/skills/task-document-writer/scripts/rename_task.sh tasks/task-monit
 # Output: ✅ Task created: tasks/task-monitor/pending/task-20260129-170500-fix-auth-timeout.md
 
 # Step 5: Verify task started
+task-monitor queue
+# Output: Queue size: 0, Processing: task-20260129-170500-fix-auth-timeout.md
 task-monitor task-20260129-170500-fix-auth-timeout
 # Output: Status: processing (task is now being processed by Worker Agent)
 ```
@@ -572,8 +654,9 @@ Note: Only monitor further when user explicitly asks to check progress.
 ### Scenario 2 Example: Bulk Tasks from Breakdown
 
 ```bash
-# Step 1: Verify service running
-task-monitor queue
+# Step 1: Verify service running and set project path
+task-monitor status
+task-monitor use "$(pwd)"
 
 # Step 2: Read and parse planning document
 # Document: tasks/task-planning/user-authentication.md
@@ -586,19 +669,24 @@ task-monitor queue
 # tasks/task-monitor/pending/task-design-product-model.md.tmp
 # ... (8 total)
 
-# Step 4: Rename all files
-for file in tasks/task-monitor/pending/task-*.md.tmp; do
-  bash .claude/skills/task-document-writer/scripts/rename_task.sh "$file"
-done
+# Step 4: Batch rename all files (sorted by creation time)
+bash .claude/skills/task-document-writer/scripts/rename_task.sh
 # Output:
+# 🔍 Found 8 temp file(s) to process
+# [1/8] Processing: task-user-registration.md.tmp
 # ✅ Task created: tasks/task-monitor/pending/task-20260131-204500-A-01-user-registration.md
+# [2/8] Processing: task-build-login-system.md.tmp
 # ✅ Task created: tasks/task-monitor/pending/task-20260131-204501-A-02-build-login-system.md
+# [3/8] Processing: task-design-product-model.md.tmp
 # ✅ Task created: tasks/task-monitor/pending/task-20260131-204502-B-01-design-product-model.md
 # ... (8 total)
+# ✅ Batch processing complete: 8 file(s) renamed
 
 # Step 5: Verify tasks are processing
 task-monitor queue
 # Output: Queue size: 0, Processing: task-20260131-204500-A-01-...
+task-monitor task-20260131-204500-A-01-user-registration
+# Output: Status: processing
 ```
 
 Note: Only monitor further when user explicitly asks to check progress.
