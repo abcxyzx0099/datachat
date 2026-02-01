@@ -235,7 +235,7 @@ class CrossTableState(TypedDict):
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
 | `table_specifications` | `Dict` | Step 12 | Table structure definitions |
-| `table_specs_json_path` | `str` | Step 12 | Saved table specs |
+| `table_specs_json_path` | `str` | Step 12 | Saved table specifications |
 | `table_specs_iteration` | `int` | Step 12+ | Current iteration count |
 | `table_specs_validation` | `Dict` | Step 13 | Validation results |
 | `table_specs_feedback` | `Dict` | Step 13/14 | Feedback from validation or human |
@@ -637,7 +637,7 @@ graph TD
 | **8** | Original data + PSPP | Execute recoding | `new_data.sav`, `new_metadata` |
 | **9** | New metadata | LLM groups variables | `indicators` |
 | **12** | New metadata + indicators | LLM defines tables | `table_specifications` |
-| **15** | Table specs | Convert to PSPP syntax | `pspp_table_syntax` |
+| **15** | Table specifications | Convert to PSPP syntax | `pspp_table_syntax` |
 | **16** | New data + PSPP | Execute CTABLES | `cross_table.sav` |
 | **18** | Cross-table data | Chi-square analysis | `statistical_summary` |
 | **20** | All tables + stats | Filter by significance | `significant_tables` |
@@ -715,12 +715,15 @@ class ValidationResult:
 
 ### 6.1 DEFAULT_CONFIG
 
+> **Note**: The application uses a multi-provider LLM system (Kimi, DeepSeek, Zhipu). The configuration below shows the default values when using Zhipu as the provider. For complete LLM provider configuration details, see [Configuration](./system-configuration.md#2-llm-provider-configuration).
+
 ```python
 DEFAULT_CONFIG = {
-    # LLM Configuration
-    "model": "gpt-4",
-    "temperature": 0.7,
-    "max_tokens": 2000,
+    # LLM Configuration (defaults for Zhipu provider)
+    "llm_provider": "ZHIPU",          # Options: KIMI, DEEPSEEK, ZHIPU
+    "model": "glm-4.7",                # Zhipu GLM model
+    "temperature": 0.1,
+    "max_tokens": 4000,
 
     # Three-Node Pattern
     "max_self_correction_iterations": 3,
@@ -754,9 +757,10 @@ DEFAULT_CONFIG = {
 
 | Category | Option | Type | Default | Description |
 |----------|--------|------|---------|-------------|
-| **LLM** | `model` | `str` | `"gpt-4"` | OpenAI model |
-| **LLM** | `temperature` | `float` | `0.7` | LLM temperature |
-| **LLM** | `max_tokens` | `int` | `2000` | Max response tokens |
+| **LLM** | `llm_provider` | `str` | `"ZHIPU"` | LLM provider (KIMI, DEEPSEEK, ZHIPU) |
+| **LLM** | `model` | `str` | `"glm-4.7"` | Model name (provider-specific) |
+| **LLM** | `temperature` | `float` | `0.1` | LLM temperature |
+| **LLM** | `max_tokens` | `int` | `4000` | Max response tokens |
 | **Pattern** | `max_self_correction_iterations` | `int` | `3` | Max retry iterations |
 | **Pattern** | `enable_human_review` | `bool` | `True` | Enable human review |
 | **Filter** | `cardinality_threshold` | `int` | `30` | Max distinct values |
@@ -781,7 +785,6 @@ DEFAULT_CONFIG = {
 | **[Data Flow](./data-flow.md)** | Workflow design and step specifications |
 | **[System Architecture](./system-architecture.md)** | System components, deployment, and troubleshooting |
 | **[Configuration](./system-configuration.md)** | Configuration options and usage examples |
-| **[Implementation Specifications](./implementation-specifications.md)** | Technical implementation details |
 | **[Project Structure](./project-structure.md)** | Directory structure and file locations |
 | **[Web Interface](./web-interface.md)** | Agent Chat UI setup and usage |
 | **[User Guide](./features-and-usage.md)** | Product introduction for end users |

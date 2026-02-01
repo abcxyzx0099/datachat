@@ -16,14 +16,14 @@ This document defines the technologies, libraries, and tools used in the Survey 
 
 ## 1. Overview
 
-The system combines workflow orchestration (LangGraph), AI capabilities (OpenAI GPT-4), statistical computing (PSPP), and data processing (Python/pandas) into an integrated analysis pipeline.
+The system combines workflow orchestration (LangGraph), multi-provider AI capabilities (Kimi, DeepSeek, Zhipu GLM), statistical computing (PSPP), and data processing (Python/pandas) into an integrated analysis pipeline.
 
 ### 1.1 Technology Stack Summary
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
 | **Workflow Orchestration** | LangGraph | State graph management, conditional routing |
-| **AI/LLM** | OpenAI GPT-4 | Artifact generation |
+| **AI/LLM** | Multi-Provider LLM (Kimi, DeepSeek, Zhipu GLM) | Artifact generation |
 | **Statistical Computing** | PSPP | Data recoding, cross-tabulation |
 | **Data Processing** | Python, pandas | Data manipulation |
 | **Statistical Tests** | scipy | Chi-square tests, effect size |
@@ -39,7 +39,7 @@ The system combines workflow orchestration (LangGraph), AI capabilities (OpenAI 
 
 | Property | Value |
 |----------|-------|
-| **Version** | 0.2+ |
+| **Version** | 1.0.7+ |
 | **Purpose** | State graph orchestration for workflow management |
 | **Key Features** | StateGraph, conditional edges, interrupts, checkpointing |
 | **Documentation** | https://langchain-ai.github.io/langgraph/ |
@@ -50,19 +50,33 @@ The system combines workflow orchestration (LangGraph), AI capabilities (OpenAI 
 - Handles human-in-the-loop interrupts
 - Provides SQLite checkpointing for resumable execution
 
-### 2.2 OpenAI GPT-4
+### 2.2 Multi-Provider LLM Support
+
+The system supports multiple LLM providers through a unified integration layer. Select your preferred provider using the `LLM_PROVIDER` environment variable.
+
+| Provider | `LLM_PROVIDER` Value | Base URL |
+|----------|----------------------------|----------|
+| **Kimi (Moonshot AI)** | `KIMI` | `https://api.moonshot.cn/v1` |
+| **DeepSeek** | `DEEPSEEK` | `https://api.deepseek.com/v1` |
+| **Zhipu GLM (BigModel)** | `ZHIPU` | `https://open.bigmodel.cn/api/coding/paas/v4` |
 
 | Property | Value |
 |----------|-------|
-| **Model** | gpt-4 or gpt-4-turbo |
 | **Purpose** | Generate recoding rules, indicators, table specifications |
-| **Integration** | langchain-openai |
-| **Configuration** | `model`, `temperature`, `max_tokens` |
+| **Integration** | LangChain with provider-specific chat models |
+| **Configuration** | `LLM_PROVIDER`, provider API keys, `temperature`, `max_tokens` |
+| **Documentation** | See [Configuration](./system-configuration.md#2-llm-provider-configuration) |
 
 **Usage in System**:
 - Step 4: Generate recoding rules
 - Step 9: Generate indicators
 - Step 12: Generate table specifications
+
+**Provider Selection**:
+```bash
+# In .env file
+LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
+```
 
 ### 2.3 PSPP
 
@@ -86,39 +100,40 @@ The system combines workflow orchestration (LangGraph), AI capabilities (OpenAI 
 
 | Library | Version | Purpose |
 |---------|---------|---------|
-| **pandas** | 2.0+ | DataFrame manipulation, data analysis |
-| **pyreadstat** | 1.2+ | Read/write SPSS .sav files |
-| **numpy** | 1.24+ | Numerical computing |
+| **pandas** | 3.0.0+ | DataFrame manipulation, data analysis |
+| **pyreadstat** | 1.3.3+ | Read/write SPSS .sav files |
+| **numpy** | 2.4.2+ | Numerical computing |
 
 ### 3.2 Statistical Analysis
 
 | Library | Version | Purpose |
 |---------|---------|---------|
-| **scipy** | 1.10+ | Chi-square tests, statistical functions |
+| **scipy** | 1.17.0+ | Chi-square tests, statistical functions |
 | **statsmodels** | (optional) | Advanced statistical modeling |
 
 ### 3.3 Presentation & Visualization
 
 | Library | Version | Purpose |
 |---------|---------|---------|
-| **python-pptx** | 0.6.21+ | PowerPoint presentation generation |
-| **matplotlib** | 3.7+ | Chart generation for PPT |
+| **python-pptx** | 1.0.2+ | PowerPoint presentation generation |
+| **matplotlib** | 3.10.8+ | Chart generation for PPT |
 
 ### 3.4 Workflow & AI
 
 | Library | Version | Purpose |
 |---------|---------|---------|
-| **langgraph** | 0.2+ | State graph orchestration |
-| **langchain-openai** | 0.1+ | OpenAI LLM integration |
-| **langchain-core** | 0.1+ | Core LangChain types and utilities |
+| **langgraph** | 1.0.7+ | State graph orchestration |
+| **langchain-core** | 1.2.7+ | Core LangChain types and utilities |
+| **langchain-openai** | 1.1.7+ | OpenAI-compatible LLM integrations |
+| **langchain-community** | (optional) | Community integrations for additional LLM providers |
 
 ### 3.5 Utilities
 
 | Library | Version | Purpose |
 |---------|---------|---------|
-| **python-dotenv** | 1.0+ | Environment variable management |
-| **jsonschema** | 4.0+ | JSON validation for LLM outputs |
-| **pydantic** | 2.0+ | Data validation and settings |
+| **python-dotenv** | 1.2.1+ | Environment variable management |
+| **jsonschema** | 4.26.0+ | JSON validation for LLM outputs |
+| **pydantic** | 2.12.5+ | Data validation and settings |
 
 ---
 
@@ -160,35 +175,43 @@ The system combines workflow orchestration (LangGraph), AI capabilities (OpenAI 
 
 ### 5.1 Python Requirements
 
+> **Note**: Package versions verified and updated as of 2026-02-01. All versions represent the latest stable releases available on PyPI.
+
 ```txt
 # Core dependencies
-langgraph>=0.2.0
-langchain-openai>=0.1.0
-langchain-core>=0.1.0
+langgraph>=1.0.7
+langchain-core>=1.2.7
+langchain-openai>=1.1.7
+
+# LLM providers (install based on your chosen provider)
+# For Kimi: langchain-openai (compatible with Kimi's OpenAI-like API)
+# For DeepSeek: openai (DeepSeek provides OpenAI-compatible API)
+# For Zhipu: zhipuai (official Zhipu SDK)
+openai>=2.16.0
 
 # Data processing
-pandas>=2.0.0
-pyreadstat>=1.2.0
-numpy>=1.24.0
+pandas>=3.0.0
+pyreadstat>=1.3.3
+numpy>=2.4.2
 
 # Statistical analysis
-scipy>=1.10.0
+scipy>=1.17.0
 
 # Presentation
-python-pptx>=0.6.21
-matplotlib>=3.7.0
+python-pptx>=1.0.2
+matplotlib>=3.10.8
 
 # Utilities
-python-dotenv>=1.0.0
-jsonschema>=4.0.0
-pydantic>=2.0.0
+python-dotenv>=1.2.1
+jsonschema>=4.26.0
+pydantic>=2.12.5
 ```
 
 ### 5.2 System Requirements
 
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
-| **Python** | 3.10 | 3.11+ |
+| **Python** | 3.13 | 3.13+ |
 | **Memory** | 4 GB | 8 GB+ |
 | **Disk** | 10 GB | 20 GB+ |
 | **PSPP** | 1.6 | 2.0+ |
@@ -197,8 +220,10 @@ pydantic>=2.0.0
 
 | Service | Requirement |
 |---------|-------------|
-| **OpenAI API** | API key with GPT-4 access |
-| **Rate Limits** | 10,000+ TPM recommended for production |
+| **LLM Provider API** | API key for your chosen provider (Kimi, DeepSeek, or Zhipu GLM) |
+| **Provider Selection** | Configure via `LLM_PROVIDER` environment variable |
+| **Rate Limits** | Provider-specific; consult your chosen provider's documentation |
+| **Setup** | See [Configuration](./system-configuration.md#2-llm-provider-configuration) for detailed setup |
 
 ---
 

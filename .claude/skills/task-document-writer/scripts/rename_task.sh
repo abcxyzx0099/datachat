@@ -14,7 +14,7 @@ set -e
 
 # Configuration
 PROJECT_ROOT="${PROJECT_ROOT:-/home/admin/workspaces/datachat}"
-TASKS_DIR="${TASKS_DIR:-${PROJECT_ROOT}/tasks/pending}"
+TASKS_DIR="${TASKS_DIR:-${PROJECT_ROOT}/tasks/task-monitor/pending}"
 TASK_PREFIX="task"
 
 # Get temp file path from argument

@@ -29,11 +29,11 @@ This document describes deployment architecture, installation, environment confi
 
 | Requirement | Specification |
 |-------------|---------------|
-| **Python** | 3.10+ |
+| **Python** | 3.13+ |
 | **PSPP** | 1.6+ (installed at `/usr/bin/pspp`) |
 | **Memory** | 4GB+ recommended |
 | **Disk** | 10GB+ for temporary files |
-| **API Keys** | OpenAI API key |
+| **API Keys** | At least one LLM provider API key (Kimi, DeepSeek, or Zhipu) |
 
 ---
 
@@ -54,14 +54,14 @@ sudo apt-get install pspp
 
 # Configure environment
 cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
+# Edit .env and add your LLM provider API keys (see Configuration documentation)
 ```
 
 ### 2.2 Verify Installation
 
 ```bash
 # Verify Python version
-python --version  # Should be 3.10+
+python --version  # Should be 3.13+
 
 # Verify PSPP installation
 pspp --version    # Should be 1.6+
@@ -76,9 +76,14 @@ pip list | grep -E "langgraph|langchain|openai|pyreadstat"
 
 ### 3.1 Environment Variables
 
+> **For complete LLM provider configuration**, see [Configuration](./system-configuration.md#2-llm-provider-configuration).
+
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `OPENAI_API_KEY` | OpenAI API key | - | Yes |
+| `LLM_PROVIDER` | LLM provider selection (`KIMI`, `DEEPSEEK`, `ZHIPU`) | `ZHIPU` | Yes |
+| `KIMI_API_KEY` | Kimi (Moonshot AI) API key | - | If using Kimi |
+| `DEEPSEEK_API_KEY` | DeepSeek API key | - | If using DeepSeek |
+| `ZHIPU_API_KEY` | Zhipu GLM API key | - | If using Zhipu |
 | `PSPP_PATH` | Path to PSPP executable | `/usr/bin/pspp` | No |
 | `OUTPUT_DIR` | Output directory path | `output/` | No |
 | `TEMP_DIR` | Temporary files directory | `temp/` | No |
@@ -86,23 +91,31 @@ pip list | grep -E "langgraph|langchain|openai|pyreadstat"
 
 ### 3.2 Environment Setup
 
-**Via command line:**
+**Via command line (using Zhipu as example):**
 ```bash
-export OPENAI_API_KEY="your-key-here"
+export LLM_PROVIDER=ZHIPU
+export ZHIPU_API_KEY="your-key-here"
 export PSPP_PATH="/usr/bin/pspp"
 ```
 
 **Via .env file (recommended):**
 ```bash
-echo "OPENAI_API_KEY=sk-your-key-here" > .env
-echo "PSPP_PATH=/usr/bin/pspp" >> .env
+# Select your LLM provider
+LLM_PROVIDER=ZHIPU
+
+# Add API key for your selected provider
+ZHIPU_API_KEY=your-zhipu-api-key-here
+
+# PSPP configuration
+PSPP_PATH=/usr/bin/pspp
 ```
 
 ### 3.3 Development vs Production Configuration
 
 **Development (.env)**:
 ```bash
-OPENAI_API_KEY=sk-dev-key...
+LLM_PROVIDER=ZHIPU
+ZHIPU_API_KEY=your-zhipu-dev-key...
 OUTPUT_DIR=output
 TEMP_DIR=temp
 LOG_LEVEL=DEBUG
@@ -110,7 +123,8 @@ LOG_LEVEL=DEBUG
 
 **Production (.env.production)**:
 ```bash
-OPENAI_API_KEY=sk-prod-key...
+LLM_PROVIDER=ZHIPU
+ZHIPU_API_KEY=your-zhipu-prod-key...
 OUTPUT_DIR=/var/lib/survey-analyzer/output
 TEMP_DIR=/var/lib/survey-analyzer/temp
 LOG_LEVEL=INFO
@@ -206,7 +220,7 @@ cp .env.production /opt/survey-analyzer/.env
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | **PSPP not found** | PSPP not installed or wrong path | Install PSPP or set `PSPP_PATH` |
-| **API key error** | Missing/invalid OpenAI key | Check `.env` file |
+| **API key error** | Missing/invalid LLM provider API key | Check `.env` file and verify `LLM_PROVIDER` setting |
 | **Memory error** | Large survey file | Increase available RAM |
 | **Validation loop** | LLM generates invalid output | Increase `max_self_correction_iterations` |
 | **Permission denied** | Cannot write to output directory | Check directory permissions |

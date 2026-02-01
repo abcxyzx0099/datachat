@@ -221,7 +221,7 @@ If you encounter issues:
 
 1. Check the `output/logs/` directory for detailed error messages
 2. Verify your `.sav` file opens correctly in SPSS or PSPP
-3. Ensure you have an active OpenAI API key configured
+3. Ensure you have configured your LLM provider API key (see [Configuration](./system-configuration.md))
 4. For technical documentation, see [Deployment](./deployment.md)
 
 ---
@@ -231,4 +231,3 @@ If you encounter issues:
 - **[Deployment](./deployment.md)** - Installation, deployment, and troubleshooting
 - **[Configuration](./system-configuration.md)** - Configuration options and usage examples
 - **[Web Interface](./web-interface.md)** - Agent Chat UI setup and usage
-- **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation details

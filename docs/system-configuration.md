@@ -34,11 +34,11 @@ Environment variables override default values.
 
 ## 2. LLM Provider Configuration
 
-The application supports multiple LLM providers. Select your preferred provider using the `SURVEY_LLM_PROVIDER` environment variable.
+The application supports multiple LLM providers. Select your preferred provider using the `LLM_PROVIDER` environment variable.
 
 ### 2.1 Supported Providers
 
-| Provider | `SURVEY_LLM_PROVIDER` Value | Base URL |
+| Provider | `LLM_PROVIDER` Value | Base URL |
 |----------|----------------------------|----------|
 | **Kimi (Moonshot AI)** | `KIMI` | `https://api.moonshot.cn/v1` |
 | **DeepSeek** | `DEEPSEEK` | `https://api.deepseek.com/v1` |
@@ -50,7 +50,7 @@ The application supports multiple LLM providers. Select your preferred provider 
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `KIMI_API_KEY` | API key for Kimi | `sk-lwXxZiXh2wEfGqgJln3zMbiOPAUDxMYBe8iinRU9OYmbvT90` |
+| `KIMI_API_KEY` | API key for Kimi | `your-kimi-api-key-here` |
 | `KIMI_BASE_URL` | Base URL for Kimi API | `https://api.moonshot.cn/v1` |
 | `KIMI_MODEL` | Model to use | `kimi-k2-turbo-preview` |
 
@@ -58,7 +58,7 @@ The application supports multiple LLM providers. Select your preferred provider 
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DEEPSEEK_API_KEY` | API key for DeepSeek | `sk-5ac0126d2291484f8c705ca80b2897f4` |
+| `DEEPSEEK_API_KEY` | API key for DeepSeek | `your-deepseek-api-key-here` |
 | `DEEPSEEK_BASE_URL` | Base URL for DeepSeek API | `https://api.deepseek.com/v1` |
 | `DEEPSEEK_MODEL` | Model to use (`deepseek-chat` or `deepseek-reasoner`) | `deepseek-chat` |
 
@@ -66,7 +66,7 @@ The application supports multiple LLM providers. Select your preferred provider 
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `ZHIPU_API_KEY` | API key for Zhipu GLM | `cef62fd30a0e4ddf826ccba67b7a1e78.iSRcFQPBKBt4MQ52` |
+| `ZHIPU_API_KEY` | API key for Zhipu GLM | `your-zhipu-api-key-here` |
 | `ZHIPU_BASE_URL` | Base URL for Zhipu GLM API | `https://open.bigmodel.cn/api/coding/paas/v4` |
 | `ZHIPU_MODEL` | Model to use | `glm-4.7` |
 
@@ -74,94 +74,94 @@ The application supports multiple LLM providers. Select your preferred provider 
 
 ```bash
 # In .env file
-SURVEY_LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
+LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
 ```
 
 ---
 
 ## 3. Survey Analysis Workflow Configuration
 
-All survey analysis configuration options use the `SURVEY_` prefix.
+All survey analysis configuration options are specified as environment variables.
 
 ### 3.1 LLM Parameters
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_LLM_PROVIDER` | LLM provider (`KIMI`, `DEEPSEEK`, `ZHIPU`) | `ZHIPU` |
-| `SURVEY_LLM_TEMPERATURE` | Temperature for LLM responses (0.0-1.0) | `0.1` |
-| `SURVEY_LLM_MAX_TOKENS` | Maximum tokens per LLM response | `4000` |
+| `LLM_PROVIDER` | LLM provider (`KIMI`, `DEEPSEEK`, `ZHIPU`) | `ZHIPU` |
+| `LLM_TEMPERATURE` | Temperature for LLM responses (0.0-1.0) | `0.1` |
+| `LLM_MAX_TOKENS` | Maximum tokens per LLM response | `4000` |
 
 ### 3.2 Preliminary Filtering
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_CARDINALITY_THRESHOLD` | Max distinct values before filtering as high-cardinality | `30` |
-| `SURVEY_FILTER_BINARY` | Filter out binary variables (exactly 2 distinct values) | `true` |
-| `SURVEY_FILTER_OTHER_TEXT` | Filter out "other" text fields (open-ended feedback) | `true` |
+| `CARDINALITY_THRESHOLD` | Max distinct values before filtering as high-cardinality | `30` |
+| `FILTER_BINARY` | Filter out binary variables (exactly 2 distinct values) | `true` |
+| `FILTER_OTHER_TEXT` | Filter out "other" text fields (open-ended feedback) | `true` |
 
 ### 3.3 Recoding Configuration
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_RECODING_INSTRUCTIONS` | Custom instructions for AI recoding (optional) | *(uses default)* |
-| `SURVEY_AUTO_APPROVE_RECODING` | Skip human review for recoding rules | `false` |
+| `RECODING_INSTRUCTIONS` | Custom instructions for AI recoding (optional) | *(uses default)* |
+| `AUTO_APPROVE_RECODING` | Skip human review for recoding rules | `false` |
 
 ### 3.4 Indicator Configuration
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_INDICATOR_INSTRUCTIONS` | Custom instructions for AI indicator grouping (optional) | *(uses default)* |
-| `SURVEY_AUTO_APPROVE_INDICATORS` | Skip human review for indicators | `false` |
+| `INDICATOR_INSTRUCTIONS` | Custom instructions for AI indicator grouping (optional) | *(uses default)* |
+| `AUTO_APPROVE_INDICATORS` | Skip human review for indicators | `false` |
 
 ### 3.5 Table Specifications
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_TABLE_INSTRUCTIONS` | Custom instructions for table generation (optional) | *(uses default)* |
-| `SURVEY_WEIGHTING_VARIABLE` | Weighting variable name (empty for auto-detection) | *(auto-detect)* |
-| `SURVEY_AUTO_APPROVE_TABLE_SPECS` | Skip human review for table specifications | `false` |
+| `TABLE_INSTRUCTIONS` | Custom instructions for table generation (optional) | *(uses default)* |
+| `WEIGHTING_VARIABLE` | Weighting variable name (empty for auto-detection) | *(auto-detect)* |
+| `AUTO_APPROVE_TABLE_SPECS` | Skip human review for table specifications | `false` |
 
 ### 3.6 Significance Testing
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_SIGNIFICANCE_ALPHA` | p-value threshold for statistical significance | `0.05` |
-| `SURVEY_TEST_TYPE` | Statistical test type (`chi_square`, `fisher_exact`) | `chi_square` |
+| `SIGNIFICANCE_ALPHA` | p-value threshold for statistical significance | `0.05` |
+| `TEST_TYPE` | Statistical test type (`chi_square`, `fisher_exact`) | `chi_square` |
 
 ### 3.7 Human Review / Approval
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_ENABLE_HUMAN_REVIEW` | Enable human-in-the-loop review | `true` |
-| `SURVEY_REVIEW_OUTPUT_FORMAT` | Review report format (`markdown`, `html`, `json`) | `markdown` |
+| `ENABLE_HUMAN_REVIEW` | Enable human-in-the-loop review | `true` |
+| `REVIEW_OUTPUT_FORMAT` | Review report format (`markdown`, `html`, `json`) | `markdown` |
 
 ### 3.8 PSPP Configuration
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_PSPP_PATH` | Path to PSPP executable | `pspp` |
+| `PSPP_PATH` | Path to PSPP executable | `pspp` |
 
 ### 3.9 Output Configuration
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_OUTPUT_DIR` | Output directory (relative to project root) | `output` |
-| `SURVEY_CREATE_TIMESTAMP_DIR` | Create timestamped subdirectories | `true` |
+| `OUTPUT_DIR` | Output directory (relative to project root) | `output` |
+| `CREATE_TIMESTAMP_DIR` | Create timestamped subdirectories | `true` |
 
 ### 3.10 PowerPoint Configuration
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_PPT_TEMPLATE` | Path to custom .pptx template (optional) | *(uses default)* |
-| `SURVEY_CHART_STYLE` | Chart style (`modern`, `corporate`, `minimal`) | `modern` |
-| `SURVEY_INCLUDE_CHARTS` | Include charts in PowerPoint export | `true` |
+| `PPT_TEMPLATE` | Path to custom .pptx template (optional) | *(uses default)* |
+| `CHART_STYLE` | Chart style (`modern`, `corporate`, `minimal`) | `modern` |
+| `INCLUDE_CHARTS` | Include charts in PowerPoint export | `true` |
 
 ### 3.11 HTML Dashboard Configuration
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SURVEY_HTML_TEMPLATE` | Path to custom HTML template (optional) | *(uses default)* |
-| `SURVEY_CHART_LIBRARY` | Chart library (`echarts`, `plotly`, `chartjs`) | `echarts` |
+| `HTML_TEMPLATE` | Path to custom HTML template (optional) | *(uses default)* |
+| `CHART_LIBRARY` | Chart library (`echarts`, `plotly`, `chartjs`) | `echarts` |
 
 ---
 
@@ -176,9 +176,12 @@ DEFAULT_CONFIG = {
     # ============================================
     # LLM Configuration
     # ============================================
-    "model": "gpt-4",
-    "temperature": 0.7,
-    "max_tokens": 2000,
+    # LLM Provider Selection: KIMI | DEEPSEEK | ZHIPU
+    "llm_provider": "ZHIPU",
+    # Provider-specific model (e.g., glm-4.7 for Zhipu)
+    "model": "glm-4.7",
+    "temperature": 0.1,
+    "max_tokens": 4000,
 
     # ============================================
     # Three-Node Pattern Configuration
@@ -226,9 +229,10 @@ DEFAULT_CONFIG = {
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `model` | string | `"gpt-4"` | OpenAI model to use |
-| `temperature` | float | `0.7` | LLM temperature (0.0-1.0) |
-| `max_tokens` | int | `2000` | Maximum tokens per LLM response |
+| `llm_provider` | string | `"ZHIPU"` | LLM provider (`KIMI`, `DEEPSEEK`, or `ZHIPU`) |
+| `model` | string | `"glm-4.7"` | Model to use (provider-specific) |
+| `temperature` | float | `0.1` | LLM temperature (0.0-1.0) |
+| `max_tokens` | int | `4000` | Maximum tokens per LLM response |
 
 #### Three-Node Pattern Configuration
 
@@ -259,18 +263,18 @@ DEFAULT_CONFIG = {
 
 ### 5.1 Required Variables
 
-You must configure at least one LLM provider. Select which provider to use with `SURVEY_LLM_PROVIDER`.
+You must configure at least one LLM provider. Select which provider to use with `LLM_PROVIDER`.
 
 | Variable | Description | Required If |
 |----------|-------------|-------------|
-| `SURVEY_LLM_PROVIDER` | Selected LLM provider (`KIMI`, `DEEPSEEK`, `ZHIPU`) | Always |
-| `KIMI_API_KEY` | Kimi API key | `SURVEY_LLM_PROVIDER=KIMI` |
-| `DEEPSEEK_API_KEY` | DeepSeek API key | `SURVEY_LLM_PROVIDER=DEEPSEEK` |
-| `ZHIPU_API_KEY` | Zhipu GLM API key | `SURVEY_LLM_PROVIDER=ZHIPU` |
+| `LLM_PROVIDER` | Selected LLM provider (`KIMI`, `DEEPSEEK`, `ZHIPU`) | Always |
+| `KIMI_API_KEY` | Kimi API key | `LLM_PROVIDER=KIMI` |
+| `DEEPSEEK_API_KEY` | DeepSeek API key | `LLM_PROVIDER=DEEPSEEK` |
+| `ZHIPU_API_KEY` | Zhipu GLM API key | `LLM_PROVIDER=ZHIPU` |
 
 ### 5.2 Optional Variables
 
-All optional variables use the `SURVEY_` prefix. See [Section 3](#3-survey-analysis-workflow-configuration) for the complete list.
+See [Section 3](#3-survey-analysis-workflow-configuration) for the complete list of optional configuration variables.
 
 ### 5.3 .env File Example
 
@@ -278,21 +282,21 @@ All optional variables use the `SURVEY_` prefix. See [Section 3](#3-survey-analy
 # =============================================================================
 # Kimi (Moonshot AI)
 # =============================================================================
-KIMI_API_KEY="sk-lwXxZiXh2wEfGqgJln3zMbiOPAUDxMYBe8iinRU9OYmbvT90"
+KIMI_API_KEY="your-kimi-api-key-here"
 KIMI_BASE_URL="https://api.moonshot.cn/v1"
 KIMI_MODEL="kimi-k2-turbo-preview"
 
 # =============================================================================
 # DeepSeek
 # =============================================================================
-DEEPSEEK_API_KEY="sk-5ac0126d2291484f8c705ca80b2897f4"
+DEEPSEEK_API_KEY="your-deepseek-api-key-here"
 DEEPSEEK_BASE_URL="https://api.deepseek.com/v1"
 DEEPSEEK_MODEL="deepseek-chat"
 
 # =============================================================================
 # Zhipu GLM (BigModel)
 # =============================================================================
-ZHIPU_API_KEY=cef62fd30a0e4ddf826ccba67b7a1e78.iSRcFQPBKBt4MQ52
+ZHIPU_API_KEY=your-zhipu-api-key-here
 ZHIPU_BASE_URL=https://open.bigmodel.cn/api/coding/paas/v4
 ZHIPU_MODEL=glm-4.7
 
@@ -301,53 +305,53 @@ ZHIPU_MODEL=glm-4.7
 # =============================================================================
 
 # LLM Selection
-SURVEY_LLM_PROVIDER=ZHIPU
+LLM_PROVIDER=ZHIPU
 
 # LLM Parameters
-SURVEY_LLM_TEMPERATURE=0.1
-SURVEY_LLM_MAX_TOKENS=4000
+LLM_TEMPERATURE=0.1
+LLM_MAX_TOKENS=4000
 
 # Preliminary Filtering
-SURVEY_CARDINALITY_THRESHOLD=30
-SURVEY_FILTER_BINARY=true
-SURVEY_FILTER_OTHER_TEXT=true
+CARDINALITY_THRESHOLD=30
+FILTER_BINARY=true
+FILTER_OTHER_TEXT=true
 
 # Recoding Configuration
-# SURVEY_RECODING_INSTRUCTIONS="Use standard market research practices"
+# RECODING_INSTRUCTIONS="Use standard market research practices"
 
 # Indicator Configuration
-# SURVEY_INDICATOR_INSTRUCTIONS="Group semantically related variables"
+# INDICATOR_INSTRUCTIONS="Group semantically related variables"
 
 # Table Specifications
-# SURVEY_TABLE_INSTRUCTIONS="Place demographics in columns; identify weighting variable"
-# SURVEY_WEIGHTING_VARIABLE="weight"
+# TABLE_INSTRUCTIONS="Place demographics in columns; identify weighting variable"
+# WEIGHTING_VARIABLE="weight"
 
 # Significance Testing
-SURVEY_SIGNIFICANCE_ALPHA=0.05
-SURVEY_TEST_TYPE=chi_square
+SIGNIFICANCE_ALPHA=0.05
+TEST_TYPE=chi_square
 
 # Human Review / Approval
-SURVEY_ENABLE_HUMAN_REVIEW=true
-SURVEY_AUTO_APPROVE_RECODING=false
-SURVEY_AUTO_APPROVE_INDICATORS=false
-SURVEY_AUTO_APPROVE_TABLE_SPECS=false
-SURVEY_REVIEW_OUTPUT_FORMAT=markdown
+ENABLE_HUMAN_REVIEW=true
+AUTO_APPROVE_RECODING=false
+AUTO_APPROVE_INDICATORS=false
+AUTO_APPROVE_TABLE_SPECS=false
+REVIEW_OUTPUT_FORMAT=markdown
 
 # PSPP Configuration
-SURVEY_PSPP_PATH=pspp
+PSPP_PATH=pspp
 
 # Output Configuration
-SURVEY_OUTPUT_DIR=output
-SURVEY_CREATE_TIMESTAMP_DIR=true
+OUTPUT_DIR=output
+CREATE_TIMESTAMP_DIR=true
 
 # PowerPoint Configuration
-# SURVEY_PPT_TEMPLATE="templates/ppt/default.pptx"
-SURVEY_CHART_STYLE=modern
-SURVEY_INCLUDE_CHARTS=true
+# PPT_TEMPLATE="templates/ppt/default.pptx"
+CHART_STYLE=modern
+INCLUDE_CHARTS=true
 
 # HTML Dashboard Configuration
-# SURVEY_HTML_TEMPLATE="templates/html/dashboard.html"
-SURVEY_CHART_LIBRARY=echarts
+# HTML_TEMPLATE="templates/html/dashboard.html"
+CHART_LIBRARY=echarts
 ```
 
 ### 5.4 Loading Environment Variables
@@ -358,32 +362,58 @@ import os
 
 load_dotenv()
 
+# Step 1: Determine which LLM provider to use
+llm_provider = os.getenv("LLM_PROVIDER", "ZHIPU")
+
+# Step 2: Load provider-specific API key based on selected provider
+# The .env file should contain API keys for all providers,
+# but only the selected provider's key will be used.
+if llm_provider == "KIMI":
+    api_key = os.getenv("KIMI_API_KEY")
+    base_url = os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1")
+    model = os.getenv("KIMI_MODEL", "kimi-k2-turbo-preview")
+elif llm_provider == "DEEPSEEK":
+    api_key = os.getenv("DEEPSEEK_API_KEY")
+    base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
+    model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+elif llm_provider == "ZHIPU":
+    api_key = os.getenv("ZHIPU_API_KEY")
+    base_url = os.getenv("ZHIPU_BASE_URL", "https://open.bigmodel.cn/api/coding/paas/v4")
+    model = os.getenv("ZHIPU_MODEL", "glm-4.7")
+else:
+    raise ValueError(f"Unsupported LLM provider: {llm_provider}")
+
+# Step 3: Load remaining configuration
 config = {
-    # LLM Provider
-    "llm_provider": os.getenv("SURVEY_LLM_PROVIDER", "ZHIPU"),
-    "model": os.getenv("ZHIPU_MODEL", "glm-4.7"),
-    "temperature": float(os.getenv("SURVEY_LLM_TEMPERATURE", "0.1")),
-    "max_tokens": int(os.getenv("SURVEY_LLM_MAX_TOKENS", "4000")),
+    # LLM Provider (with provider-specific values)
+    "llm_provider": llm_provider,
+    "api_key": api_key,
+    "base_url": base_url,
+    "model": model,
+    "temperature": float(os.getenv("LLM_TEMPERATURE", "0.1")),
+    "max_tokens": int(os.getenv("LLM_MAX_TOKENS", "4000")),
 
     # Filtering
-    "cardinality_threshold": int(os.getenv("SURVEY_CARDINALITY_THRESHOLD", "30")),
-    "filter_binary": os.getenv("SURVEY_FILTER_BINARY", "true").lower() == "true",
-    "filter_other_text": os.getenv("SURVEY_FILTER_OTHER_TEXT", "true").lower() == "true",
+    "cardinality_threshold": int(os.getenv("CARDINALITY_THRESHOLD", "30")),
+    "filter_binary": os.getenv("FILTER_BINARY", "true").lower() == "true",
+    "filter_other_text": os.getenv("FILTER_OTHER_TEXT", "true").lower() == "true",
 
     # Human Review
-    "enable_human_review": os.getenv("SURVEY_ENABLE_HUMAN_REVIEW", "true").lower() == "true",
-    "auto_approve_recoding": os.getenv("SURVEY_AUTO_APPROVE_RECODING", "false").lower() == "true",
-    "auto_approve_indicators": os.getenv("SURVEY_AUTO_APPROVE_INDICATORS", "false").lower() == "true",
-    "auto_approve_table_specs": os.getenv("SURVEY_AUTO_APPROVE_TABLE_SPECS", "false").lower() == "true",
+    "enable_human_review": os.getenv("ENABLE_HUMAN_REVIEW", "true").lower() == "true",
+    "auto_approve_recoding": os.getenv("AUTO_APPROVE_RECODING", "false").lower() == "true",
+    "auto_approve_indicators": os.getenv("AUTO_APPROVE_INDICATORS", "false").lower() == "true",
+    "auto_approve_table_specs": os.getenv("AUTO_APPROVE_TABLE_SPECS", "false").lower() == "true",
 
     # PSPP
-    "pspp_path": os.getenv("SURVEY_PSPP_PATH", "pspp"),
+    "pspp_path": os.getenv("PSPP_PATH", "pspp"),
 
     # Output
-    "output_dir": os.getenv("SURVEY_OUTPUT_DIR", "output"),
-    "create_timestamp_dir": os.getenv("SURVEY_CREATE_TIMESTAMP_DIR", "true").lower() == "true",
+    "output_dir": os.getenv("OUTPUT_DIR", "output"),
+    "create_timestamp_dir": os.getenv("CREATE_TIMESTAMP_DIR", "true").lower() == "true",
 }
 ```
+
+**Note**: The `.env` file should contain API keys for all providers (`KIMI_API_KEY`, `DEEPSEEK_API_KEY`, `ZHIPU_API_KEY`), but only the API key corresponding to `LLM_PROVIDER` will be loaded and used at runtime. This allows you to switch providers by changing only the `LLM_PROVIDER` value.
 
 ---
 
@@ -484,11 +514,11 @@ config["enable_human_review"] = False
 
 ```bash
 # In .env file
-SURVEY_LLM_PROVIDER=DEEPSEEK
-SURVEY_ENABLE_HUMAN_REVIEW=false
-SURVEY_AUTO_APPROVE_RECODING=true
-SURVEY_AUTO_APPROVE_INDICATORS=true
-SURVEY_AUTO_APPROVE_TABLE_SPECS=true
+LLM_PROVIDER=DEEPSEEK
+ENABLE_HUMAN_REVIEW=false
+AUTO_APPROVE_RECODING=true
+AUTO_APPROVE_INDICATORS=true
+AUTO_APPROVE_TABLE_SPECS=true
 ```
 
 ### 7.5 Apply Configuration via Command Line
@@ -518,4 +548,3 @@ python -m agent.graph --thread-id survey_001 --resume
 - **[System Architecture](./system-architecture.md)** - System components and architecture
 - **[Technology Stack](./technology-stack.md)** - Technologies and versions
 - **[Product Features and Usage](./features-and-usage.md)** - Product introduction for end users
-- **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation details

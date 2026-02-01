@@ -294,8 +294,8 @@ The workflow maintains a single evolving state object (`WorkflowState`) organize
 | 10 | `validate_indicators_node` | Validate indicator structure | Validation |
 | 11 | `review_indicators_node` | Human review of indicators | Review |
 | 12 | `generate_table_specifications_node` | LLM defines cross-table structures | AI |
-| 13 | `validate_table_specifications_node` | Validate table specs | Validation |
-| 14 | `review_table_specifications_node` | Human review of table specs | Review |
+| 13 | `validate_table_specifications_node` | Validate table specifications | Validation |
+| 14 | `review_table_specifications_node` | Human review of table specifications | Review |
 | 15 | `generate_pspp_table_syntax_node` | Generate PSPP CTABLES syntax | Deterministic |
 | 16 | `execute_pspp_tables_node` | Execute PSPP, generate tables | Deterministic |
 | 17 | `generate_python_statistics_script_node` | Generate Chi-square script | Deterministic |
@@ -309,8 +309,6 @@ The workflow maintains a single evolving state object (`WorkflowState`) organize
 |------|------|---------|------|
 | 21 | `generate_powerpoint_node` | Create PowerPoint from significant tables | Deterministic |
 | 22 | `generate_html_dashboard_node` | Create HTML dashboard from all tables | Deterministic |
-
-> **For detailed implementation**, see [implementation-specifications.md](./implementation-specifications.md)
 
 ---
 
@@ -332,7 +330,6 @@ The workflow maintains a single evolving state object (`WorkflowState`) organize
 
 | Document | Content |
 |----------|---------|
-| **[implementation-specifications.md](./implementation-specifications.md)** | Detailed implementation with code examples |
 | **[project-structure.md](./project-structure.md)** | Complete directory structure and file locations |
 | **[system-architecture.md](./system-architecture.md)** | System components, deployment, and troubleshooting |
 | **[technology-stack.md](./technology-stack.md)** | Technologies and versions |

@@ -160,13 +160,27 @@ tasks/task-monitor/pending/task-20260129-170500-fix-auth-timeout.md
 
 ---
 
-#### Step 5: Monitor & Verify Results
+#### Step 5: Verify Task Started
 
 ```bash
-# Poll task status until "completed"
+# Check if task has started processing
 task-monitor task-{timestamp}-{description}
+```
 
-# Verify results
+Expected output if started:
+```
+Status: processing
+Task: task-{timestamp}-{description}.md
+Started: [timestamp or Unknown]
+```
+
+That's it! The task is now queued and will be processed by the Worker Agent.
+
+DO NOT continuously poll the task status during processing. Only monitor when the user explicitly asks you to check progress.
+
+If user asks to check progress:
+```bash
+task-monitor task-{timestamp}-{description}
 cat tasks/task-monitor/results/task-{timestamp}-{description}.json
 ```
 
@@ -240,13 +254,26 @@ Before proceeding:
 
 #### Step 3: Generate All Temp Files
 
-**3.1 Create Temp Files for All Tasks**
+**3.1 Determine Numbering Strategy**
+
+Before creating files, assess the project structure:
+
+| Task Count | Organization | Numbering Strategy |
+|------------|--------------|-------------------|
+| 1 task | Any | **No numbering** - use `task-{timestamp}-{description}.md` |
+| 2+ tasks | FLAT_LIST | Simple sequential: `01`, `02`, `03`... |
+| 2+ tasks | IMPLEMENTATION_PHASE | Phase-number: `1-01`, `1-02`, `2-01`... |
+| 2+ tasks | FEATURE_MODULE | Module-number: `A-01`, `A-02`, `B-01`... |
+
+**Use intelligent judgment** - add numbering when it aids clarity and referenceability.
+
+**3.2 Create Temp Files for All Tasks**
 
 For each task extracted from the planning document, create a temp file:
 
 **File pattern**: `tasks/task-monitor/pending/task-{description}.md.tmp`
 
-**3.2 Map Breakdown to Task Document Template**
+**3.3 Map Breakdown to Task Document Template**
 
 Convert planning task information to the task document format:
 
@@ -290,12 +317,25 @@ bash .claude/skills/task-document-writer/scripts/rename_task.sh tasks/task-monit
 
 **4.2 Track Created Tasks**
 
-Maintain a list of all task files created with their timestamps:
+Maintain a list of all task files created with their timestamps and numbers:
 
+**Single task (no numbering):**
 ```
-✅ Task created: tasks/task-monitor/pending/task-20260131-204500-task-one.md
-✅ Task created: tasks/task-monitor/pending/task-20260131-204501-task-two.md
-✅ Task created: tasks/task-monitor/pending/task-20260131-204502-task-three.md
+✅ Task created: tasks/task-monitor/pending/task-20260131-204500-fix-auth-timeout.md
+```
+
+**Multiple tasks (with sequential numbering):**
+```
+✅ Task created: tasks/task-monitor/pending/task-20260131-204500-01-task-one.md
+✅ Task created: tasks/task-monitor/pending/task-20260131-204501-02-task-two.md
+✅ Task created: tasks/task-monitor/pending/task-20260131-204502-03-task-three.md
+```
+
+**Module-based organization:**
+```
+✅ Task created: tasks/task-monitor/pending/task-20260131-204500-A-01-set-up-structure.md
+✅ Task created: tasks/task-monitor/pending/task-20260131-204501-A-02-state-definitions.md
+✅ Task created: tasks/task-monitor/pending/task-20260131-204502-B-01-spss-extraction.md
 ```
 
 **4.3 Verify Queue**
@@ -310,38 +350,39 @@ Expected output should show the number of tasks queued.
 
 ---
 
-#### Step 5: Monitor All Tasks
+#### Step 5: Verify Tasks Started
 
-**5.1 Track All Task Status**
+5.1 Check Tasks Are Running
 
-Monitor all created tasks:
+Verify all tasks have started processing:
 
 ```bash
-# List all tasks
-task-monitor
-
-# Check specific task
-task-monitor task-{timestamp}-{description}
+# Check queue status
+task-monitor queue
 ```
 
-**5.2 Verify Each Task Result**
+Expected output if tasks are processing:
+```
+Queue size: 0
+Processing: task-{timestamp}-{description}.md
+```
 
-As tasks complete, verify each one:
+That's it! The tasks are now queued and will be processed by Worker Agents.
 
+DO NOT continuously poll task status during processing. Only monitor when the user explicitly asks you to check progress.
+
+If user asks to check progress:
 ```bash
-# Check result JSON
+# Check specific task status
+task-monitor task-{timestamp}-{description}
+
+# Check result JSON (when completed)
 cat tasks/task-monitor/results/task-{timestamp}-{description}.json
 ```
 
-**5.3 Summary Report**
+5.2 Summary Report (Only when user requests status)
 
-After all tasks complete, provide a summary:
-
-| Task ID | Status | Duration | Summary |
-|---------|--------|----------|---------|
-| task-xxx-xxx | completed | 45s | ... |
-| task-xxx-xyy | completed | 120s | ... |
-| task-xxx-xzz | failed | - | (error details) |
+When user asks for progress, provide a summary:
 
 ---
 
@@ -401,19 +442,74 @@ All task documents must follow this structure (from `references/task-template.md
 
 ## Task File Naming Convention
 
-**Format:** `task-{timestamp}-{description}.md`
+**Base Format:** `task-{timestamp}-{description}.md`
+
+### Sequential Numbering (Multiple Tasks)
+
+When generating **multiple task documents**, add sequential numbering after the timestamp to provide order and referenceability:
+
+**Format:** `task-{timestamp}-{number}-{description}.md`
 
 | Component | Format | Example |
 |-----------|--------|---------|
 | Prefix | `task-` | `task-` |
 | Timestamp | `YYYYMMDD-HHMMSS` | `20260131-204500` |
-| Separator | `-` | `-` |
+| Number | 01, 02, 03... (only for multiple tasks) | `01` |
 | Description | kebab-case | `fix-auth-timeout` |
 | Extension | `.md` | `.md` |
 
-**Full Example:** `task-20260131-204500-fix-auth-timeout.md`
+**Single task:** `task-20260131-204500-fix-auth-timeout.md`
 
-**Watchdog Glob Pattern:** `task-????????-??????-*.md`
+**Multiple tasks:**
+```
+task-20260131-204500-01-fix-auth-timeout.md
+task-20260131-204501-02-update-password-policy.md
+task-20260131-204502-03-add-rate-limiting.md
+```
+
+### Enhanced Numbering (When Organization Exists)
+
+For projects with **modules** or **phases**, enhance the numbering to reflect structure:
+
+| Organization | Number Format | Example |
+|--------------|---------------|---------|
+| **FLAT_LIST** | Simple sequential | `task-{timestamp}-01-{desc}.md` |
+| **IMPLEMENTATION_PHASE** | Phase-Number | `task-{timestamp}-1-01-{desc}.md` |
+| **FEATURE_MODULE** | Module-Number | `task-{timestamp}-A-01-{desc}.md` |
+
+**Examples:**
+
+Phase-based:
+```
+task-20260131-204500-1-01-analyze-schema.md
+task-20260131-204501-1-02-design-new-schema.md
+task-20260131-204502-2-01-create-migration-scripts.md
+```
+
+Module-based:
+```
+task-20260131-204500-A-01-set-up-structure.md
+task-20260131-204501-A-02-state-definitions.md
+task-20260131-204502-B-01-spss-extraction.md
+```
+
+### Intelligent Decision Making
+
+| Task Count | Organization | Recommended Numbering |
+|------------|--------------|----------------------|
+| **1 task** | Any | No numbering needed |
+| **2-9 tasks** | Flat | Simple sequential (01, 02...) |
+| **10+ tasks** | Flat | Simple sequential (01, 02...) |
+| **Any** | Phased | Phase-Number (1-01, 1-02...) |
+| **Any** | Modular | Module-Number (A-01, B-01...) |
+
+**Guideline:** Use intelligent judgment based on project context. Numbering should aid clarity, not add complexity.
+
+### Watchdog Glob Pattern
+
+`task-????????-??????-*.md`
+
+Matches files with or without optional numbering.
 
 ---
 
@@ -466,10 +562,12 @@ task-monitor queue
 bash .claude/skills/task-document-writer/scripts/rename_task.sh tasks/task-monitor/pending/task-fix-auth-timeout.md.tmp
 # Output: ✅ Task created: tasks/task-monitor/pending/task-20260129-170500-fix-auth-timeout.md
 
-# Step 5: Monitor and verify
+# Step 5: Verify task started
 task-monitor task-20260129-170500-fix-auth-timeout
-cat tasks/task-monitor/results/task-20260129-170500-fix-auth-timeout.json
+# Output: Status: processing (task is now being processed by Worker Agent)
 ```
+
+Note: Only monitor further when user explicitly asks to check progress.
 
 ### Scenario 2 Example: Bulk Tasks from Breakdown
 
@@ -479,7 +577,8 @@ task-monitor queue
 
 # Step 2: Read and parse planning document
 # Document: tasks/task-planning/user-authentication.md
-# Extract: 8 tasks across 3 modules
+# Extract: 8 tasks across 3 modules (FEATURE_MODULE)
+# AI decides: Add module-numbering (A-01, A-02, B-01, B-02, C-01, C-02, C-03, C-04)
 
 # Step 3: Generate all temp files
 # tasks/task-monitor/pending/task-user-registration.md.tmp
@@ -492,17 +591,17 @@ for file in tasks/task-monitor/pending/task-*.md.tmp; do
   bash .claude/skills/task-document-writer/scripts/rename_task.sh "$file"
 done
 # Output:
-# ✅ Task created: tasks/task-monitor/pending/task-20260131-204500-user-registration.md
-# ✅ Task created: tasks/task-monitor/pending/task-20260131-204501-build-login-system.md
-# ✅ Task created: tasks/task-monitor/pending/task-20260131-204502-design-product-model.md
+# ✅ Task created: tasks/task-monitor/pending/task-20260131-204500-A-01-user-registration.md
+# ✅ Task created: tasks/task-monitor/pending/task-20260131-204501-A-02-build-login-system.md
+# ✅ Task created: tasks/task-monitor/pending/task-20260131-204502-B-01-design-product-model.md
 # ... (8 total)
 
-# Step 5: Monitor all tasks
+# Step 5: Verify tasks are processing
 task-monitor queue
-# Output: Queue size: 8
-
-# Track progress and verify results as tasks complete
+# Output: Queue size: 0, Processing: task-20260131-204500-A-01-...
 ```
+
+Note: Only monitor further when user explicitly asks to check progress.
 
 ---
 
@@ -516,8 +615,10 @@ task-monitor queue
 6. **Request investigation** - Worker Agents must do their own deep research
 7. **Define success** - Worker needs clear completion criteria
 8. **Provide context** - Worker should understand why the task exists
-9. **Verify results** - ALWAYS check `tasks/task-monitor/results/` after completion
-10. **Bulk awareness** - Scenario 2 creates multiple tasks; track all of them
+9. **Verify startup only** - After task is queued, just verify it started. DON'T continuously poll during processing.
+10. **Monitor on request** - Only check task progress when user explicitly asks you to.
+11. **Bulk awareness** - Scenario 2 creates multiple tasks; track all of them
+12. **Intelligent numbering** - Add sequential numbers/codes only when multiple tasks exist. Use judgment based on project structure (flat, phased, or modular).
 
 ---
 

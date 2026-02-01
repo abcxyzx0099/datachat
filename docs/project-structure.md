@@ -213,16 +213,21 @@ temp/
 
 ### 6.1 Environment Configuration (.env)
 
+> **For complete LLM provider configuration**, see [Configuration](./system-configuration.md#2-llm-provider-configuration).
+
 ```bash
-# Required
-OPENAI_API_KEY=sk-your-api-key-here
+# Required - Select your LLM provider
+LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
+
+# Required - Add API key for your selected provider
+ZHIPU_API_KEY=your-zhipu-api-key-here
 
 # Optional (override defaults)
 PSPP_PATH=/usr/bin/pspp
 OUTPUT_DIR=output
 TEMP_DIR=temp
-MODEL=gpt-4
-TEMPERATURE=0.7
+LLM_TEMPERATURE=0.1
+LLM_MAX_TOKENS=4000
 ENABLE_HUMAN_REVIEW=true
 ```
 
@@ -244,9 +249,11 @@ ENABLE_HUMAN_REVIEW=true
 
 ```python
 DEFAULT_CONFIG = {
-    "model": "gpt-4",
-    "temperature": 0.7,
-    "max_tokens": 2000,
+    # LLM Configuration (defaults for Zhipu provider)
+    "llm_provider": "ZHIPU",
+    "model": "glm-4.7",
+    "temperature": 0.1,
+    "max_tokens": 4000,
     "max_self_correction_iterations": 3,
     "enable_human_review": True,
     "pspp_path": "/usr/bin/pspp",

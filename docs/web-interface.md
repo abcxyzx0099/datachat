@@ -181,7 +181,7 @@ python -m workflow.graph --server
 
 When the workflow reaches a review point, Agent Chat UI displays:
 
-- **The artifact** to review (recoding rules, indicators, or table specs)
+- **The artifact** to review (recoding rules, indicators, or table specifications)
 - **Validation results** (passed checks, errors, warnings)
 - **Action buttons** for Approve or Reject
 

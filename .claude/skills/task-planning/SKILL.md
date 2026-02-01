@@ -1,6 +1,6 @@
 ---
 name: task-planning
-description: "Generate organized task lists from documentation. Discovers all docs, analyzes project complexity, and creates task planning documents. Simple projects get flat lists; medium projects get phase-based organization; complex projects get module-based organization. Output goes to tasks/task-planning/. Use when: starting a development wave; planning implementation; decomposing requirements into actionable tasks."
+description: "Generate organized task lists from documentation using intelligent assessment. Discovers all docs, evaluates project nature and scope, and creates task planning documents. Organization (flat/phase/module) is chosen based on project characteristics, not rigid scoring. Output goes to tasks/task-planning/. Use when: starting a development wave; planning implementation; decomposing requirements into actionable tasks."
 ---
 
 # Task Planning
@@ -10,8 +10,8 @@ Generate organized task planning documents from project documentation.
 ## Overview
 
 1. **Discover Documents** - Read ALL markdown files from `docs/` directory
-2. **Assess Complexity** - Analyze project characteristics (features, integrations, roles)
-3. **Choose Organization** - Select flat, phase-based, or module-based structure
+2. **Intelligently Assess** - AI evaluates project nature, scope, and structure
+3. **Choose Organization** - Select the most appropriate structure (flat, phase-based, or module-based)
 4. **Generate Tasks** - Create tasks using TaskCreate tool
 5. **Save Output** - Write to `tasks/task-planning/{descriptive-name}.md`
 
@@ -21,12 +21,12 @@ Generate organized task planning documents from project documentation.
 flowchart LR
     Start([Start]) --> Discover[Discover ALL docs/<br/>Glob *.md]
     Discover --> Read[Read documents]
-    Read --> Assess[Assess complexity]
-    Assess --> Decide{Complexity?}
+    Read --> Assess[AI assesses project<br/>nature & scope]
+    Assess --> Decide{Choose<br/>organization}
 
-    Decide -->|Score ≤ 10| Flat[FLAT_LIST]
-    Decide -->|Score 11-25| Phase[IMPLEMENTATION_PHASE]
-    Decide -->|Score 26+| Module[FEATURE_MODULE]
+    Decide -->|Simple<br/>linear work| Flat[FLAT_LIST]
+    Decide -->|Sequential<br/>phases clear| Phase[IMPLEMENTATION_PHASE]
+    Decide -->|Distinct<br/>modules| Module[FEATURE_MODULE]
 
     Flat --> Generate[Generate tasks<br/>TaskCreate]
     Phase --> Generate
@@ -58,35 +58,43 @@ Call this skill when:
 
 ## Workflow
 
-### Phase 1: Document Discovery & Complexity Assessment
+### Phase 1: Document Discovery & Intelligent Assessment
 
 ```bash
 # Discover ALL source materials
 files = Glob("**/*.md", path="docs/")
 
-# Read ALL documents and extract:
+# Read ALL documents and understand:
+# - Project scope and goals
 # - Features and requirements
-# - Business rules and constraints
-# - Entities and relationships
+# - Architecture and components
 # - Integration points
+# - Technical stack
 ```
 
-**Complexity Score (0-40):**
+**Intelligent Assessment:**
 
-| Factor | Max Points |
-|--------|------------|
-| Features (count) | 10 |
-| Integration points × 2 | 10 |
-| User roles × 2 | 10 |
-| Domain contexts × 2 | 10 |
+The AI should evaluate the project holistically and choose the most appropriate organization based on:
+
+| Question | Considerations |
+|----------|----------------|
+| **What is the project's nature?** | New application vs. feature addition vs. refactor |
+| **Are there distinct functional areas?** | Auth, data processing, UI, reporting, etc. |
+| **Do components work independently?** | Can teams work in parallel? |
+| **Is there a clear sequence of phases?** | Setup → Build → Test → Deploy |
+| **How many distinct components?** | Few vs. many |
+
+**No rigid scoring** - use intelligent judgment based on the actual project context.
 
 ### Phase 2: Organization Decision
 
-| Score | Organization | Use When |
-|-------|--------------|----------|
-| 0-10 | **FLAT_LIST** | Simple, linear work |
-| 11-25 | **IMPLEMENTATION_PHASE** | Clear sequential phases |
-| 26+ | **FEATURE_MODULE** | Distinct, independent modules |
+Choose the organization that best fits the project:
+
+| Organization | Best For | Characteristics |
+|--------------|----------|----------------|
+| **FLAT_LIST** | Simple additions, single features | Linear work, clear dependencies, small scope |
+| **IMPLEMENTATION_PHASE** | Phased projects, workflows | Clear temporal sequence (e.g., Phase 1 → Phase 2 → Phase 3) |
+| **FEATURE_MODULE** | Complex applications, multi-component | Distinct functional areas that can be developed in parallel |
 
 ### Phase 3: Task Generation
 
@@ -112,17 +120,19 @@ Save to `tasks/task-planning/{descriptive-name}.md`:
 # Task List: {Project Name}
 
 **Organization**: FLAT_LIST | IMPLEMENTATION_PHASE | FEATURE_MODULE
-**Complexity Score**: {Score}/40
 **Total Tasks**: {Count}
 
 ## Source Documents
 {List of all docs/ files read}
 
 ## Project Context
-{Brief summary}
+{Brief summary of what the project does and why this organization was chosen}
 
 ## Task Breakdown
 {Organized tasks}
+
+## Task Summary by Module/Phase
+{Summary table}
 ```
 
 **TaskCreate Parameters:**
@@ -136,11 +146,12 @@ Save to `tasks/task-planning/{descriptive-name}.md`:
 
 ### Example 1: FLAT_LIST
 
+**Use when**: Adding a single feature, simple refactoring, or small focused changes
+
 ```markdown
 # Task List: DataChat CSV Import Feature
 
 **Organization**: FLAT_LIST
-**Complexity Score**: 8/40
 **Total Tasks**: 5
 
 ## Source Documents
@@ -150,7 +161,7 @@ Save to `tasks/task-planning/{descriptive-name}.md`:
 - docs/business-rules.md
 
 ## Project Context
-Adding CSV file import capability to existing SPSS (.sav) file support.
+Adding CSV file import capability to existing SPSS (.sav) file support. This is a focused feature addition that extends the existing parser and requires updates to validation, testing, and documentation.
 
 ## Task Breakdown
 
@@ -177,12 +188,21 @@ Adding CSV file import capability to existing SPSS (.sav) file support.
 
 ### Example 2: IMPLEMENTATION_PHASE
 
+**Use when**: Clear sequential workflow, multi-stage deployment, or projects with distinct temporal phases
+
 ```markdown
 # Task List: Database Migration
 
 **Organization**: IMPLEMENTATION_PHASE
-**Complexity Score**: 15/40
 **Total Tasks**: 6
+
+## Source Documents
+- docs/system-architecture.md
+- docs/data-schema.md
+- docs/deployment.md
+
+## Project Context
+Database schema migration requiring careful sequencing: analysis → design → implementation → testing → deployment. Each phase must complete before the next can begin.
 
 ## Task Breakdown
 
@@ -221,12 +241,22 @@ Adding CSV file import capability to existing SPSS (.sav) file support.
 
 ### Example 3: FEATURE_MODULE
 
+**Use when**: Complex applications with distinct functional areas that can be developed independently
+
 ```markdown
 # Task List: E-Commerce Platform
 
 **Organization**: FEATURE_MODULE
-**Complexity Score**: 28/40
 **Total Tasks**: 8
+
+## Source Documents
+- docs/features-and-usage.md
+- docs/system-architecture.md
+- docs/data-schema.md
+- docs/api-specification.md
+
+## Project Context
+Full e-commerce platform with distinct functional modules (authentication, catalog, cart, orders) that can be developed independently by different teams or in parallel streams.
 
 ## Task Breakdown
 
@@ -269,14 +299,25 @@ Adding CSV file import capability to existing SPSS (.sav) file support.
 ### Task D-2: Build order history
 - **Description**: Display past orders with filters.
 - **Active Form**: Building order history
+
+## Task Summary by Module
+
+| Module | Tasks | Focus Area |
+|--------|-------|------------|
+| **Authentication** | 2 | User identity and access |
+| **Product Catalog** | 2 | Product data and search |
+| **Shopping Cart** | 2 | Cart management and checkout |
+| **Order Management** | 2 | Order processing and history |
 ```
 
 ## Best Practices
 
-1. **Keep tasks atomic** - Each task should be independently completable
-2. **Limit category size** - 3-8 tasks per category
-3. **Clear descriptions** - Define what "done" means
-4. **Logical ordering** - Respect dependencies
+1. **Intelligent assessment** - Don't use rigid scoring. Evaluate the project holistically and choose the organization that best fits.
+2. **Keep tasks atomic** - Each task should be independently completable
+3. **Limit category size** - 3-8 tasks per category
+4. **Clear descriptions** - Define what "done" means
+5. **Logical ordering** - Respect dependencies
+6. **Be flexible** - The chosen organization should help clarity, not constrain development
 
 ## Related Skills
 

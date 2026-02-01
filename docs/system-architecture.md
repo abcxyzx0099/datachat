@@ -61,7 +61,7 @@ graph TB
 | **Validation Layer** | Validates LLM-generated artifacts | Python |
 | **State Manager** | Maintains evolving workflow state | TypedDict |
 | **Checkpoint Service** | Persists state for resumable execution | SQLite |
-| **LLM Client** | Communicates with OpenAI API | langchain-openai |
+| **LLM Client** | Communicates with multi-provider LLM APIs (Kimi, DeepSeek, Zhipu) | langchain-openai |
 | **PSPP Executor** | Runs statistical operations | subprocess + PSPP |
 
 ### 2.2 Component Interaction
@@ -95,7 +95,7 @@ flowchart LR
 | **edges.py** | Conditional routing functions for three-node pattern feedback loops |
 | **nodes/** | Implements all 22 workflow steps organized by phase |
 | **utils/** | PSPP wrapper, file I/O, statistical computation helpers |
-| **validation/** | Validation logic for recoding rules, indicators, table specs |
+| **validation/** | Validation logic for recoding rules, indicators, table specifications |
 | **llm/** | Prompt templates and LLM client initialization |
 
 > **For complete directory structure and file organization**, see [Project Structure](./project-structure.md).
@@ -141,7 +141,7 @@ flowchart LR
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | **PSPP not found** | PSPP not installed or wrong path | Install PSPP or set `PSPP_PATH` |
-| **API key error** | Missing/invalid OpenAI key | Check `.env` file |
+| **API key error** | Missing/invalid LLM provider API key | Check `.env` file and verify `LLM_PROVIDER` setting |
 | **Memory error** | Large survey file | Increase available RAM |
 | **Validation loop** | LLM generates invalid output | Increase `max_self_correction_iterations` |
 | **Permission denied** | Cannot write to output directory | Check directory permissions |
@@ -181,4 +181,3 @@ python -m agent.graph --input survey.sav
 - **[Technology Stack](./technology-stack.md)** - Technologies and versions
 - **[Configuration](./system-configuration.md)** - Configuration options and usage examples
 - **[Product Features and Usage](./features-and-usage.md)** - Product introduction for end users
-- **[Implementation Specifications](./implementation-specifications.md)** - Technical implementation details
