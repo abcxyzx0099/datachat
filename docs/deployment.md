@@ -8,10 +8,11 @@ This document describes deployment architecture, installation, environment confi
 
 1. [Deployment Architecture](#1-deployment-architecture)
 2. [Installation](#2-installation)
-3. [Environment Configuration](#3-environment-configuration)
-4. [Production Deployment](#4-production-deployment)
-5. [Operational Guidance](#5-operational-guidance)
-6. [Troubleshooting](#6-troubleshooting)
+3. [Quick Start](#3-quick-start)
+4. [Environment Configuration](#4-environment-configuration)
+5. [Production Deployment](#5-production-deployment)
+6. [Operational Guidance](#6-operational-guidance)
+7. [Troubleshooting](#7-troubleshooting)
 
 ---
 
@@ -29,7 +30,7 @@ This document describes deployment architecture, installation, environment confi
 
 | Requirement | Specification |
 |-------------|---------------|
-| **Python** | 3.13+ |
+| **Python** | 3.11+ |
 | **PSPP** | 1.6+ (installed at `/usr/bin/pspp`) |
 | **Memory** | 4GB+ recommended |
 | **Disk** | 10GB+ for temporary files |
@@ -61,7 +62,7 @@ cp .env.example .env
 
 ```bash
 # Verify Python version
-python --version  # Should be 3.13+
+python --version  # Should be 3.11+
 
 # Verify PSPP installation
 pspp --version    # Should be 1.6+
@@ -72,7 +73,81 @@ pip list | grep -E "langgraph|langchain|openai|pyreadstat"
 
 ---
 
-## 3. Environment Configuration
+## 3. Quick Start
+
+### 3.1 Starting the Application
+
+**IMPORTANT: Always use the `start.sh` script to start the application.**
+
+The `start.sh` script handles:
+- Killing any existing processes on ports 8123 and 3000
+- Starting the LangGraph API server on port 8123
+- Starting the Agent Chat UI on port 3000
+
+```bash
+# From the project root directory
+./start.sh
+```
+
+**Output:**
+```
+============================================
+  DataChat Survey Analyzer
+============================================
+
+Step 1: Cleaning up ports...
+✓ Port 8123 is now free
+✓ Port 3000 is now free
+
+Step 2: Ensuring ports are free...
+✓ Port 8123 is free
+✓ Port 3000 is free
+
+Step 3: Starting LangGraph Server (port 8123)...
+✓ LangGraph Server started successfully (PID: xxxxx)
+
+Step 4: Starting Agent Chat UI (port 3000)...
+✓ Agent Chat UI started successfully (PID: xxxxx)
+
+============================================
+✓ DataChat Application Started!
+============================================
+
+LangGraph API:  http://localhost:8123
+  - Health:       http://localhost:8123/health
+  - API Docs:     http://localhost:8123/docs
+
+Agent Chat UI:   http://localhost:3000
+```
+
+### 3.2 Stopping the Application
+
+```bash
+./stop.sh
+```
+
+### 3.3 Viewing Logs
+
+```bash
+# LangGraph Server logs
+tail -f logs/langgraph.log
+
+# Agent Chat UI logs
+tail -f logs/ui.log
+```
+
+### 3.4 Accessing the Application
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| **Agent Chat UI** | http://localhost:3000 | Web interface for uploading SPSS files |
+| **LangGraph API** | http://localhost:8123 | REST API for the analysis workflow |
+| **API Health** | http://localhost:8123/health | Health check endpoint |
+| **API Docs** | http://localhost:8123/docs | Swagger UI documentation |
+
+---
+
+## 4. Environment Configuration
 
 ### 3.1 Environment Variables
 
@@ -132,22 +207,30 @@ LOG_LEVEL=INFO
 
 ---
 
-## 4. Production Deployment
+## 5. Production Deployment
 
 ### 4.1 Production Directory Structure
 
+DataChat is installed to `/opt/survey-analyzer/` in production:
+
 ```
 /opt/survey-analyzer/
-├── agent/                  # Application code
-├── config/                 # Configuration files
-├── output/                 # Generated outputs
-│   ├── logs/              # Execution logs
-│   ├── reviews/           # Human review documents
-│   └── temp/              # Temporary files
-├── data/
-│   └── input/             # Input .sav files
-├── checkpoints.db         # State persistence
-└── .env                   # Environment variables (production)
+├── agent/              # Application code
+├── config/             # Configuration files
+├── utils/              # Utilities
+├── venv/               # Python virtual environment
+├── data/               # Input survey files
+│   └── input/         # Upload .sav files here
+├── output/             # Generated outputs
+│   ├── logs/          # Execution logs
+│   ├── reviews/       # Human review documents
+│   └── temp/          # Temporary generated files
+├── temp/               # Temporary files (PSPP syntax, scripts)
+├── logs/               # Application logs
+├── checkpoints/        # State persistence directory
+├── checkpoints.db      # SQLite checkpoint database
+├── requirements.txt    # Python dependencies
+└── .env                # Environment configuration (production)
 ```
 
 ### 4.2 Path Configuration
@@ -155,33 +238,101 @@ LOG_LEVEL=INFO
 | Item | Development | Production |
 |------|-------------|------------|
 | **Project Root** | `~/workspaces/datachat/` | `/opt/survey-analyzer/` |
-| **Input Data** | `data/input/` | `/var/lib/survey-analyzer/input/` |
-| **Output** | `output/` | `/var/lib/survey-analyzer/output/` |
-| **Checkpoints** | `checkpoints.db` | `/var/lib/survey-analyzer/checkpoints.db` |
+| **Input Data** | `data/input/` | `/opt/survey-analyzer/data/input/` |
+| **Output** | `output/` | `/opt/survey-analyzer/output/` |
+| **Checkpoints** | `checkpoints.db` | `/opt/survey-analyzer/checkpoints.db` |
 | **PSPP** | `/usr/bin/pspp` | `/usr/bin/pspp` |
 
-### 4.3 Production Setup
+### 4.3 Automated Installation
+
+The easiest way to deploy to production is using the provided installation scripts:
 
 ```bash
-# Create production directories
-sudo mkdir -p /opt/survey-analyzer
-sudo mkdir -p /var/lib/survey-analyzer/{input,output,temp}
+# Clone repository
+git clone <repository-url>
+cd datachat
 
-# Copy application code
-sudo cp -r agent/ /opt/survey-analyzer/
-sudo cp -r config/ /opt/survey-analyzer/
+# Run installation (installs to /opt/survey-analyzer)
+sudo ./scripts/install.sh
 
-# Set permissions
-sudo chown -R app-user:app-user /opt/survey-analyzer
-sudo chown -R app-user:app-user /var/lib/survey-analyzer
+# Configure environment
+sudo ./scripts/configure.sh
 
-# Configure production environment
-cp .env.production /opt/survey-analyzer/.env
+# Edit .env with your API keys
+sudo nano /opt/survey-analyzer/.env
+
+# Install systemd service
+sudo cp scripts/datachat.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable datachat
+
+# Start the service
+sudo systemctl start datachat
+
+# Check status
+sudo systemctl status datachat
 ```
+
+### 4.4 Installation Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/install.sh` | Installs application to `/opt/survey-analyzer/`, creates service user, installs dependencies |
+| `scripts/configure.sh` | Creates `.env` file and initializes directories |
+| `scripts/start.sh` | Manually starts the LangGraph server (for testing) |
+| `scripts/stop.sh` | Stops the running service |
+
+### 4.5 Systemd Service Management
+
+```bash
+# Service control
+sudo systemctl start datachat    # Start service
+sudo systemctl stop datachat     # Stop service
+sudo systemctl restart datachat  # Restart service
+sudo systemctl status datachat   # Check status
+
+# Enable/disable auto-start on boot
+sudo systemctl enable datachat   # Enable auto-start
+sudo systemctl disable datachat  # Disable auto-start
+
+# View logs
+sudo journalctl -u datachat              # View all logs
+sudo journalctl -u datachat -f           # Follow logs in real-time
+sudo journalctl -u datachat --since today  # View today's logs
+```
+
+### 4.6 Service User
+
+The service runs as the `surveychat` user for security:
+
+- Created automatically by `install.sh`
+- Home directory: `/opt/survey-analyzer`
+- No shell login: `/bin/false`
+- Owns application files and directories
+
+### 4.7 Docker Deployment
+
+For containerized deployment, use Docker Compose:
+
+```bash
+# Build and start
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up -d --build
+```
+
+**Note**: See `docker-compose.yml` for configuration details.
 
 ---
 
-## 5. Operational Guidance
+## 6. Operational Guidance
 
 ### 5.1 Logging Strategy
 
@@ -213,7 +364,7 @@ cp .env.production /opt/survey-analyzer/.env
 
 ---
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 
 ### 6.1 Common Issues
 
@@ -244,10 +395,11 @@ python -m agent.graph --input survey.sav
 
 ### 6.4 Getting Help
 
-1. **Check logs**: `output/logs/` for detailed error messages
+1. **Check logs**: `output/logs/` or `journalctl -u datachat` for detailed error messages
 2. **Review PSPP output**: `output/pspp_logs.txt` for PSPP errors
 3. **Verify input**: Ensure .sav file is valid SPSS format
 4. **Check configuration**: Verify all required config values are set
+5. **Test manually**: Use `scripts/start.sh` to run the server directly for debugging
 
 ---
 

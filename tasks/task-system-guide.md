@@ -43,6 +43,12 @@ ls tasks/task-implementation/task-*/
 # Check service status
 systemctl --user status task-monitor
 
+# Show daemon status (Running/Stopped)
+task-monitor status
+
+# Set current project path
+task-monitor use "$(pwd)"
+
 # View queue status
 task-monitor queue
 
@@ -439,14 +445,20 @@ project-b:  [task-1───────────] [task-2───] [task-3]
 ## CLI Commands
 
 ```bash
-# Check queue status
+# Show daemon status (Running/Stopped)
+task-monitor status
+
+# Show queue state
 task-monitor queue
 
-# View specific task
+# View specific task status (waiting/processing/completed)
 task-monitor task-20260131-204500-fix-auth-timeout
 
-# List all tasks
-task-monitor
+# Show current project
+task-monitor current
+
+# Set current project
+task-monitor use /path/to/project
 
 # View result JSON
 cat tasks/task-monitor/results/task-20260131-204500-fix-auth-timeout.json

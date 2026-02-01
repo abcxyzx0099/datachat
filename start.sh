@@ -1,8 +1,25 @@
 #!/bin/bash
-# DataChat - Agno Agent + CopilotKit Start Script
-# This script starts the DataChat agent server on port 8000
+# =============================================================================
+# DataChat Survey Analyzer - Start Script
+# =============================================================================
+# This script starts both the LangGraph API server and the Agent Chat UI.
+#
+# Usage:
+#   ./start.sh
+#
+# The script will:
+#   1. Kill any existing processes on ports 8123 and 3000
+#   2. Start the LangGraph server on port 8123
+#   3. Start the Agent Chat UI on port 3000
+#
+# To stop the application, use: ./stop.sh
+# =============================================================================
 
 set -e
+
+# =============================================================================
+# Configuration
+# =============================================================================
 
 # Colors for output
 RED='\033[0;31m'
@@ -13,29 +30,25 @@ NC='\033[0m' # No Color
 
 # Project directories
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AGENT_DIR="$SCRIPT_DIR/agent"
-FRONTEND_DIR="$SCRIPT_DIR/frontend"
-
-# PID files for tracking processes
-AGENT_PID_FILE="$SCRIPT_DIR/.agent_pid"
-FRONTEND_PID_FILE="$SCRIPT_DIR/.frontend_pid"
-
-# Log files
-LOG_DIR="$SCRIPT_DIR/logs"
-AGENT_LOG="$LOG_DIR/agent.log"
-FRONTEND_LOG="$LOG_DIR/frontend.log"
+PROJECT_ROOT="$SCRIPT_DIR"
+UI_DIR="$PROJECT_ROOT/web/agent-chat-ui"
 
 # Ports
-AGENT_PORT=8000
-FRONTEND_PORT=3000
+LANGGRAPH_PORT=8123
+UI_PORT=3000
 
-echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}  DataChat - Agent + Frontend${NC}"
-echo -e "${BLUE}========================================${NC}"
-echo ""
+# PID files for tracking processes
+LANGGRAPH_PID_FILE="$PROJECT_ROOT/.langgraph_pid"
+UI_PID_FILE="$PROJECT_ROOT/.ui_pid"
 
-# Create logs directory
-mkdir -p "$LOG_DIR"
+# Log files
+LOG_DIR="$PROJECT_ROOT/logs"
+LANGGRAPH_LOG="$LOG_DIR/langgraph.log"
+UI_LOG="$LOG_DIR/ui.log"
+
+# =============================================================================
+# Functions
+# =============================================================================
 
 # Function to kill process on a specific port
 kill_port() {
@@ -43,10 +56,12 @@ kill_port() {
     local name=$2
     local killed=0
 
+    echo -e "${YELLOW}Cleaning port $port ($name)...${NC}"
+
     # Method 1: Try lsof
     local pid=$(lsof -ti:$port 2>/dev/null || true)
     if [ -n "$pid" ]; then
-        echo -e "${YELLOW}Killing $name (PID: $pid) on port $port (lsof)...${NC}"
+        echo -e "${YELLOW}  Killing process $pid on port $port...${NC}"
         kill -9 $pid 2>/dev/null || true
         killed=1
     fi
@@ -54,187 +69,209 @@ kill_port() {
     # Method 2: Try fuser
     local fuser_pids=$(fuser $port/tcp 2>/dev/null || true)
     if [ -n "$fuser_pids" ]; then
-        echo -e "${YELLOW}Killing $name on port $port (fuser)...${NC}"
+        echo -e "${YELLOW}  Killing processes on port $port (fuser)...${NC}"
         fuser -k $port/tcp 2>/dev/null || true
         killed=1
     fi
 
-    # Method 3: For port 3000, also kill any next-dev processes
-    if [ "$port" = "3000" ]; then
-        local next_pids=$(pgrep -f "next-dev" || true)
+    # Method 3: For UI (Next.js), kill any next-dev/node processes
+    if [ "$port" = "$UI_PORT" ]; then
+        local next_pids=$(pgrep -f "next dev" || true)
         if [ -n "$next_pids" ]; then
-            echo -e "${YELLOW}Killing stray 'next-dev' processes...${NC}"
-            pkill -f "next-dev" 2>/dev/null || true
+            echo -e "${YELLOW}  Killing Next.js dev processes...${NC}"
+            pkill -f "next dev" 2>/dev/null || true
             killed=1
         fi
     fi
 
-    # Method 4: For agent processes
-    if [ "$port" = "$AGENT_PORT" ]; then
-        local agent_pids=$(pgrep -f "agent.py" || true)
-        if [ -n "$agent_pids" ]; then
-            echo -e "${YELLOW}Killing stray 'agent.py' processes...${NC}"
-            pkill -f "agent.py" 2>/dev/null || true
+    # Method 4: For LangGraph, kill any agent.server processes
+    if [ "$port" = "$LANGGRAPH_PORT" ]; then
+        local server_pids=$(pgrep -f "agent.server" || true)
+        if [ -n "$server_pids" ]; then
+            echo -e "${YELLOW}  Killing LangGraph server processes...${NC}"
+            pkill -f "agent.server" 2>/dev/null || true
             killed=1
         fi
     fi
 
     if [ $killed -eq 1 ]; then
         sleep 1
-        # Double check the port is free
-        local check_pid=$(lsof -ti:$port 2>/dev/null || true)
-        if [ -n "$check_pid" ]; then
-            echo -e "${RED}Warning: Port $port still in use, forcing kill...${NC}"
-            kill -9 $check_pid 2>/dev/null || true
-            sleep 1
-        fi
-        echo -e "${GREEN}✓ Killed $name on port $port${NC}"
+        echo -e "${GREEN}✓ Port $port is now free${NC}"
     else
-        echo -e "${GREEN}✓ No process found on port $port${NC}"
+        echo -e "${GREEN}✓ Port $port was already free${NC}"
     fi
 }
 
-# Function to ensure port is free
+# Function to ensure port is free before starting
 ensure_port_free() {
     local port=$1
-    local name=$2
+    local max_attempts=5
+    local attempt=1
 
-    # Keep checking and killing until port is free
-    while true; do
+    while [ $attempt -le $max_attempts ]; do
         local pid=$(lsof -ti:$port 2>/dev/null || true)
         if [ -z "$pid" ]; then
-            break
+            return 0
         fi
-        echo -e "${YELLOW}Port $port is in use (PID: $pid), killing...${NC}"
+        echo -e "${YELLOW}Port $port still in use (attempt $attempt/$max_attempts), killing...${NC}"
         kill -9 $pid 2>/dev/null || true
         sleep 1
+        attempt=$((attempt + 1))
     done
-    echo -e "${GREEN}✓ Port $port is free${NC}"
+
+    echo -e "${RED}Error: Could not free port $port${NC}"
+    return 1
 }
 
-# Kill existing processes
+# =============================================================================
+# Main Script
+# =============================================================================
+
+echo -e "${BLUE}============================================${NC}"
+echo -e "${BLUE}  DataChat Survey Analyzer${NC}"
+echo -e "${BLUE}============================================${NC}"
+echo ""
+
+# Create logs directory
+mkdir -p "$LOG_DIR"
+
+# =============================================================================
+# Step 1: Kill existing processes
+# =============================================================================
+
 echo -e "${YELLOW}Step 1: Cleaning up ports...${NC}"
-kill_port $AGENT_PORT "Agent"
-kill_port $FRONTEND_PORT "Frontend"
+kill_port $LANGGRAPH_PORT "LangGraph API"
+kill_port $UI_PORT "Agent Chat UI"
 echo ""
 
-# Ensure ports are actually free
+# =============================================================================
+# Step 2: Ensure ports are free
+# =============================================================================
+
 echo -e "${YELLOW}Step 2: Ensuring ports are free...${NC}"
-ensure_port_free $AGENT_PORT "Agent"
-ensure_port_free $FRONTEND_PORT "Frontend"
+ensure_port_free $LANGGRAPH_PORT
+ensure_port_free $UI_PORT
 echo ""
 
-# Function to install Python dependencies
-install_agent_deps() {
-    echo -e "${YELLOW}Checking agent dependencies...${NC}"
+# =============================================================================
+# Step 3: Start LangGraph Server
+# =============================================================================
 
-    cd "$AGENT_DIR"
+echo -e "${YELLOW}Step 3: Starting LangGraph Server (port $LANGGRAPH_PORT)...${NC}"
 
-    # Use system Python directly
-    if ! python3 -c "import agno" 2>/dev/null; then
-        echo -e "${YELLOW}Installing agent dependencies...${NC}"
-        pip install --break-system-packages -q -r "$AGENT_DIR/requirements.txt" 2>/dev/null || pip3 install --user -q -r "$AGENT_DIR/requirements.txt"
-        echo -e "${GREEN}✓ Agent dependencies installed${NC}"
-    else
-        echo -e "${GREEN}✓ Agent dependencies already installed${NC}"
-    fi
-}
+cd "$PROJECT_ROOT"
 
-# Function to install Node dependencies
-install_frontend_deps() {
-    echo -e "${YELLOW}Checking frontend dependencies...${NC}"
-    cd "$FRONTEND_DIR"
+# Check for virtual environment
+if [ -d ".venv" ]; then
+    echo -e "${GREEN}Activating virtual environment...${NC}"
+    source ".venv/bin/activate"
+elif [ -d "venv" ]; then
+    echo -e "${GREEN}Activating virtual environment...${NC}"
+    source "venv/bin/activate"
+else
+    echo -e "${YELLOW}Warning: No virtual environment found, using system Python${NC}"
+fi
 
-    # Check if node_modules exists
-    if [ ! -d "node_modules" ]; then
-        echo -e "${YELLOW}Installing frontend dependencies...${NC}"
-        npm install --silent
-        echo -e "${GREEN}✓ Frontend dependencies installed${NC}"
-    else
-        echo -e "${GREEN}✓ Frontend dependencies already installed${NC}"
-    fi
-}
-
-# Start agent
-echo -e "${YELLOW}Step 3: Starting Agent (port $AGENT_PORT)...${NC}"
-install_agent_deps
-
-cd "$AGENT_DIR"
-
-# Check if .env exists
-if [ ! -f ".env" ]; then
-    echo -e "${RED}Error: .env file not found in agent directory!${NC}"
-    echo -e "${YELLOW}Please create .env from .env.example${NC}"
+# Check if agent.server module exists
+if ! python3 -c "import agent.server" 2>/dev/null; then
+    echo -e "${RED}Error: agent.server module not found${NC}"
+    echo -e "${YELLOW}Make sure you're in the project root directory${NC}"
     exit 1
 fi
 
-# Load environment variables from .env
-set -a
-source .env
-set +a
+# Start LangGraph server in background
+nohup python3 -m agent.server > "$LANGGRAPH_LOG" 2>&1 &
+LANGGRAPH_PID=$!
+echo $LANGGRAPH_PID > "$LANGGRAPH_PID_FILE"
 
-# Start agent in background
-PORT=$AGENT_PORT nohup python3 agent.py > "$AGENT_LOG" 2>&1 &
-AGENT_PID=$!
-echo $AGENT_PID > "$AGENT_PID_FILE"
-
-# Wait a moment for agent to start
+# Wait for server to start
 sleep 3
 
-# Check if agent is running
-if ps -p $AGENT_PID > /dev/null; then
-    echo -e "${GREEN}✓ Agent started successfully (PID: $AGENT_PID)${NC}"
+# Check if server is running
+if ps -p $LANGGRAPH_PID > /dev/null; then
+    # Check if server is responding
+    if curl -s http://localhost:$LANGGRAPH_PORT/health > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ LangGraph Server started successfully (PID: $LANGGRAPH_PID)${NC}"
+    else
+        echo -e "${YELLOW}⚠ LangGraph Server started but not responding yet. Check logs: $LANGGRAPH_LOG${NC}"
+    fi
 else
-    echo -e "${RED}✗ Agent failed to start. Check logs: $AGENT_LOG${NC}"
-    cat "$AGENT_LOG" | tail -20
+    echo -e "${RED}✗ LangGraph Server failed to start${NC}"
+    echo -e "${YELLOW}Check logs: $LANGGRAPH_LOG${NC}"
+    tail -20 "$LANGGRAPH_LOG"
     exit 1
 fi
 echo ""
 
-# Start frontend
-echo -e "${YELLOW}Step 4: Starting Frontend (port $FRONTEND_PORT)...${NC}"
-install_frontend_deps
+# =============================================================================
+# Step 4: Start Agent Chat UI
+# =============================================================================
 
-cd "$FRONTEND_DIR"
+echo -e "${YELLOW}Step 4: Starting Agent Chat UI (port $UI_PORT)...${NC}"
+
+cd "$UI_DIR"
+
+# Check if pnpm is available
+if command -v pnpm &> /dev/null; then
+    PKG_MANAGER="pnpm"
+elif command -v npm &> /dev/null; then
+    PKG_MANAGER="npm"
+else
+    echo -e "${RED}Error: Neither pnpm nor npm found${NC}"
+    echo -e "${YELLOW}Please install Node.js and pnpm/npm${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}Using package manager: $PKG_MANAGER${NC}"
 
 # Check if .env.local exists
 if [ ! -f ".env.local" ]; then
-    echo -e "${RED}Error: .env.local file not found in frontend directory!${NC}"
-    echo -e "${YELLOW}Please create .env.local from .env.example${NC}"
+    echo -e "${RED}Error: .env.local not found in $UI_DIR${NC}"
+    echo -e "${YELLOW}Create it from .env.example: cp .env.example .env.local${NC}"
     exit 1
 fi
 
-# Start frontend in background
-nohup npm run dev > "$FRONTEND_LOG" 2>&1 &
-FRONTEND_PID=$!
-echo $FRONTEND_PID > "$FRONTEND_PID_FILE"
+# Start UI in background
+nohup $PKG_MANAGER run dev > "$UI_LOG" 2>&1 &
+UI_PID=$!
+echo $UI_PID > "$UI_PID_FILE"
 
-# Wait a moment for frontend to start
-sleep 3
+# Wait for UI to start
+sleep 5
 
-# Check if frontend is running
-if ps -p $FRONTEND_PID > /dev/null; then
-    echo -e "${GREEN}✓ Frontend started successfully (PID: $FRONTEND_PID)${NC}"
+# Check if UI is running
+if ps -p $UI_PID > /dev/null; then
+    echo -e "${GREEN}✓ Agent Chat UI started successfully (PID: $UI_PID)${NC}"
 else
-    echo -e "${RED}✗ Frontend failed to start. Check logs: $FRONTEND_LOG${NC}"
-    cat "$FRONTEND_LOG" | tail -20
+    echo -e "${RED}✗ Agent Chat UI failed to start${NC}"
+    echo -e "${YELLOW}Check logs: $UI_LOG${NC}"
+    tail -20 "$UI_LOG"
     exit 1
 fi
 echo ""
 
+# =============================================================================
 # Done
-echo -e "${BLUE}========================================${NC}"
+# =============================================================================
+
+echo -e "${BLUE}============================================${NC}"
 echo -e "${GREEN}✓ DataChat Application Started!${NC}"
-echo -e "${BLUE}========================================${NC}"
+echo -e "${BLUE}============================================${NC}"
 echo ""
-echo -e "${GREEN}Frontend:${NC}  http://localhost:$FRONTEND_PORT"
-echo -e "${GREEN}Agent (AGUI):${NC} http://localhost:$AGENT_PORT"
-echo -e "${GREEN}API Docs:${NC}    http://localhost:$AGENT_PORT/docs"
+echo -e "${GREEN}LangGraph API:${NC}  http://localhost:$LANGGRAPH_PORT"
+echo -e "${GREEN}  - Health:       http://localhost:$LANGGRAPH_PORT/health"
+echo -e "${GREEN}  - API Docs:     http://localhost:$LANGGRAPH_PORT/docs"
+echo ""
+echo -e "${GREEN}Agent Chat UI:${NC}   http://localhost:$UI_PORT"
 echo ""
 echo -e "${YELLOW}To view logs:${NC}"
-echo -e "  Agent:    tail -f $AGENT_LOG"
-echo -e "  Frontend: tail -f $FRONTEND_LOG"
+echo -e "  LangGraph:  tail -f $LANGGRAPH_LOG"
+echo -e "  UI:         tail -f $UI_LOG"
 echo ""
 echo -e "${YELLOW}To stop the application:${NC}"
 echo -e "  ./stop.sh"
+echo ""
+echo -e "${YELLOW}Or kill by PID:${NC}"
+echo -e "  kill $LANGGRAPH_PID  # LangGraph Server"
+echo -e "  kill $UI_PID          # Agent Chat UI"
 echo ""
