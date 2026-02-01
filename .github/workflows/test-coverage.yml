@@ -37,19 +37,22 @@ jobs:
       - name: Run tests with coverage
         run: |
           # Run pytest with coverage
-          # --cov-fail-under: Fail if coverage drops below threshold
+          # --cov-fail-under: Fail if coverage drops below threshold (raised to 80%)
           # --cov-report=term: Show summary in terminal
           # --cov-report=xml: Generate XML for reporting
+          # --cov-report=html: Generate HTML report with per-module breakdown
+          # --cov-report=json: Generate JSON for programmatic access
           python -m pytest \
             --cov=agent \
             --cov=utils \
-            --cov-report=term-missing \
+            --cov-report=term-missing:skip-covered \
             --cov-report=xml \
             --cov-report=html \
             --cov-report=json \
             --cov-branch \
             --cov-context=test \
-            --cov-fail-under=69 \
+            --cov-fail-under=80 \
+            --cov-combine-report \
             --verbose
 
       - name: Upload coverage to Codecov

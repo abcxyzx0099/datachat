@@ -84,12 +84,22 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
             f"from {input_file_path}"
         )
 
+        # Get column labels from metadata
+        # pyreadstat returns column_labels as a list, so convert to dict
+        raw_column_labels = getattr(metadata, "column_labels", [])
+        if isinstance(raw_column_labels, list):
+            # Convert list to dict by zipping with column names
+            column_labels_dict = dict(zip(df.columns, raw_column_labels))
+        else:
+            # Already a dict (from some sources or tests)
+            column_labels_dict = raw_column_labels
+
         # Build structured metadata dictionary
         original_metadata = {
             "file_name": input_file_path,
             "n_rows": len(df),
             "n_columns": len(df.columns),
-            "column_labels": getattr(metadata, "column_labels", {}),
+            "column_labels": column_labels_dict,
             "column_value_labels": getattr(metadata, "variable_value_labels", {}),
             "variable_types": _extract_variable_types(metadata, df),
         }

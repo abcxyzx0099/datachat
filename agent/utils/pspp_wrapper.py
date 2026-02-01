@@ -16,6 +16,10 @@ from agent.config import DEFAULT_CONFIG
 
 logger = logging.getLogger(__name__)
 
+# SECURITY NOTE: This module uses subprocess to execute PSPP statistical software.
+# All subprocess calls use list arguments (not shell=True) to prevent command injection.
+# PSPP path is validated before execution, and all operations have timeout protection.
+
 
 def get_pspp_path() -> str:
     """

@@ -1,7 +1,8 @@
 # Coverage Baseline Report
 
-**Date**: 2026-02-01
+**Date**: 2026-02-01 (last updated: 2026-02-02)
 **Baseline Coverage**: 69.6%
+**Target Threshold**: 80.0%
 
 ## Overall Coverage Summary
 
@@ -64,16 +65,17 @@
 
 ### Current Settings
 
-- **Minimum Threshold**: 69.0% (just below baseline)
-- **Build Fails**: If coverage drops below 69%
+- **Minimum Threshold**: 80.0% (updated 2026-02-02 from 69%)
+- **Build Fails**: If coverage drops below 80%
 - **Branch Coverage**: Enabled
-- **Goal**: 70% overall, 80% for new code
+- **Goal**: 80% overall coverage across all modules
 
 ### Rationale
 
-- Current baseline is 69.6%, so threshold set to 69%
-- This prevents coverage regression while allowing minor fluctuations
-- As coverage improves, threshold should be increased
+- Current baseline is 69.6% (as of 2026-02-01)
+- Threshold raised to 80% as part of holistic testing initiative
+- This will require adding tests for under-covered modules to reach 80%
+- Priority areas: server.py (0%), phase5_statistics.py (7.8%), phase6_filtering.py (4.1%)
 
 ## Priority Areas for Improvement
 
@@ -143,10 +145,11 @@ The following patterns are excluded from coverage:
 
 ### Medium-term Goals
 
-1. **Reach 75% Overall Coverage**
+1. **Reach 80% Overall Coverage** (ENFORCED THRESHOLD)
    - Focus on modules below 50%
    - Add integration tests
    - Improve edge case coverage
+   - Priority: Server, Filtering, Statistics nodes
 
 2. **Maintain 85%+ Branch Coverage**
    - Add tests for both branches of conditionals
@@ -196,6 +199,7 @@ python -m coverage report > docs/COVERAGE_BASELINE.md
 | Date | Coverage | Change | Notes |
 |------|----------|--------|-------|
 | 2026-02-01 | 69.6% | Baseline | Initial baseline established |
+| 2026-02-02 | 69.6% | - | Threshold raised to 80% (enforcement enabled) |
 | | | | |
 
 ---

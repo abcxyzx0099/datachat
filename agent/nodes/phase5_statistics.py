@@ -4,6 +4,10 @@ Phase 5: Statistical Analysis Nodes (Steps 17-18)
 This module contains nodes for computing Chi-square statistics and Cramer's V:
 - Step 17: generate_python_statistics_script_node - Generate stats_script.py
 - Step 18: execute_python_statistics_script_node - Execute script, load results
+
+SECURITY NOTE: This module uses subprocess to execute generated Python statistics scripts.
+The script path is validated before execution, and subprocess uses list arguments
+(not shell=True) to prevent command injection. A 5-minute timeout is enforced.
 """
 
 import json

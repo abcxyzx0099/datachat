@@ -1,0 +1,26 @@
+# Pre-commit hooks for security scanning
+# To install: pip install pre-commit && pre-commit install
+# To run manually: pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/PyCQA/bandit
+    rev: '1.9.3'
+    hooks:
+      - id: bandit
+        name: Bandit Security Linter
+        args: [
+          '-r', 'agent/', 'utils/',
+          '-f', 'txt',
+          # Skip tests that have been reviewed and documented
+          '-s', 'B104,B404,B603,B112'
+        ]
+        pass_filenames: false
+
+  # Alternative: Run bandit without suppression to review all findings
+  # - repo: local
+  #   hooks:
+  #     - id: bandit-full
+  #       name: Bandit Full Security Scan
+  #       entry: bandit -r agent/ utils/ -lll
+  #       language: system
+  #       pass_filenames: false

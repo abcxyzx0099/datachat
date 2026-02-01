@@ -214,8 +214,13 @@ def load_config(env_file: str = ".env") -> Dict[str, Any]:
             f"Please set {api_key_env} environment variable with your {provider_upper} API key."
         )
 
-    # Merge DEFAULT_CONFIG with environment overrides
-    config = get_config_with_env_overrides(DEFAULT_CONFIG.copy())
+    # Start with DEFAULT_CONFIG but set the validated provider first
+    # so that get_config_with_env_overrides uses the correct provider for model/base_url
+    config = DEFAULT_CONFIG.copy()
+    config["llm_provider"] = provider_upper
+
+    # Merge with environment overrides
+    config = get_config_with_env_overrides(config)
 
     return config
 

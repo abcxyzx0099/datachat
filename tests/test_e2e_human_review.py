@@ -1597,7 +1597,7 @@ class TestAutoApproval:
 # 8. Edge Cases and Error Scenarios
 # =============================================================================
 
-@pytest.mark.ece
+@pytest.mark.e2e
 class TestHumanReviewEdgeCases:
     """Tests for edge cases in human review flow."""
 

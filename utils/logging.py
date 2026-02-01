@@ -15,6 +15,10 @@ Log File Locations:
     - Standard logs: output/logs/{timestamp}.log
     - Debug logs: output/logs/debug/{timestamp}.log
     - PSPP logs: output/pspp_logs.txt
+
+SECURITY NOTE: This module uses subprocess to execute logrotate for log management.
+The command path is validated before execution, and subprocess uses list arguments
+(not shell=True) to prevent command injection. A 5-minute timeout is enforced.
 """
 
 import logging

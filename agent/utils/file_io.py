@@ -234,7 +234,8 @@ def read_csv(file_path: str, **kwargs) -> pd.DataFrame:
         return df
 
     except UnicodeDecodeError as e:
-        # Try common encodings
+        # Try common encodings - this try-except-continue is intentional
+        # to attempt multiple encodings until one succeeds
         encodings = ['utf-8-sig', 'latin-1', 'iso-8859-1', 'cp1252']
         for encoding in encodings:
             try:
@@ -245,6 +246,7 @@ def read_csv(file_path: str, **kwargs) -> pd.DataFrame:
                 )
                 return df
             except Exception:
+                # Continue to next encoding if this one fails
                 continue
         raise IOError(f"Could not read CSV file with any common encoding: {e}") from e
     except pd.errors.EmptyDataError:

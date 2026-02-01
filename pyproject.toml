@@ -32,13 +32,15 @@ omit = [
 ]
 branch = true
 parallel = true
+context = "test"
 
 [tool.coverage.report]
-fail_under = 69.0
+fail_under = 80.0
 show_missing = true
 sort = "Cover"
 precision = 1
 skip_empty = true
+skip_covered = false
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -51,10 +53,34 @@ exclude_lines = [
     "@abc.abstractmethod",
 ]
 
+# Per-module coverage targets (for tracking and documentation):
+# Note: Individual module thresholds are tracked via coverage.json and htmlcov/
+# Use: python3 -c "import json; print(json.load(open('coverage.json'))['files'])"
+#
+# HIGH PRIORITY MODULES (need tests to reach 70%):
+# - agent/server.py: 0% → 70%
+# - agent/nodes/phase5_statistics.py: 7.8% → 70%
+# - agent/nodes/phase6_filtering.py: 4.1% → 70%
+#
+# MEDIUM PRIORITY MODULES (need tests to reach 70%):
+# - agent/config.py: 29% → 70%
+# - agent/styling.py: 41.6% → 70%
+# - agent/nodes/phase4_tables.py: 49.8% → 70%
+# - agent/nodes/phase2_recoding.py: 78.4% → 80%
+# - agent/nodes/phase7_powerpoint.py: 27.8% → 70%
+
 [tool.coverage.html]
 directory = "htmlcov"
 title = "DataChat SPSS Analyzer - Coverage Report"
 show_contexts = true
+skip_covered = false
+# Per-module coverage targets for tracking:
+# agent/server.py: 0% → 70% (HIGH PRIORITY)
+# agent/nodes/phase5_statistics.py: 7.8% → 70% (HIGH PRIORITY)
+# agent/nodes/phase6_filtering.py: 4.1% → 70% (HIGH PRIORITY)
+# agent/config.py: 29% → 70% (MEDIUM PRIORITY)
+# agent/styling.py: 41.6% → 70% (MEDIUM PRIORITY)
+# agent/nodes/phase4_tables.py: 49.8% → 70% (MEDIUM PRIORITY)
 
 [tool.coverage.xml]
 output = "coverage.xml"

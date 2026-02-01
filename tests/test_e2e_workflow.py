@@ -344,13 +344,18 @@ def mock_dependencies(
     patches = []
 
     # Create a proper mock metadata object with all required attributes
-    mock_metadata_obj = Mock()
-    # Set all metadata attributes as properties
-    for key, value in sample_metadata.items():
-        setattr(mock_metadata_obj, key, value)
-    # Set column_labels and variable_value_labels specifically
+    # Use a MagicMock that properly handles attribute access
+    from unittest.mock import MagicMock
+    mock_metadata_obj = MagicMock()
+
+    # Set all metadata attributes properly
+    # Important: These need to be actual dicts, not Mock objects
     mock_metadata_obj.column_labels = sample_metadata.get("column_labels", {})
     mock_metadata_obj.variable_value_labels = sample_metadata.get("column_value_labels", {})
+    mock_metadata_obj.variable_storage_types = sample_metadata.get("variable_types", {})
+    mock_metadata_obj.file_name = sample_metadata.get("file_name", "sample_data.sav")
+    mock_metadata_obj.n_rows = sample_metadata.get("n_rows", len(sample_dataframe))
+    mock_metadata_obj.n_columns = sample_metadata.get("n_columns", len(sample_dataframe.columns))
 
     # Mock read_spss_file which is what extract_spss_node actually calls
     mock_read_spss = Mock()

@@ -49,6 +49,8 @@ from agent.state import WorkflowState, state_to_dict, get_state_summary
 # =============================================================================
 
 # Server configuration
+# SECURITY NOTE: Default binding to 0.0.0.0 is intentional for containerized deployments (Docker/Kubernetes).
+# In production, set LANGGRAPH_HOST environment variable to restrict binding to specific interfaces.
 HOST = os.getenv("LANGGRAPH_HOST", "0.0.0.0")
 PORT = int(os.getenv("LANGGRAPH_PORT", "8123"))
 GRAPH_ID = "survey_analysis"

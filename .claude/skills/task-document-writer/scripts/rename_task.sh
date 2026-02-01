@@ -71,7 +71,6 @@ process_single_file() {
 
     # Output result
     echo "✅ Task created: $final_file"
-    echo "$final_file"
 }
 
 # Batch mode: Process all .md.tmp files sorted by creation time
