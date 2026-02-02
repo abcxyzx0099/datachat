@@ -27,8 +27,8 @@ Archive completed directories to organized timestamped locations. This keeps you
 
 Ask the user what they want to archive. Common patterns:
 - Development wave: `development/{wave-name}/`
-- Documentation directory: `docs/{directory-name}/`
-- Single documentation file: `docs/{category}/{file}.md`
+- Documentation directory: `docs/application-design/{directory-name}/`
+- Single documentation file: `docs/application-design/{category}/{file}.md`
 - Any other directory or file
 
 **If archiving a development wave**, verify completion:
@@ -105,8 +105,8 @@ cat "development/{wave-name}/development-progress.md"
 | Source | Description |
 |--------|-------------|
 | `development/{wave-name}/` | `{Wave-Name}` |
-| `docs/{directory}/` | `{Directory-Name}` |
-| `docs/{category}/{file}.md` | `{File-Name}` |
+| `docs/application-design/{directory}/` | `{Directory-Name}` |
+| `docs/application-design/{category}/{file}.md` | `{File-Name}` |
 
 **Ask user** to confirm or modify the description before proceeding.
 
@@ -270,10 +270,10 @@ Before finishing, verify:
 **Input:** User says "Archive the {directory} docs"
 
 **Steps:**
-1. Identify source: `docs/{directory}/`
+1. Identify source: `docs/application-design/{directory}/`
 2. Determine description: "{Directory-Name}" (from directory name)
 3. Get timestamp: `date +"%Y%m%d-%H%M%S"`
-4. Create archive: `mv "docs/{directory}" "history/Archive-{Directory-Name}-{timestamp}/"`
+4. Create archive: `mv "docs/application-design/{directory}" "history/Archive-{Directory-Name}-{timestamp}/"`
 5. Verify with `ls`
 6. Commit changes
 
@@ -299,9 +299,10 @@ Before finishing, verify:
 │       ├── phase-*.md
 │       ├── development-conventions.md
 │       └── development-progress.md
-└── docs/                                 (active documentation)
-    └── {directory-name}/
-        └── *.md
+└── docs/
+    └── application-design/               (active documentation)
+        └── {directory-name}/
+            └── *.md
 
 # Archived materials (flat structure)
 history/
@@ -319,7 +320,7 @@ history/
 | Type | Files |
 |------|-------|
 | Development waves | `development-progress.md`, `phase-*.md`, `*-conventions.md` |
-| Documentation | `*.md` files in various `docs/` subdirectories |
+| Documentation | `*.md` files in various `docs/application-design/` subdirectories |
 
 ### Commands
 

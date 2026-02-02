@@ -262,7 +262,7 @@ The Coordinator returns a comprehensive result:
 
 ```json
 {
-  "task_document_file": "tasks/task-monitor/pending/task-20260131-204500-fix-auth-timeout.md",
+  "task_document_file": "tasks/task-specifications/task-20260131-204500-fix-auth-timeout.md",
   "task_summary": "One-line summary of the task",
   "workflow_state": "completed",
   "iterations": [
@@ -297,7 +297,7 @@ The Coordinator returns a comprehensive result:
 
 ```json
 {
-  "task_document_file": "tasks/task-monitor/pending/task-20260131-210000-add-jwt-auth.md",
+  "task_document_file": "tasks/task-specifications/task-20260131-210000-add-jwt-auth.md",
   "task_summary": "Add JWT authentication to API",
   "workflow_state": "completed",
   "iterations": [
@@ -340,7 +340,7 @@ The Coordinator returns a comprehensive result:
 
 ```json
 {
-  "task_document_file": "tasks/task-monitor/pending/task-20260131-220000-add-jwt-auth.md",
+  "task_document_file": "tasks/task-specifications/task-20260131-220000-add-jwt-auth.md",
   "task_summary": "Add JWT authentication to API",
   "workflow_state": "max_iterations_reached",
   "iterations": [
@@ -520,7 +520,7 @@ The Coordinator **MUST** provide clear progress updates during execution:
 
 ```markdown
 🚀 Task Implementation Started
-📋 Task document: tasks/task-monitor/pending/task-20260131-204500-fix-auth-timeout.md
+📋 Task document: tasks/task-specifications/task-20260131-204500-fix-auth-timeout.md
 
 📋 Iteration 1/3
    🔧 Reading task document...
@@ -571,7 +571,7 @@ async def execute_task(self, task_file: str):
 
 ### Example Execution Flow
 
-**Task document:** `tasks/task-monitor/pending/task-20260131-204500-add-jwt-auth.md`
+**Task document:** `tasks/task-specifications/task-20260131-204500-add-jwt-auth.md`
 
 ```markdown
 # Task: Add authentication to the API endpoints
@@ -596,7 +596,7 @@ Need to add JWT-based authentication to existing REST API.
 
 **Coordinator workflow:**
 
-1. **Read task document** from `tasks/task-monitor/pending/task-20260131-204500-add-jwt-auth.md`
+1. **Read task document** from `tasks/task-specifications/task-20260131-204500-add-jwt-auth.md`
 
 2. **Iteration 1**:
    - Spawn Implementation Agent

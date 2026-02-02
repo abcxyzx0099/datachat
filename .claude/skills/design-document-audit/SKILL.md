@@ -1,13 +1,13 @@
 ---
 name: design-document-audit
-description: Comprehensive design document audit and review for application design documents. Reviews all markdown files in the docs/ directory for quality, consistency, completeness, and organization. Evaluates cross-document consistency, conflicts, redundancy, content organization, standards compliance, framework alignment, cross-reference integrity, security, visual aids quality, and readiness for implementation. Ensures documents follow high-level design principles - no large source code blocks. Use when user requests review, audit, consistency check, quality evaluation, or implementation readiness assessment of documentation in the docs/ directory.
+description: Comprehensive design document audit and review for application design documents. Reviews all markdown files in the docs/application-design/ directory for quality, consistency, completeness, and organization. Evaluates cross-document consistency, conflicts, redundancy, content organization, standards compliance, framework alignment, cross-reference integrity, security, visual aids quality, and readiness for implementation. Ensures documents follow high-level design principles - no large source code blocks. Use when user requests review, audit, consistency check, quality evaluation, or implementation readiness assessment of documentation in the docs/application-design/ directory.
 ---
 
 # Design Document Audit Skill
 
 ## Overview
 
-This skill performs comprehensive audit and review of all application design documents in the `docs/` directory. It evaluates documentation quality, consistency across files, content organization, completeness, and readiness for implementation.
+This skill performs comprehensive audit and review of all application design documents in the `docs/application-design/` directory. It evaluates documentation quality, consistency across files, content organization, completeness, and readiness for implementation.
 
 ## Audit Workflow
 
@@ -16,7 +16,7 @@ This skill performs comprehensive audit and review of all application design doc
 Use `Glob` tool to find all markdown files:
 
 ```
-docs/**/*.md
+docs/application-design/**/*.md
 ```
 
 List all discovered documents at the start of the report.
@@ -97,7 +97,7 @@ Evaluate against each criterion below:
 - Data structures defined, not fully implemented
 
 #### 11. Cross-Reference Integrity
-- All referenced documents exist in the docs/ directory?
+- All referenced documents exist in the docs/application-design/ directory?
 - All internal links (anchors) valid and working?
 - Related Documents sections accurate and up-to-date?
 - No circular or broken reference chains?

@@ -64,7 +64,51 @@ git log --follow docs/application-design/my-document.md
 git blame docs/application-design/my-document.md
 ```
 
-## 5. Archive Guidelines
+## 5. Document Creation Guidelines
+
+**CRITICAL RULE**: AI agents must follow strict rules when creating documentation.
+
+### Application Design Documents (`docs/application-design/`)
+
+| Rule | Description |
+|------|-------------|
+| **Explicit user request required** | Do NOT create documents in `docs/application-design/` without user permission |
+| **User-triggered only** | Only save to this directory when the user explicitly requests it |
+| **Purpose** | High-level design, architecture, and specification documents |
+
+**When to create in `docs/application-design/`:**
+- User explicitly requests: "Create a design document for X"
+- User explicitly requests: "Save this to application design"
+- User asks to document architecture or specifications
+
+**When NOT to create in `docs/application-design/`:**
+- AI agent spontaneously decides to document something
+- Implementation notes or technical guides
+- Code documentation or API references
+
+### Implementation Documents (`implementation/`)
+
+| Rule | Description |
+|------|-------------|
+| **AI-autonomous creation** | AI agents MAY create documents here freely during implementation |
+| **Purpose** | Implementation guides, setup summaries, test coverage, technical notes |
+| **Examples** | Setup summaries, coverage reports, implementation guides, test documentation |
+
+**When to create in `implementation/`:**
+- During implementation when AI needs to document process
+- Test coverage reports and guides
+- Setup and configuration summaries
+- Implementation notes and technical guides
+
+### Summary
+
+```
+docs/application-design/  → User-requested only (high-level design)
+implementation/           → AI can create freely (implementation docs)
+temp/                     → Temporary/one-time files
+```
+
+## 6. Archive Guidelines
 
 **Archive pattern**: `history/{document-type}/Archive-{description}-{timestamp}/`
 
@@ -83,7 +127,7 @@ Use the `material-archiver` skill for archiving development projects.
 
 ---
 
-## 6. MCP Servers Configuration
+## 7. MCP Servers Configuration
 
 This project uses 3 MCP (Model Context Protocol) servers configured in `.mcp.json`:
 
@@ -101,7 +145,7 @@ This project uses 3 MCP (Model Context Protocol) servers configured in `.mcp.jso
 
 ---
 
-## 7. External AI Assistance
+## 8. External AI Assistance
 
 When uncertain about information, solutions, or implementation approaches, the Development Agent can leverage the **`ask-the-deepseek`** skill to get recommendations and double-confirm decisions from another AI agent.
 

@@ -31,7 +31,7 @@ This skill creates task specification documents that will be processed by the `t
 2. **Conversation context** - Discussion between user and AI
 
 **Auxiliary Sources:**
-- Design/Project Documentation (`docs/` directory)
+- Design/Project Documentation (`docs/application-design/` directory)
 - Codebase investigation (Glob/Grep)
 
 ## Output Location
@@ -110,7 +110,7 @@ tasks/task-specifications/
 
 **Step 1: Investigate & Understand**
 - Review conversation context
-- Check relevant documentation in `docs/`
+- Check relevant documentation in `docs/application-design/`
 - Investigate codebase with Glob/Grep
 - Understand requirements fully
 

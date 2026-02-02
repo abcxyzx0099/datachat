@@ -50,7 +50,7 @@ Read the task document carefully:
 | **Patterns** | `grep`, `Read` samples | Find current conventions |
 | **Dependencies** | `grep -r "import"` | What depends on what |
 | **Tests** | `find tests/` | Test coverage location |
-| **Docs** | `find docs/` | Architecture decisions |
+| **Docs** | `find docs/application-design/` | Architecture decisions |
 
 ### Step 3: Identify ALL Files
 

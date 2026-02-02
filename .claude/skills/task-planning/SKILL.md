@@ -13,7 +13,7 @@ Generate organized task planning documents from project documentation.
 
 1. **Auto-Archive** existing plans to `history/`
 2. **Scope Discussion** - Interactive session to determine scope
-3. **Discover Documents** - Read ALL markdown files from `docs/`
+3. **Discover Documents** - Read ALL markdown files from `docs/application-design/`
 4. **Intelligently Assess** - AI evaluates project nature and scope
 5. **Choose Organization** - Select structure (FLAT_LIST, IMPLEMENTATION_PHASE, FEATURE_MODULE)
 6. **Generate Tasks** - Create tasks using TaskCreate tool
@@ -28,7 +28,7 @@ flowchart LR
     Check -->|Yes| Archive["📦 Archive to history/"]
     Archive --> Scope
 
-    Scope --> Discover[Discover docs/]
+    Scope --> Discover[Discover docs/application-design/]
     Discover --> Assess[Assess project]
     Assess --> Decide{Choose<br/>organization}
 
@@ -128,7 +128,7 @@ AskUserQuestion(
 
 ```bash
 # Discover ALL source materials
-files = Glob("**/*.md", path="docs/")
+files = Glob("**/*.md", path="docs/application-design/")
 
 # Read ALL documents and understand:
 # - Project scope and goals
@@ -199,7 +199,7 @@ Save to `tasks/task-planning/{descriptive-name}.md`:
 {User's selected scope and focus areas}
 
 ## Source Documents
-{List of all docs/ files read}
+{List of all docs/application-design/ files read}
 
 ## Project Context
 {Brief summary}
@@ -243,8 +243,9 @@ Is the work simple/linear?
 
 ## Related Skills
 
-- **task-implementation**: Executes tasks with audit iteration
-- **task-document-writer**: Generates task documents for delegation to the monitoring system
+- **task-specification-generation**: Generates task specifications from planning documents
+- **task-implementation**: Coordinates task execution using CLI commands
+- **task-worker**: Executes tasks with worker-auditor workflow (auto-iteration)
 
 ---
 
