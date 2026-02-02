@@ -178,10 +178,11 @@ def execute_pspp_syntax(
         }
 
     # Security: Validate output file path
+    # PSPP can output various file types including .sav (SPSS data files)
     try:
         output_file = validate_file_path(
             output_file,
-            allowed_extensions=['.txt', '.html', '.htm', '.log'],
+            allowed_extensions=['.txt', '.html', '.htm', '.log', '.sav', '.csv'],
             allow_absolute=True
         )
     except ValueError as e:

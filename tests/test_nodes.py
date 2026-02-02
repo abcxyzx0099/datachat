@@ -272,7 +272,7 @@ class TestValidateRecodingRulesNode:
             "recoding_rules": {"var1": {"recodings": []}},
         }
 
-        with patch('agent.nodes.phase2_recoding.validate_recoding_artifact') as mock_validate:
+        with patch('agent.validation.recoding.validate_recoding_rules') as mock_validate:
             mock_validate.return_value = ValidationResult(
                 is_valid=True,
                 errors=[],
@@ -292,7 +292,7 @@ class TestValidateRecodingRulesNode:
             "recoding_rules": {"var1": {"recodings": []}},
         }
 
-        with patch('agent.nodes.phase2_recoding.validate_recoding_artifact') as mock_validate:
+        with patch('agent.validation.recoding.validate_recoding_rules') as mock_validate:
             mock_validate.return_value = ValidationResult(
                 is_valid=False,
                 errors=["Syntax error"],
@@ -319,7 +319,7 @@ class TestReviewRecodingRulesNode:
             "config": sample_config,
         }
 
-        with patch('agent.nodes.phase2_recoding.format_review_for_display'):
+        with patch('agent.nodes.phase2_recoding._generate_recoding_review_markdown'):
             result = review_recoding_rules_node(state)
 
             assert result["current_step"] == 6
@@ -334,7 +334,7 @@ class TestReviewRecodingRulesNode:
             "config": {"auto_approve_recoding": False, "output_dir": "output"},
         }
 
-        with patch('agent.nodes.phase2_recoding.format_review_for_display'):
+        with patch('agent.nodes.phase2_recoding._generate_recoding_review_markdown'):
             result = review_recoding_rules_node(state)
 
             assert result["current_step"] == 6
@@ -2991,8 +2991,10 @@ class TestGeneratePowerPointNode:
             },
         }
 
-        with patch('agent.nodes.phase7_powerpoint.create_powerpoint') as mock_create:
-            mock_create.return_value = "/output/presentation.pptx"
+        with patch('pptx.Presentation') as mock_presentation:
+            # Mock the presentation instance
+            mock_prs = Mock()
+            mock_presentation.return_value = mock_prs
 
             result = generate_powerpoint_node(state)
 
@@ -3033,7 +3035,7 @@ class TestGenerateHtmlDashboardNode:
             "new_metadata": {"variables": {}},
         }
 
-        with patch('agent.nodes.phase8_html_dashboard.create_html_dashboard') as mock_create:
+        with patch('agent.nodes.phase8_html_dashboard._generate_html_dashboard') as mock_create:
             mock_create.return_value = "/output/dashboard.html"
 
             result = generate_html_dashboard_node(state)
@@ -3158,7 +3160,7 @@ class TestThreeNodePatternRecoding:
             state_after_gen = generate_recoding_rules_node(populated_state)
 
         # Step 5: Validate
-        with patch('agent.nodes.phase2_recoding.validate_recoding_rules') as mock_validate:
+        with patch('agent.validation.recoding.validate_recoding_rules') as mock_validate:
             mock_validate.return_value = ValidationResult(
                 is_valid=True,
                 errors=[],
@@ -3168,7 +3170,7 @@ class TestThreeNodePatternRecoding:
             state_after_val = validate_recoding_rules_node(state_after_gen)
 
         # Step 6: Review
-        with patch('agent.nodes.phase2_recoding.format_review_for_display'):
+        with patch('agent.nodes.phase2_recoding._generate_recoding_review_markdown'):
             state_after_rev = review_recoding_rules_node(state_after_val)
 
         assert state_after_gen["iteration_count"] == 0
@@ -3186,7 +3188,7 @@ class TestThreeNodePatternRecoding:
             state_after_gen = generate_recoding_rules_node(populated_state)
 
         # Step 5: Validation fails
-        with patch('agent.nodes.phase2_recoding.validate_recoding_rules') as mock_validate:
+        with patch('agent.validation.recoding.validate_recoding_rules') as mock_validate:
             mock_validate.return_value = ValidationResult(
                 is_valid=False,
                 errors=["Invalid range"],
@@ -3196,7 +3198,7 @@ class TestThreeNodePatternRecoding:
             state_after_val = validate_recoding_rules_node(state_after_gen)
 
         # Step 6: Review should require human review
-        with patch('agent.nodes.phase2_recoding.format_review_for_display'):
+        with patch('agent.nodes.phase2_recoding._generate_recoding_review_markdown'):
             state_after_rev = review_recoding_rules_node(state_after_val)
 
         # Step 4 retry: With validation feedback
@@ -3526,7 +3528,7 @@ class TestValidateRecodingRulesNodeAdditional:
             "errors": [],
         }
 
-        with patch('agent.nodes.phase2_recoding.validate_recoding_rules') as mock_validate:
+        with patch('agent.validation.recoding.validate_recoding_rules') as mock_validate:
             mock_validate.return_value = ValidationResult(
                 is_valid=True,
                 errors=[],

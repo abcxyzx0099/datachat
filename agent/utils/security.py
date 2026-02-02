@@ -121,29 +121,34 @@ def validate_executable_path(path: str) -> str:
 
 def sanitize_json_output(data: Any) -> Any:
     """
-    Sanitize JSON data for output to prevent XSS attacks.
+    Sanitize JSON data for output.
 
-    This function recursively sanitizes string values in JSON-serializable data
-    by escaping HTML special characters.
+    This function validates and sanitizes JSON data for safe output.
+    For JSON file output, quotes are NOT escaped since JSON handles
+    quotes natively. HTML entities like &quot; would break JSON.
 
     Args:
         data: The data to sanitize (dict, list, or primitive)
 
     Returns:
-        Sanitized data with HTML special characters escaped in strings
+        Sanitized data safe for JSON output
+
+    Note:
+        For HTML contexts, use dedicated HTML escaping functions.
+        JSON.stringify/json.dumps handles quote escaping automatically.
     """
     if isinstance(data, str):
-        # Escape HTML special characters to prevent XSS
-        replacements = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#x27;',
-            '/': '&#x2F;',
-        }
-        for char, escaped in replacements.items():
-            data = data.replace(char, escaped)
+        # Only escape characters that could break JSON when not properly
+        # handled by json.dumps(). We escape control characters and backslash.
+        # Note: We do NOT escape quotes as &quot; - JSON needs actual quotes.
+        # json.dumps() will properly escape quotes as \" for us.
+
+        # Remove or escape dangerous control characters
+        # Remove null bytes and other control characters except common whitespace
+        import re
+        # Keep \n \t \r but remove other control characters
+        data = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', data)
+
         return data
 
     elif isinstance(data, dict):

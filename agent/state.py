@@ -21,6 +21,7 @@ population as the workflow progresses.
 """
 
 from typing import TypedDict, Optional, Dict, List, Any, Literal
+import pandas as pd
 
 
 # =============================================================================
@@ -471,3 +472,77 @@ def get_state_summary(state: WorkflowState) -> Dict[str, Any]:
             or state.get("html_dashboard_file")
         ),
     }
+
+
+# =============================================================================
+# DataFrame Serialization for LangGraph Checkpoints
+# =============================================================================
+
+def serialize_state_for_checkpoint(state: WorkflowState) -> Dict[str, Any]:
+    """
+    Convert WorkflowState to a format suitable for LangGraph checkpointing.
+
+    This function converts pandas DataFrames to a serializable format that
+    LangGraph's msgpack serializer can handle.
+
+    Args:
+        state: WorkflowState to serialize
+
+    Returns:
+        Serialized state dictionary with DataFrames converted to dict format
+    """
+    serialized = {}
+    for key, value in state.items():
+        if isinstance(value, pd.DataFrame):
+            # Convert DataFrame to dict representation
+            serialized[key] = {
+                '__type__': 'DataFrame',
+                'data': value.to_dict('records'),
+                'columns': list(value.columns),
+                'dtypes': {col: str(dtype) for col, dtype in value.dtypes.items()}
+            }
+        else:
+            serialized[key] = value
+    return serialized
+
+
+def deserialize_state_from_checkpoint(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Restore WorkflowState from serialized checkpoint format.
+
+    This function converts DataFrame dicts back to pandas DataFrames.
+
+    Args:
+        data: Serialized state dictionary from checkpoint
+
+    Returns:
+        Deserialized state dictionary with DataFrames restored
+    """
+    restored = {}
+    for key, value in data.items():
+        if isinstance(value, dict) and value.get('__type__') == 'DataFrame':
+            # Reconstruct DataFrame from dict representation
+            df_data = value['data']
+            columns = value['columns']
+            dtypes = value.get('dtypes', {})
+
+            # Create DataFrame
+            df = pd.DataFrame(df_data, columns=columns)
+
+            # Convert dtypes if needed
+            for col, dtype_str in dtypes.items():
+                if col in df.columns:
+                    try:
+                        # Handle common dtype conversions
+                        if 'int' in dtype_str.lower():
+                            df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
+                        elif 'float' in dtype_str.lower():
+                            df[col] = pd.to_numeric(df[col], errors='coerce')
+                    except (ValueError, TypeError):
+                        # Keep original dtype if conversion fails
+                        pass
+
+            restored[key] = df
+        else:
+            restored[key] = value
+    return restored
