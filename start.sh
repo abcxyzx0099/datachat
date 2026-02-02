@@ -167,6 +167,22 @@ echo ""
 # Create logs directory
 mkdir -p "$LOG_DIR"
 
+# Load environment variables from .env file
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    echo -e "${GREEN}Loading environment variables from .env...${NC}"
+    while IFS='=' read -r key value; do
+        # Skip comments and empty lines
+        [[ "$key" =~ ^#.*$ ]] && continue
+        [[ -z "$key" ]] && continue
+        # Remove leading/trailing whitespace and quotes
+        key=$(echo "$key" | xargs)
+        value=$(echo "$value" | xargs | sed 's/^["\x27]|["\x27]$//g')
+        export "$key=$value"
+    done < "$PROJECT_ROOT/.env"
+    echo -e "${GREEN}✓ Environment loaded${NC}"
+    echo ""
+fi
+
 # Build mode message
 if [ "$START_WEB" = true ] && [ "$START_STUDIO" = true ]; then
     MODE_MSG="All servers (Studio + Web App)"
@@ -209,12 +225,15 @@ echo ""
 
 # Activate virtual environment once
 cd "$PROJECT_ROOT"
+PYTHON_CMD="python3"
 if [ -d ".venv" ]; then
     echo -e "${GREEN}Activating virtual environment...${NC}"
     source ".venv/bin/activate"
+    PYTHON_CMD=".venv/bin/python"
 elif [ -d "venv" ]; then
     echo -e "${GREEN}Activating virtual environment...${NC}"
     source "venv/bin/activate"
+    PYTHON_CMD="venv/bin/python"
 else
     echo -e "${YELLOW}Warning: No virtual environment found, using system Python${NC}"
 fi
@@ -266,14 +285,14 @@ if [ "$START_WEB" = true ]; then
     echo -e "${YELLOW}Step 4: Starting LangGraph Server (port $LANGGRAPH_PORT)...${NC}"
 
     # Check if agent.server module exists
-    if ! python3 -c "import agent.server" 2>/dev/null; then
+    if ! $PYTHON_CMD -c "import agent.server" 2>/dev/null; then
         echo -e "${RED}Error: agent.server module not found${NC}"
         echo -e "${YELLOW}Make sure you're in the project root directory${NC}"
         exit 1
     fi
 
     # Start LangGraph server in background
-    nohup python3 -m agent.server > "$LANGGRAPH_LOG" 2>&1 &
+    nohup $PYTHON_CMD -m agent.server > "$LANGGRAPH_LOG" 2>&1 &
     LANGGRAPH_PID=$!
     echo $LANGGRAPH_PID > "$LANGGRAPH_PID_FILE"
 
