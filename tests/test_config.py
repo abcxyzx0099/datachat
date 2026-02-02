@@ -422,6 +422,15 @@ class TestGetConfigWithEnvOverrides:
         assert config["base_url"] == "https://custom.zhipu.com/v1"
         assert config["model"] == "custom-zhipu-model"
 
+    def test_provider_specific_zhipu_default_when_no_override(self, monkeypatch):
+        """Test ZHIPU provider uses defaults when no override env vars."""
+        monkeypatch.setenv("SURVEY_LLM_PROVIDER", "ZHIPU")
+        # Don't set ZHIPU_BASE_URL or ZHIPU_MODEL, should use provider config defaults
+        config = get_config_with_env_overrides()
+        assert config["llm_provider"] == "ZHIPU"
+        assert config["base_url"] == "https://open.bigmodel.cn/api/coding/paas/v4"
+        assert config["model"] == "glm-4.7"
+
     def test_custom_base_config(self):
         """Test with custom base config dict."""
         custom_config = {"llm_provider": "KIMI", "temperature": 0.5, "custom_key": "custom_value"}
@@ -444,6 +453,17 @@ class TestGetConfigWithEnvOverrides:
         # So we check that all DEFAULT_CONFIG keys are present with same values
         for key, value in DEFAULT_CONFIG.items():
             assert config[key] == value
+
+    def test_env_var_for_key_not_in_config(self, monkeypatch):
+        """Test that env var for key not in config is ignored."""
+        # Create a custom config without 'temperature' key
+        custom_config = {"llm_provider": "ZHIPU", "model": "glm-4.7"}
+        # Set env var for a key that doesn't exist in config
+        monkeypatch.setenv("SURVEY_LLM_TEMPERATURE", "0.9")
+        result = get_config_with_env_overrides(custom_config)
+        # The env var should be ignored since 'temperature' is not in the config
+        assert "temperature" not in result
+        assert result["llm_provider"] == "ZHIPU"
 
 
 # =============================================================================

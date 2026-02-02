@@ -13,10 +13,12 @@ import pandas as pd
 
 from agent.state import WorkflowState
 from agent.utils.file_io import read_spss_file
+from agent.utils.tracing import trace_node
 
 logger = logging.getLogger(__name__)
 
 
+@trace_node("Step 1: Extract SPSS Data")
 def extract_spss_node(state: WorkflowState) -> WorkflowState:
     """
     Step 1: Extract raw data and metadata from SPSS .sav file.
@@ -240,6 +242,7 @@ def _determine_type(series: pd.Series) -> str:
     return "unknown"
 
 
+@trace_node("Step 2: Transform Metadata")
 def transform_metadata_node(state: WorkflowState) -> WorkflowState:
     """
     Step 2: Transform metadata to variable-centered format.
@@ -440,6 +443,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
     }
 
 
+@trace_node("Step 3: Filter Metadata")
 def filter_metadata_node(state: WorkflowState) -> WorkflowState:
     """
     Step 3: Filter metadata to variables requiring recoding.
@@ -542,6 +546,7 @@ def filter_metadata_node(state: WorkflowState) -> WorkflowState:
 
             filter_entry = {
                 "name": var_name,
+                "label": var_info.get("label", var_name),  # Include label for debugging
                 "reason": _get_filter_reason_description(reason),
                 "rule": reason,
                 "distinct_count": var_info.get("distinct_count"),

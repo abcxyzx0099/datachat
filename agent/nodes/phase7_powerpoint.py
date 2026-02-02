@@ -34,6 +34,7 @@ from agent.styling import (
     TABLE_HEADER_FONT,
     TABLE_CELL_FONT,
 )
+from agent.utils.tracing import trace_node
 
 logger = logging.getLogger(__name__)
 
@@ -396,6 +397,7 @@ def get_chart_type_description(chart_type: str) -> Dict[str, Any]:
 # Step 21: Generate PowerPoint
 # =============================================================================
 
+@trace_node("Step 21: Generate PowerPoint")
 def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
     """
     Step 21: Generate PowerPoint presentation with charts from significant tables.

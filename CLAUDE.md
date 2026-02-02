@@ -145,24 +145,46 @@ This project uses 3 MCP (Model Context Protocol) servers configured in `.mcp.jso
 
 ---
 
-## 8. External AI Assistance
+## 8. Server Ports
 
-When uncertain about information, solutions, or implementation approaches, the Development Agent can leverage the **`ask-the-deepseek`** skill to get recommendations and double-confirm decisions from another AI agent.
+| Port | Service | Command | Purpose |
+|------|---------|---------|---------|
+| **2024** | LangGraph Studio | `langgraph dev` | Official dev server with Studio UI integration |
+| **8123** | Custom FastAPI | `python -m agent.server` | Project-specific API wrapper for Agent Chat UI |
+| **3000** | Frontend Dev | Vite dev server | Agent Chat UI development server |
 
-### When to Use ask-the-deepseek
+### Reverse Proxy URLs (with SSL)
 
-Invoke the `ask-the-deepseek` skill when:
-- **Encountering errors or blockers** (e.g., compilation failures, missing dependencies)
-- **Seeking alternatives** (e.g., "what are my options for X?")
-- **Requiring complex reasoning** (e.g., math, logic, architecture decisions)
-- **Needing code review** (e.g., code analysis, bug detection, improvement suggestions)
-- **Unclear about solutions** (e.g., "how do I workaround X?")
+When reverse proxy is configured with domain `sysy.site`:
 
-### Available Modes
+| Service | URL |
+|---------|-----|
+| Frontend | `https://sysy.site/` |
+| LangGraph Studio | `https://sysy.site/studio` |
+| API Backend | `https://sysy.site/api` |
 
-| Mode | Best For |
-|------|----------|
-| **deepseek-reasoner** | Complex reasoning, step-by-step breakdown, math, logic |
-| **deepseek-chat** | General chat, quick answers, code assistance |
+---
+
+## 9. Python Environment Usage Plan
+
+This project uses **virtual environments only**. Direct system Python usage is **NOT supported**.
+
+### Deployment Scenarios
+
+| Scenario | Location | Python | Use For |
+|----------|----------|--------|---------|
+| **Local Development** | `.venv/` | 3.13 | Development, testing, debugging |
+| **Docker** | Container | 3.11 | Containerized deployment, CI/CD |
+| **Production** | `/opt/survey-analyzer/venv/` | System → New venv | Server deployment, systemd service |
+
+### Why Production ≠ Local Development
+
+| Reason | Description |
+|--------|-------------|
+| **Code Isolation** | Production is a deployed copy, not live development code |
+| **Service Integration** | Production runs as systemd service with dedicated user (`surveychat`) |
+| **Location** | `/opt/` is standard for production apps; home dirs for development |
+| **Security** | Production uses restricted permissions, non-root user |
+| **Stability** | Production is a tested snapshot; development changes frequently |
 
 ---

@@ -512,6 +512,45 @@ class TestSubmitFeedback:
 
         assert response.status_code == 200
 
+    def test_submit_feedback_with_message(
+        self, client, mock_compiled_graph, mock_state_snapshot
+    ):
+        """Test submitting feedback with feedback message (covers line 507-508)."""
+        mock_state_snapshot.values["current_step"] = 6  # Recoding review step
+        mock_compiled_graph.get_state.return_value = mock_state_snapshot
+
+        feedback_data = {
+            "approved": True,
+            "feedback": "Approved with feedback message"
+        }
+
+        response = client.post(
+            "/threads/test-thread-123/feedback",
+            json=feedback_data
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["feedback"] == "Approved with feedback message"
+
+    def test_submit_feedback_unexpected_error(
+        self, client, mock_compiled_graph
+    ):
+        """Test handling of unexpected error in feedback submission (covers lines 525-527)."""
+        mock_compiled_graph.get_state.side_effect = RuntimeError("Unexpected error")
+
+        feedback_data = {"approved": True}
+
+        response = client.post(
+            "/threads/test-thread-123/feedback",
+            json=feedback_data
+        )
+
+        assert response.status_code == 500
+        data = response.json()
+        assert "detail" in data
+        assert "Failed to submit feedback" in data["detail"]
+
     def test_submit_feedback_rejection(
         self, client, mock_compiled_graph, mock_state_snapshot
     ):
@@ -717,6 +756,65 @@ class TestInvokeThreadStream:
         )
 
         assert response.status_code == 400
+
+    def test_stream_workflow_error_handling(self):
+        """Test stream_workflow handles errors gracefully (covers lines 613-616)."""
+        from agent.server import stream_workflow
+        import asyncio
+
+        mock_graph = Mock()
+
+        # Create a proper async generator that raises an exception
+        async def mock_astream_error(*args, **kwargs):
+            yield {"step": "start"}
+            raise RuntimeError("Stream error")
+
+        mock_graph.astream = mock_astream_error
+
+        async def run_stream():
+            events = []
+            try:
+                async for event in stream_workflow(mock_graph, {}, {}):
+                    events.append(event)
+            except Exception:
+                pass  # Error is yielded, not raised
+            return events
+
+        events = asyncio.run(run_stream())
+
+        # Should have error event
+        assert len(events) > 0
+        assert "error" in events[-1].lower()
+
+    def test_stream_endpoint_with_config(
+        self, client, sample_sav_file_content, temp_upload_dir
+    ):
+        """Test streaming endpoint with config override (covers line 673)."""
+        with patch("agent.server.get_compiled_graph") as mock_get_graph, \
+             patch("agent.config.get_config_with_env_overrides") as mock_get_config, \
+             patch("agent.state.create_initial_state") as mock_create_state:
+
+            mock_graph = Mock()
+            async def mock_stream(*args, **kwargs):
+                yield 'data: {"status": "processing"}\n\n'
+                yield 'data: {"status": "completed"}\n\n'
+
+            mock_graph.astream = mock_stream
+            mock_get_graph.return_value = mock_graph
+            mock_get_config.return_value = {}
+            mock_create_state.return_value = {}
+
+            file_content = io.BytesIO(sample_sav_file_content)
+            files = {"file": ("test.sav", file_content, "application/octet-stream")}
+            params = {"config": '{"test_key": "test_value"}'}
+
+            response = client.post(
+                "/threads/test-thread-123/stream",
+                files=files,
+                params=params
+            )
+
+            assert response.status_code == 200
 
 
 # =============================================================================
@@ -973,3 +1071,66 @@ class TestHelperFunctions:
 
             # Verify get_graph was called with checkpoint path
             mock_get_graph.assert_called_once()
+
+
+# =============================================================================
+# Main Function Tests
+# =============================================================================
+
+class TestMainFunction:
+    """Tests for main() function and server startup."""
+
+    def test_main_function_setup(self):
+        """Test that main function configures logging (covers lines 705-710)."""
+        with patch("agent.server.uvicorn.run") as mock_uvicorn:
+            server.main()
+
+            # Verify uvicorn.run was called with correct parameters
+            mock_uvicorn.assert_called_once()
+            call_args = mock_uvicorn.call_args
+
+            assert call_args[0][0] == "agent.server:app"
+            assert call_args[1]["host"] == server.HOST
+            assert call_args[1]["port"] == server.PORT
+            assert call_args[1]["reload"] is False
+
+    def test_main_with_custom_environment(self):
+        """Test main function respects environment variables."""
+        with patch.dict(os.environ, {
+            "LANGGRAPH_HOST": "127.0.0.1",
+            "LANGGRAPH_PORT": "9999"
+        }), patch("agent.server.uvicorn.run") as mock_uvicorn:
+            # Reload server module to pick up env vars
+            import importlib
+            importlib.reload(server)
+
+            server.main()
+
+            call_args = mock_uvicorn.call_args
+            assert call_args[1]["host"] == "127.0.0.1"
+            assert call_args[1]["port"] == 9999
+
+
+# =============================================================================
+# Import Tests
+# =============================================================================
+
+class TestModuleImports:
+    """Tests for module-level imports and initialization."""
+
+    def test_server_module_loads_with_dotenv(self):
+        """Test that server module loads successfully with dotenv (lines 30-34)."""
+        # Simply importing the server module verifies that
+        # the dotenv import works correctly
+        import importlib
+        import sys
+
+        # Remove server from cached modules to force fresh import
+        sys.modules.pop("agent.server", None)
+
+        # Re-import server module
+        import agent.server
+
+        # If we get here, the import succeeded
+        assert hasattr(agent.server, "app")
+        assert hasattr(agent.server, "main")

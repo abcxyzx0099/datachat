@@ -23,6 +23,7 @@ from agent.state import WorkflowState, ValidationResult
 from agent.llm.clients import get_llm_client
 from agent.llm.prompts import generate_recoding_rules_prompt
 from agent.config import DEFAULT_CONFIG
+from agent.utils.tracing import trace_node
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 # Step 4: Generate Recoding Rules
 # =============================================================================
 
+@trace_node("Step 4: Generate Recoding Rules")
 def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     """
     Step 4: Generate recoding rules using LLM.
@@ -621,6 +623,7 @@ def _generate_recoding_review_markdown(
 # Step 5: Validate Recoding Rules
 # =============================================================================
 
+@trace_node("Step 5: Validate Recoding Rules")
 def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     """
     Step 5: Validate recoding rules structure and references.
@@ -659,7 +662,7 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
 
     # Get inputs from state
     recoding_rules = state.get("recoding_rules")
-    filtered_metadata = state.get("filtered_metadata")
+    variable_centered_metadata = state.get("variable_centered_metadata")
 
     # Validate required inputs
     if not recoding_rules:
@@ -671,8 +674,8 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
             "errors": state.get("errors", []) + [error_msg],
         }
 
-    if not filtered_metadata:
-        error_msg = "No filtered_metadata available in state for validation"
+    if not variable_centered_metadata:
+        error_msg = "No variable_centered_metadata available in state for validation"
         logger.error(error_msg)
         return {
             **state,
@@ -685,8 +688,10 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         from agent.validation.recoding import validate_recoding_rules
 
         # Run validation
+        # Note: We use variable_centered_metadata["variables"] (all variables) instead of filtered_metadata
+        # because recoding rules reference variables that were filtered out (high cardinality)
         logger.info(f"Validating {len(recoding_rules.get('recoding_rules', []))} recoding rules")
-        validation_result = validate_recoding_rules(recoding_rules, filtered_metadata)
+        validation_result = validate_recoding_rules(recoding_rules, variable_centered_metadata.get("variables", {}))
 
         # Log results
         if validation_result.is_valid:
@@ -734,6 +739,7 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         }
 
 
+@trace_node("Step 6: Review Recoding Rules")
 def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     """
     Step 6: Human review and approval of recoding rules.
@@ -779,6 +785,9 @@ def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     previous_feedback = state.get("recoding_feedback")
     config = state.get("config", DEFAULT_CONFIG)
 
+    # Check for auto-approval (CI/CD and testing mode)
+    auto_approve = config.get("auto_approve_recoding", False)
+
     # Validate required inputs
     if not recoding_rules:
         error_msg = "No recoding_rules available in state for review"
@@ -787,7 +796,8 @@ def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
             **state,
             "current_step": 6,
             "errors": state.get("errors", []) + [error_msg],
-            "requires_human_review": True,
+            "requires_human_review": not auto_approve,
+            "recoding_approved": auto_approve,
         }
 
     try:
@@ -810,33 +820,37 @@ def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
 
         logger.info(f"Review document saved to: {review_path}")
 
-        # Trigger LangGraph interrupt to pause workflow
+        # Trigger LangGraph interrupt to pause workflow (unless auto-approve is enabled)
         # The Agent Chat UI will display the review document
         # and wait for human action (approve/reject/modify)
         from langgraph.types import interrupt
 
-        interrupt({
-            "type": "approval_required",
-            "step": 6,
-            "task": "recoding_rules",
-            "review_document_path": str(review_path),
-            "validation_passed": validation_result.is_valid if validation_result else False,
-            "iteration": iteration_count,
-            "message": (
-                "Please review the recoding rules at: {}\n\n"
-                "Actions:\n"
-                "- Approve: Rules look correct, proceed to PSPP syntax generation\n"
-                "- Reject with Feedback: Rules need revision, provide feedback below\n"
-                "- Modify: You will manually edit the rules"
-            ).format(review_path)
-        })
+        # Only trigger interrupt if not auto-approving
+        if not auto_approve:
+            interrupt({
+                "type": "approval_required",
+                "step": 6,
+                "task": "recoding_rules",
+                "review_document_path": str(review_path),
+                "validation_passed": validation_result.is_valid if validation_result else False,
+                "iteration": iteration_count,
+                "message": (
+                    "Please review the recoding rules at: {}\n\n"
+                    "Actions:\n"
+                    "- Approve: Rules look correct, proceed to PSPP syntax generation\n"
+                    "- Reject with Feedback: Rules need revision, provide feedback below\n"
+                    "- Modify: You will manually edit the rules"
+                ).format(review_path)
+            })
 
-        # Return state with requires_human_review flag
-        # Note: recoding_approved is NOT set here - human sets it via UI
+        # Return state with approval status
+        # If auto_approve is True, recoding_approved is set to True
+        # If auto_approve is False, requires_human_review is set to True
         return {
             **state,
             "current_step": 6,
-            "requires_human_review": True,
+            "requires_human_review": not auto_approve,
+            "recoding_approved": auto_approve,
         }
 
     except Exception as e:

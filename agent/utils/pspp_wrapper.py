@@ -5,6 +5,10 @@ This module provides utilities for executing PSPP statistical software
 via subprocess and parsing its output.
 
 PSPP is a free replacement for the proprietary program SPSS.
+
+Security: All subprocess calls use list arguments (not shell=True) to prevent
+command injection. PSPP path is validated before execution, and all operations
+have timeout protection.
 """
 
 import subprocess
@@ -13,12 +17,9 @@ import os
 from typing import Dict, Optional
 
 from agent.config import DEFAULT_CONFIG
+from agent.utils.security import validate_file_path, validate_executable_path
 
 logger = logging.getLogger(__name__)
-
-# SECURITY NOTE: This module uses subprocess to execute PSPP statistical software.
-# All subprocess calls use list arguments (not shell=True) to prevent command injection.
-# PSPP path is validated before execution, and all operations have timeout protection.
 
 
 def get_pspp_path() -> str:
@@ -30,22 +31,22 @@ def get_pspp_path() -> str:
 
     Raises:
         FileNotFoundError: If PSPP path does not exist
+        ValueError: If PSPP path is invalid or contains dangerous patterns
     """
     pspp_path = DEFAULT_CONFIG.get("pspp_path", "pspp")
 
-    # If it's just the command name (not absolute path), verify it's available
-    if os.path.sep not in pspp_path:
-        # Try to find the full path using 'which' equivalent
+    # Security: Validate PSPP executable path
+    try:
+        return validate_executable_path(pspp_path)
+    except (ValueError, FileNotFoundError) as e:
+        # If validation fails, try to find in PATH
+        import shutil
         full_path = shutil.which(pspp_path)
         if full_path:
             return full_path
-        # Fall through to validation below
-    elif not os.path.exists(pspp_path):
         raise FileNotFoundError(
             f"PSPP executable not found at configured path: {pspp_path}"
-        )
-
-    return pspp_path
+        ) from e
 
 
 def verify_pspp_installation() -> bool:
@@ -114,6 +115,37 @@ def execute_pspp_syntax(
         >>> if result["success"]:
         ...     print("PSPP execution completed")
     """
+    # Security: Validate all file paths
+    try:
+        syntax_file_path = validate_file_path(
+            syntax_file_path,
+            allowed_extensions=['.sps', '.syntax'],
+            allow_absolute=True
+        )
+    except ValueError as e:
+        return {
+            "success": False,
+            "output": "",
+            "error": f"Invalid syntax file path: {e}",
+            "return_code": -1,
+            "user_message": f"The PSPP syntax file path is invalid: {e}"
+        }
+
+    try:
+        input_file = validate_file_path(
+            input_file,
+            allowed_extensions=['.sav', '.zsav'],
+            allow_absolute=True
+        )
+    except ValueError as e:
+        return {
+            "success": False,
+            "output": "",
+            "error": f"Invalid input file path: {e}",
+            "return_code": -1,
+            "user_message": f"The input data file path is invalid: {e}"
+        }
+
     # Validate input files exist
     if not os.path.exists(syntax_file_path):
         return {
@@ -143,6 +175,22 @@ def execute_pspp_syntax(
             "error": str(e),
             "return_code": -1,
             "user_message": "PSPP statistical software is not installed or not configured correctly."
+        }
+
+    # Security: Validate output file path
+    try:
+        output_file = validate_file_path(
+            output_file,
+            allowed_extensions=['.txt', '.html', '.htm', '.log'],
+            allow_absolute=True
+        )
+    except ValueError as e:
+        return {
+            "success": False,
+            "output": "",
+            "error": f"Invalid output file path: {e}",
+            "return_code": -1,
+            "user_message": f"The output file path is invalid: {e}"
         }
 
     # Ensure output directory exists

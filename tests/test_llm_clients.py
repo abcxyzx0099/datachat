@@ -471,6 +471,23 @@ class TestConfigurationValidation:
 
             assert "API key" in str(exc_info.value)
 
+    def test_validate_config_get_api_key_returns_empty_string(self):
+        """Test validate_config when get_api_key returns empty string (defensive check)."""
+        config = {
+            **DEFAULT_CONFIG,
+            "llm_provider": "KIMI",
+        }
+
+        # Mock get_api_key to return empty string instead of raising ValueError
+        # This tests the defensive check at line 211 in validate_config
+        with patch('agent.llm.clients.get_api_key', return_value=""):
+            with pytest.raises(ValueError) as exc_info:
+                validate_config(config)
+
+            assert "API key" in str(exc_info.value)
+            assert "KIMI" in str(exc_info.value)
+            assert "not set or is empty" in str(exc_info.value)
+
     def test_get_provider_info(self, mock_api_keys):
         """Test get_provider_info returns correct information."""
         config = {

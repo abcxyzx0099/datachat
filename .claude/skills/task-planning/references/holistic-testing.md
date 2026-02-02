@@ -120,26 +120,51 @@ Before marking ANY testing task as complete, verify:
 
 **Purpose**: Test complete user workflows
 
+**Two Types of E2E Tests**:
+
+| Type | Scope | Tools | Target |
+|------|-------|-------|--------|
+| **Backend E2E** | API/Agent workflows | pytest, requests | Backend agent, LangGraph state machine |
+| **UI E2E** | Browser user journeys | Playwright, Cypress | Frontend UI, user interactions |
+
 **You are responsible for**:
-- Writing E2E tests for complete user journeys
+- **Backend E2E**: Writing API/agent workflow tests (pytest)
+- **UI E2E**: Writing browser-based UI tests (Playwright/Cypress)
 - Running E2E tests and fixing failures
 - Debugging production code for workflow issues
 - Ensuring all key user flows work end-to-end
 
-**Task Pattern**:
+**Backend E2E Task Pattern**:
 ```markdown
-### Task E-X: Create, run, and fix E2E test for [workflow]
+### Task E-B-X: Create, run, and fix backend E2E test for [workflow]
 
-- **Description**: Write E2E test for [workflow], covering:
-  - Complete user journey from start to finish
-  - All UI interactions and state changes
+- **Description**: Write backend E2E test for [workflow], covering:
+  - Complete API/agent journey from start to finish
+  - All state changes and transitions
   - Error scenarios and recovery
   - Cross-feature interactions
 
   Run test, fix failures, and debug production code until workflow passes completely.
 
-- **Active Form**: Creating, running, and fixing E2E test for [workflow]
+- **Active Form**: Creating, running, and fixing backend E2E test for [workflow]
 - **Quality Standard**: 100% pass rate
+```
+
+**UI E2E Task Pattern**:
+```markdown
+### Task E-U-X: Create, run, and fix UI E2E test for [user journey]
+
+- **Description**: Write browser-based UI E2E test for [user journey], covering:
+  - Complete user journey from browser UI
+  - All UI interactions (clicks, form inputs, navigation)
+  - Visual state changes and page transitions
+  - Error scenarios and recovery
+  - Cross-feature interactions
+
+  Use Playwright/Cypress for browser automation. Run test, fix failures, and debug production code until journey passes completely.
+
+- **Active Form**: Creating, running, and fixing UI E2E test for [user journey]
+- **Quality Standard**: 100% pass rate, works in Chromium/Firefox/WebKit
 ```
 
 ### Level 4: Performance Testing
@@ -484,15 +509,30 @@ Full testing lifecycle for e-commerce platform.
 
 ### E2E Testing Module
 
-### Task E-1: Create, run, and fix E2E test for checkout flow
-- **Description**: Write E2E test for complete user journey from product to order confirmation. Run test, fix failures, and debug production code until test passes.
-- **Active Form**: Creating, running, and fixing E2E test for checkout flow
+### Task E-B-1: Create, run, and fix backend E2E test for checkout flow
+- **Description**: Write backend E2E test (pytest) for complete API/agent journey from product to order confirmation. Test state transitions, error handling, and cross-service integration. Run test, fix failures, and debug production code until test passes.
+- **Active Form**: Creating, running, and fixing backend E2E test for checkout flow
 - **Quality Standard**: 100% pass rate
 
-### Task E-2: Create, run, and fix E2E test for user registration
-- **Description**: Write E2E test for complete user signup and email verification flow. Run test, fix failures, and debug production code until test passes.
-- **Active Form**: Creating, running, and fixing E2E test for user registration
+### Task E-U-1: Create, run, and fix UI E2E test for checkout user journey
+- **Description**: Write browser-based UI E2E test (Playwright) for complete user journey from product page to order confirmation. Test UI interactions: navigation, form inputs, button clicks, page transitions, and visual state changes. Run test in Chromium/Firefox/WebKit, fix failures, and debug production code until test passes.
+- **Active Form**: Creating, running, and fixing UI E2E test for checkout journey
+- **Quality Standard**: 100% pass rate, works in Chromium/Firefox/WebKit
+
+### Task E-B-2: Create, run, and fix backend E2E test for user registration
+- **Description**: Write backend E2E test (pytest) for complete user signup and email verification flow. Test API endpoints, database integration, and authentication flow. Run test, fix failures, and debug production code until test passes.
+- **Active Form**: Creating, running, and fixing backend E2E test for user registration
 - **Quality Standard**: 100% pass rate
+
+### Task E-U-2: Create, run, and fix UI E2E test for user registration journey
+- **Description**: Write browser-based UI E2E test (Playwright) for complete user signup journey. Test UI interactions: form validation, input fields, submit buttons, success/error messages, and email verification UI. Run test in Chromium/Firefox/WebKit, fix failures, and debug production code until test passes.
+- **Active Form**: Creating, running, and fixing UI E2E test for user registration
+- **Quality Standard**: 100% pass rate, works in Chromium/Firefox/WebKit
+
+### Task E-U-3: Set up UI E2E test infrastructure
+- **Description**: Install and configure Playwright for browser automation. Set up test fixtures, page objects, and test data. Configure CI/CD integration for running UI tests across multiple browsers.
+- **Active Form**: Setting up UI E2E test infrastructure with Playwright
+- **Quality Standard**: Tests can run in headless mode on all browsers
 
 ### Performance Testing Module
 
@@ -534,7 +574,8 @@ Full testing lifecycle for e-commerce platform.
 |--------|-------|------------|------------------|
 | **Unit Testing** | 3 | Models, cart, orders | 80%+ coverage, 100% pass |
 | **Integration Testing** | 3 | Payment, inventory, email | 100% pass rate |
-| **E2E Testing** | 2 | Checkout, registration | 100% pass rate |
+| **Backend E2E Testing** | 2 | API/agent workflows | 100% pass rate |
+| **UI E2E Testing** | 3 | Browser user journeys, infrastructure | 100% pass, all browsers |
 | **Performance Testing** | 3 | Infrastructure, load, stress | Response time < 500ms, 50 concurrent |
 | **Security Testing** | 1 | OWASP scan & fixes | Zero high/critical vulns |
 | **Test Infrastructure** | 2 | Coverage, fixtures | 80% minimum threshold |
@@ -557,7 +598,7 @@ Before marking any testing task as complete, verify:
 
 **Scope**: Holistic Testing
 **Organization**: FLAT_LIST
-**Total Tasks**: 6
+**Total Tasks**: 7
 
 ## Reference Document
 **Instructions**: `.claude/skills/task-planning/references/holistic-testing.md`
@@ -586,17 +627,22 @@ Full testing lifecycle for user authentication feature.
 - **Active Form**: Testing, fixing, and debugging session management
 - **Quality Standard**: 100% pass rate
 
-### Task 4: Create, run, and fix E2E test for login flow
-- **Description**: Write E2E test for complete login journey. Run test, fix failures, and debug production code.
-- **Active Form**: Creating, running, and fixing E2E test for login flow
+### Task 4: Create, run, and fix backend E2E test for login flow
+- **Description**: Write backend E2E test (pytest) for complete login API journey. Test authentication endpoints, session creation, and validation. Run test, fix failures, and debug production code.
+- **Active Form**: Creating, running, and fixing backend E2E test for login flow
 - **Quality Standard**: 100% pass rate
 
-### Task 5: Run, fix, and debug security scan
+### Task 5: Create, run, and fix UI E2E test for login journey
+- **Description**: Write browser-based UI E2E test (Playwright) for complete login user journey. Test UI interactions: email/password input, form validation, submit button, success/error messages, and session UI. Run test in Chromium/Firefox/WebKit, fix failures, and debug production code.
+- **Active Form**: Creating, running, and fixing UI E2E test for login journey
+- **Quality Standard**: 100% pass rate, works in Chromium/Firefox/WebKit
+
+### Task 6: Run, fix, and debug security scan
 - **Description**: Execute security scan on authentication module. Fix vulnerabilities, debug production code until scan passes.
 - **Active Form**: Running, fixing, and debugging security scan
 - **Quality Standard**: Zero high/critical vulnerabilities
 
-### Task 6: Set up coverage reporting and verify thresholds
+### Task 7: Set up coverage reporting and verify thresholds
 - **Description**: Configure coverage.py with 80% threshold. Run full suite, generate report, verify all tests pass.
 - **Active Form**: Setting up coverage reporting and verifying thresholds
 - **Quality Standard**: 80%+ coverage, 100% pass rate

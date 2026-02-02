@@ -23,6 +23,7 @@ from agent.state import WorkflowState, ValidationResult
 from agent.llm.clients import get_llm_client
 from agent.llm.prompts import generate_table_specifications_prompt
 from agent.config import DEFAULT_CONFIG
+from agent.utils.tracing import trace_node
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 # Step 12: Generate Table Specifications
 # =============================================================================
 
+@trace_node("Step 12: Generate Table Specifications")
 def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
     """
     Step 12: Generate cross-tabulation table specifications using LLM.
@@ -504,6 +506,7 @@ def _build_metadata_list(new_metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
 # Step 13: Validate Table Specifications
 # =============================================================================
 
+@trace_node("Step 13: Validate Table Specifications")
 def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
     """
     Step 13: Validate table specifications structure and references.
@@ -616,6 +619,7 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
         }
 
 
+@trace_node("Step 14: Review Table Specifications")
 def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
     """
     Step 14: Human review and approval of table specifications.
@@ -661,6 +665,9 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
     previous_feedback = state.get("table_specs_feedback")
     config = state.get("config", DEFAULT_CONFIG)
 
+    # Check for auto-approval (CI/CD and testing mode)
+    auto_approve = config.get("auto_approve_table_specs", False)
+
     # Validate required inputs
     if not table_specs:
         error_msg = "No table_specifications available in state for review"
@@ -669,7 +676,8 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
             **state,
             "current_step": 14,
             "errors": state.get("errors", []) + [error_msg],
-            "requires_human_review": True,
+            "requires_human_review": not auto_approve,
+            "table_specs_approved": auto_approve,
         }
 
     try:
@@ -692,33 +700,35 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
 
         logger.info(f"Review document saved to: {review_path}")
 
-        # Trigger LangGraph interrupt to pause workflow
+        # Trigger LangGraph interrupt to pause workflow (unless auto-approve is enabled)
         # The Agent Chat UI will display the review document
         # and wait for human action (approve/reject/modify)
         from langgraph.types import interrupt
 
-        interrupt({
-            "type": "approval_required",
-            "step": 14,
-            "task": "table_specs",
-            "review_document_path": str(review_path),
-            "validation_passed": validation_result.is_valid if validation_result else False,
-            "iteration": iteration_count,
-            "message": (
-                "Please review the table specifications at: {}\n\n"
-                "Actions:\n"
-                "- Approve: Table specifications look correct, proceed to PSPP syntax generation\n"
-                "- Reject with Feedback: Table specifications need revision, provide feedback below\n"
-                "- Modify: You will manually edit the table specifications"
-            ).format(review_path)
-        })
+        # Only trigger interrupt if not auto-approving
+        if not auto_approve:
+            interrupt({
+                "type": "approval_required",
+                "step": 14,
+                "task": "table_specs",
+                "review_document_path": str(review_path),
+                "validation_passed": validation_result.is_valid if validation_result else False,
+                "iteration": iteration_count,
+                "message": (
+                    "Please review the table specifications at: {}\n\n"
+                    "Actions:\n"
+                    "- Approve: Table specifications look correct, proceed to PSPP syntax generation\n"
+                    "- Reject with Feedback: Table specifications need revision, provide feedback below\n"
+                    "- Modify: You will manually edit the table specifications"
+                ).format(review_path)
+            })
 
-        # Return state with requires_human_review flag
-        # Note: table_specs_approved is NOT set here - human sets it via UI
+        # Return state with approval status
         return {
             **state,
             "current_step": 14,
-            "requires_human_review": True,
+            "requires_human_review": not auto_approve,
+            "table_specs_approved": auto_approve,
         }
 
     except Exception as e:
@@ -728,7 +738,8 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
             **state,
             "current_step": 14,
             "errors": state.get("errors", []) + [error_msg],
-            "requires_human_review": True,
+            "requires_human_review": not auto_approve,
+            "table_specs_approved": auto_approve,
         }
 
 

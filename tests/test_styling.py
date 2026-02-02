@@ -279,63 +279,73 @@ class TestGetMarketResearchColor:
     def test_get_market_research_color_primary(self):
         """Test getting primary color."""
         result = styling.get_market_research_color("primary")
-        # RGBColor is iterable and returns tuple of RGB values
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (44, 82, 130)
+        # RGBColor has r, g, b attributes
+        assert result.r == 44
+        assert result.g == 82
+        assert result.b == 130
 
     def test_get_market_research_color_secondary(self):
         """Test getting secondary color."""
         result = styling.get_market_research_color("secondary")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (66, 153, 225)
+        assert result.r == 66
+        assert result.g == 153
+        assert result.b == 225
 
     def test_get_market_research_color_accent(self):
         """Test getting accent color."""
         result = styling.get_market_research_color("accent")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (237, 137, 54)
+        assert result.r == 237
+        assert result.g == 137
+        assert result.b == 54
 
     def test_get_market_research_color_significant(self):
         """Test getting significant color."""
         result = styling.get_market_research_color("significant")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (72, 187, 120)
+        assert result.r == 72
+        assert result.g == 187
+        assert result.b == 120
 
     def test_get_market_research_color_not_significant(self):
         """Test getting not_significant color."""
         result = styling.get_market_research_color("not_significant")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (229, 62, 62)
+        assert result.r == 229
+        assert result.g == 62
+        assert result.b == 62
 
     def test_get_market_research_color_text(self):
         """Test getting text color."""
         result = styling.get_market_research_color("text")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (26, 32, 44)
+        assert result.r == 26
+        assert result.g == 32
+        assert result.b == 44
 
     def test_get_market_research_color_muted(self):
         """Test getting muted color."""
         result = styling.get_market_research_color("muted")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (113, 128, 150)
+        assert result.r == 113
+        assert result.g == 128
+        assert result.b == 150
 
     def test_get_market_research_color_background(self):
         """Test getting background color."""
         result = styling.get_market_research_color("background")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (247, 250, 252)
+        assert result.r == 247
+        assert result.g == 250
+        assert result.b == 252
 
     def test_get_market_research_color_border(self):
         """Test getting border color."""
         result = styling.get_market_research_color("border")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (226, 232, 240)
+        assert result.r == 226
+        assert result.g == 232
+        assert result.b == 240
 
     def test_get_market_research_color_table_header(self):
         """Test getting table_header color."""
         result = styling.get_market_research_color("table_header")
-        rgb_tuple = tuple(result)
-        assert rgb_tuple == (237, 242, 247)
+        assert result.r == 237
+        assert result.g == 242
+        assert result.b == 247
 
     def test_get_market_research_color_invalid_name(self):
         """Test getting color with invalid name raises ValueError."""
@@ -358,18 +368,19 @@ class TestGetMarketResearchColor:
     def test_get_market_research_color_returns_rgb_color(self):
         """Test that function returns RGBColor object."""
         result = styling.get_market_research_color("primary")
-        # RGBColor is iterable and returns RGB values
-        assert hasattr(result, '__iter__')
-        rgb_tuple = tuple(result)
-        assert len(rgb_tuple) == 3
+        # RGBColor has r, g, b attributes
+        assert hasattr(result, 'r')
+        assert hasattr(result, 'g')
+        assert hasattr(result, 'b')
 
     def test_get_market_research_color_with_pptx_not_available(self):
         """Test getting color when python-pptx is not available."""
         # Mock HAS_PPTX to False
         with patch.object(styling, 'HAS_PPTX', False):
             result = styling.get_market_research_color("primary")
-            rgb_tuple = tuple(result)
-            assert rgb_tuple == (44, 82, 130)
+            assert result.r == 44
+            assert result.g == 82
+            assert result.b == 130
 
 
 # =============================================================================
@@ -797,10 +808,13 @@ class TestStylingEdgeCases:
         ]
         for name in valid_names:
             result = styling.get_market_research_color(name)
-            # RGBColor is iterable
-            rgb_tuple = tuple(result)
-            assert len(rgb_tuple) == 3
-            assert all(isinstance(v, int) for v in rgb_tuple)
+            # RGBColor has r, g, b integer attributes
+            assert isinstance(result.r, int)
+            assert isinstance(result.g, int)
+            assert isinstance(result.b, int)
+            assert 0 <= result.r <= 255
+            assert 0 <= result.g <= 255
+            assert 0 <= result.b <= 255
 
     def test_unicode_in_color_names(self):
         """Test that Unicode in color names raises error."""

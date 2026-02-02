@@ -2,15 +2,12 @@
 # =============================================================================
 # DataChat Survey Analyzer - Start Script
 # =============================================================================
-# This script starts both the LangGraph API server and the Agent Chat UI.
+# This script starts the LangGraph servers and/or Agent Chat UI.
 #
 # Usage:
-#   ./start.sh
-#
-# The script will:
-#   1. Kill any existing processes on ports 8123 and 3000
-#   2. Start the LangGraph server on port 8123
-#   3. Start the Agent Chat UI on port 3000
+#   ./start.sh              # Start web app (8123 + 3000)
+#   ./start.sh --studio     # Start LangGraph Studio (2024)
+#   ./start.sh --all        # Start all servers (2024 + 8123 + 3000)
 #
 # To stop the application, use: ./stop.sh
 # =============================================================================
@@ -34,17 +31,42 @@ PROJECT_ROOT="$SCRIPT_DIR"
 UI_DIR="$PROJECT_ROOT/web/agent-chat-ui"
 
 # Ports
+STUDIO_PORT=2024
 LANGGRAPH_PORT=8123
 UI_PORT=3000
 
 # PID files for tracking processes
+STUDIO_PID_FILE="$PROJECT_ROOT/.studio_pid"
 LANGGRAPH_PID_FILE="$PROJECT_ROOT/.langgraph_pid"
 UI_PID_FILE="$PROJECT_ROOT/.ui_pid"
 
 # Log files
 LOG_DIR="$PROJECT_ROOT/logs"
+STUDIO_LOG="$LOG_DIR/studio.log"
 LANGGRAPH_LOG="$LOG_DIR/langgraph.log"
 UI_LOG="$LOG_DIR/ui.log"
+
+# Parse arguments
+START_WEB=false
+START_STUDIO=false
+
+case "${1:-}" in
+    --studio)
+        START_STUDIO=true
+        ;;
+    --all)
+        START_WEB=true
+        START_STUDIO=true
+        ;;
+    --web|"")
+        START_WEB=true
+        ;;
+    *)
+        echo -e "${RED}Error: Unknown option '$1'${NC}"
+        echo "Usage: $0 [--studio|--web|--all]"
+        exit 1
+        ;;
+esac
 
 # =============================================================================
 # Functions
@@ -94,6 +116,16 @@ kill_port() {
         fi
     fi
 
+    # Method 5: For Studio, kill langgraph dev processes
+    if [ "$port" = "$STUDIO_PORT" ]; then
+        local studio_pids=$(pgrep -f "langgraph dev" || true)
+        if [ -n "$studio_pids" ]; then
+            echo -e "${YELLOW}  Killing LangGraph Studio processes...${NC}"
+            pkill -f "langgraph dev" 2>/dev/null || true
+            killed=1
+        fi
+    fi
+
     if [ $killed -eq 1 ]; then
         sleep 1
         echo -e "${GREEN}✓ Port $port is now free${NC}"
@@ -135,13 +167,30 @@ echo ""
 # Create logs directory
 mkdir -p "$LOG_DIR"
 
+# Build mode message
+if [ "$START_WEB" = true ] && [ "$START_STUDIO" = true ]; then
+    MODE_MSG="All servers (Studio + Web App)"
+elif [ "$START_STUDIO" = true ]; then
+    MODE_MSG="LangGraph Studio only"
+else
+    MODE_MSG="Web App only"
+fi
+
+echo -e "${GREEN}Starting mode: $MODE_MSG${NC}"
+echo ""
+
 # =============================================================================
 # Step 1: Kill existing processes
 # =============================================================================
 
 echo -e "${YELLOW}Step 1: Cleaning up ports...${NC}"
-kill_port $LANGGRAPH_PORT "LangGraph API"
-kill_port $UI_PORT "Agent Chat UI"
+if [ "$START_STUDIO" = true ]; then
+    kill_port $STUDIO_PORT "LangGraph Studio"
+fi
+if [ "$START_WEB" = true ]; then
+    kill_port $LANGGRAPH_PORT "LangGraph API"
+    kill_port $UI_PORT "Agent Chat UI"
+fi
 echo ""
 
 # =============================================================================
@@ -149,19 +198,17 @@ echo ""
 # =============================================================================
 
 echo -e "${YELLOW}Step 2: Ensuring ports are free...${NC}"
-ensure_port_free $LANGGRAPH_PORT
-ensure_port_free $UI_PORT
+if [ "$START_STUDIO" = true ]; then
+    ensure_port_free $STUDIO_PORT
+fi
+if [ "$START_WEB" = true ]; then
+    ensure_port_free $LANGGRAPH_PORT
+    ensure_port_free $UI_PORT
+fi
 echo ""
 
-# =============================================================================
-# Step 3: Start LangGraph Server
-# =============================================================================
-
-echo -e "${YELLOW}Step 3: Starting LangGraph Server (port $LANGGRAPH_PORT)...${NC}"
-
+# Activate virtual environment once
 cd "$PROJECT_ROOT"
-
-# Check for virtual environment
 if [ -d ".venv" ]; then
     echo -e "${GREEN}Activating virtual environment...${NC}"
     source ".venv/bin/activate"
@@ -171,84 +218,133 @@ elif [ -d "venv" ]; then
 else
     echo -e "${YELLOW}Warning: No virtual environment found, using system Python${NC}"
 fi
+echo ""
 
-# Check if agent.server module exists
-if ! python3 -c "import agent.server" 2>/dev/null; then
-    echo -e "${RED}Error: agent.server module not found${NC}"
-    echo -e "${YELLOW}Make sure you're in the project root directory${NC}"
-    exit 1
-fi
+# =============================================================================
+# Step 3: Start LangGraph Studio (if requested)
+# =============================================================================
 
-# Start LangGraph server in background
-nohup python3 -m agent.server > "$LANGGRAPH_LOG" 2>&1 &
-LANGGRAPH_PID=$!
-echo $LANGGRAPH_PID > "$LANGGRAPH_PID_FILE"
+if [ "$START_STUDIO" = true ]; then
+    echo -e "${YELLOW}Step 3: Starting LangGraph Studio (port $STUDIO_PORT)...${NC}"
 
-# Wait for server to start
-sleep 3
-
-# Check if server is running
-if ps -p $LANGGRAPH_PID > /dev/null; then
-    # Check if server is responding
-    if curl -s http://localhost:$LANGGRAPH_PORT/health > /dev/null 2>&1; then
-        echo -e "${GREEN}✓ LangGraph Server started successfully (PID: $LANGGRAPH_PID)${NC}"
-    else
-        echo -e "${YELLOW}⚠ LangGraph Server started but not responding yet. Check logs: $LANGGRAPH_LOG${NC}"
+    # Check if langgraph CLI is available
+    if ! command -v langgraph &> /dev/null; then
+        echo -e "${RED}Error: langgraph CLI not found${NC}"
+        echo -e "${YELLOW}Install with: pip install 'langgraph-cli[inmem]'${NC}"
+        exit 1
     fi
-else
-    echo -e "${RED}✗ LangGraph Server failed to start${NC}"
-    echo -e "${YELLOW}Check logs: $LANGGRAPH_LOG${NC}"
-    tail -20 "$LANGGRAPH_LOG"
-    exit 1
+
+    # Start Studio in background
+    nohup langgraph dev > "$STUDIO_LOG" 2>&1 &
+    STUDIO_PID=$!
+    echo $STUDIO_PID > "$STUDIO_PID_FILE"
+
+    # Wait for Studio to start
+    sleep 5
+
+    # Check if Studio is running
+    if ps -p $STUDIO_PID > /dev/null; then
+        if curl -s http://127.0.0.1:$STUDIO_PORT/ok > /dev/null 2>&1; then
+            echo -e "${GREEN}✓ LangGraph Studio started successfully (PID: $STUDIO_PID)${NC}"
+        else
+            echo -e "${YELLOW}⚠ LangGraph Studio started but not responding yet. Check logs: $STUDIO_LOG${NC}"
+        fi
+    else
+        echo -e "${RED}✗ LangGraph Studio failed to start${NC}"
+        echo -e "${YELLOW}Check logs: $STUDIO_LOG${NC}"
+        tail -20 "$STUDIO_LOG"
+        exit 1
+    fi
+    echo ""
 fi
-echo ""
 
 # =============================================================================
-# Step 4: Start Agent Chat UI
+# Step 4: Start Custom LangGraph Server (if requested)
 # =============================================================================
 
-echo -e "${YELLOW}Step 4: Starting Agent Chat UI (port $UI_PORT)...${NC}"
+if [ "$START_WEB" = true ]; then
+    echo -e "${YELLOW}Step 4: Starting LangGraph Server (port $LANGGRAPH_PORT)...${NC}"
 
-cd "$UI_DIR"
+    # Check if agent.server module exists
+    if ! python3 -c "import agent.server" 2>/dev/null; then
+        echo -e "${RED}Error: agent.server module not found${NC}"
+        echo -e "${YELLOW}Make sure you're in the project root directory${NC}"
+        exit 1
+    fi
 
-# Check if pnpm is available
-if command -v pnpm &> /dev/null; then
-    PKG_MANAGER="pnpm"
-elif command -v npm &> /dev/null; then
-    PKG_MANAGER="npm"
-else
-    echo -e "${RED}Error: Neither pnpm nor npm found${NC}"
-    echo -e "${YELLOW}Please install Node.js and pnpm/npm${NC}"
-    exit 1
+    # Start LangGraph server in background
+    nohup python3 -m agent.server > "$LANGGRAPH_LOG" 2>&1 &
+    LANGGRAPH_PID=$!
+    echo $LANGGRAPH_PID > "$LANGGRAPH_PID_FILE"
+
+    # Wait for server to start
+    sleep 3
+
+    # Check if server is running
+    if ps -p $LANGGRAPH_PID > /dev/null; then
+        # Check if server is responding
+        if curl -s http://localhost:$LANGGRAPH_PORT/health > /dev/null 2>&1; then
+            echo -e "${GREEN}✓ LangGraph Server started successfully (PID: $LANGGRAPH_PID)${NC}"
+        else
+            echo -e "${YELLOW}⚠ LangGraph Server started but not responding yet. Check logs: $LANGGRAPH_LOG${NC}"
+        fi
+    else
+        echo -e "${RED}✗ LangGraph Server failed to start${NC}"
+        echo -e "${YELLOW}Check logs: $LANGGRAPH_LOG${NC}"
+        tail -20 "$LANGGRAPH_LOG"
+        exit 1
+    fi
+    echo ""
 fi
 
-echo -e "${GREEN}Using package manager: $PKG_MANAGER${NC}"
+# =============================================================================
+# Step 5: Start Agent Chat UI (if requested)
+# =============================================================================
 
-# Check if .env.local exists
-if [ ! -f ".env.local" ]; then
-    echo -e "${RED}Error: .env.local not found in $UI_DIR${NC}"
-    echo -e "${YELLOW}Create it from .env.example: cp .env.example .env.local${NC}"
-    exit 1
+if [ "$START_WEB" = true ]; then
+    echo -e "${YELLOW}Step 5: Starting Agent Chat UI (port $UI_PORT)...${NC}"
+
+    cd "$UI_DIR"
+
+    # Check if pnpm is available
+    if command -v pnpm &> /dev/null; then
+        PKG_MANAGER="pnpm"
+    elif command -v npm &> /dev/null; then
+        PKG_MANAGER="npm"
+    else
+        echo -e "${RED}Error: Neither pnpm nor npm found${NC}"
+        echo -e "${YELLOW}Please install Node.js and pnpm/npm${NC}"
+        exit 1
+    fi
+
+    echo -e "${GREEN}Using package manager: $PKG_MANAGER${NC}"
+
+    # Check if .env.local exists
+    if [ ! -f ".env.local" ]; then
+        echo -e "${RED}Error: .env.local not found in $UI_DIR${NC}"
+        echo -e "${YELLOW}Create it from .env.example: cp .env.example .env.local${NC}"
+        exit 1
+    fi
+
+    # Start UI in background
+    nohup $PKG_MANAGER run dev > "$UI_LOG" 2>&1 &
+    UI_PID=$!
+    echo $UI_PID > "$UI_PID_FILE"
+
+    # Wait for UI to start
+    sleep 5
+
+    # Check if UI is running
+    if ps -p $UI_PID > /dev/null; then
+        echo -e "${GREEN}✓ Agent Chat UI started successfully (PID: $UI_PID)${NC}"
+    else
+        echo -e "${RED}✗ Agent Chat UI failed to start${NC}"
+        echo -e "${YELLOW}Check logs: $UI_LOG${NC}"
+        tail -20 "$UI_LOG"
+        exit 1
+    fi
+    echo ""
 fi
-
-# Start UI in background
-nohup $PKG_MANAGER run dev > "$UI_LOG" 2>&1 &
-UI_PID=$!
-echo $UI_PID > "$UI_PID_FILE"
-
-# Wait for UI to start
-sleep 5
-
-# Check if UI is running
-if ps -p $UI_PID > /dev/null; then
-    echo -e "${GREEN}✓ Agent Chat UI started successfully (PID: $UI_PID)${NC}"
-else
-    echo -e "${RED}✗ Agent Chat UI failed to start${NC}"
-    echo -e "${YELLOW}Check logs: $UI_LOG${NC}"
-    tail -20 "$UI_LOG"
-    exit 1
-fi
-echo ""
 
 # =============================================================================
 # Done
@@ -258,20 +354,44 @@ echo -e "${BLUE}============================================${NC}"
 echo -e "${GREEN}✓ DataChat Application Started!${NC}"
 echo -e "${BLUE}============================================${NC}"
 echo ""
-echo -e "${GREEN}LangGraph API:${NC}  http://localhost:$LANGGRAPH_PORT"
-echo -e "${GREEN}  - Health:       http://localhost:$LANGGRAPH_PORT/health"
-echo -e "${GREEN}  - API Docs:     http://localhost:$LANGGRAPH_PORT/docs"
-echo ""
-echo -e "${GREEN}Agent Chat UI:${NC}   http://localhost:$UI_PORT"
-echo ""
+
+# Print URLs based on what was started
+if [ "$START_STUDIO" = true ]; then
+    echo -e "${GREEN}LangGraph Studio:${NC} http://127.0.0.1:$STUDIO_PORT"
+    echo -e "${GREEN}  - Studio UI:    https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:$STUDIO_PORT${NC}"
+    echo -e "${GREEN}  - API Docs:     http://127.0.0.1:$STUDIO_PORT/docs${NC}"
+    echo ""
+fi
+
+if [ "$START_WEB" = true ]; then
+    echo -e "${GREEN}LangGraph API:${NC}    http://localhost:$LANGGRAPH_PORT"
+    echo -e "${GREEN}  - Health:       http://localhost:$LANGGRAPH_PORT/health${NC}"
+    echo -e "${GREEN}  - API Docs:     http://localhost:$LANGGRAPH_PORT/docs${NC}"
+    echo ""
+    echo -e "${GREEN}Agent Chat UI:${NC}     http://localhost:$UI_PORT"
+    echo ""
+fi
+
 echo -e "${YELLOW}To view logs:${NC}"
-echo -e "  LangGraph:  tail -f $LANGGRAPH_LOG"
-echo -e "  UI:         tail -f $UI_LOG"
+if [ "$START_STUDIO" = true ]; then
+    echo -e "  Studio:     tail -f $STUDIO_LOG"
+fi
+if [ "$START_WEB" = true ]; then
+    echo -e "  LangGraph:  tail -f $LANGGRAPH_LOG"
+    echo -e "  UI:         tail -f $UI_LOG"
+fi
 echo ""
+
 echo -e "${YELLOW}To stop the application:${NC}"
 echo -e "  ./stop.sh"
 echo ""
+
 echo -e "${YELLOW}Or kill by PID:${NC}"
-echo -e "  kill $LANGGRAPH_PID  # LangGraph Server"
-echo -e "  kill $UI_PID          # Agent Chat UI"
+if [ "$START_STUDIO" = true ]; then
+    echo -e "  kill $STUDIO_PID     # LangGraph Studio"
+fi
+if [ "$START_WEB" = true ]; then
+    echo -e "  kill $LANGGRAPH_PID  # LangGraph Server"
+    echo -e "  kill $UI_PID          # Agent Chat UI"
+fi
 echo ""

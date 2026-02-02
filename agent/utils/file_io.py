@@ -3,15 +3,21 @@ File I/O Module
 
 This module provides utilities for reading and writing various file formats
 used in the survey analysis workflow, including SPSS .sav files, CSV, and JSON.
+
+Security: All file paths are validated to prevent path traversal and command
+injection attacks.
 """
 
 import json
 import logging
 import os
 from typing import Dict, Tuple
+from pathlib import Path
 
 import pandas as pd
 import pyreadstat
+
+from agent.utils.security import validate_file_path, sanitize_json_output
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +37,23 @@ def read_spss_file(file_path: str) -> Tuple[pd.DataFrame, Dict]:
     Raises:
         FileNotFoundError: If the file does not exist
         PermissionError: If the file cannot be read due to permissions
-        ValueError: If the file is not a valid SPSS file
+        ValueError: If the file is not a valid SPSS file or path is invalid
 
     Example:
         >>> df, metadata = read_spss_file("data/survey.sav")
         >>> print(metadata['column_labels'])
         {'q1': 'Question 1', 'q2': 'Question 2'}
     """
+    # Security: Validate file path to prevent traversal
+    try:
+        file_path = validate_file_path(
+            file_path,
+            allowed_extensions=['.sav', '.zsav'],
+            allow_absolute=True
+        )
+    except ValueError as e:
+        raise ValueError(f"Invalid file path: {e}") from e
+
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"SPSS file not found: {file_path}")
 
@@ -58,7 +74,7 @@ def read_spss_file(file_path: str) -> Tuple[pd.DataFrame, Dict]:
         raise
     except PermissionError:
         raise
-    except pyreadstat.pyreadstat.ReaderError as e:
+    except pyreadstat.pyreadstat.PyreadstatError as e:
         raise ValueError(f"Invalid SPSS file format: {e}") from e
     except Exception as e:
         logger.error(f"Unexpected error reading SPSS file: {e}")
@@ -77,10 +93,24 @@ def write_json(data: dict, file_path: str, indent: int = 2) -> None:
     Raises:
         IOError: If the file cannot be written
         TypeError: If the data contains non-serializable objects
+        ValueError: If the file path is invalid
 
     Example:
         >>> write_json({"name": "survey", "count": 100}, "output/data.json")
     """
+    # Security: Validate file path to prevent traversal
+    try:
+        file_path = validate_file_path(
+            file_path,
+            allowed_extensions=['.json'],
+            allow_absolute=True
+        )
+    except ValueError as e:
+        raise ValueError(f"Invalid file path: {e}") from e
+
+    # Sanitize data to prevent XSS in JSON output
+    safe_data = sanitize_json_output(data)
+
     # Ensure output directory exists
     output_dir = os.path.dirname(file_path)
     if output_dir and not os.path.exists(output_dir):
@@ -91,7 +121,7 @@ def write_json(data: dict, file_path: str, indent: int = 2) -> None:
 
     try:
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=indent, ensure_ascii=False)
+            json.dump(safe_data, f, indent=indent, ensure_ascii=False)
 
         logger.info(f"Successfully wrote JSON file: {file_path}")
 
@@ -117,12 +147,23 @@ def read_json(file_path: str) -> dict:
         FileNotFoundError: If the file does not exist
         json.JSONDecodeError: If the file contains invalid JSON
         PermissionError: If the file cannot be read
+        ValueError: If the file path is invalid or JSON contains malicious content
 
     Example:
         >>> data = read_json("output/data.json")
         >>> print(data['name'])
         'survey'
     """
+    # Security: Validate file path to prevent traversal
+    try:
+        file_path = validate_file_path(
+            file_path,
+            allowed_extensions=['.json'],
+            allow_absolute=True
+        )
+    except ValueError as e:
+        raise ValueError(f"Invalid file path: {e}") from e
+
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"JSON file not found: {file_path}")
 
@@ -132,6 +173,10 @@ def read_json(file_path: str) -> dict:
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+
+        # Security: Sanitize JSON input to prevent prototype pollution and XSS
+        from agent.utils.security import sanitize_json_input
+        data = sanitize_json_input(data)
 
         logger.info(f"Successfully read JSON file: {file_path}")
 
@@ -157,12 +202,23 @@ def write_csv(df: pd.DataFrame, file_path: str, **kwargs) -> None:
 
     Raises:
         IOError: If the file cannot be written
+        ValueError: If the file path is invalid
 
     Example:
         >>> import pandas as pd
         >>> df = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
         >>> write_csv(df, "output/data.csv")
     """
+    # Security: Validate file path to prevent traversal
+    try:
+        file_path = validate_file_path(
+            file_path,
+            allowed_extensions=['.csv', '.tsv', '.txt'],
+            allow_absolute=True
+        )
+    except ValueError as e:
+        raise ValueError(f"Invalid file path: {e}") from e
+
     # Ensure output directory exists
     output_dir = os.path.dirname(file_path)
     if output_dir and not os.path.exists(output_dir):
@@ -208,11 +264,22 @@ def read_csv(file_path: str, **kwargs) -> pd.DataFrame:
     Raises:
         FileNotFoundError: If the file does not exist
         PermissionError: If the file cannot be read
+        ValueError: If the file path is invalid
 
     Example:
         >>> df = read_csv("output/data.csv")
         >>> print(df.head())
     """
+    # Security: Validate file path to prevent traversal
+    try:
+        file_path = validate_file_path(
+            file_path,
+            allowed_extensions=['.csv', '.tsv', '.txt'],
+            allow_absolute=True
+        )
+    except ValueError as e:
+        raise ValueError(f"Invalid file path: {e}") from e
+
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"CSV file not found: {file_path}")
 

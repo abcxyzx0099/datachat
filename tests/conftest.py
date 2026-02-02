@@ -22,6 +22,7 @@ Usage:
 """
 
 import sys
+import os
 from pathlib import Path
 from typing import Dict, Any
 from unittest.mock import Mock, MagicMock
@@ -1313,3 +1314,277 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "comprehensive: Comprehensive verification tests"
     )
+
+
+# =============================================================================
+# Additional State Fixtures for Edge Cases
+# =============================================================================
+
+@pytest.fixture
+def state_with_iteration_error(sample_state: WorkflowState) -> WorkflowState:
+    """
+    Workflow state with iteration limit error for testing retry logic.
+
+    Returns:
+        State at maximum iterations with validation errors
+    """
+    return {
+        **sample_state,
+        "current_step": 4,
+        "iteration_count": 3,
+        "recoding_validation_result": ValidationResult(
+            is_valid=False,
+            errors=["Validation failed after 3 attempts"],
+            warnings=[],
+            checks_performed=["structure_check", "syntax_check"],
+        ),
+    }
+
+
+@pytest.fixture
+def state_at_step_4(sample_state: WorkflowState) -> WorkflowState:
+    """
+    Workflow state at Step 4 (Recoding Rules Generation).
+
+    Returns:
+        State ready for Step 4 execution
+    """
+    return {
+        **sample_state,
+        "current_step": 4,
+        "raw_data": sample_dataframe(),
+        "variable_centered_metadata": variable_centered_metadata(),
+        "filtered_metadata": filtered_metadata(),
+    }
+
+
+@pytest.fixture
+def state_at_step_9(sample_state: WorkflowState) -> WorkflowState:
+    """
+    Workflow state at Step 9 (Indicator Generation).
+
+    Returns:
+        State ready for Step 9 execution
+    """
+    return {
+        **sample_state,
+        "current_step": 9,
+        "new_metadata": new_metadata(),
+        "new_data_file": "/tmp/new_data.sav",
+    }
+
+
+@pytest.fixture
+def state_at_step_12(sample_state: WorkflowState) -> WorkflowState:
+    """
+    Workflow state at Step 12 (Table Specifications).
+
+    Returns:
+        State ready for Step 12 execution
+    """
+    return {
+        **sample_state,
+        "current_step": 12,
+        "indicators": valid_indicators(),
+        "indicators_approved": True,
+    }
+
+
+# =============================================================================
+# Complete Workflow State Fixtures
+# =============================================================================
+
+@pytest.fixture
+def complete_workflow_state() -> WorkflowState:
+    """
+    Complete workflow state with all fields populated.
+
+    Returns a state object with all sub-states fully populated,
+    useful for testing state serialization and summary functions.
+    """
+    return WorkflowState(
+        # InputState
+        input_file_path="tests/fixtures/sample_data.sav",
+        original_metadata=sample_metadata(),
+
+        # ExtractionState
+        raw_data=sample_dataframe(),
+        variable_centered_metadata=variable_centered_metadata(),
+        filtered_metadata=filtered_metadata(),
+        filtered_out_variables=[],
+
+        # RecodingState
+        recoding_rules=valid_recoding_rules(),
+        recoding_validation_result=valid_validation_result(),
+        recoding_approved=True,
+        recoding_feedback=None,
+        new_metadata=new_metadata(),
+        new_data_file="/tmp/new_data.sav",
+
+        # IndicatorState
+        indicators=valid_indicators(),
+        indicator_validation_result=valid_validation_result(),
+        indicators_approved=True,
+        indicator_feedback=None,
+
+        # CrossTableState
+        table_specifications=valid_table_specs(),
+        table_validation_result=valid_validation_result(),
+        table_specs_approved=True,
+        table_specs_feedback=None,
+        table_syntax_file="/tmp/tables.sps",
+        cross_table_file="/tmp/cross_tables.sav",
+
+        # StatisticalAnalysisState
+        statistics_script="/tmp/stats_script.py",
+        statistical_summary=statistical_summary_data(),
+
+        # FilteringState
+        filter_list=significant_tables_data(),
+        filtered_tables=significant_tables_data(),
+        total_tables_evaluated=5,
+        significant_tables_count=3,
+        filtering_valid=True,
+
+        # PresentationState
+        powerpoint_file="/tmp/presentation.pptx",
+        html_dashboard_file="/tmp/dashboard.html",
+
+        # ApprovalState
+        current_step=22,
+        requires_human_review=False,
+        iteration_count=0,
+
+        # TrackingState
+        errors=[],
+        warnings=[],
+    )
+
+
+@pytest.fixture
+def state_with_all_phases_populated() -> WorkflowState:
+    """
+    State with all phases populated but not completed.
+
+    Useful for testing partial state scenarios.
+    """
+    return {
+        "input_file_path": "tests/fixtures/sample_data.sav",
+        "original_metadata": sample_metadata(),
+        "raw_data": sample_dataframe(),
+        "variable_centered_metadata": variable_centered_metadata(),
+        "filtered_metadata": filtered_metadata(),
+        "filtered_out_variables": [],
+        "recoding_rules": valid_recoding_rules(),
+        "recoding_validation_result": None,  # Not yet validated
+        "recoding_approved": False,
+        "recoding_feedback": None,
+        "new_metadata": None,  # Not yet created
+        "new_data_file": None,
+        "indicators": None,  # Not yet generated
+        "indicator_validation_result": None,
+        "indicators_approved": False,
+        "indicator_feedback": None,
+        "table_specifications": None,  # Not yet generated
+        "table_validation_result": None,
+        "table_specs_approved": False,
+        "table_specs_feedback": None,
+        "table_syntax_file": None,
+        "cross_table_file": None,
+        "statistics_script": None,
+        "statistical_summary": None,
+        "filter_list": None,
+        "filtered_tables": None,
+        "total_tables_evaluated": 0,
+        "significant_tables_count": 0,
+        "filtering_valid": False,
+        "powerpoint_file": None,
+        "html_dashboard_file": None,
+        "current_step": 5,
+        "requires_human_review": False,
+        "iteration_count": 1,
+        "errors": [],
+        "warnings": ["Validation pending"],
+    }
+
+
+# =============================================================================
+# Helper function fixtures for creating test data
+# =============================================================================
+
+@pytest.fixture
+def make_temp_file():
+    """
+    Factory fixture to create temporary files.
+
+    Yields a function that creates temp files with given content.
+
+    Example:
+        def test_something(make_temp_file):
+            temp_path = make_temp_file("test content", ".txt")
+    """
+    created_files = []
+
+    def _make_temp_file(content: str, suffix: str = ".tmp") -> str:
+        fd, path = tempfile.mkstemp(suffix=suffix, prefix="pytest_")
+        os.close(fd)
+        with open(path, 'w') as f:
+            f.write(content)
+        created_files.append(path)
+        return path
+
+    yield _make_temp_file
+
+    # Cleanup
+    for path in created_files:
+        try:
+            os.unlink(path)
+        except FileNotFoundError:
+            pass
+
+
+@pytest.fixture
+def make_temp_sav_file(temp_output_dir: Path):
+    """
+    Factory fixture to create temporary .sav files.
+
+    Yields a function that creates minimal .sav files for testing.
+
+    Example:
+        def test_something(make_temp_sav_file):
+            sav_path = make_temp_sav_file(dataframe)
+    """
+    def _make_temp_sav_file(df: pd.DataFrame, name: str = "test") -> str:
+        path = str(temp_output_dir / f"{name}.sav")
+        try:
+            import pyreadstat
+            pyreadstat.write_sav(df, path)
+        except ImportError:
+            # If pyreadstat not available, create a dummy file
+            with open(path, 'wb') as f:
+                f.write(b"dummy sav file")
+        return path
+
+    return _make_temp_sav_file
+
+
+@pytest.fixture
+def sample_state_transitions():
+    """
+    Sample state transitions for testing workflow progression.
+
+    Returns a list of (step, state) tuples showing how state evolves.
+    """
+    return [
+        (0, create_initial_state("tests/fixtures/sample_data.sav")),
+        (3, {**create_initial_state("tests/fixtures/sample_data.sav"),
+              "current_step": 3, "raw_data": sample_dataframe()}),
+        (8, {**create_initial_state("tests/fixtures/sample_data.sav"),
+              "current_step": 8, "new_data_file": "/tmp/new.sav"}),
+        (11, {**create_initial_state("tests/fixtures/sample_data.sav"),
+               "current_step": 11, "indicators": valid_indicators()}),
+        (16, {**create_initial_state("tests/fixtures/sample_data.sav"),
+               "current_step": 16, "cross_table_file": "/tmp/ct.sav"}),
+        (22, {**create_initial_state("tests/fixtures/sample_data.sav"),
+               "current_step": 22, "powerpoint_file": "/tmp/out.pptx"}),
+    ]

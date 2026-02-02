@@ -107,6 +107,7 @@ def build_graph(
     Args:
         checkpointer_path: Path to SQLite database for checkpointing.
                           If None, uses in-memory MemorySaver.
+                          If False, disables checkpointing entirely (for testing).
         config: Optional configuration dictionary. If None, uses DEFAULT_CONFIG.
 
     Returns:
@@ -130,7 +131,11 @@ def build_graph(
     env_db_path = os.getenv("CHECKPOINT_DB_PATH")
     db_path = env_db_path if env_db_path else checkpointer_path
 
-    if db_path and SQLITE_AVAILABLE:
+    # Special case: checkpointer_path=False means disable checkpointing
+    if checkpointer_path is False:
+        checkpointer = None
+        logging.info("Checkpointing disabled (checkpointer_path=False)")
+    elif db_path and SQLITE_AVAILABLE:
         # Use SQLite for persistent checkpointing
         import sqlite3
         conn = sqlite3.connect(db_path, check_same_thread=False)
@@ -688,3 +693,29 @@ if __name__ == "__main__":
 
     else:
         parser.print_help()
+
+
+# =============================================================================
+# LangGraph Studio Entry Point
+# =============================================================================
+
+def graph_for_studio(config: Optional[Dict[str, Any]] = None) -> StateGraph:
+    """
+    Graph factory function for LangGraph Studio.
+
+    This function provides the expected signature for LangGraph Studio's
+    graph discovery mechanism. It accepts a single config parameter
+    (compatible with RunnableConfig) and returns the compiled graph.
+
+    Args:
+        config: Optional configuration dictionary (RunnableConfig compatible)
+
+    Returns:
+        Compiled StateGraph ready for execution
+
+    Example:
+        This is used automatically by LangGraph Studio when starting
+        the dev server with 'langgraph dev'
+    """
+    # Use default checkpoint path for Studio (in-memory)
+    return get_graph(checkpointer_path=None, config=config)

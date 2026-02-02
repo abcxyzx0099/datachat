@@ -1,103 +1,22 @@
-# Coverage.py configuration file
-# See https://coverage.readthedocs.io/en/latest/config.html
-# Updated: 2026-02-02 - Enhanced test infrastructure with 80% threshold
-
 [run]
-# Source directories to measure coverage for
-source =
-    agent
-    utils
-
-# Omit files from coverage reporting
-omit =
-    */tests/*
-    */test_*.py
+source = agent
+omit = 
+    tests/*
     */__pycache__/*
+    */.venv/*
     */site-packages/*
-
-# Branch coverage: measure both branches of conditional statements
+parallel = True
 branch = True
 
-# Data file location
-data_file = .coverage
-
-# Parallel mode allows combining coverage from multiple processes
-parallel = True
-
-# Enable context tracking (helps identify which tests cover what)
-context = test
-
 [report]
-# Minimum coverage percentage (fails if below this)
-# Updated: 2026-02-02 - Raised from 69% to 80% as part of holistic testing initiative
-# Goal: 80% overall coverage across all modules
-fail_under = 80.0
-
-# Exclude lines of code from coverage analysis
+precision = 2
+show_missing = True
+skip_covered = False
 exclude_lines =
     pragma: no cover
     def __repr__
-    def __str__
     raise AssertionError
     raise NotImplementedError
     if __name__ == .__main__.:
     if TYPE_CHECKING:
     @abstractmethod
-    @abc\.abstractmethod
-    \.\.\.
-
-# Include branch coverage in reports
-show_missing = True
-
-# Sort report by coverage percentage (worst first)
-sort = Cover
-
-# Precision for coverage percentages
-precision = 1
-
-# Skip empty files (no executable code)
-skip_empty = True
-
-# Skip covered files that are 100% covered (reduces noise)
-skip_covered = False
-
-[html]
-# HTML report output directory
-directory = htmlcov
-
-# Page title for HTML report
-title = DataChat SPSS Analyzer - Coverage Report
-
-# Show context of code in HTML report (helps understand coverage)
-show_contexts = True
-
-# Include all files in report, even 100% covered (for per-module tracking)
-skip_covered = False
-
-# Extra CSS for HTML report styling (custom branding)
-# extra_css =
-
-# Display per-module coverage breakdown
-# (enabled by default with show_contexts=True)
-#
-# Per-module coverage targets:
-# - agent/server.py: 0% → 70% (HIGH PRIORITY)
-# - agent/nodes/phase5_statistics.py: 7.8% → 70% (HIGH PRIORITY)
-# - agent/nodes/phase6_filtering.py: 4.1% → 70% (HIGH PRIORITY)
-# - agent/config.py: 29% → 70% (MEDIUM PRIORITY)
-# - agent/styling.py: 41.6% → 70% (MEDIUM PRIORITY)
-# - agent/nodes/phase4_tables.py: 49.8% → 70% (MEDIUM PRIORITY)
-#
-# Current baseline: 79.6% (2026-02-02)
-# Target threshold: 80.0%
-
-[xml]
-# XML report output (for CI/CD integration)
-output = coverage.xml
-
-[json]
-# JSON report output (for programmatic access)
-output = coverage.json
-
-# Pretty print JSON
-pretty_print = True

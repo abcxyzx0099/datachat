@@ -43,6 +43,7 @@ from agent.styling import (
     COLOR_TABLE_HEADER,
     COLOR_HOVER,
 )
+from agent.utils.tracing import trace_node
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ logger = logging.getLogger(__name__)
 # Step 22: Generate HTML Dashboard
 # =============================================================================
 
+@trace_node("Step 22: Generate HTML Dashboard")
 def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
     """
     Step 22: Generate interactive HTML dashboard with all analysis results.

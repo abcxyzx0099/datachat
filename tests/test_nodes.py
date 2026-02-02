@@ -191,11 +191,11 @@ class TestTransformMetadataNode:
 class TestFilterMetadataNode:
     """Tests for filter_metadata_node (Step 3)."""
 
-    def test_filter_metadata_node_success(self, sample_state, sample_variable_centered_metadata):
+    def test_filter_metadata_node_success(self, sample_state, variable_centered_metadata):
         """Test successful metadata filtering."""
         state = {
             **sample_state,
-            "variable_centered_metadata": sample_variable_centered_metadata,
+            "variable_centered_metadata": variable_centered_metadata,
             "warnings": [],
         }
 
@@ -3381,11 +3381,11 @@ class TestTransformMetadataNodeAdditional:
 class TestFilterMetadataNodeAdditional:
     """Additional tests for filter_metadata_node."""
 
-    def test_filter_metadata_node_state_immutability(self, sample_state, sample_variable_centered_metadata):
+    def test_filter_metadata_node_state_immutability(self, sample_state, variable_centered_metadata):
         """Test that input state is not mutated."""
         state = {
             **sample_state,
-            "variable_centered_metadata": sample_variable_centered_metadata.copy(),
+            "variable_centered_metadata": variable_centered_metadata.copy(),
             "warnings": [],
         }
 
