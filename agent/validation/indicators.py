@@ -24,30 +24,9 @@ Example:
 
 import logging
 from typing import Dict, List, Any, Optional, Union
-from dataclasses import dataclass
+from agent.state import ValidationResult, create_validation_result
 
 logger = logging.getLogger(__name__)
-
-
-# =============================================================================
-# ValidationResult
-# =============================================================================
-
-@dataclass
-class ValidationResult:
-    """
-    Standard validation result structure for indicators validation.
-
-    Attributes:
-        is_valid: Overall validation status (True if no errors)
-        errors: Critical errors that must be fixed (blocks execution)
-        warnings: Non-critical issues (informational)
-        checks_performed: List of validation checks that were run
-    """
-    is_valid: bool
-    errors: List[str]
-    warnings: List[str]
-    checks_performed: List[str]
 
 
 # =============================================================================
@@ -113,7 +92,7 @@ def validate_indicators(
 
     # If structure is invalid, we can't continue with other checks
     if structure_errors:
-        return ValidationResult(
+        return create_validation_result(
             is_valid=False,
             errors=errors,
             warnings=warnings,
@@ -125,7 +104,7 @@ def validate_indicators(
     # Empty indicators list is valid
     if len(indicators_list) == 0:
         logger.info("No indicators to validate (empty list is valid)")
-        return ValidationResult(
+        return create_validation_result(
             is_valid=True,
             errors=[],
             warnings=[],
@@ -165,7 +144,7 @@ def validate_indicators(
     else:
         logger.warning(f"Indicators validation failed: {len(errors)} errors, {len(warnings)} warnings")
 
-    return ValidationResult(
+    return create_validation_result(
         is_valid=is_valid,
         errors=errors,
         warnings=warnings,

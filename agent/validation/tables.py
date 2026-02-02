@@ -25,30 +25,9 @@ Example:
 
 import logging
 from typing import Dict, List, Any, Optional, Union
-from dataclasses import dataclass
+from agent.state import ValidationResult, create_validation_result
 
 logger = logging.getLogger(__name__)
-
-
-# =============================================================================
-# ValidationResult
-# =============================================================================
-
-@dataclass
-class ValidationResult:
-    """
-    Standard validation result structure for table specifications validation.
-
-    Attributes:
-        is_valid: Overall validation status (True if no errors)
-        errors: Critical errors that must be fixed (blocks execution)
-        warnings: Non-critical issues (informational)
-        checks_performed: List of validation checks that were run
-    """
-    is_valid: bool
-    errors: List[str]
-    warnings: List[str]
-    checks_performed: List[str]
 
 
 # =============================================================================
@@ -118,7 +97,7 @@ def validate_table_specs(
 
     # If structure is invalid, we can't continue with other checks
     if structure_errors:
-        return ValidationResult(
+        return create_validation_result(
             is_valid=False,
             errors=errors,
             warnings=warnings,
@@ -130,7 +109,7 @@ def validate_table_specs(
     # Empty tables list is valid but should warn
     if len(tables_list) == 0:
         warnings.append("No table specifications generated (empty list)")
-        return ValidationResult(
+        return create_validation_result(
             is_valid=True,
             errors=[],
             warnings=warnings,
@@ -193,7 +172,7 @@ def validate_table_specs(
             f"{len(warnings)} warnings"
         )
 
-    return ValidationResult(
+    return create_validation_result(
         is_valid=is_valid,
         errors=errors,
         warnings=warnings,

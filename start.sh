@@ -254,8 +254,8 @@ if [ "$START_STUDIO" = true ]; then
         exit 1
     fi
 
-    # Start Studio in background
-    nohup langgraph dev > "$STUDIO_LOG" 2>&1 &
+    # Start Studio in background with --allow-blocking flag
+    nohup langgraph dev --allow-blocking > "$STUDIO_LOG" 2>&1 &
     STUDIO_PID=$!
     echo $STUDIO_PID > "$STUDIO_PID_FILE"
 

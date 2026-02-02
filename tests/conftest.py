@@ -540,6 +540,37 @@ def extraction_state(sample_state: WorkflowState, sample_dataframe: pd.DataFrame
 
 
 @pytest.fixture
+def populated_state(sample_state: WorkflowState, sample_dataframe: pd.DataFrame,
+                     sample_metadata: Dict[str, Any], variable_centered_metadata: Dict[str, Any],
+                     filtered_metadata: list) -> WorkflowState:
+    """
+    Populated state for node tests.
+
+    This fixture provides a state with raw data, metadata, and filtered_metadata loaded,
+    suitable for testing individual nodes that require extracted and filtered data.
+
+    Args:
+        sample_state: Base state from sample_state fixture
+        sample_dataframe: Sample data DataFrame
+        sample_metadata: Sample SPSS metadata
+        variable_centered_metadata: Variable-centered metadata
+        filtered_metadata: Filtered metadata list
+
+    Returns:
+        WorkflowState with data, metadata, and filtered_metadata populated
+    """
+    return {
+        **sample_state,
+        "current_step": 3,
+        "raw_data": sample_dataframe,
+        "original_metadata": sample_metadata,
+        "variable_centered_metadata": variable_centered_metadata,
+        "filtered_metadata": filtered_metadata,
+        "filtered_out_variables": [],
+    }
+
+
+@pytest.fixture
 def recoding_state(extraction_state: WorkflowState) -> WorkflowState:
     """
     Workflow state after Phase 2 (Steps 4-8: Recoding).

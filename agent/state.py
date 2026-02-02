@@ -21,20 +21,20 @@ population as the workflow progresses.
 """
 
 from typing import TypedDict, Optional, Dict, List, Any, Literal
-from dataclasses import dataclass
 
 
 # =============================================================================
 # ValidationResult
 # =============================================================================
 
-@dataclass
-class ValidationResult:
+class ValidationResult(TypedDict, total=False):
     """
     Standard validation result structure for artifact validation.
 
     Used by validation nodes to return structured validation results
     for AI-generated artifacts (recoding rules, indicators, table specifications).
+
+    Converted to TypedDict for LangGraph Studio compatibility (Pydantic v2 serialization).
 
     Attributes:
         is_valid: Overall validation status
@@ -46,6 +46,35 @@ class ValidationResult:
     errors: List[str]
     warnings: List[str]
     checks_performed: List[str]
+
+
+def create_validation_result(
+    is_valid: bool,
+    errors: Optional[List[str]] = None,
+    warnings: Optional[List[str]] = None,
+    checks_performed: Optional[List[str]] = None
+) -> ValidationResult:
+    """
+    Factory function to create ValidationResult instances.
+
+    This provides a convenient way to create validation results
+    while maintaining TypedDict compatibility.
+
+    Args:
+        is_valid: Overall validation status
+        errors: Critical errors that must be fixed
+        warnings: Non-critical issues
+        checks_performed: List of validation checks run
+
+    Returns:
+        ValidationResult TypedDict instance
+    """
+    return ValidationResult(
+        is_valid=is_valid,
+        errors=errors or [],
+        warnings=warnings or [],
+        checks_performed=checks_performed or []
+    )
 
 
 # =============================================================================
@@ -411,22 +440,9 @@ def state_to_dict(state: WorkflowState) -> Dict[str, Any]:
         state: WorkflowState to convert
 
     Returns:
-        Dictionary representation of state ( ValidationResult objects
-        are converted to dicts)
+        Dictionary representation of state
     """
-    result = dict(state)
-
-    # Convert ValidationResult dataclasses to dicts
-    for key, value in result.items():
-        if isinstance(value, ValidationResult):
-            result[key] = {
-                "is_valid": value.is_valid,
-                "errors": value.errors,
-                "warnings": value.warnings,
-                "checks_performed": value.checks_performed,
-            }
-
-    return result
+    return dict(state)
 
 
 def get_state_summary(state: WorkflowState) -> Dict[str, Any]:

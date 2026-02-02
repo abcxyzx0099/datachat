@@ -26,7 +26,7 @@ Example:
 
 import logging
 from typing import Dict, List, Any, Optional, Union
-from dataclasses import dataclass
+from agent.state import ValidationResult, create_validation_result
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +120,7 @@ def validate_recoding_rules(
 
     # If structure is invalid, we can't continue with other checks
     if structure_errors:
-        return ValidationResult(
+        return create_validation_result(
             is_valid=False,
             errors=errors,
             warnings=warnings,
@@ -198,7 +198,7 @@ def validate_recoding_rules(
     else:
         logger.warning(f"Recoding rules validation failed: {len(errors)} errors, {len(warnings)} warnings")
 
-    return ValidationResult(
+    return create_validation_result(
         is_valid=is_valid,
         errors=errors,
         warnings=warnings,
