@@ -29,9 +29,18 @@ project-root/
 ├── output/             # Generated outputs
 ├── docs/               # Documentation
 ├── tests/              # Test files
-├── temp/               # Temporary files
+├── temp/               # Temporary files and development artifacts
+├── utils/              # Project-wide utility functions
+├── reference/          # External reference materials
+├── web/                # Web interface (Agent Chat UI)
+├── tasks/              # Task planning and execution
+├── scripts/            # Utility scripts
+├── history/            # Archival storage
+├── implementation/     # Implementation documentation
+├── logs/               # Server logs
 ├── .env                # Environment variables
 ├── checkpoints.db      # State persistence
+├── langgraph.json      # LangGraph configuration (at root)
 └── requirements.txt    # Python dependencies
 ```
 
@@ -45,22 +54,29 @@ project-root/
 |------|---------|
 | `.env` | Environment variables (API keys, paths) |
 | `checkpoints.db` | LangGraph state persistence for resumable execution |
+| `langgraph.json` | LangGraph node/edge configuration |
 | `requirements.txt` | Python dependencies |
-| `pyproject.toml` | Project metadata and dependencies (optional) |
+| `pyproject.toml` | Project metadata and dependencies |
 
 ### 2.2 Root Level Directories
 
 | Directory | Purpose |
 |-----------|---------|
 | `agent/` | Application source code |
-| `config/` | Configuration files (langgraph.json) |
+| `config/` | Configuration files |
 | `data/` | Input survey files (.sav) |
 | `output/` | Generated outputs and logs |
 | `docs/` | Project documentation |
 | `tests/` | Unit and integration tests |
-| `temp/` | Temporary files (one-time use) |
+| `temp/` | Temporary files and development artifacts |
 | `utils/` | Project-wide utility functions |
 | `reference/` | External reference materials |
+| `web/` | Web interface (Agent Chat UI) |
+| `tasks/` | Task planning and execution |
+| `scripts/` | Utility scripts |
+| `history/` | Archival storage |
+| `implementation/` | Implementation documentation |
+| `logs/` | Server logs |
 
 ---
 
@@ -75,12 +91,16 @@ agent/
 ├── config.py                     # Configuration constants
 ├── edges.py                      # Conditional routing logic
 ├── graph.py                      # LangGraph construction
+├── server.py                     # FastAPI server wrapper
+├── styling.py                    # Output styling utilities
 │
 ├── utils/                        # Module-specific utilities
 │   ├── __init__.py
 │   ├── pspp_wrapper.py           # PSPP execution
 │   ├── file_io.py                # File I/O utilities
-│   └── statistics.py             # Statistical computations
+│   ├── statistics.py             # Statistical computations
+│   ├── security.py               # Security utilities
+│   └── tracing.py                # Tracing utilities
 │
 ├── validation/                   # Validation functions
 │   ├── __init__.py
@@ -94,15 +114,15 @@ agent/
 │   └── clients.py                # LLM client initialization
 │
 └── nodes/                        # Node implementations (phase-based)
-    ├── __init__.py               # Exports all 22 nodes
-    ├── phase1_extraction.py      # Steps 1-3   (~150 lines)
-    ├── phase2_recoding.py        # Steps 4-8   (~400 lines)
-    ├── phase3_indicators.py      # Steps 9-11  (~200 lines)
-    ├── phase4_tables.py          # Steps 12-16 (~350 lines)
-    ├── phase5_statistics.py      # Steps 17-18 (~150 lines)
-    ├── phase6_filtering.py       # Steps 19-20 (~120 lines)
-    ├── phase7_powerpoint.py      # Step 21     (~100 lines)
-    └── phase8_html_dashboard.py  # Step 22     (~100 lines)
+    ├── __init__.py               # Exports all nodes
+    ├── phase1_extraction.py      # Steps 1-3
+    ├── phase2_recoding.py        # Steps 4-8
+    ├── phase3_indicators.py      # Steps 9-11
+    ├── phase4_tables.py          # Steps 12-16
+    ├── phase5_statistics.py      # Steps 17-18
+    ├── phase6_filtering.py       # Steps 19-20
+    ├── phase7_powerpoint.py      # Step 21
+    └── phase8_html_dashboard.py  # Step 22
 ```
 
 ### 3.2 utils/ Directory (Project-Wide)
@@ -110,8 +130,7 @@ agent/
 ```
 utils/
 ├── __init__.py
-├── logging.py                    # Logging configuration
-└── helpers.py                    # General helper functions
+└── logging.py                    # Logging configuration
 ```
 
 ### 3.3 config/ Directory
@@ -119,21 +138,23 @@ utils/
 ```
 config/
 ├── __init__.py
-├── default.py                    # DEFAULT_CONFIG constants
 └── langgraph.json                # LangGraph node/edge configuration
 ```
+
+**Note:** `langgraph.json` is also symlinked or copied to the project root for LangGraph Studio compatibility.
 
 ### 3.4 tests/ Directory
 
 ```
 tests/
 ├── __init__.py
-├── test_state.py                 # TypedDict validation tests
-├── test_nodes.py                 # Individual node tests
-├── test_edges.py                 # Conditional routing tests
-├── test_graph.py                 # End-to-end workflow tests
-└── fixtures/
-    └── sample_data.sav           # Sample SPSS file for testing
+├── conftest.py                   # Pytest fixtures and configuration
+├── test_*.py                     # Unit and integration tests
+├── fixtures/                     # Test fixtures and sample data
+├── performance/                  # Performance and load tests
+├── security/                     # Security tests
+├── web/                          # Web interface tests
+└── playwright-mcp/               # Playwright MCP test results
 ```
 
 ---
@@ -191,12 +212,14 @@ output/
 
 ```
 temp/
-├── pspp_syntax/                  # Generated PSPP syntax files
-├── scripts/                      # Generated Python scripts
-└── filters/                      # Generated filter lists
+├── pspp_syntax/                  # Generated PSPP syntax files (dynamic)
+├── scripts/                      # Generated Python scripts (dynamic)
+├── filters/                      # Generated filter lists (dynamic)
+├── coverage_*/                   # Coverage reports (development artifacts)
+└── *.py, *.sh, *.md              # Various development scripts and reports
 ```
 
-**Note**: Files in `temp/` can be safely deleted after workflow completion.
+**Note**: `temp/` contains both dynamic generated files (can be deleted after workflow) and development artifacts (coverage reports, security scans, test scripts).
 
 ### 5.2 Generated Temporary Files
 
@@ -231,7 +254,9 @@ LLM_MAX_TOKENS=4000
 ENABLE_HUMAN_REVIEW=true
 ```
 
-### 6.2 LangGraph Configuration (config/langgraph.json)
+### 6.2 LangGraph Configuration
+
+**Location:** `langgraph.json` (at project root, also in `config/`)
 
 ```json
 {
@@ -242,22 +267,6 @@ ENABLE_HUMAN_REVIEW=true
       "conditional_edges": { /* Three-node pattern routing */ }
     }
   }
-}
-```
-
-### 6.3 Python Configuration (config/default.py)
-
-```python
-DEFAULT_CONFIG = {
-    # LLM Configuration (defaults for Zhipu provider)
-    "llm_provider": "ZHIPU",
-    "model": "glm-4.7",
-    "temperature": 0.1,
-    "max_tokens": 4000,
-    "max_self_correction_iterations": 3,
-    "enable_human_review": True,
-    "pspp_path": "/usr/bin/pspp",
-    # ... additional config
 }
 ```
 
@@ -282,7 +291,6 @@ DEFAULT_CONFIG = {
 ```
 ┌─────────────┐
 │  data/      │  Input: .sav files
-│  input/     │
 └──────┬──────┘
        │
        ▼
@@ -290,7 +298,7 @@ DEFAULT_CONFIG = {
 │  agent/                                │
 │  (nodes → utils → validation → llm)     │
 │  ↓                                     │
-│  Uses config/ for configuration        │
+│  Uses config/ and langgraph.json        │
 └──────┬──────────────────────────────────┘
        │
        ▼
@@ -301,6 +309,12 @@ DEFAULT_CONFIG = {
 │  ├── temp/      (generated files)       │
 │  ├── *.pptx     (final presentation)    │
 │  └── *.html     (dashboard)             │
+└─────────────────────────────────────────┘
+
+       ↕
+┌─────────────────────────────────────────┐
+│  web/ (Agent Chat UI)                   │
+│  ← API via agent/server.py              │
 └─────────────────────────────────────────┘
 ```
 
