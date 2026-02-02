@@ -165,34 +165,17 @@ When reverse proxy is configured with domain `sysy.site`:
 
 ### Starting the Applications
 
-**CRITICAL RULE: AI agents must ALWAYS use the `start.sh` script** located in the project root directory to start the application. Never start servers individually unless explicitly requested by the user for debugging purposes.
+**CRITICAL RULE: AI agents must ALWAYS use `start.sh` to start the application.** Never start servers individually unless explicitly requested for debugging.
 
 ```bash
 ./start.sh
 ```
 
-**Why this script is required:**
+**Why `start.sh` is required:**
 
-The `start.sh` script ensures reliable application startup by:
+The script ensures the application runs correctly on all three ports by automatically killing any existing processes on ports 2024, 8123, and 3000 before launching new services, which prevents port conflicts and guarantees each service starts on its designated port (Studio on 2024, API on 8123, UI on 3000). It also coordinates service startup and manages process IDs for graceful shutdown.
 
-1. **Port cleanup**: Automatically terminates any existing processes running on ports **2024**, **8123**, and **3000** before launching new services. This prevents port conflicts and "port already in use" errors.
-
-2. **Proper port allocation**: Guarantees that each service starts on its designated port:
-   - Port **2024** → LangGraph Studio
-   - Port **8123** → LangGraph API (Custom FastAPI)
-   - Port **3000** → Agent Chat UI (Vite dev server)
-
-3. **Service coordination**: Manages the startup sequence and interdependencies between services
-
-4. **Process management**: Tracks process IDs for graceful shutdown via `./stop.sh`
-
-5. **Environment loading**: Automatically loads environment variables from `.env` file
-
-6. **Health verification**: Confirms each service is running before proceeding
-
-**Do NOT start servers individually** unless specifically required for debugging. The `start.sh` script ensures proper initialization and coordination between services.
-
-To stop all servers, use the companion script:
+To stop all servers:
 ```bash
 ./stop.sh
 ```
