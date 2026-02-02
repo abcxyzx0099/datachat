@@ -1,17 +1,17 @@
 ---
 name: task-planning
-description: "Generate organized task lists from documentation using intelligent assessment. Auto-archives existing plans before creating new ones. Three scope options: From Scratch (TDD), Incomplete Features (TDD), Holistic Testing. Output goes to tasks/task-planning/."
+description: "Generate organized task lists from documentation using intelligent assessment. Prompts user to handle existing plans (Archive/Remove/Keep). Three scope options: From Scratch (TDD), Incomplete Features (TDD), Holistic Testing. Output goes to tasks/task-planning/."
 ---
 
 # Task Planning
 
 Generate organized task planning documents from project documentation.
 
-**Auto-Archive**: Before generating new plans, existing documents in `tasks/task-planning/` are automatically archived to `history/`.
+**Existing Plan Handling**: Before generating new plans, if existing documents are found in `tasks/task-planning/`, the user is prompted to choose: Archive, Remove All, or Keep as Is.
 
 ## Overview
 
-1. **Auto-Archive** existing plans to `history/`
+1. **Handle Existing Plans** - User confirms: Archive / Remove / Keep
 2. **Scope Discussion** - Interactive session to determine scope
 3. **Discover Documents** - Read ALL markdown files from `docs/application-design/`
 4. **Intelligently Assess** - AI evaluates project nature and scope
@@ -25,8 +25,8 @@ Generate organized task planning documents from project documentation.
 flowchart LR
     Start([Start]) --> Check{Existing<br/>plans?}
     Check -->|No| Scope["📋 Scope Discussion"]
-    Check -->|Yes| Archive["📦 Archive to history/"]
-    Archive --> Scope
+    Check -->|Yes| Confirm["🤔 User decides: Archive / Remove / Keep"]
+    Confirm --> Scope
 
     Scope --> Discover[Discover docs/application-design/]
     Discover --> Assess[Assess project]
@@ -44,19 +44,59 @@ flowchart LR
     Save --> End([End])
 ```
 
-## Phase -1: Auto-Archive (Automatic)
+## Phase -1: Handle Existing Plans (User Confirmation)
 
-**Before any user interaction**, check if `tasks/task-planning/` contains existing documents and archive them.
+**Before any user interaction**, check if `tasks/task-planning/` contains existing documents and ask the user how to handle them.
 
 ```bash
 # Check for existing plans
 ls -la tasks/task-planning/*.md 2>/dev/null | wc -l
+```
 
-# If count > 0, archive:
+### User Confirmation
+
+If existing plans are found (count > 0), ask the user:
+
+```python
+AskUserQuestion(
+    questions=[
+        {
+            "question": "Existing task plans found. How would you like to handle them?",
+            "header": "Existing Plans",
+            "multiSelect": False,
+            "options": [
+                {
+                    "label": "Archive",
+                    "description": "Move existing plans to history/Archive-TaskPlanning-{timestamp}/"
+                },
+                {
+                    "label": "Remove All",
+                    "description": "Delete all existing task planning documents"
+                },
+                {
+                    "label": "Keep as Is",
+                    "description": "Leave existing plans in place and create new plan alongside"
+                }
+            ]
+        }
+    ]
+)
+```
+
+### Handle User Selection
+
+```bash
+# If user selected "Archive":
 mkdir -p history
 ARCHIVE_NAME="history/Archive-TaskPlanning-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$ARCHIVE_NAME"
 mv tasks/task-planning/*.md "$ARCHIVE_NAME/" 2>/dev/null
+
+# If user selected "Remove All":
+rm tasks/task-planning/*.md 2>/dev/null
+
+# If user selected "Keep as Is":
+# Do nothing - new plan will be created alongside existing plans
 ```
 
 ## Phase 0: Scope Discussion (Interactive)
