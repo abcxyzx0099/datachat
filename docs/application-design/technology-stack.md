@@ -8,9 +8,10 @@ This document defines the technologies, libraries, and tools used in the Survey 
 
 1. [Overview](#1-overview)
 2. [Core Technologies](#2-core-technologies)
-3. [Python Libraries](#3-python-libraries)
-4. [External Tools](#4-external-tools)
-5. [Version Information](#5-version-information)
+3. [Frontend Technologies](#3-frontend-technologies)
+4. [Python Libraries](#4-python-libraries)
+5. [External Tools](#5-external-tools)
+6. [Version Information](#6-version-information)
 
 ---
 
@@ -94,9 +95,23 @@ LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
 
 ---
 
-## 3. Python Libraries
+## 3. Frontend Technologies
 
-### 3.1 Data Processing
+### 3.1 Next.js + Turbopack
+
+| Property | Value |
+|----------|-------|
+| **Version** | 15.4.10+ |
+| **Bundler** | Turbopack (Rust-based) |
+| **Purpose** | Agent Chat UI web interface |
+| **Dev Server** | `next dev --turbopack` |
+| **Key Features** | 700x faster HMR, React 19, TypeScript |
+
+---
+
+## 4. Python Libraries
+
+### 4.1 Data Processing
 
 | Library | Version | Purpose |
 |---------|---------|---------|
@@ -104,21 +119,21 @@ LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
 | **pyreadstat** | 1.3.3+ | Read/write SPSS .sav files |
 | **numpy** | 2.4.2+ | Numerical computing |
 
-### 3.2 Statistical Analysis
+### 4.2 Statistical Analysis
 
 | Library | Version | Purpose |
 |---------|---------|---------|
 | **scipy** | 1.17.0+ | Chi-square tests, statistical functions |
 | **statsmodels** | (optional) | Advanced statistical modeling |
 
-### 3.3 Presentation & Visualization
+### 4.3 Presentation & Visualization
 
 | Library | Version | Purpose |
 |---------|---------|---------|
 | **python-pptx** | 1.0.2+ | PowerPoint presentation generation |
 | **matplotlib** | 3.10.8+ | Chart generation for PPT |
 
-### 3.4 Workflow & AI
+### 4.4 Workflow & AI
 
 | Library | Version | Purpose |
 |---------|---------|---------|
@@ -127,7 +142,7 @@ LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
 | **langchain-openai** | 1.1.7+ | OpenAI-compatible LLM integrations |
 | **langchain-community** | (optional) | Community integrations for additional LLM providers |
 
-### 3.5 Utilities
+### 4.5 Utilities
 
 | Library | Version | Purpose |
 |---------|---------|---------|
@@ -137,9 +152,9 @@ LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
 
 ---
 
-## 4. External Tools
+## 5. External Tools
 
-### 4.1 PSPP Statistical Software
+### 5.1 PSPP Statistical Software
 
 | Property | Value |
 |----------|-------|
@@ -161,7 +176,7 @@ LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
 | Cost | Free | Paid |
 | License | GPL | Proprietary |
 
-### 4.2 SQLite
+### 5.2 SQLite
 
 | Property | Value |
 |----------|-------|
@@ -171,9 +186,9 @@ LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
 
 ---
 
-## 5. Version Information
+## 6. Version Information
 
-### 5.1 Python Requirements
+### 6.1 Python Requirements
 
 > **Note**: Package versions verified and updated as of 2026-02-01. All versions represent the latest stable releases available on PyPI.
 
@@ -207,7 +222,7 @@ jsonschema>=4.26.0
 pydantic>=2.12.5
 ```
 
-### 5.2 System Requirements
+### 6.2 System Requirements
 
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
@@ -216,7 +231,7 @@ pydantic>=2.12.5
 | **Disk** | 10 GB | 20 GB+ |
 | **PSPP** | 1.6 | 2.0+ |
 
-### 5.3 API Requirements
+### 6.3 API Requirements
 
 | Service | Requirement |
 |---------|-------------|
@@ -227,9 +242,9 @@ pydantic>=2.12.5
 
 ---
 
-## 6. PSPP Syntax Reference
+## 7. PSPP Syntax Reference
 
-### 6.1 Key Commands Used
+### 7.1 Key Commands Used
 
 | Command | Purpose | Example |
 |---------|---------|---------|
