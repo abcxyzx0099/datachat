@@ -214,6 +214,28 @@ async def root() -> Dict[str, Any]:
     }
 
 
+@app.get("/info", tags=["Info"])
+async def info() -> Dict[str, Any]:
+    """
+    Info endpoint for LangGraph SDK compatibility.
+
+    This endpoint is called by the LangGraph SDK to check if the server is running.
+    Returns basic graph information.
+
+    Returns:
+        Graph metadata including graph_id and assistants list
+    """
+    return {
+        "graph_id": GRAPH_ID,
+        "assistants": [
+            {
+                "assistant_id": GRAPH_ID,
+                "graph_id": GRAPH_ID,
+            }
+        ]
+    }
+
+
 from fastapi.responses import FileResponse
 
 

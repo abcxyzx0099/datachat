@@ -159,23 +159,36 @@ When reverse proxy is configured with domain `sysy.site`:
 
 | Service | URL |
 |---------|-----|
-| Frontend | `https://sysy.site/` |
-| LangGraph Studio | `https://sysy.site/studio` |
-| API Backend | `https://sysy.site/api` |
+| Frontend | `https://www.sysy.site/` |
+| LangGraph Studio | `https://www.sysy.site/studio` |
+| API Backend | `https://www.sysy.site/api` |
 
 ### Starting the Applications
 
-**ALWAYS use the `start.sh` script** located in the project root directory to start all three servers.
+**CRITICAL RULE: AI agents must ALWAYS use the `start.sh` script** located in the project root directory to start the application. Never start servers individually unless explicitly requested by the user for debugging purposes.
 
 ```bash
 ./start.sh
 ```
 
-This script will:
-1. Start the LangGraph API server on port **8123**
-2. Start the Agent Chat UI (Vite dev server) on port **3000**
-3. Enable LangSmith tracing for monitoring
-4. Handle process management and logging
+**Why this script is required:**
+
+The `start.sh` script ensures reliable application startup by:
+
+1. **Port cleanup**: Automatically terminates any existing processes running on ports **2024**, **8123**, and **3000** before launching new services. This prevents port conflicts and "port already in use" errors.
+
+2. **Proper port allocation**: Guarantees that each service starts on its designated port:
+   - Port **2024** → LangGraph Studio
+   - Port **8123** → LangGraph API (Custom FastAPI)
+   - Port **3000** → Agent Chat UI (Vite dev server)
+
+3. **Service coordination**: Manages the startup sequence and interdependencies between services
+
+4. **Process management**: Tracks process IDs for graceful shutdown via `./stop.sh`
+
+5. **Environment loading**: Automatically loads environment variables from `.env` file
+
+6. **Health verification**: Confirms each service is running before proceeding
 
 **Do NOT start servers individually** unless specifically required for debugging. The `start.sh` script ensures proper initialization and coordination between services.
 
@@ -197,15 +210,5 @@ This project uses **virtual environments only**. Direct system Python usage is *
 | **Local Development** | `.venv/` | 3.13 | Development, testing, debugging |
 | **Docker** | Container | 3.11 | Containerized deployment, CI/CD |
 | **Production** | `/opt/survey-analyzer/venv/` | System → New venv | Server deployment, systemd service |
-
-### Why Production ≠ Local Development
-
-| Reason | Description |
-|--------|-------------|
-| **Code Isolation** | Production is a deployed copy, not live development code |
-| **Service Integration** | Production runs as systemd service with dedicated user (`surveychat`) |
-| **Location** | `/opt/` is standard for production apps; home dirs for development |
-| **Security** | Production uses restricted permissions, non-root user |
-| **Stability** | Production is a tested snapshot; development changes frequently |
 
 ---

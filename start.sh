@@ -5,8 +5,9 @@
 # This script starts the LangGraph servers and/or Agent Chat UI.
 #
 # Usage:
-#   ./start.sh              # Start web app (8123 + 3000)
-#   ./start.sh --studio     # Start LangGraph Studio (2024)
+#   ./start.sh              # Start all servers (2024 + 8123 + 3000) [DEFAULT]
+#   ./start.sh --studio     # Start LangGraph Studio only (2024)
+#   ./start.sh --web        # Start web app only (8123 + 3000)
 #   ./start.sh --all        # Start all servers (2024 + 8123 + 3000)
 #
 # To stop the application, use: ./stop.sh
@@ -54,12 +55,12 @@ case "${1:-}" in
     --studio)
         START_STUDIO=true
         ;;
-    --all)
+    --web)
+        START_WEB=true
+        ;;
+    --all|"")
         START_WEB=true
         START_STUDIO=true
-        ;;
-    --web|"")
-        START_WEB=true
         ;;
     *)
         echo -e "${RED}Error: Unknown option '$1'${NC}"
