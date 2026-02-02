@@ -163,6 +163,27 @@ When reverse proxy is configured with domain `sysy.site`:
 | LangGraph Studio | `https://sysy.site/studio` |
 | API Backend | `https://sysy.site/api` |
 
+### Starting the Applications
+
+**ALWAYS use the `start.sh` script** located in the project root directory to start all three servers.
+
+```bash
+./start.sh
+```
+
+This script will:
+1. Start the LangGraph API server on port **8123**
+2. Start the Agent Chat UI (Vite dev server) on port **3000**
+3. Enable LangSmith tracing for monitoring
+4. Handle process management and logging
+
+**Do NOT start servers individually** unless specifically required for debugging. The `start.sh` script ensures proper initialization and coordination between services.
+
+To stop all servers, use the companion script:
+```bash
+./stop.sh
+```
+
 ---
 
 ## 9. Python Environment Usage Plan
