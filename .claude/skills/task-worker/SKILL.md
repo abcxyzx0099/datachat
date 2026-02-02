@@ -1,6 +1,6 @@
 ---
 name: task-worker
-description: "Two-agent workflow coordinator with AUTOMATIC iteration. Orchestrates Implementation Agent and Auditor Agent using a pre-existing task specification. Automatically iterates based on audit feedback until quality threshold is met (max 3 iterations). Use when: you have a task specification created by task-specification-generation; you need end-to-end task execution with quality assurance; you want automatic retry based on audit feedback; you need a single entry point that coordinates implementation and audit. This skill is called by the task-implementation module."
+description: "Two-agent workflow coordinator with AUTOMATIC iteration. Orchestrates Implementation Agent and Auditor Agent using a pre-existing task specification. Automatically iterates based on audit feedback until quality threshold is met (max 3 iterations). Creates a safety checkpoint (git commit + push) before starting implementation work. Use when: you have a task specification created by task-specification-generation; you need end-to-end task execution with quality assurance; you want automatic retry based on audit feedback; you need a single entry point that coordinates implementation and audit. This skill is called by the task-implementation module."
 ---
 
 # Task Worker
@@ -10,32 +10,37 @@ A two-agent workflow that **automatically iterates** until the work meets qualit
 ## Overview
 
 The Coordinator acts as the central orchestrator that:
-1. **Receives Task Document** - Accepts a pre-created task document file path or content
-2. **Spawns Implementation Agent** - Executes the task with thorough investigation
-3. **Spawns Auditor Agent** - Reviews and rates the implementation quality
-4. **Automatically Iterates** - Re-runs Implementation and Audit phases based on feedback
-5. **Returns only when** - Work is approved OR max iterations (3) is reached
+1. **Creates Safety Checkpoint** - Verifies main branch, commits and pushes all changes
+2. **Receives Task Document** - Accepts a pre-created task document file path or content
+3. **Spawns Implementation Agent** - Executes the task with thorough investigation
+4. **Spawns Auditor Agent** - Reviews and rates the implementation quality
+5. **Automatically Iterates** - Re-runs Implementation and Audit phases based on feedback
+6. **Returns only when** - Work is approved OR max iterations (3) is reached
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    Coordinator["TASK IMPLEMENTATION<br/>- Receives task document path/content<br/>- Spawns sub-agents via Task tool<br/>- Tracks state and results<br/>- Makes routing decisions<br/>- Coordinates until task complete"]
+    Coordinator["TASK IMPLEMENTATION<br/>- Creates safety checkpoint first<br/>- Receives task document path/content<br/>- Spawns sub-agents via Task tool<br/>- Tracks state and results<br/>- Makes routing decisions<br/>- Coordinates until task complete"]
 
+    Safety["PHASE 0<br/>Safety Checkpoint<br/>git commit + push"]
     Input["INPUT<br/>Task Document<br/>pre-created"]
     Impl["SUB-AGENT 1<br/>Implementation<br/>Worker"]
     Auditor["SUB-AGENT 2<br/>Auditor"]
     Decision["Coordinator<br/>Decision Loop"]
 
+    Coordinator --> Safety
     Coordinator --> Input
     Coordinator --> Impl
     Coordinator --> Auditor
 
+    Safety --> Input
     Input --> Impl
     Impl --> Auditor
     Auditor --> Decision
 
     style Coordinator fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    style Safety fill:#ffcdd2,stroke:#c62828,stroke-width:3px
     style Input fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style Impl fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
     style Auditor fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
@@ -88,6 +93,59 @@ You will receive:
 - **Max iterations** - Optional override (default: 3)
 
 ## Workflow
+
+### Phase 0: Safety Checkpoint (CRITICAL - MUST RUN FIRST)
+
+**Before reading any task document, create a safety checkpoint:**
+
+1. **Verify Current Branch** - Check if on `main` branch:
+   ```bash
+   git branch --show-current
+   ```
+   - If NOT on `main`, switch back: `git checkout main`
+   - Rationale: CLAUDE.md rule states we must work on main unless explicitly requested
+
+2. **Stage All Changes** - Prepare to commit current state:
+   ```bash
+   git status  # Review what will be committed
+   git add -A  # Stage all changes (including untracked files)
+   ```
+
+3. **Create Checkpoint Commit** - Commit with safety checkpoint message:
+   ```bash
+   git commit -m "$(cat <<'EOF'
+safety-checkpoint: pre-task-implementation backup
+
+This commit creates a restore point before task implementation begins.
+If implementation fails or introduces issues, revert to this checkpoint.
+
+Task: [task document will be added after reading]
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+EOF
+)"
+   ```
+
+4. **Push to Remote** - Ensure checkpoint is saved remotely:
+   ```bash
+   git push
+   ```
+
+5. **Verify Checkpoint** - Confirm checkpoint is safely stored:
+   ```bash
+   git log -1 --oneline  # Show the checkpoint commit
+   ```
+
+**Rationale:**
+- Creates a known-good state before implementation work
+- If implementation introduces bugs, can `git reset --hard <checkpoint-hash>` to recover
+- Remote push ensures checkpoint survives local failures
+- Aligns with project rule: always work on main branch
+
+**Error Handling:**
+- If push fails (e.g., merge needed), resolve before proceeding
+- If no changes to commit, log "no changes to checkpoint" and continue
+- If verification fails, stop and notify user before proceeding
 
 ### Phase 1: Read Task Specification
 
@@ -389,6 +447,14 @@ The Coordinator returns a comprehensive result:
 
 ```mermaid
 flowchart TD
+    subgraph Phase0 ["PHASE 0: Safety Checkpoint (FIRST)"]
+        CheckBranch["Verify current branch is main"]
+        StageChanges["Stage all changes (git add -A)"]
+        CommitCheckpoint["Create safety checkpoint commit"]
+        PushRemote["Push to remote for backup"]
+        VerifyCheckpoint["Verify checkpoint saved"]
+    end
+
     subgraph Init ["1. INITIALIZE"]
         ReadDoc["Read task document from file path or content"]
         SetIter["Set iteration = 1"]
@@ -423,7 +489,8 @@ flowchart TD
         end
     end
 
-    Init --> IterLoop
+    Phase0 --> Init --> IterLoop
+    CheckBranch --> StageChanges --> CommitCheckpoint --> PushRemote --> VerifyCheckpoint --> ReadDoc
     ReadDoc --> SetIter --> SetMaxIter --> InitArray --> P2_1
     P2_1 --> P2_2 --> P2_3 --> P2_4 --> P3_1
     P3_1 --> P3_2 --> P3_3 --> VerdictCheck
@@ -435,6 +502,7 @@ flowchart TD
     CheckMaxIter -->|No| ReturnMaxReached
 
     style Init fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style Phase0 fill:#ffcdd2,stroke:#c62828,stroke-width:3px
     style Phase2 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     style Phase3 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
     style CheckVerdictBlock fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
@@ -450,7 +518,39 @@ flowchart TD
 # Coordinator Workflow (for reference, not actual code)
 
 def coordinate_workflow(task_document_path, max_iterations=3):
-    # Initialize
+    # ========== PHASE 0: Safety Checkpoint (CRITICAL - FIRST) ==========
+    print("\n🔒 Phase 0: Creating safety checkpoint...")
+
+    # Step 1: Verify on main branch
+    current_branch = run_command("git branch --show-current")
+    if current_branch != "main":
+        print(f"⚠️ Not on main branch (current: {current_branch}), switching to main...")
+        run_command("git checkout main")
+
+    # Step 2: Stage all changes
+    run_command("git add -A")
+
+    # Step 3: Create safety checkpoint commit
+    checkpoint_commit = run_command("""
+        git commit -m "$(cat <<'EOF'
+safety-checkpoint: pre-task-implementation backup
+
+This commit creates a restore point before task implementation begins.
+If implementation fails or introduces issues, revert to this checkpoint.
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+EOF
+)"
+    """)
+
+    # Step 4: Push to remote
+    run_command("git push")
+
+    # Step 5: Verify checkpoint
+    checkpoint_hash = run_command("git log -1 --oneline | cut -d' ' -f1")
+    print(f"✅ Safety checkpoint created: {checkpoint_hash}")
+
+    # ========== PHASE 1: Initialize ==========
     iteration = 1
     iterations = []
 
@@ -521,6 +621,12 @@ The Coordinator **MUST** provide clear progress updates during execution:
 ```markdown
 🚀 Task Implementation Started
 📋 Task document: tasks/task-specifications/task-20260131-204500-fix-auth-timeout.md
+
+🔒 Phase 0: Safety Checkpoint
+   ✅ Verified on main branch
+   ✅ Staged all changes
+   ✅ Created checkpoint commit: abc1234
+   ✅ Pushed to remote
 
 📋 Iteration 1/3
    🔧 Reading task document...
