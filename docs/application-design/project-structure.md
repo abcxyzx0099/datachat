@@ -19,7 +19,7 @@ This document defines the complete project structure, directory organization, an
 
 ## 1. Overview
 
-The project follows a clear separation between application code, configuration, input data, and generated outputs.
+The project follows a clear separation between application code, configuration, input data, generated outputs, and web interface.
 
 ```
 project-root/
@@ -30,8 +30,17 @@ project-root/
 ├── docs/               # Documentation
 ├── tests/              # Test files
 ├── temp/               # Temporary files
+├── web/                # Web interface (Next.js frontend)
+├── tasks/              # Task specifications and planning
+├── implementation/     # Implementation documentation
+├── history/            # Archived materials
+├── scripts/            # Shell scripts
+├── utils/              # Project-wide utilities
+├── reference/          # External reference materials
+├── .claude/            # Claude skills configuration
 ├── .env                # Environment variables
 ├── checkpoints.db      # State persistence
+├── pyproject.toml      # Project metadata
 └── requirements.txt    # Python dependencies
 ```
 
@@ -52,15 +61,23 @@ project-root/
 
 | Directory | Purpose |
 |-----------|---------|
-| `agent/` | Application source code |
+| `agent/` | Application source code (LangGraph agent) |
 | `config/` | Configuration files (langgraph.json) |
 | `data/` | Input survey files (.sav) |
 | `output/` | Generated outputs and logs |
-| `docs/` | Project documentation |
+| `docs/` | Project documentation (application-design, user guides) |
 | `tests/` | Unit and integration tests |
 | `temp/` | Temporary files (one-time use) |
 | `utils/` | Project-wide utility functions |
 | `reference/` | External reference materials |
+| `web/` | Web interface (Agent Chat UI - Next.js) |
+| `tasks/` | Task specifications and planning documents |
+| `implementation/` | Implementation documentation |
+| `history/` | Archived materials and legacy documents |
+| `scripts/` | Shell scripts (start.sh, stop.sh) |
+| `.claude/` | Claude Code skills configuration |
+| `.venv/` | Python virtual environment |
+| `htmlcov/` | Code coverage reports (generated) |
 
 ---
 
@@ -75,6 +92,8 @@ agent/
 ├── config.py                     # Configuration constants
 ├── edges.py                      # Conditional routing logic
 ├── graph.py                      # LangGraph construction
+├── server.py                     # FastAPI server for Agent Chat UI
+├── styling.py                    # Output styling utilities
 │
 ├── utils/                        # Module-specific utilities
 │   ├── __init__.py
@@ -128,12 +147,93 @@ config/
 ```
 tests/
 ├── __init__.py
+├── conftest.py                   # Pytest configuration and shared fixtures
 ├── test_state.py                 # TypedDict validation tests
 ├── test_nodes.py                 # Individual node tests
 ├── test_edges.py                 # Conditional routing tests
 ├── test_graph.py                 # End-to-end workflow tests
-└── fixtures/
-    └── sample_data.sav           # Sample SPSS file for testing
+├── test_*.py                     # Additional test files (29+ total)
+├── fixtures/                     # Test data and fixtures
+│   └── sample_data.sav           # Sample SPSS file for testing
+├── web/                          # Web UI test files
+└── playwright-mcp/               # Playwright test results
+```
+
+### 3.5 web/ Directory
+
+The `web/` directory contains the Agent Chat UI, a Next.js-based frontend for interacting with the agent.
+
+```
+web/
+└── agent-chat-ui/                # Next.js frontend application
+    ├── public/                   # Static assets
+    ├── src/                      # Source code
+    │   ├── app/                  # Next.js App Router pages
+    │   ├── components/           # React components
+    │   └── lib/                  # Utility libraries
+    ├── e2e/                      # E2E tests (Playwright)
+    ├── tests/                    # Additional test files
+    ├── .next/                    # Next.js build output (generated)
+    ├── node_modules/             # Dependencies (generated)
+    ├── playwright-report/        # Playwright test reports (generated)
+    ├── test-results/             # Test results (generated)
+    ├── package.json              # Node.js dependencies
+    ├── pnpm-lock.yaml            # Lock file
+    ├── playwright.config.ts      # Playwright configuration
+    ├── next.config.mjs           # Next.js configuration
+    ├── tailwind.config.js        # Tailwind CSS configuration
+    ├── tsconfig.json             # TypeScript configuration
+    └── start.sh                  # Start script
+```
+
+### 3.6 tasks/ Directory
+
+The `tasks/` directory contains task specifications and planning documents for the task implementation system.
+
+```
+tasks/
+├── task-specifications/          # Generated task specification documents
+│   └── task-{timestamp}-{summary}.md
+├── task-planning/                # Task planning documents
+└── task-archive/                 # Completed/archived tasks
+```
+
+### 3.7 implementation/ Directory
+
+The `implementation/` directory contains implementation documentation created by AI agents during development.
+
+```
+implementation/
+├── setup-summaries/              # Setup and configuration documentation
+├── test-coverage/                # Test coverage reports
+└── *.md                          # Implementation guides and notes
+```
+
+### 3.8 history/ Directory
+
+The `history/` directory contains archived materials from completed projects and development waves.
+
+```
+history/
+├── development/                  # Archived development materials
+│   └── Archive-{description}-{timestamp}/
+└── documents/                    # Archived documentation
+    └── Archive-{description}-{timestamp}/
+```
+
+### 3.9 .claude/ Directory
+
+The `.claude/` directory contains Claude Code skills configuration.
+
+```
+.claude/
+└── skills/                       # Custom skills
+    ├── task-worker/              # Task implementation workflow skill
+    ├── task-implementation/      # Task implementation module
+    ├── task-planning/            # Task planning skill
+    ├── task-specification-generation/  # Task spec generation
+    ├── task-cleanup/             # Task cleanup skill
+    └── [other skills]/
 ```
 
 ---
@@ -293,23 +393,70 @@ DEFAULT_CONFIG = {
 │  Uses config/ for configuration        │
 └──────┬──────────────────────────────────┘
        │
-       ▼
-┌─────────────────────────────────────────┐
-│  output/                               │
-│  ├── logs/      (execution traces)      │
-│  ├── reviews/   (human review docs)     │
-│  ├── temp/      (generated files)       │
-│  ├── *.pptx     (final presentation)    │
-│  └── *.html     (dashboard)             │
-└─────────────────────────────────────────┘
+       ├─────────────────┐
+       │                 │
+       ▼                 ▼
+┌──────────────────┐  ┌─────────────────┐
+│  output/         │  │  web/           │
+│  ├── logs/       │  │  agent-chat-ui  │
+│  ├── reviews/    │  │  (FastAPI →     │
+│  ├── temp/       │  │   Next.js UI)   │
+│  ├── *.pptx      │  └─────────────────┘
+│  └── *.html      │           │
+└──────────────────┘           │
+                              ▼
+                    ┌─────────────────┐
+                    │  User Browser   │
+                    │  (Agent Chat    │
+                    │   Interface)    │
+                    └─────────────────┘
+```
+
+**Web Interface Communication:**
+
+```
+┌─────────────────┐      HTTP/WebSocket      ┌──────────────────┐
+│  web/           │ ◄────────────────────►  │  agent/server.py │
+│  agent-chat-ui  │   Port 8123 (FastAPI)   │  (FastAPI)       │
+│  (Next.js)      │                         └────────┬─────────┘
+└─────────────────┘                                  │
+                                                     │
+                                                     ▼
+                                            ┌─────────────────┐
+                                            │  agent/graph.py │
+                                            │  (LangGraph)    │
+                                            └─────────────────┘
 ```
 
 ---
 
-## Related Documents
+## 9. Server Ports and URLs
+
+### 9.1 Development Ports
+
+| Port | Service | Command | Purpose |
+|------|---------|---------|---------|
+| **2024** | LangGraph Studio | `langgraph dev` | Official dev server with Studio UI |
+| **8123** | FastAPI Backend | `python -m agent.server` | Project-specific API wrapper for Agent Chat UI |
+| **3000** | Frontend Dev | Vite dev server | Agent Chat UI development server |
+
+### 9.2 Reverse Proxy URLs (with SSL)
+
+When reverse proxy is configured with domain `sysy.site`:
+
+| Service | URL |
+|---------|-----|
+| Frontend | `https://sysy.site/` |
+| LangGraph Studio | `https://sysy.site/studio` |
+| API Backend | `https://sysy.site/api` |
+
+---
+
+## 10. Related Documents
 
 | Document | Content |
 |----------|---------|
+| **[Testing Structure](./testing-structure.md)** | Test organization and structure recommendations |
 | **[Deployment](./deployment.md)** | Installation, environment configuration, and production deployment |
 | **[Configuration](./system-configuration.md)** | Configuration options and environment variables |
 | **[Data Flow](./data-flow.md)** | Workflow design and steps |
