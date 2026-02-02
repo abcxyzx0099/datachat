@@ -12,3 +12,4 @@ htmlcov/
 coverage.xml
 coverage.json
 !pyproject.toml  # Keep coverage config in pyproject.toml
+docs/application-design/credentials.md
