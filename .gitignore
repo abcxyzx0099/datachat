@@ -34,10 +34,11 @@ test-results/
 .studio_pid
 .ui_pid
 
-# Runtime databases
+# Runtime databases (*.db, *.db-shm, *.db-wal files)
 checkpoints.db
-tests/checkpoints/
-tests/core/checkpoints/
+*.db
+*.db-shm
+*.db-wal
 
 # Logs
 logs/
