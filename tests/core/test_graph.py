@@ -212,14 +212,14 @@ def mock_subprocess_run(temp_output_dir: Path) -> Mock:
 # Common mock context manager
 # =============================================================================
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_dependencies(
     mock_llm_client: Mock,
     mock_pspp_execution: Mock,
     mock_subprocess_run: Mock,
 ):
     """
-    Common context manager for mocking all external dependencies.
+    Auto-use fixture that mocks all external dependencies for graph tests.
 
     Uses ExitStack to properly manage multiple patch contexts.
     """
@@ -257,7 +257,6 @@ class TestEndToEndWorkflow:
         temp_checkpoint_db: str,
         mock_thread_id: str,
         test_config: Dict[str, Any],
-        mock_dependencies,
     ):
         """
         Test complete 22-step workflow execution.
@@ -287,7 +286,6 @@ class TestEndToEndWorkflow:
         temp_checkpoint_db: str,
         mock_thread_id: str,
         test_config: Dict[str, Any],
-        mock_dependencies,
     ):
         """
         Test that all 22 steps are executed in order.
@@ -329,7 +327,6 @@ class TestStateEvolution:
         temp_checkpoint_db: str,
         mock_thread_id: str,
         test_config: Dict[str, Any],
-        mock_dependencies,
     ):
         """
         Test state evolves correctly through workflow.
@@ -382,7 +379,6 @@ class TestCheckpointPersistence:
         temp_checkpoint_db: str,
         mock_thread_id: str,
         test_config: Dict[str, Any],
-        mock_dependencies,
     ):
         """
         Test that checkpoints are created during workflow execution.
@@ -414,7 +410,6 @@ class TestCheckpointPersistence:
         self,
         temp_checkpoint_db: str,
         test_config: Dict[str, Any],
-        mock_dependencies,
     ):
         """
         Test that checkpoints from different threads are isolated.
