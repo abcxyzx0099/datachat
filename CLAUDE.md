@@ -68,20 +68,21 @@ git blame docs/application-design/my-document.md
 
 **CRITICAL RULE**: AI agents must follow strict rules when creating documentation.
 
-### Application Design Documents (`docs/application-design/`)
+### Documentation in `docs/` Directory
 
 | Rule | Description |
 |------|-------------|
-| **Explicit user request required** | Do NOT create documents in `docs/application-design/` without user permission |
+| **Explicit user request required** | Do NOT create documents in `docs/` or ANY subdirectory without user permission |
 | **User-triggered only** | Only save to this directory when the user explicitly requests it |
-| **Purpose** | High-level design, architecture, and specification documents |
+| **Full restriction applies** | This restriction applies to `docs/` and ALL its subdirectories |
 
-**When to create in `docs/application-design/`:**
+**When to create in `docs/`:**
 - User explicitly requests: "Create a design document for X"
-- User explicitly requests: "Save this to application design"
+- User explicitly requests: "Save this to docs"
+- User explicitly requests: "Save to application design"
 - User asks to document architecture or specifications
 
-**When NOT to create in `docs/application-design/`:**
+**When NOT to create in `docs/`:**
 - AI agent spontaneously decides to document something
 - Implementation notes or technical guides
 - Code documentation or API references
@@ -207,5 +208,68 @@ This project uses **virtual environments only**. Direct system Python usage is *
 | **Local Development** | `.venv/` | 3.13 | Development, testing, debugging |
 | **Docker** | Container | 3.11 | Containerized deployment, CI/CD |
 | **Production** | `/opt/survey-analyzer/venv/` | System → New venv | Server deployment, systemd service |
+
+---
+
+## 10. Credential Management
+
+**CRITICAL RULE**: AI agents must follow the credential source-of-truth pattern when working with API keys and configuration credentials.
+
+### Credential Storage Pattern
+
+| File | Purpose | Who Uses It |
+|------|---------|-------------|
+| `docs/application-design/credentials.md` | **Single source of truth** for credential values | AI agents (read-only) |
+| `.env` | Runtime environment variables (actual values) | Application (read-only) |
+| `.env.example` | Template with placeholders (no actual credentials) | Developers for reference |
+
+### How AI Agents Should Use Credentials
+
+**When AI agents need to use credentials:**
+
+1. **Read the credential values** from `docs/application-design/credentials.md`
+2. **Hardcode the values** into the `.env` file
+3. **Application reads only** from `.env` (never directly from `credentials.md`)
+
+**Workflow:**
+```
+credentials.md (source)  →  .env (configured by AI)  →  Application (reads at runtime)
+```
+
+### Example Workflow
+
+When an AI agent needs to configure LLM credentials:
+
+```bash
+# Step 1: AI reads credentials.md
+Read: docs/application-design/credentials.md
+
+# Step 2: AI updates .env with actual values
+Edit: .env
+ZHIPU_API_KEY="cef62fd30a0e4ddf826ccba67b7a1e78.iSRcFQPBKBt4MQ52"
+ZHIPU_BASE_URL="https://open.bigmodel.cn/api/coding/paas/v4"
+ZHIPU_MODEL="glm-4.7"
+
+# Step 3: Application uses the .env file
+# The application code (Python) reads from os.environ or dotenv
+```
+
+### Available Credentials
+
+The `credentials.md` document contains credentials for:
+
+| Provider | Purpose |
+|----------|---------|
+| **Kimi (Moonshot AI)** | LLM provider |
+| **DeepSeek** | LLM provider |
+| **Zhipu GLM** | LLM provider |
+| **LangSmith** | Workflow tracing and debugging |
+
+### Important Notes
+
+- **DO NOT** remove or modify `credentials.md` - it is the reference source
+- **DO NOT** hardcode credentials in application code
+- **ALWAYS** update `.env` when credential values change in `credentials.md`
+- **NEVER** commit actual credentials to public repositories
 
 ---
