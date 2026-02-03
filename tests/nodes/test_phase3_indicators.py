@@ -32,7 +32,9 @@ Test Coverage:
 """
 
 import pytest
+from unittest.mock import patch, Mock
 
+from agent.state import ValidationResult
 from agent.nodes.phase3_indicators import (
     generate_indicators_node,
     validate_indicators_node,

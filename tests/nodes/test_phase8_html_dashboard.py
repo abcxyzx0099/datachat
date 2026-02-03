@@ -21,21 +21,28 @@ from agent.nodes.phase8_html_dashboard import (
 class TestGenerateHtmlDashboardNode:
     """Tests for generate_html_dashboard_node (Step 22)."""
 
-    def test_generate_html_dashboard_node_success(self, populated_state):
+    def test_generate_html_dashboard_node_success(self, populated_state, tmp_path):
         """Test successful HTML dashboard generation."""
+        # Create a mock cross_table_file
+        cross_table_file = tmp_path / "cross_table.json"
+        import json
+        with open(cross_table_file, 'w') as f:
+            json.dump({"tables": []}, f)
+
         state = {
             **populated_state,
-            "filtered_tables": {
-                "table1": {"data": []},
-            },
+            "cross_table_file": str(cross_table_file),
             "statistical_summary": {
-                "results": [],
+                "tables": [],
             },
-            "new_metadata": {"variables": {}},
+            "filter_list": {
+                "filters": [],
+            },
+            "config": {"output_dir": str(tmp_path)},
         }
 
         with patch('agent.nodes.phase8_html_dashboard._generate_html_dashboard') as mock_create:
-            mock_create.return_value = "/output/dashboard.html"
+            mock_create.return_value = "<html></html>"
 
             result = generate_html_dashboard_node(state)
 

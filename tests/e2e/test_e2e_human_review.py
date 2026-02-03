@@ -842,7 +842,7 @@ class TestCheckpointResumption:
         assert "recoding_rules" in checkpoint_state
         assert checkpoint_state["recoding_rules"] == valid_recoding_rules
         assert "recoding_validation_result" in checkpoint_state
-        assert checkpoint_state["recoding_validation_result"].is_valid == True
+        assert checkpoint_state["recoding_validation_result"]['is_valid'] == True
         assert checkpoint_state["iteration_count"] == 1
 
     def test_workflow_can_resume_after_approval(
@@ -1108,9 +1108,9 @@ class TestFeedbackIncorporation:
             "iteration_count": 1,
         }
 
-        # Can distinguish by checking validation_result.is_valid
-        assert state_validation_retry["recoding_validation_result"].is_valid == False
-        assert state_human_retry["recoding_validation_result"].is_valid == True
+        # Can distinguish by checking validation_result['is_valid']
+        assert state_validation_retry["recoding_validation_result"]['is_valid'] == False
+        assert state_human_retry["recoding_validation_result"]['is_valid'] == True
         assert state_human_retry["recoding_feedback"] == "Human feedback"
 
     def test_regenerated_artifact_incorporates_feedback(

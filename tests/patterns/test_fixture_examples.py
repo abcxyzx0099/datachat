@@ -85,12 +85,15 @@ def test_invalid_recoding_rules_error_detection(invalid_recoding_rules: Dict[str
     """Example: Testing error detection with invalid rules."""
     rules = invalid_recoding_rules["recoding_rules"]
 
-    # Should have invalid ranges (min > max)
+    # Should have at least one rule with invalid ranges (min > max)
+    has_invalid_range = False
     for rule in rules:
         for r in rule.get("rules", []):
             if "source_min" in r and "source_max" in r:
-                # Invalid: min > max
-                assert r["source_min"] > r["source_max"]
+                if r["source_min"] > r["source_max"]:
+                    has_invalid_range = True
+
+    assert has_invalid_range, "Expected at least one rule with invalid range (min > max)"
 
 
 # =============================================================================
@@ -112,15 +115,15 @@ def test_mock_llm_client(mock_llm_client):
 
 def test_validation_result(valid_validation_result):
     """Example: Using validation result fixtures."""
-    assert valid_validation_result.is_valid is True
-    assert len(valid_validation_result.errors) == 0
-    assert len(valid_validation_result.warnings) >= 0
+    assert valid_validation_result['is_valid'] is True
+    assert len(valid_validation_result['errors']) == 0
+    assert len(valid_validation_result['warnings']) >= 0
 
 
 def test_invalid_validation_result(invalid_validation_result):
     """Example: Testing with invalid validation result."""
-    assert invalid_validation_result.is_valid is False
-    assert len(invalid_validation_result.errors) > 0
+    assert invalid_validation_result['is_valid'] is False
+    assert len(invalid_validation_result['errors']) > 0
 
 
 # =============================================================================

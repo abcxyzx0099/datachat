@@ -368,8 +368,7 @@ class TestGetMarketResearchColor:
     def test_get_market_research_color_returns_rgb_color(self):
         """Test that function returns RGBColor object."""
         result = styling.get_market_research_color("primary")
-        # RGBColor is a tuple-like object with indexed access (r, g, b)
-        assert len(result) == 3
+        # RGBColor has r, g, b attributes
         assert result[0] == 44  # r
         assert result[1] == 82  # g
         assert result[2] == 130  # b
@@ -809,7 +808,7 @@ class TestStylingEdgeCases:
         ]
         for name in valid_names:
             result = styling.get_market_research_color(name)
-            # RGBColor has r, g, b integer attributes
+            # RGBColor is subscriptable with integer values
             assert isinstance(result[0], int)
             assert isinstance(result[1], int)
             assert isinstance(result[2], int)

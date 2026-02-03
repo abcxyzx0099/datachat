@@ -47,18 +47,16 @@ class TestGetPsppPath:
     def test_returns_default_pspp_command(self):
         """Test that default 'pspp' command is returned when not configured."""
         with patch('agent.utils.pspp_wrapper.DEFAULT_CONFIG', {}):
-            with patch('agent.utils.pspp_wrapper.shutil.which') as mock_which:
-                mock_which.return_value = "/usr/bin/pspp"
-                result = get_pspp_path()
-                assert result == "/usr/bin/pspp"
-                mock_which.assert_called_once_with("pspp")
+            result = get_pspp_path()
+            # Command name is returned as-is (validate_executable_path allows command names)
+            assert result == "pspp"
 
     def test_returns_configured_path(self):
         """Test that configured PSPP path is returned when set."""
         custom_path = "/custom/path/to/pspp"
         with patch('agent.utils.pspp_wrapper.DEFAULT_CONFIG', {"pspp_path": custom_path}):
-            with patch('os.path.exists') as mock_exists:
-                mock_exists.return_value = True
+            with patch('agent.utils.pspp_wrapper.validate_executable_path') as mock_validate:
+                mock_validate.return_value = custom_path
                 result = get_pspp_path()
                 assert result == custom_path
 
@@ -74,12 +72,11 @@ class TestGetPsppPath:
                 assert invalid_path in str(exc_info.value)
 
     def test_finds_pspp_in_path(self):
-        """Test finding PSPP in system PATH when only command name provided."""
+        """Test that PSPP command is returned when specified (works in subprocess)."""
         with patch('agent.utils.pspp_wrapper.DEFAULT_CONFIG', {"pspp_path": "pspp"}):
-            with patch('agent.utils.pspp_wrapper.shutil.which') as mock_which:
-                mock_which.return_value = "/usr/bin/pspp"
-                result = get_pspp_path()
-                assert result == "/usr/bin/pspp"
+            result = get_pspp_path()
+            # Command name is returned as-is when it passes validation
+            assert result == "pspp"
 
     def test_returns_command_when_not_found_in_path(self):
         """Test that command name is returned even when not found (allows later failure)."""
@@ -90,15 +87,12 @@ class TestGetPsppPath:
                 # Should return the command name for later error during execution
                 assert result == "custom-pspp"
 
-    def test_absolute_path_without_separator(self):
-        """Test handling of absolute path that doesn't contain os.sep."""
-        # Edge case: some systems might have absolute paths without separator in config
-        absolute_path = "pspp"
-        with patch('agent.utils.pspp_wrapper.DEFAULT_CONFIG', {"pspp_path": absolute_path}):
-            with patch('agent.utils.pspp_wrapper.shutil.which') as mock_which:
-                mock_which.return_value = "/usr/bin/pspp"
-                result = get_pspp_path()
-                assert result == "/usr/bin/pspp"
+    def test_command_name_without_separator_returns_command(self):
+        """Test that command names without path separator are returned as-is."""
+        # Command names (no directory separator) are returned directly
+        with patch('agent.utils.pspp_wrapper.DEFAULT_CONFIG', {"pspp_path": "pspp"}):
+            result = get_pspp_path()
+            assert result == "pspp"
 
 
 class TestVerifyPsppInstallation:
@@ -581,14 +575,16 @@ class TestFilePathHandling:
                 mock_result.stderr = ""
                 mock_run.return_value = mock_result
 
-                # Use relative paths that exist
-                result = execute_pspp_syntax(
-                    syntax_file_path="tests/conftest.py",  # Existing file
-                    input_file="tests/conftest.py",  # Existing file
-                    output_file="/tmp/output.txt"
-                )
+                # Mock validate_file_path to allow any extension for testing
+                with patch('agent.utils.pspp_wrapper.validate_file_path', side_effect=lambda x, **kwargs: x):
+                    # Use relative paths that exist
+                    result = execute_pspp_syntax(
+                        syntax_file_path="tests/conftest.py",  # Existing file
+                        input_file="tests/conftest.py",  # Existing file
+                        output_file="/tmp/output.txt"
+                    )
 
-                assert result["success"] is True
+                    assert result["success"] is True
 
     def test_absolute_file_paths(self):
         """Test handling of absolute file paths."""
@@ -682,7 +678,8 @@ class TestMockBasedTests:
                 mock_result.stdout = "Processing complete"
                 mock_result.stderr = ""
                 mock_run.return_value = mock_result
-                yield mock_run
+                with patch('agent.utils.pspp_wrapper.validate_file_path', side_effect=lambda x, **kwargs: x):
+                    yield mock_run
 
     @pytest.fixture
     def mock_failed_pspp_run(self):
@@ -695,7 +692,8 @@ class TestMockBasedTests:
                 mock_result.stdout = ""
                 mock_result.stderr = "error: syntax error"
                 mock_run.return_value = mock_result
-                yield mock_run
+                with patch('agent.utils.pspp_wrapper.validate_file_path', side_effect=lambda x, **kwargs: x):
+                    yield mock_run
 
     def test_mocked_success_scenario(self, mock_successful_pspp_run):
         """Test successful execution with mocked PSPP."""
@@ -725,21 +723,22 @@ class TestMockBasedTests:
         for exit_code in [1, 2, 127, 255]:
             with patch('agent.utils.pspp_wrapper.get_pspp_path') as mock_get_path:
                 mock_get_path.return_value = "/usr/bin/pspp"
-                with patch('subprocess.run') as mock_run:
-                    mock_result = Mock()
-                    mock_result.returncode = exit_code
-                    mock_result.stdout = f"Exit code {exit_code}"
-                    mock_result.stderr = "error occurred"
-                    mock_run.return_value = mock_result
+                with patch('agent.utils.pspp_wrapper.validate_file_path', side_effect=lambda x, **kwargs: x):
+                    with patch('subprocess.run') as mock_run:
+                        mock_result = Mock()
+                        mock_result.returncode = exit_code
+                        mock_result.stdout = f"Exit code {exit_code}"
+                        mock_result.stderr = "error occurred"
+                        mock_run.return_value = mock_result
 
-                    result = execute_pspp_syntax(
-                        syntax_file_path="tests/conftest.py",
-                        input_file="tests/conftest.py",
-                        output_file="/tmp/output.txt"
-                    )
+                        result = execute_pspp_syntax(
+                            syntax_file_path="tests/conftest.py",
+                            input_file="tests/conftest.py",
+                            output_file="/tmp/output.txt"
+                        )
 
-                    assert result["success"] is False
-                    assert result["return_code"] == exit_code
+                        assert result["success"] is False
+                        assert result["return_code"] == exit_code
 
     def test_mocked_various_stderr_outputs(self):
         """Test error parsing with various stderr outputs."""
@@ -754,21 +753,22 @@ class TestMockBasedTests:
         for stderr, expected_keyword in test_cases:
             with patch('agent.utils.pspp_wrapper.get_pspp_path') as mock_get_path:
                 mock_get_path.return_value = "/usr/bin/pspp"
-                with patch('subprocess.run') as mock_run:
-                    mock_result = Mock()
-                    mock_result.returncode = 1
-                    mock_result.stdout = ""
-                    mock_result.stderr = stderr
-                    mock_run.return_value = mock_result
+                with patch('agent.utils.pspp_wrapper.validate_file_path', side_effect=lambda x, **kwargs: x):
+                    with patch('subprocess.run') as mock_run:
+                        mock_result = Mock()
+                        mock_result.returncode = 1
+                        mock_result.stdout = ""
+                        mock_result.stderr = stderr
+                        mock_run.return_value = mock_result
 
-                    result = execute_pspp_syntax(
-                        syntax_file_path="tests/conftest.py",
-                        input_file="tests/conftest.py",
-                        output_file="/tmp/output.txt"
-                    )
+                        result = execute_pspp_syntax(
+                            syntax_file_path="tests/conftest.py",
+                            input_file="tests/conftest.py",
+                            output_file="/tmp/output.txt"
+                        )
 
-                    assert result["success"] is False
-                    assert expected_keyword in result["user_message"].lower()
+                        assert result["success"] is False
+                        assert expected_keyword in result["user_message"].lower()
 
 
 # =============================================================================

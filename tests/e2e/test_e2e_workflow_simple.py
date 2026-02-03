@@ -288,10 +288,10 @@ class TestValidationResults:
             checks_performed=["test1", "test2"]
         )
 
-        assert result.is_valid == True
-        assert result.errors == []
-        assert result.warnings == ["Test warning"]
-        assert result.checks_performed == ["test1", "test2"]
+        assert result['is_valid'] == True
+        assert result['errors'] == []
+        assert result['warnings'] == ["Test warning"]
+        assert result['checks_performed'] == ["test1", "test2"]
 
     def test_validation_result_invalid(self):
         """Test that ValidationResult can represent invalid state."""
@@ -302,8 +302,8 @@ class TestValidationResults:
             checks_performed=["test"]
         )
 
-        assert result.is_valid == False
-        assert len(result.errors) == 2
+        assert result['is_valid'] == False
+        assert len(result['errors']) == 2
 
 
 # =============================================================================

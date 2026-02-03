@@ -98,7 +98,7 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
     validation_feedback = None
     if iteration_count > 0:
         # Retry scenario: determine feedback source
-        if validation_result and not validation_result.is_valid:
+        if validation_result and not validation_result['is_valid']:
             # Use validation error messages
             validation_feedback = _format_validation_errors(validation_result)
             logger.info(f"Using validation feedback for retry (iteration {iteration_count})")
@@ -376,8 +376,8 @@ def _format_validation_errors(validation_result) -> str:
     Returns:
         Formatted error message string
     """
-    errors = validation_result.errors if validation_result else []
-    warnings = validation_result.warnings if validation_result else []
+    errors = validation_result['errors'] if validation_result else []
+    warnings = validation_result['warnings'] if validation_result else []
 
     lines = []
     if errors:
@@ -484,10 +484,10 @@ def _generate_recoding_review_markdown(
     # Validation Result
     lines.append("## Validation Result")
     if validation_result:
-        status = "Passed ✓" if validation_result.is_valid else "Failed ✗"
+        status = "Passed ✓" if validation_result['is_valid'] else "Failed ✗"
         lines.append(f"- **Status**: {status}")
-        lines.append(f"- Errors: {len(validation_result.errors)}")
-        lines.append(f"- Warnings: {len(validation_result.warnings)}")
+        lines.append(f"- Errors: {len(validation_result['errors'])}")
+        lines.append(f"- Warnings: {len(validation_result['warnings'])}")
     else:
         lines.append("- **Status**: No validation performed")
         lines.append("- Errors: N/A")
@@ -495,16 +495,16 @@ def _generate_recoding_review_markdown(
     lines.append("")
 
     # Validation Errors
-    if validation_result and validation_result.errors:
+    if validation_result and validation_result['errors']:
         lines.append("### Validation Errors")
-        for error in validation_result.errors:
+        for error in validation_result['errors']:
             lines.append(f"- ❌ {error}")
         lines.append("")
 
     # Validation Warnings
-    if validation_result and validation_result.warnings:
+    if validation_result and validation_result['warnings']:
         lines.append("### Validation Warnings")
-        for warning in validation_result.warnings:
+        for warning in validation_result['warnings']:
             lines.append(f"- ⚠️ {warning}")
         lines.append("")
 
@@ -694,22 +694,22 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         validation_result = validate_recoding_rules(recoding_rules, variable_centered_metadata.get("variables", {}))
 
         # Log results
-        if validation_result.is_valid:
+        if validation_result['is_valid']:
             logger.info(
-                f"Validation passed: {len(validation_result.checks_performed)} checks performed"
+                f"Validation passed: {len(validation_result['checks_performed'])} checks performed"
             )
         else:
             logger.error(
-                f"Validation failed: {len(validation_result.errors)} errors, "
-                f"{len(validation_result.warnings)} warnings"
+                f"Validation failed: {len(validation_result['errors'])} errors, "
+                f"{len(validation_result['warnings'])} warnings"
             )
 
         # Log errors if any
-        for error in validation_result.errors:
+        for error in validation_result['errors']:
             logger.error(f"  - {error}")
 
         # Log warnings if any
-        for warning in validation_result.warnings:
+        for warning in validation_result['warnings']:
             logger.warning(f"  - {warning}")
 
         # Prepare updated state
@@ -720,12 +720,12 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         }
 
         # Append errors to tracking state
-        if validation_result.errors:
-            new_state["errors"] = state.get("errors", []) + validation_result.errors
+        if validation_result['errors']:
+            new_state["errors"] = state.get("errors", []) + validation_result['errors']
 
         # Append warnings to tracking state
-        if validation_result.warnings:
-            new_state["warnings"] = state.get("warnings", []) + validation_result.warnings
+        if validation_result['warnings']:
+            new_state["warnings"] = state.get("warnings", []) + validation_result['warnings']
 
         return new_state
 
@@ -832,7 +832,7 @@ def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
                 "step": 6,
                 "task": "recoding_rules",
                 "review_document_path": str(review_path),
-                "validation_passed": validation_result.is_valid if validation_result else False,
+                "validation_passed": validation_result['is_valid'] if validation_result else False,
                 "iteration": iteration_count,
                 "message": (
                     "Please review the recoding rules at: {}\n\n"

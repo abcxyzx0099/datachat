@@ -89,7 +89,7 @@ def should_retry_recoding(state: WorkflowState) -> RecodingRoute:
 
     # Check if validation failed
     validation_result = state.get("recoding_validation_result")
-    if validation_result and not validation_result.is_valid:
+    if validation_result and not validation_result['is_valid']:
         # Retry if we haven't exceeded max iterations
         if iteration_count < max_iterations:
             return "generate_recoding_rules_node"
@@ -179,7 +179,7 @@ def should_retry_indicators(state: WorkflowState) -> IndicatorRoute:
 
     # Check if validation failed
     validation_result = state.get("indicator_validation_result")
-    if validation_result and not validation_result.is_valid:
+    if validation_result and not validation_result['is_valid']:
         # Retry if we haven't exceeded max iterations
         if iteration_count < max_iterations:
             return "generate_indicators_node"
@@ -268,7 +268,7 @@ def should_retry_table_specs(state: WorkflowState) -> TableSpecsRoute:
 
     # Check if validation failed
     validation_result = state.get("table_validation_result")
-    if validation_result and not validation_result.is_valid:
+    if validation_result and not validation_result['is_valid']:
         # Retry if we haven't exceeded max iterations
         if iteration_count < max_iterations:
             return "generate_table_specifications_node"

@@ -32,7 +32,9 @@ Test Coverage:
 """
 
 import pytest
+from unittest.mock import patch, Mock
 
+from agent.state import ValidationResult
 from agent.nodes.phase4_tables import (
     generate_table_specifications_node,
     validate_table_specs_node,

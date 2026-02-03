@@ -32,7 +32,9 @@ Test Coverage:
 """
 
 import pytest
+from unittest.mock import patch, Mock
 
+from agent.state import ValidationResult
 from agent.nodes.phase2_recoding import (
     generate_recoding_rules_node,
     validate_recoding_rules_node,
@@ -53,9 +55,9 @@ class TestGenerateRecodingRulesNode:
 
     def test_generate_recoding_rules_node_success(self, populated_state, mock_llm_client):
         """Test successful recoding rules generation."""
-        # Mock LLM response
+        # Mock LLM response - recoding_rules must be a list
         mock_response = Mock()
-        mock_response.content = '{"recoding_rules": {"var1": {"recodings": []}}}'
+        mock_response.content = '{"recoding_rules": []}'
         mock_llm_client.invoke.return_value = mock_response
 
         with patch('agent.nodes.phase2_recoding.get_llm_client', return_value=mock_llm_client):
@@ -63,12 +65,13 @@ class TestGenerateRecodingRulesNode:
 
             assert result["current_step"] == 4
             assert result["recoding_rules"] is not None
-            assert "var1" in result["recoding_rules"]
+            assert result["recoding_rules"]["recoding_rules"] == []
 
     def test_generate_recoding_rules_node_with_feedback(self, populated_state, mock_llm_client):
         """Test recoding rules generation with feedback."""
         state = {
             **populated_state,
+            "iteration_count": 1,  # Set to 1 to simulate a retry scenario
             "recoding_feedback": "Previous rules were too aggressive",
         }
 
@@ -76,7 +79,8 @@ class TestGenerateRecodingRulesNode:
             result = generate_recoding_rules_node(state)
 
             assert result["recoding_rules"] is not None
-            assert result["iteration_count"] == 1
+            # iteration_count is incremented on successful completion
+            assert result["iteration_count"] == 2
 
 
 class TestValidateRecodingRulesNode:
@@ -100,7 +104,7 @@ class TestValidateRecodingRulesNode:
             result = validate_recoding_rules_node(state)
 
             assert result["current_step"] == 5
-            assert result["recoding_validation_result"].is_valid is True
+            assert result["recoding_validation_result"]['is_valid'] is True
 
     def test_validate_recoding_rules_node_invalid(self, populated_state):
         """Test validation of invalid recoding rules."""
@@ -120,8 +124,8 @@ class TestValidateRecodingRulesNode:
             result = validate_recoding_rules_node(state)
 
             assert result["current_step"] == 5
-            assert result["recoding_validation_result"].is_valid is False
-            assert len(result["recoding_validation_result"].errors) == 1
+            assert result["recoding_validation_result"]['is_valid'] is False
+            assert len(result["recoding_validation_result"]['errors']) == 1
 
 
 class TestReviewRecodingRulesNode:
@@ -269,6 +273,10 @@ class TestExecutePsppRecodingNode:
         input_file = tmp_path / "input.sav"
         input_file.write_text("mock")
 
+        # Create the expected output file
+        output_file = tmp_path / "new_data.sav"
+        output_file.write_text("mock sav content")
+
         state = {
             **populated_state,
             "raw_data_file": str(input_file),
@@ -276,13 +284,13 @@ class TestExecutePsppRecodingNode:
             "config": {"output_dir": str(tmp_path)},
         }
 
-        with patch('agent.nodes.phase2_recoding.execute_pspp_syntax') as mock_execute:
+        with patch('agent.utils.pspp_wrapper.execute_pspp_syntax') as mock_execute:
             mock_execute.return_value = {
                 "success": True,
                 "return_code": 0,
                 "output": "PSPP executed successfully",
                 "error": "",
-                "output_file": str(tmp_path / "new_data.sav"),
+                "output_file": str(output_file),
             }
 
             result = execute_pspp_recoding_node(state)
@@ -306,7 +314,7 @@ class TestExecutePsppRecodingNode:
             "config": {"output_dir": str(tmp_path)},
         }
 
-        with patch('agent.nodes.phase2_recoding.execute_pspp_syntax') as mock_execute:
+        with patch('agent.utils.pspp_wrapper.execute_pspp_syntax') as mock_execute:
             mock_execute.return_value = {
                 "success": False,
                 "return_code": 1,

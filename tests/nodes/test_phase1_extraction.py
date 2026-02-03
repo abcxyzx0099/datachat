@@ -153,8 +153,7 @@ class TestExtractSpssNode:
             result = extract_spss_node(sample_state)
 
             assert result["current_step"] == 1
-            assert result["raw_data"] is not None
-            assert len(result["raw_data"]) == 50
+            # Note: raw_data is NOT stored to avoid LangGraph serialization issues
             assert result["original_metadata"] is not None
             assert result["original_metadata"]["n_rows"] == 50
             assert len(result["errors"]) == 0
@@ -185,29 +184,36 @@ class TestExtractSpssNode:
 class TestTransformMetadataNode:
     """Tests for transform_metadata_node (Step 2)."""
 
-    def test_transform_metadata_node_success(self, sample_state, sample_dataframe, sample_metadata):
+    def test_transform_metadata_node_success(self, sample_state, sample_metadata, sample_dataframe):
         """Test successful metadata transformation."""
-        # Prepare state with raw data
+        # Prepare state with original_metadata
         state = {
             **sample_state,
-            "raw_data": sample_dataframe,
+            "input_file_path": "test_data.sav",
             "original_metadata": sample_metadata,
             "warnings": [],
         }
 
-        result = transform_metadata_node(state)
+        # Mock the file read since transform_metadata_node reads the file to compute stats
+        with patch('pyreadstat.read_sav') as mock_read:
+            mock_metadata = Mock()
+            mock_metadata.column_labels = sample_metadata["column_labels"]
+            mock_metadata.variable_value_labels = sample_metadata["column_value_labels"]
+            mock_metadata.variable_storage_types = {}
+            mock_read.return_value = (sample_dataframe, mock_metadata)
 
-        assert result["current_step"] == 2
-        assert result["variable_centered_metadata"] is not None
-        assert result["variable_centered_metadata"]["n_variables"] == 6
-        assert result["variable_centered_metadata"]["n_numeric"] == 6
-        assert len(result["errors"]) == 0
+            result = transform_metadata_node(state)
 
-    def test_transform_metadata_node_no_raw_data(self, sample_state):
-        """Test metadata transformation with no raw_data."""
+            assert result["current_step"] == 2
+            assert result["variable_centered_metadata"] is not None
+            assert result["variable_centered_metadata"]["n_variables"] == 6
+            assert result["variable_centered_metadata"]["n_numeric"] == 6
+            assert len(result["errors"]) == 0
+
+    def test_transform_metadata_node_no_metadata(self, sample_state):
+        """Test metadata transformation with no original_metadata."""
         state = {
             **sample_state,
-            "raw_data": None,
             "original_metadata": None,
         }
 
@@ -215,22 +221,32 @@ class TestTransformMetadataNode:
 
         assert result["current_step"] == 2
         assert len(result["errors"]) == 1
-        assert "raw_data" in result["errors"][0]
+        assert "original_metadata" in result["errors"][0]
 
-    def test_transform_metadata_node_empty_dataframe(self, sample_state):
-        """Test metadata transformation with empty DataFrame."""
+    def test_transform_metadata_node_empty_metadata(self, sample_state):
+        """Test metadata transformation with empty metadata."""
         state = {
             **sample_state,
-            "raw_data": pd.DataFrame(),
-            "original_metadata": {"n_rows": 0, "n_columns": 0},
+            "input_file_path": "test_data.sav",
+            "original_metadata": {"n_rows": 0, "n_columns": 0, "column_labels": {}, "column_value_labels": {}},
             "warnings": [],
         }
 
-        result = transform_metadata_node(state)
+        # Mock the file read to return empty dataframe
+        with patch('pyreadstat.read_sav') as mock_read:
+            import pandas as pd
+            mock_metadata = Mock()
+            mock_metadata.column_labels = []
+            mock_metadata.variable_value_labels = {}
+            mock_metadata.variable_storage_types = {}
+            mock_read.return_value = (pd.DataFrame(), mock_metadata)
 
-        assert result["current_step"] == 2
-        assert result["variable_centered_metadata"]["n_variables"] == 0
-        assert len(result["warnings"]) >= 1
+            result = transform_metadata_node(state)
+
+            assert result["current_step"] == 2
+            assert result["variable_centered_metadata"] is not None
+            assert result["variable_centered_metadata"]["n_variables"] == 0
+            assert len(result["warnings"]) >= 1
 
 
 class TestFilterMetadataNode:

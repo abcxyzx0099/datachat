@@ -96,6 +96,32 @@ def initial_recoding_state(sample_state) -> WorkflowState:
                 "distinct_count": 5,
             },
         ],
+        "variable_centered_metadata": {
+            "variables": {
+                "age": {
+                    "name": "age",
+                    "label": "Age",
+                    "variable_type": "numeric",
+                    "min_value": 18,
+                    "max_value": 80,
+                    "value_labels": {},
+                },
+                "satisfaction": {
+                    "name": "satisfaction",
+                    "label": "Satisfaction",
+                    "variable_type": "numeric",
+                    "min_value": 1,
+                    "max_value": 5,
+                    "value_labels": {
+                        1: "Very Dissatisfied",
+                        2: "Dissatisfied",
+                        3: "Neutral",
+                        4: "Satisfied",
+                        5: "Very Satisfied",
+                    },
+                },
+            }
+        },
         "iteration_count": 0,
         "recoding_approved": False,
         "recoding_feedback": None,
@@ -307,7 +333,7 @@ class TestRecodingThreeNodePattern:
 
         assert state_after_val["current_step"] == 5
         assert state_after_val["recoding_validation_result"] is not None
-        assert state_after_val["recoding_validation_result"].is_valid == True
+        assert state_after_val["recoding_validation_result"]['is_valid'] == True
 
         # Step 6: Review (with interrupt mock)
         with patch('langgraph.types.interrupt'):
@@ -344,8 +370,8 @@ class TestRecodingThreeNodePattern:
 
         assert state_after_val["current_step"] == 5
         assert state_after_val["recoding_validation_result"] is not None
-        assert state_after_val["recoding_validation_result"].is_valid == False
-        assert len(state_after_val["recoding_validation_result"].errors) > 0
+        assert state_after_val["recoding_validation_result"]['is_valid'] == False
+        assert len(state_after_val["recoding_validation_result"]['errors']) > 0
 
         # Check routing after validation failure
         route = should_retry_recoding(state_after_val)
@@ -476,7 +502,7 @@ class TestIndicatorsThreeNodePattern:
             state_after_val = validate_indicators_node(state_after_gen)
 
         assert state_after_val["current_step"] == 10
-        assert state_after_val["indicator_validation_result"].is_valid == True
+        assert state_after_val["indicator_validation_result"]['is_valid'] == True
 
         # Step 11: Review
         with patch('langgraph.types.interrupt'):
@@ -518,7 +544,7 @@ class TestIndicatorsThreeNodePattern:
             )
             state_after_val = validate_indicators_node(state_after_gen)
 
-        assert state_after_val["indicator_validation_result"].is_valid == False
+        assert state_after_val["indicator_validation_result"]['is_valid'] == False
 
         # Check routing
         route = should_retry_indicators(state_after_val)
@@ -620,7 +646,7 @@ class TestTableSpecsThreeNodePattern:
             state_after_val = validate_table_specs_node(state_after_gen)
 
         assert state_after_val["current_step"] == 13
-        assert state_after_val["table_validation_result"].is_valid == True
+        assert state_after_val["table_validation_result"]['is_valid'] == True
 
         # Step 14: Review
         with patch('langgraph.types.interrupt'):
@@ -660,7 +686,7 @@ class TestTableSpecsThreeNodePattern:
             )
             state_after_val = validate_table_specs_node(state_after_gen)
 
-        assert state_after_val["table_validation_result"].is_valid == False
+        assert state_after_val["table_validation_result"]['is_valid'] == False
 
         route = should_retry_table_specs(state_after_val)
         assert route == "generate_table_specifications_node"
@@ -744,7 +770,7 @@ class TestFeedbackLoops:
 
         # Check that validation result is available for next generate
         assert state["recoding_validation_result"] is not None
-        assert len(state["recoding_validation_result"].errors) == 2
+        assert len(state["recoding_validation_result"]['errors']) == 2
 
     def test_human_feedback_passed_to_regenerate_recoding(self, initial_recoding_state):
         """Test human feedback is correctly passed to regeneration."""
@@ -1098,7 +1124,7 @@ class TestFullPatternExecution:
 
         # Validate (should fail)
         state2 = validate_recoding_rules_node(state1)
-        assert state2["recoding_validation_result"].is_valid == False
+        assert state2["recoding_validation_result"]['is_valid'] == False
 
         # Check routing
         route = should_retry_recoding(state2)
@@ -1168,7 +1194,7 @@ class TestFullPatternExecution:
             )
             state2 = validate_indicators_node(state1)
 
-        assert state2["indicator_validation_result"].is_valid == True
+        assert state2["indicator_validation_result"]['is_valid'] == True
 
         # Review
         with patch('langgraph.types.interrupt'):

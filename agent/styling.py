@@ -31,11 +31,20 @@ except ImportError:
     except ImportError:
         HAS_PPTX = False
         # Define a dummy RGBColor class for when pptx is not available
+        # Matches the interface of pptx.dml.color.RGBColor (subscriptable, not attribute-based)
         class RGBColor:
             def __init__(self, r, g, b):
-                self.r = r
-                self.g = g
-                self.b = b
+                self._rgb = (r, g, b)
+
+            def __getitem__(self, index):
+                return self._rgb[index]
+
+            @property
+            def count(self):
+                return 3
+
+            def index(self, value):
+                return self._rgb.index(value)
 
 
 # =============================================================================
