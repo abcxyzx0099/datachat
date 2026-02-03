@@ -35,9 +35,57 @@ tasks/
 
 ---
 
-## Step 1: Verify Tasks Directory
+## Step 1: Safety Checkpoint (Commit & Push)
 
-**First, verify the tasks directory exists at project root:**
+**CRITICAL: Before any cleanup, create a safety checkpoint.**
+
+**1.1 Verify current branch:**
+
+```bash
+# Check current branch
+git branch --show-current
+```
+
+**Expected output:**
+```
+main
+```
+
+**If NOT on main branch:**
+- Notify user: "Currently on `{branch_name}`, switching back to `main`"
+- Switch to main: `git checkout main` or `git switch main`
+- Re-verify with `git branch --show-current`
+
+**1.2 Commit and push all changes:**
+
+```bash
+# Stage all changes
+git add -A
+
+# Create safety commit
+git commit -m "safety: checkpoint before task cleanup
+
+Committing all changes before cleaning up tasks directory."
+
+# Push to remote
+git push
+```
+
+**Expected output:**
+```
+[main <hash>] safety: checkpoint before task cleanup
+ N files changed, M insertions(+), D deletions(-)
+To https://github.com/<repo>.git
+   <old-hash>..<new-hash>  main -> main
+```
+
+**Rationale:** This ensures all work is safely backed up before any files are deleted. If anything goes wrong during cleanup, the committed state can be restored.
+
+---
+
+## Step 2: Verify Tasks Directory
+
+**Verify the tasks directory exists at project root:**
 
 ```bash
 # Check tasks directory
@@ -62,7 +110,7 @@ drwxrwxr-x  2 admin admin  4096 Feb  2 04:30 task-worker-reports
 
 ---
 
-## Step 2: Show Current Contents
+## Step 3: Show Current Contents
 
 **Before cleaning, show what will be removed:**
 
@@ -95,7 +143,7 @@ Proceed with cleanup?
 
 ---
 
-## Step 3: Clean Up Subdirectories
+## Step 4: Clean Up Subdirectories
 
 **Execute cleanup using CLI commands:**
 
@@ -129,7 +177,7 @@ find tasks/ -mindepth 2 -type d ! -name "task-implementation" -delete 2>/dev/nul
 
 ---
 
-## Step 4: Verify Cleanup
+## Step 5: Verify Cleanup
 
 **Verify all subdirectories are now empty (except preserved files):**
 
@@ -164,6 +212,9 @@ Verification:
 
 | Command | Purpose |
 |---------|---------|
+| `git branch --show-current` | Verify current branch |
+| `git checkout main` or `git switch main` | Switch to main branch |
+| `git add -A && git commit -m "..." && git push` | Safety checkpoint before cleanup |
 | `ls -la tasks/` | Verify tasks directory structure |
 | `find tasks/ -type f ! -name "task-system-guide.md"` | List files to be removed |
 | `rm -f tasks/task-archive/*.md` | Remove files from task-archive/ |
@@ -185,6 +236,20 @@ Verification:
 # Task Cleanup Script
 
 echo "Starting task cleanup..."
+
+# Step 1: Safety checkpoint
+echo "Step 1: Creating safety checkpoint..."
+current_branch=$(git branch --show-current)
+if [ "$current_branch" != "main" ]; then
+    echo "Currently on '$current_branch', switching to main..."
+    git switch main
+fi
+git add -A
+git commit -m "safety: checkpoint before task cleanup
+
+Committing all changes before cleaning up tasks directory."
+git push
+echo "Safety checkpoint created."
 
 # Show current state
 echo "Current files in tasks/:"
@@ -208,6 +273,8 @@ find tasks/ -type f
 ## Completion Checklist
 
 Before finishing, verify:
+- [ ] Verified on `main` branch
+- [ ] Safety checkpoint created (committed and pushed)
 - [ ] Tasks directory exists at project root
 - [ ] User confirmed cleanup
 - [ ] All files removed from subdirectories
@@ -226,16 +293,27 @@ Before finishing, verify:
 **Workflow:**
 
 ```bash
-# 1. Show current state
+# 1. Safety checkpoint - verify branch and commit
+git branch --show-current
+# Output: main
+
+git add -A
+git commit -m "safety: checkpoint before task cleanup
+
+Committing all changes before cleaning up tasks directory."
+git push
+# Output: [main <hash>] safety: checkpoint before task cleanup
+
+# 2. Show current state
 ls -la tasks/
 find tasks/ -type f ! -name "task-system-guide.md"
 
 # Output: Shows 42 task specifications, 2 archived tasks, 1 planning doc, etc.
 
-# 2. Confirm with user
+# 3. Confirm with user
 # "This will remove 45 files. Proceed?"
 
-# 3. Execute cleanup
+# 4. Execute cleanup
 rm -f tasks/task-archive/*.md
 rm -f tasks/task-implementation/results/*.json
 rm -f tasks/task-implementation/state/*.json
@@ -243,7 +321,7 @@ rm -f tasks/task-planning/*.md
 rm -f tasks/task-specifications/task-*.md
 rm -rf tasks/task-worker-reports/*
 
-# 4. Verify
+# 5. Verify
 find tasks/ -type f
 # Output: tasks/task-system-guide.md
 ```

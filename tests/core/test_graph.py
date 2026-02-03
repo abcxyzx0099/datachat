@@ -145,7 +145,8 @@ def mock_llm_client() -> Mock:
 
     # Create mock responses with valid JSON
     mock_response = Mock()
-    mock_response.content = '{"recoding_rules": {}, "indicators": {}, "table_specifications": {}}'
+    # recoding_rules must be a list for validation to pass
+    mock_response.content = '{"recoding_rules": [], "indicators": [], "table_specifications": []}'
 
     client.invoke.return_value = mock_response
     return client
