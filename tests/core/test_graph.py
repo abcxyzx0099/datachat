@@ -221,26 +221,20 @@ def mock_dependencies(
     """
     Common context manager for mocking all external dependencies.
 
-    Yields a context manager that patches all external dependencies.
+    Uses ExitStack to properly manage multiple patch contexts.
     """
-    patches = []
+    from contextlib import ExitStack
 
-    # Create patches for all external dependencies
-    patches.append(patch('agent.nodes.phase2_recoding.get_llm_client', return_value=mock_llm_client))
-    patches.append(patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client))
-    patches.append(patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client))
-    patches.append(patch('agent.utils.pspp_wrapper.execute_pspp_syntax', side_effect=mock_pspp_execution))
-    patches.append(patch('subprocess.run', side_effect=mock_subprocess_run))
+    with ExitStack() as stack:
+        # Create patches for all external dependencies
+        stack.enter_context(patch('agent.llm.clients.get_llm_client', return_value=mock_llm_client))
+        stack.enter_context(patch('agent.nodes.phase2_recoding.get_llm_client', return_value=mock_llm_client))
+        stack.enter_context(patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client))
+        stack.enter_context(patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client))
+        stack.enter_context(patch('agent.utils.pspp_wrapper.execute_pspp_syntax', side_effect=mock_pspp_execution))
+        stack.enter_context(patch('subprocess.run', side_effect=mock_subprocess_run))
 
-    # Start all patches
-    for p in patches:
-        p.start()
-
-    yield
-
-    # Stop all patches
-    for p in patches:
-        p.stop()
+        yield
 
 
 # =============================================================================
