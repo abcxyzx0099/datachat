@@ -68,8 +68,14 @@ def temp_output_dir():
 def temp_checkpoint_db():
     """
     Create temporary SQLite checkpoint database for testing.
+    Uses tests/checkpoints/ directory to keep test artifacts organized.
     """
-    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="e2e_error_cp_")
+    # Use tests/checkpoints/ directory (in tests directory, not /tmp to avoid tmpfs RAM usage)
+    from pathlib import Path
+    tests_dir = Path(__file__).parent.parent
+    checkpoint_dir = tests_dir / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="e2e_error_cp_", dir=str(checkpoint_dir))
     os.close(fd)
     yield db_path
     try:

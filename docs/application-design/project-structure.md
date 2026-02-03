@@ -106,9 +106,19 @@ utils/
 ```
 tests/
 ├── fixtures/                     # Test data and fixtures
+├── checkpoints/                  # Test checkpoint databases (auto-cleaned)
 ├── web/                          # Web UI test files
 └── playwright-mcp/               # Playwright test results
 ```
+
+**Checkpoint Storage:**
+
+| Environment | Checkpoint Location | Purpose |
+|-------------|-------------------|---------|
+| **Development/Production** | `./checkpoints.db` (project root) | Main application checkpoint for LangGraph Studio |
+| **Testing** | `tests/checkpoints/checkpoints_*.db` | Test isolation (auto-cleaned after tests) |
+
+Test checkpoint databases use disk storage to avoid tmpfs (RAM) limitations. The `temp_checkpoint_db` fixture creates unique checkpoint files per test and automatically cleans them up.
 
 ### 3.4 web/ Directory
 

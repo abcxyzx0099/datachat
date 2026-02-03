@@ -113,6 +113,68 @@ checkpoints.db
 
 ---
 
+## Troubleshooting
+
+### Disk Full Error from /tmp
+
+If you see "No space left on device" errors or pytest hangs, check if `/tmp` is full:
+
+```bash
+# Check disk usage
+df -h /tmp
+
+# Find checkpoint files in /tmp
+ls -lh /tmp/checkpoints_*.db
+
+# Delete checkpoint files from /tmp (with sudo if needed)
+sudo rm -f /tmp/checkpoints_*.db
+```
+
+### Tests Hanging or Timeout
+
+If pytest tests hang or timeout:
+
+1. Check `/tmp` is not full (see above)
+2. Ensure `checkpoints.db` is not being created in `/tmp`
+3. Verify `graph_for_studio()` uses the configured checkpoint path
+
+### Verify Checkpoint Configuration
+
+To verify checkpoints are being stored in the correct location:
+
+```python
+from agent.graph import graph_for_studio
+import os
+
+# Get the expected checkpoint path
+expected_path = os.path.join(os.getcwd(), "checkpoints.db")
+
+# Verify the file exists after running a workflow
+assert os.path.exists(expected_path), "checkpoints.db should be in project root"
+```
+
+---
+
+## Implementation Notes
+
+The `graph_for_studio()` function in `agent/graph.py` is configured to use the `./checkpoints.db` path specified in `langgraph.json`. This ensures that LangGraph Studio (started via `langgraph dev`) uses disk-based storage instead of tmpfs (RAM).
+
+### Test Checkpoint Location
+
+For pytest tests, the `temp_checkpoint_db` fixture creates checkpoint databases in `tests/checkpoints/` directory. This keeps test artifacts organized and separate from the development checkpoint database.
+
+| Environment | Checkpoint Location | Purpose |
+|-------------|-------------------|---------|
+| **Development/Production** | `./checkpoints.db` (project root) | Main application checkpoint |
+| **Testing** | `tests/checkpoints/checkpoints_*.db` | Test isolation (auto-cleaned) |
+
+This design ensures:
+- Test checkpoints don't interfere with development checkpoints
+- Easy to identify and clean up test artifacts
+- All checkpoint storage uses disk (not RAM) to avoid tmpfs memory issues
+
+---
+
 ## Related Documents
 
 | Document | Content |

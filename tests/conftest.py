@@ -93,9 +93,20 @@ def temp_output_dir():
 
 @pytest.fixture
 def temp_checkpoint_db():
-    """Create temporary SQLite checkpoint database for testing."""
+    """
+    Create temporary SQLite checkpoint database for testing.
+
+    Uses tests/checkpoints/ directory to keep test artifacts organized.
+    """
     import os
-    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="pytest_cp_")
+    from pathlib import Path
+
+    # Use tests/checkpoints/ directory (in tests directory, not /tmp to avoid tmpfs RAM usage)
+    tests_dir = Path(__file__).parent
+    checkpoint_dir = tests_dir / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="pytest_cp_", dir=str(checkpoint_dir))
     os.close(fd)
     yield db_path
     # Cleanup

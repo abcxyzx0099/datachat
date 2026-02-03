@@ -713,6 +713,9 @@ def graph_for_studio(config: Optional[Dict[str, Any]] = None) -> StateGraph:
     graph discovery mechanism. It accepts a single config parameter
     (compatible with RunnableConfig) and returns the compiled graph.
 
+    Uses the checkpoint path configured in langgraph.json to prevent
+    excessive RAM usage from tmpfs storage.
+
     Args:
         config: Optional configuration dictionary (RunnableConfig compatible)
 
@@ -723,5 +726,7 @@ def graph_for_studio(config: Optional[Dict[str, Any]] = None) -> StateGraph:
         This is used automatically by LangGraph Studio when starting
         the dev server with 'langgraph dev'
     """
-    # Use default checkpoint path for Studio (in-memory)
-    return get_graph(checkpointer_path=None, config=config)
+    # Use checkpoints.db from langgraph.json configuration
+    # This prevents tmpfs (RAM) usage and stores checkpoints on disk
+    checkpoint_path = os.path.join(os.getcwd(), "checkpoints.db")
+    return get_graph(checkpointer_path=checkpoint_path, config=config)

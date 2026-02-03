@@ -61,7 +61,12 @@ def temp_upload_dir():
 @pytest.fixture
 def temp_checkpoint_db():
     """Create temporary checkpoint database for testing."""
-    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="test_checkpoint_")
+    from pathlib import Path
+    # Use tests/checkpoints/ directory (in tests directory, not /tmp to avoid tmpfs RAM usage)
+    tests_dir = Path(__file__).parent.parent
+    checkpoint_dir = tests_dir / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="test_checkpoint_", dir=str(checkpoint_dir))
     os.close(fd)
     yield db_path
     try:

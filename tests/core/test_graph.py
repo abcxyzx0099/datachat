@@ -58,13 +58,23 @@ def temp_checkpoint_db():
     Create temporary SQLite checkpoint database for testing.
 
     Each test gets a fresh checkpoint database to ensure isolation.
+    Files are created in tests/checkpoints/ directory (on disk, not RAM).
 
     Yields:
         Path to temporary checkpoint database
     """
-    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="checkpoints_")
-    # Close file descriptor so SQLite can use the file
+    # Use tests/checkpoints/ directory (in tests directory, not /tmp to avoid tmpfs RAM usage)
     import os
+    from pathlib import Path
+
+    # Use tests directory (current file's directory)
+    tests_dir = Path(__file__).parent
+    checkpoint_dir = tests_dir / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create checkpoint file in tests/checkpoints/ directory
+    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="checkpoints_", dir=str(checkpoint_dir))
+    # Close file descriptor so SQLite can use the file
     os.close(fd)
     yield db_path
     # Cleanup

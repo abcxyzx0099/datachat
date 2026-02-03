@@ -49,6 +49,9 @@ tests/
 │   ├── large_data.sav
 │   └── edge_case_data.sav
 │
+├── checkpoints/                    # Test checkpoint databases (gitignored)
+│   └── checkpoints_*.db            # Created by temp_checkpoint_db fixture
+│
 ├── core/                           # Core agent modules
 ├── nodes/                          # Phase-based workflow (1:1 mapping)
 ├── integration/                    # Cross-module integration
@@ -158,6 +161,7 @@ The project uses a **hybrid structure** as defined in the [Test Structure Conven
 # Test outputs (generated)
 htmlcov/
 playwright-mcp/
+tests/checkpoints/
 
 # Pytest cache
 .pytest_cache/
@@ -177,6 +181,49 @@ __pycache__/
 | `temp_output_dir` | Temporary directory for outputs |
 | `sample_sav_file` | Path to sample .sav file |
 | `pspp_available` | Skip tests if PSPP not installed |
+| `temp_checkpoint_db` | Temporary SQLite checkpoint database for testing |
+
+### Checkpoint Fixture (`temp_checkpoint_db`)
+
+The `temp_checkpoint_db` fixture creates temporary checkpoint databases in `tests/checkpoints/` to ensure test isolation and avoid RAM usage from tmpfs:
+
+```python
+@pytest.fixture
+def temp_checkpoint_db():
+    """
+    Create temporary SQLite checkpoint database for testing.
+
+    Uses tests/checkpoints/ directory to keep test artifacts organized
+    separate from development checkpoints at ./checkpoints.db.
+    """
+    from pathlib import Path
+    tests_dir = Path(__file__).parent
+    checkpoint_dir = tests_dir / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    fd, db_path = tempfile.mkstemp(suffix=".db", prefix="pytest_cp_", dir=str(checkpoint_dir))
+    os.close(fd)
+    yield db_path
+    # Cleanup: auto-delete after test completes
+    try:
+        os.unlink(db_path)
+    except FileNotFoundError:
+        pass
+```
+
+**Design Rationale:**
+
+| Aspect | Development | Testing |
+|--------|-------------|---------|
+| **Location** | `./checkpoints.db` (project root) | `tests/checkpoints/checkpoints_*.db` |
+| **Purpose** | LangGraph Studio state persistence | Test isolation per test case |
+| **Cleanup** | Manual (persistent) | Automatic (after test) |
+| **RAM Usage** | Disk-based (no tmpfs) | Disk-based (avoids `/tmp` RAM) |
+
+This design ensures:
+- Test checkpoints don't interfere with development checkpoints
+- Each test gets a unique checkpoint database (isolation)
+- All checkpoint storage uses disk (not RAM) to avoid tmpfs limitations
 
 ### Test Data Files (tests/fixtures/)
 

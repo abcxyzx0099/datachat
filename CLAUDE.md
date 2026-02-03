@@ -18,9 +18,9 @@ Scripts or files that are created for **one-time or temporary use** (e.g., migra
 - Quick test scripts
 
 **Examples of persistent files** (should NOT go in `temp/`):
-- Production code (`dflib/`, `agent/`, `web/backend/`, `web/frontend/`)
+- Production code
 - Configuration files
-- Tests (`web/e2e-tests/`, `web/backend/tests/`)
+- Tests
 - Documentation
 
 When a temporary file has served its purpose, it can be safely deleted.
@@ -130,8 +130,6 @@ temp/                     → Temporary/one-time files
 **Examples:**
 ```
 history/
-├── development/
-│   └── Archive-dflib-20260121-224902/
 └── documents/
     └── Archive-Docs-20260121-225013/
 ```
