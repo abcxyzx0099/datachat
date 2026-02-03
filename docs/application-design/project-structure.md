@@ -161,15 +161,7 @@ implementation/
 │   └── ISSUE-YYYYMMDD-{description}.md
 ├── open_issue/                   # Open/unresolved issues under investigation
 │   └── {description}-{timestamp}.md
-├── implementation-summary/        # Temporary usage documents (may be deleted)
-└── test-coverage/                # Test coverage reports and AI-generated test documentation
-    ├── E2E_IMPLEMENTATION_SUMMARY.md
-    ├── E2E_TEST_GUIDE.md
-    ├── FIXTURES.md
-    ├── FIXTURE_SUMMARY.md
-    ├── HUMAN_REVIEW_TEST_SUMMARY.md
-    ├── INTEGRATION_TEST_SUMMARY.md
-    └── LLM_PROVIDER_E2E_TEST_SUMMARY.md
+└── implementation-summary/        # Temporary usage documents (may be deleted)
 ```
 
 **Issue Documentation:**
