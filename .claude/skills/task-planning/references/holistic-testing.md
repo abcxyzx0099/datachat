@@ -21,16 +21,13 @@ When you work on Holistic Testing tasks, you are responsible for:
 │  2. RUN TESTS            Execute all tests and collect results              │
 │     └── pytest, coverage reports, test output                               │
 │                                                                             │
-│  3. FIX FAILURES         Debug and repair broken tests                      │
+│  3. DEBUG & FIX          Investigate failures and fix                       │
 │     └── Fix test code OR fix production code                                │
 │                                                                             │
-│  4. DEBUG PRODUCTION     Debug and fix production code issues              │
-│     └── Root cause analysis, bug fixes, edge cases                          │
-│                                                                             │
-│  5. VERIFY QUALITY       Ensure quality standards are met                  │
+│  4. VERIFY QUALITY       Ensure quality standards are met                  │
 │     └── Coverage threshold, pass rate, all tests passing                    │
 │                                                                             │
-│  6. ITERATE              Repeat until quality standards are met            │
+│  5. ITERATE              Repeat until quality standards are met            │
 │     └── Do NOT mark task complete until standards achieved                  │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘

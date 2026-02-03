@@ -1,6 +1,6 @@
 ---
 name: task-planning
-description: "Generate organized task lists from documentation using intelligent assessment. Prompts user to handle existing plans (Archive/Remove/Keep). Three scope options: From Scratch (TDD), Incomplete Features (TDD), Holistic Testing. Output goes to tasks/task-planning/."
+description: "Generate organized task lists from documentation using intelligent assessment. Prompts user to handle existing plans (Archive/Remove/Keep). Four scope options: From Scratch (TDD), Incomplete Features (TDD), Incomplete Testing, Holistic Testing. Output goes to tasks/task-planning/."
 ---
 
 # Task Planning
@@ -124,8 +124,12 @@ AskUserQuestion(
                     "description": "Complete missing features using TDD. Audit existing code, write regression tests, then add missing functionality."
                 },
                 {
+                    "label": "Incomplete Testing",
+                    "description": "Complete partial test suites. Audit existing tests, fix broken tests, fill coverage gaps to 80%."
+                },
+                {
                     "label": "Holistic Testing",
-                    "description": "Full testing lifecycle: write → run → fix → debug. 80% coverage, 100% pass rate required."
+                    "description": "Full testing lifecycle from scratch: write → run → fix → debug. 80% coverage, 100% pass rate required."
                 }
             ]
         }
@@ -141,6 +145,7 @@ AskUserQuestion(
 |-------|-------------------|---------------|
 | **From Scratch** | `.claude/skills/task-planning/references/development-from-scratch.md` | Red → Green → Refactor |
 | **Incomplete Features** | `.claude/skills/task-planning/references/development-incomplete-features.md` | Audit → Regression Tests → Gap Tests → Implement |
+| **Incomplete Testing** | `.claude/skills/task-planning/references/incomplete-testing.md` | Audit Tests → Fix Baseline → Fill Gaps → Verify |
 | **Holistic Testing** | `.claude/skills/task-planning/references/holistic-testing.md` | Write → Run → Fix → Debug |
 
 ### 0.3 Gather Additional Context
@@ -192,6 +197,12 @@ Based on the user's selected scope, read the corresponding reference document an
 - Read `.claude/skills/task-planning/references/development-incomplete-features.md`
 - Analyze existing codebase to identify gaps
 - Include regression tests for existing code
+
+**For "Incomplete Testing":**
+- Read `.claude/skills/task-planning/references/incomplete-testing.md`
+- Audit existing tests and generate coverage report
+- Fix broken existing tests first
+- Write missing tests to fill coverage gaps
 
 **For "Holistic Testing":**
 - Read `.claude/skills/task-planning/references/holistic-testing.md`
@@ -257,7 +268,9 @@ Save to `tasks/task-planning/{descriptive-name}.md`:
 
 ```
 Is this for testing ONLY?
-├── Yes → Holistic Testing
+├── Yes → Do tests already exist?
+│   ├── No → Holistic Testing (start from scratch)
+│   └── Yes → Incomplete Testing (complete the suite)
 └── No → Is this for NEW code or EXISTING code?
     ├── New code → From Scratch (TDD)
     └── Existing code → Incomplete Features (TDD)
