@@ -68,13 +68,29 @@ Agent Chat UI is LangGraph's official web interface for interacting with agents.
 ### 3.1 Quick Start
 
 ```bash
-# Option 1: Clone the repository
-git clone https://github.com/langchain-ai/agent-chat-ui.git
+# Navigate to the web/ directory
+cd web/
+
+# Clone the Agent Chat UI repository
+git clone https://github.com/langchain-ai/agent-chat-ui.git agent-chat-ui
 cd agent-chat-ui
 
-# Option 2: Create a new project
-npx create-agent-chat-app --project-name datachat-ui
-cd datachat-ui
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+```
+
+The Agent Chat UI should be cloned into `web/agent-chat-ui/` to maintain the project structure documented in [Project Structure](./project-structure.md#34-web-directory).
+
+### 3.2 Alternative: Create New Project
+
+```bash
+# Create a new project in the web/ directory
+cd web/
+npx create-agent-chat-app --project-name agent-chat-ui
+cd agent-chat-ui
 
 # Install dependencies
 pnpm install

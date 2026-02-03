@@ -136,6 +136,31 @@ web/
     └── playwright-report/        # Playwright test reports (generated)
 ```
 
+> **Note:** The `agent-chat-ui` directory is created by cloning the separate Agent Chat UI repository (see [Web Interface](./web-interface.md) for setup instructions).
+
+### 3.4.1 Backend API Server
+
+The FastAPI backend that serves the Agent Chat UI is located in the **`agent/`** module, not in `web/backend/`.
+
+| File | Purpose |
+|------|---------|
+| `agent/server.py` | FastAPI server on port 8123 - handles file uploads, workflow execution, state management |
+
+The backend communicates with the Agent Chat UI via REST API on port 8123:
+
+```
+┌─────────────────┐      HTTP/WebSocket      ┌──────────────────┐
+│  web/           │ ◄────────────────────►  │  agent/server.py │
+│  agent-chat-ui  │   Port 8123 (FastAPI)   │  (FastAPI)       │
+│  (Next.js)      │                         └────────┬─────────┘
+└─────────────────┘                                  │
+                                                     ▼
+                                            ┌─────────────────┐
+                                            │  agent/graph.py │
+                                            │  (LangGraph)    │
+                                            └─────────────────┘
+```
+
 ### 3.5 docs/ Directory
 
 The `docs/` directory contains project documentation, including application design documents, user guides, and reference materials.

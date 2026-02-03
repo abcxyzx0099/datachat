@@ -227,22 +227,22 @@ Multiple source files share one test file. This is the **grouping** pattern desc
 
 ```bash
 # All tests
-pytest
+.venv/bin/python -m pytest
 
 # By directory
-pytest tests/core/
-pytest tests/nodes/
-pytest tests/integration/
-pytest tests/e2e/
-pytest tests/patterns/
+.venv/bin/python -m pytest tests/core/
+.venv/bin/python -m pytest tests/nodes/
+.venv/bin/python -m pytest tests/integration/
+.venv/bin/python -m pytest tests/e2e/
+.venv/bin/python -m pytest tests/patterns/
 
 # By marker
-pytest -m unit
-pytest -m integration
-pytest -m e2e
+.venv/bin/python -m pytest -m unit
+.venv/bin/python -m pytest -m integration
+.venv/bin/python -m pytest -m e2e
 
 # Specific phase
-pytest tests/nodes/test_phase2_recoding.py -v
+.venv/bin/python -m pytest tests/nodes/test_phase2_recoding.py -v
 ```
 
 ---
