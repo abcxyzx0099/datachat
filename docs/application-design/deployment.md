@@ -8,11 +8,10 @@ This document describes deployment architecture, installation, environment confi
 
 1. [Deployment Architecture](#1-deployment-architecture)
 2. [Installation](#2-installation)
-3. [Quick Start](#3-quick-start)
-4. [Environment Configuration](#4-environment-configuration)
-5. [Production Deployment](#5-production-deployment)
-6. [Operational Guidance](#6-operational-guidance)
-7. [Troubleshooting](#7-troubleshooting)
+3. [Environment Configuration](#3-environment-configuration)
+4. [Production Deployment](#4-production-deployment)
+5. [Operational Guidance](#5-operational-guidance)
+6. [Troubleshooting](#6-troubleshooting)
 
 ---
 
@@ -73,81 +72,7 @@ pip list | grep -E "langgraph|langchain|openai|pyreadstat"
 
 ---
 
-## 3. Quick Start
-
-### 3.1 Starting the Application
-
-**IMPORTANT: Always use the `start.sh` script to start the application.**
-
-The `start.sh` script handles:
-- Killing any existing processes on ports 8123 and 3000
-- Starting the LangGraph API server on port 8123
-- Starting the Agent Chat UI on port 3000
-
-```bash
-# From the project root directory
-./start.sh
-```
-
-**Output:**
-```
-============================================
-  DataChat Survey Analyzer
-============================================
-
-Step 1: Cleaning up ports...
-✓ Port 8123 is now free
-✓ Port 3000 is now free
-
-Step 2: Ensuring ports are free...
-✓ Port 8123 is free
-✓ Port 3000 is free
-
-Step 3: Starting LangGraph Server (port 8123)...
-✓ LangGraph Server started successfully (PID: xxxxx)
-
-Step 4: Starting Agent Chat UI (port 3000)...
-✓ Agent Chat UI started successfully (PID: xxxxx)
-
-============================================
-✓ DataChat Application Started!
-============================================
-
-LangGraph API:  http://localhost:8123
-  - Health:       http://localhost:8123/health
-  - API Docs:     http://localhost:8123/docs
-
-Agent Chat UI:   http://localhost:3000
-```
-
-### 3.2 Stopping the Application
-
-```bash
-./stop.sh
-```
-
-### 3.3 Viewing Logs
-
-```bash
-# LangGraph Server logs
-tail -f logs/langgraph.log
-
-# Agent Chat UI logs
-tail -f logs/ui.log
-```
-
-### 3.4 Accessing the Application
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Agent Chat UI** | http://localhost:3000 | Web interface for uploading SPSS files |
-| **LangGraph API** | http://localhost:8123 | REST API for the analysis workflow |
-| **API Health** | http://localhost:8123/health | Health check endpoint |
-| **API Docs** | http://localhost:8123/docs | Swagger UI documentation |
-
----
-
-## 4. Environment Configuration
+## 3. Environment Configuration
 
 ### 3.1 Environment Variables
 
@@ -207,7 +132,7 @@ LOG_LEVEL=INFO
 
 ---
 
-## 5. Production Deployment
+## 4. Production Deployment
 
 ### 4.1 Production Directory Structure
 
@@ -332,7 +257,7 @@ docker-compose up -d --build
 
 ---
 
-## 6. Operational Guidance
+## 5. Operational Guidance
 
 ### 5.1 Logging Strategy
 
@@ -364,7 +289,7 @@ docker-compose up -d --build
 
 ---
 
-## 7. Troubleshooting
+## 6. Troubleshooting
 
 ### 6.1 Common Issues
 

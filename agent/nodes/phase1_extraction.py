@@ -2,7 +2,7 @@
 Phase 1: Extraction Nodes (Steps 1-3)
 
 This module contains nodes for extracting and preparing data from SPSS files:
-- Step 1: extract_spss_node - Read .sav file and extract raw data and metadata
+- Step 1: extract_spss_node - Read .sav file and extract metadata
 - Step 2: transform_metadata_node - Transform metadata to variable-centered format
 - Step 3: filter_metadata_node - Filter metadata to variables requiring recoding
 """
@@ -10,6 +10,7 @@ This module contains nodes for extracting and preparing data from SPSS files:
 import logging
 from typing import Dict, Any, Optional
 import pandas as pd
+import pyreadstat
 
 from agent.state import WorkflowState
 from agent.utils.file_io import read_spss_file
@@ -119,11 +120,12 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
             logger.warning(warning_msg)
             warnings.append(warning_msg)
 
+        # NOTE: We do NOT store raw_data in the state to avoid LangGraph
+        # checkpoint serialization errors. Step 2 will reload from the input file.
         # Return new state (DO NOT modify in-place)
         return {
             **state,
             "current_step": 1,
-            "raw_data": df,
             "original_metadata": original_metadata,
             "warnings": warnings,
         }
@@ -274,7 +276,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
 
     Args:
         state: Current workflow state. Must contain:
-            - raw_data: pandas DataFrame with survey responses
+            - input_file_path: Path to the .sav file (for reloading data)
             - original_metadata: Raw metadata from Step 1
 
     Returns:
@@ -286,7 +288,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
 
     Example:
         >>> state = {
-        ...     "raw_data": df,
+        ...     "input_file_path": "survey.sav",
         ...     "original_metadata": {...}
         ... }
         >>> new_state = transform_metadata_node(state)
@@ -296,13 +298,13 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
     """
     logger.info("Step 2: Transform metadata to variable-centered format")
 
-    # Get raw_data and original_metadata from state
-    raw_data = state.get("raw_data")
+    # Get input_file_path and original_metadata from state
+    input_file_path = state.get("input_file_path")
     original_metadata = state.get("original_metadata")
 
     # Validate required state fields
-    if raw_data is None:
-        error_msg = "No raw_data found in state - Step 1 must complete first"
+    if not input_file_path:
+        error_msg = "No input_file_path found in state - Step 1 must complete first"
         logger.error(error_msg)
         return {
             **state,
@@ -319,12 +321,33 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
             "errors": state.get("errors", []) + [error_msg],
         }
 
+    # Reload data from file (needed to compute dtypes and value counts)
+    # We don't store raw_data in state to avoid serialization issues
+    try:
+        df, _ = pyreadstat.read_sav(input_file_path, apply_value_formats=False)
+    except FileNotFoundError:
+        error_msg = f"SPSS file not found: {input_file_path}"
+        logger.error(error_msg)
+        return {
+            **state,
+            "current_step": 2,
+            "errors": state.get("errors", []) + [error_msg],
+        }
+    except Exception as e:
+        error_msg = f"Error reading SPSS file: {input_file_path} - {str(e)}"
+        logger.error(error_msg)
+        return {
+            **state,
+            "current_step": 2,
+            "errors": state.get("errors", []) + [error_msg],
+        }
+
     # Copy warnings list to avoid in-place modification
     warnings = state.get("warnings", []).copy()
 
     # Handle empty DataFrame edge case
-    if raw_data.empty:
-        warning_msg = "Empty DataFrame in raw_data - creating empty metadata structure"
+    if df.empty:
+        warning_msg = "Empty DataFrame - creating empty metadata structure"
         logger.warning(warning_msg)
         warnings.append(warning_msg)
 
@@ -357,8 +380,8 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
     n_unknown = 0
 
     # Process each column
-    for column in raw_data.columns:
-        series = raw_data[column]
+    for column in df.columns:
+        series = df[column]
 
         # Determine variable type
         variable_type = _determine_type(series)
@@ -423,7 +446,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
         "n_numeric": n_numeric,
         "n_string": n_string,
         "n_date": n_date,
-        "total_records": len(raw_data),
+        "total_records": len(df),
     }
 
     # Log transformation summary

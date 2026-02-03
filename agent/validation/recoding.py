@@ -35,22 +35,6 @@ logger = logging.getLogger(__name__)
 # ValidationResult
 # =============================================================================
 
-@dataclass
-class ValidationResult:
-    """
-    Standard validation result structure for recoding rules validation.
-
-    Attributes:
-        is_valid: Overall validation status (True if no errors)
-        errors: Critical errors that must be fixed (blocks execution)
-        warnings: Non-critical issues (informational)
-        checks_performed: List of validation checks that were run
-    """
-    is_valid: bool
-    errors: List[str]
-    warnings: List[str]
-    checks_performed: List[str]
-
 
 # =============================================================================
 # Main Validation Function

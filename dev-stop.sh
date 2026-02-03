@@ -5,9 +5,9 @@
 # This script stops LangGraph Studio, the LangGraph API server, and the Agent Chat UI.
 #
 # Usage:
-#   ./stop.sh              # Stop all servers
-#   ./stop.sh --studio     # Stop only Studio
-#   ./stop.sh --web        # Stop only web app (8123 + 3000)
+#   ./dev-stop.sh           # Stop all servers
+#   ./dev-stop.sh --studio  # Stop only Studio
+#   ./dev-stop.sh --web     # Stop only web app (8123 + 3000)
 #
 # =============================================================================
 

@@ -344,7 +344,7 @@ The Task System is an asynchronous, background task execution architecture that:
 - `tasks/task-worker-reports/` - Worker execution reports
 
 **Preserved:**
-- `tasks/task-system-guide.md` - Documentation file
+- `docs/methodology/task-system-guide.md` - Documentation file
 - All subdirectories (empty, ready for new tasks)
 
 **Called by:** User or AI when needing a clean slate for new task work

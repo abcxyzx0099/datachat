@@ -92,13 +92,27 @@ git blame docs/application-design/my-document.md
 |------|-------------|
 | **AI-autonomous creation** | AI agents MAY create documents here freely during implementation |
 | **Purpose** | Implementation guides, setup summaries, test coverage, technical notes |
-| **Examples** | Setup summaries, coverage reports, implementation guides, test documentation |
+
+**Directory structure:**
+
+```
+implementation/
+├── implementation-summary/    # Temporary usage documents (may be deleted)
+└── issues/                    # Unresolved issues tracking
+```
+
+**When to use each subdirectory:**
+
+| Subdirectory | Purpose | May be deleted |
+|--------------|---------|----------------|
+| `implementation-summary/` | Temporary implementation notes, setup guides, coverage reports | Yes, when no longer needed |
+| `issues/` | Unresolved problems, bugs, or items needing attention | No, resolve first |
 
 **When to create in `implementation/`:**
 - During implementation when AI needs to document process
-- Test coverage reports and guides
-- Setup and configuration summaries
-- Implementation notes and technical guides
+- Test coverage reports and guides (temporary)
+- Setup and configuration summaries (temporary)
+- Unresolved issues and problems (for tracking)
 
 ### Summary
 
@@ -165,19 +179,19 @@ When reverse proxy is configured with domain `sysy.site`:
 
 ### Starting the Applications
 
-**CRITICAL RULE: AI agents must ALWAYS use `start.sh` to start the application.** Never start servers individually unless explicitly requested for debugging.
+**CRITICAL RULE: AI agents must ALWAYS use `dev-start.sh` to start the application.** Never start servers individually unless explicitly requested for debugging.
 
 ```bash
-./start.sh
+./dev-start.sh
 ```
 
-**Why `start.sh` is required:**
+**Why `dev-start.sh` is required:**
 
 The script ensures the application runs correctly on all three ports by automatically killing any existing processes on ports 2024, 8123, and 3000 before launching new services, which prevents port conflicts and guarantees each service starts on its designated port (Studio on 2024, API on 8123, UI on 3000). It also coordinates service startup and manages process IDs for graceful shutdown.
 
 To stop all servers:
 ```bash
-./stop.sh
+./dev-stop.sh
 ```
 
 ---

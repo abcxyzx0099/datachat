@@ -24,7 +24,6 @@ The project follows a clear separation between application code, configuration, 
 ```
 project-root/
 ├── agent/              # Application code
-├── config/             # Configuration files
 ├── data/               # Input data
 ├── output/             # Generated outputs
 ├── docs/               # Documentation
@@ -36,11 +35,13 @@ project-root/
 ├── history/            # Archived materials
 ├── scripts/            # Shell scripts
 ├── utils/              # Project-wide utilities
-├── reference/          # External reference materials
 ├── .claude/            # Claude skills configuration
 ├── .env                # Environment variables
 ├── checkpoints.db      # State persistence
+├── langgraph.json      # LangGraph configuration
 ├── pyproject.toml      # Project metadata
+├── dev-start.sh        # Development start script
+├── dev-stop.sh         # Development stop script
 └── requirements.txt    # Python dependencies
 ```
 
@@ -56,25 +57,25 @@ project-root/
 | `checkpoints.db` | LangGraph state persistence for resumable execution |
 | `requirements.txt` | Python dependencies |
 | `pyproject.toml` | Project metadata and dependencies (optional) |
+| `dev-start.sh` | Development start script (Studio + API + UI) |
+| `dev-stop.sh` | Development stop script |
 
 ### 2.2 Root Level Directories
 
 | Directory | Purpose |
 |-----------|---------|
 | `agent/` | Application source code (LangGraph agent) |
-| `config/` | Configuration files (langgraph.json) |
 | `data/` | Input survey files (.sav) |
 | `output/` | Generated outputs and logs |
-| `docs/` | Project documentation (application-design, user guides) |
+| `docs/` | Project documentation (application-design, user guides, reference materials) |
 | `tests/` | Unit and integration tests |
 | `temp/` | Temporary files (one-time use) |
 | `utils/` | Project-wide utility functions |
-| `reference/` | External reference materials |
 | `web/` | Web interface (Agent Chat UI - Next.js) |
 | `tasks/` | Task specifications and planning documents |
 | `implementation/` | Implementation documentation |
 | `history/` | Archived materials and legacy documents |
-| `scripts/` | Shell scripts (start.sh, stop.sh) |
+| `scripts/` | Shell scripts (production deployment) |
 | `.claude/` | Claude Code skills configuration |
 | `.venv/` | Python virtual environment |
 | `htmlcov/` | Code coverage reports (generated) |
@@ -87,79 +88,29 @@ project-root/
 
 ```
 agent/
-├── __init__.py                   # Package exports
-├── state.py                      # TypedDict state definitions
-├── config.py                     # Configuration constants
-├── edges.py                      # Conditional routing logic
-├── graph.py                      # LangGraph construction
-├── server.py                     # FastAPI server for Agent Chat UI
-├── styling.py                    # Output styling utilities
-│
 ├── utils/                        # Module-specific utilities
-│   ├── __init__.py
-│   ├── pspp_wrapper.py           # PSPP execution
-│   ├── file_io.py                # File I/O utilities
-│   └── statistics.py             # Statistical computations
-│
 ├── validation/                   # Validation functions
-│   ├── __init__.py
-│   ├── recoding.py               # Recoding rule validation
-│   ├── indicators.py             # Indicator validation
-│   └── tables.py                 # Table specification validation
-│
 ├── llm/                          # LLM modules
-│   ├── __init__.py
-│   ├── prompts.py                # Prompt templates
-│   └── clients.py                # LLM client initialization
-│
 └── nodes/                        # Node implementations (phase-based)
-    ├── __init__.py               # Exports all 22 nodes
-    ├── phase1_extraction.py      # Steps 1-3   (~150 lines)
-    ├── phase2_recoding.py        # Steps 4-8   (~400 lines)
-    ├── phase3_indicators.py      # Steps 9-11  (~200 lines)
-    ├── phase4_tables.py          # Steps 12-16 (~350 lines)
-    ├── phase5_statistics.py      # Steps 17-18 (~150 lines)
-    ├── phase6_filtering.py       # Steps 19-20 (~120 lines)
-    ├── phase7_powerpoint.py      # Step 21     (~100 lines)
-    └── phase8_html_dashboard.py  # Step 22     (~100 lines)
 ```
 
 ### 3.2 utils/ Directory (Project-Wide)
 
 ```
 utils/
-├── __init__.py
 ├── logging.py                    # Logging configuration
-└── helpers.py                    # General helper functions
 ```
 
-### 3.3 config/ Directory
-
-```
-config/
-├── __init__.py
-├── default.py                    # DEFAULT_CONFIG constants
-└── langgraph.json                # LangGraph node/edge configuration
-```
-
-### 3.4 tests/ Directory
+### 3.3 tests/ Directory
 
 ```
 tests/
-├── __init__.py
-├── conftest.py                   # Pytest configuration and shared fixtures
-├── test_state.py                 # TypedDict validation tests
-├── test_nodes.py                 # Individual node tests
-├── test_edges.py                 # Conditional routing tests
-├── test_graph.py                 # End-to-end workflow tests
-├── test_*.py                     # Additional test files (29+ total)
 ├── fixtures/                     # Test data and fixtures
-│   └── sample_data.sav           # Sample SPSS file for testing
 ├── web/                          # Web UI test files
 └── playwright-mcp/               # Playwright test results
 ```
 
-### 3.5 web/ Directory
+### 3.4 web/ Directory
 
 The `web/` directory contains the Agent Chat UI, a Next.js-based frontend for interacting with the agent.
 
@@ -168,22 +119,25 @@ web/
 └── agent-chat-ui/                # Next.js frontend application
     ├── public/                   # Static assets
     ├── src/                      # Source code
-    │   ├── app/                  # Next.js App Router pages
-    │   ├── components/           # React components
-    │   └── lib/                  # Utility libraries
     ├── e2e/                      # E2E tests (Playwright)
     ├── tests/                    # Additional test files
     ├── .next/                    # Next.js build output (generated)
     ├── node_modules/             # Dependencies (generated)
-    ├── playwright-report/        # Playwright test reports (generated)
-    ├── test-results/             # Test results (generated)
-    ├── package.json              # Node.js dependencies
-    ├── pnpm-lock.yaml            # Lock file
-    ├── playwright.config.ts      # Playwright configuration
-    ├── next.config.mjs           # Next.js configuration
-    ├── tailwind.config.js        # Tailwind CSS configuration
-    ├── tsconfig.json             # TypeScript configuration
-    └── start.sh                  # Start script
+    └── playwright-report/        # Playwright test reports (generated)
+```
+
+### 3.5 docs/ Directory
+
+The `docs/` directory contains project documentation, including application design documents, user guides, and reference materials.
+
+```
+docs/
+├── application-design/          # Application design documents
+├── meta-governance/             # Meta-governance and conventions
+├── methodology/                 # Methodology and process documents
+└── reference/                   # External reference materials
+    ├── external-official-manual/ # Official documentation
+    └── knowledge/                # Knowledge base articles
 ```
 
 ### 3.6 tasks/ Directory
@@ -205,8 +159,14 @@ The `implementation/` directory contains implementation documentation created by
 ```
 implementation/
 ├── setup-summaries/              # Setup and configuration documentation
-├── test-coverage/                # Test coverage reports
-└── *.md                          # Implementation guides and notes
+└── test-coverage/                # Test coverage reports and AI-generated test documentation
+    ├── E2E_IMPLEMENTATION_SUMMARY.md
+    ├── E2E_TEST_GUIDE.md
+    ├── FIXTURES.md
+    ├── FIXTURE_SUMMARY.md
+    ├── HUMAN_REVIEW_TEST_SUMMARY.md
+    ├── INTEGRATION_TEST_SUMMARY.md
+    └── LLM_PROVIDER_E2E_TEST_SUMMARY.md
 ```
 
 ### 3.8 history/ Directory
@@ -331,21 +291,19 @@ LLM_MAX_TOKENS=4000
 ENABLE_HUMAN_REVIEW=true
 ```
 
-### 6.2 LangGraph Configuration (config/langgraph.json)
+### 6.2 LangGraph Configuration (langgraph.json)
 
 ```json
 {
   "graphs": {
-    "survey_analysis": {
-      "nodes": { /* 22 node definitions */ },
-      "edges": { /* Linear edges */ },
-      "conditional_edges": { /* Three-node pattern routing */ }
-    }
-  }
+    "survey_analysis": "agent/graph.py:graph_for_studio"
+  },
+  "env": ".env",
+  "dependencies": ["."]
 }
 ```
 
-### 6.3 Python Configuration (config/default.py)
+### 6.3 Python Configuration (agent/config.py)
 
 ```python
 DEFAULT_CONFIG = {
@@ -389,8 +347,7 @@ DEFAULT_CONFIG = {
 ┌─────────────────────────────────────────┐
 │  agent/                                │
 │  (nodes → utils → validation → llm)     │
-│  ↓                                     │
-│  Uses config/ for configuration        │
+│  Configuration: agent/config.py         │
 └──────┬──────────────────────────────────┘
        │
        ├─────────────────┐
@@ -456,6 +413,7 @@ When reverse proxy is configured with domain `sysy.site`:
 
 | Document | Content |
 |----------|---------|
+| **[Document Convention](../meta-governance/document-convention.md)** | Guidelines for documenting project structure |
 | **[Testing Structure](./testing-structure.md)** | Test organization and structure recommendations |
 | **[Deployment](./deployment.md)** | Installation, environment configuration, and production deployment |
 | **[Configuration](./system-configuration.md)** | Configuration options and environment variables |

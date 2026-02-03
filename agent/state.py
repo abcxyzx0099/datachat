@@ -100,17 +100,18 @@ class ExtractionState(TypedDict, total=False):
     Data extraction and preparation - Steps 1-3.
 
     Fields populated incrementally:
-    - Step 1: raw_data
+    - Step 1: original_metadata (raw_data is NOT stored to avoid serialization issues)
     - Step 2: variable_centered_metadata
     - Step 3: filtered_metadata, filtered_out_variables
 
     Fields:
-        raw_data: Survey response data as pandas DataFrame
+        raw_data: DEPRECATED - Not stored in state to avoid LangGraph serialization issues.
+                    Data is reloaded from input_file_path when needed.
         variable_centered_metadata: Metadata restructured by variable (Step 2)
         filtered_metadata: Metadata after filtering (variables requiring recoding)
         filtered_out_variables: Variables removed with reasons
     """
-    raw_data: Optional[Any]  # pandas DataFrame
+    raw_data: Optional[Any]  # pandas DataFrame - DEPRECATED, not populated
     variable_centered_metadata: Optional[Dict[str, Any]]  # Variable-centered metadata structure
     filtered_metadata: Optional[List[Dict[str, Any]]]
     filtered_out_variables: Optional[List[Dict[str, str]]]

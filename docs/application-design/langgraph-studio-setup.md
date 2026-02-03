@@ -53,7 +53,7 @@ ALLOWED_ORIGINS=https://smith.langchain.com,https://www.sysy.site
 Use the provided start script:
 
 ```bash
-./start.sh
+./dev-start.sh
 ```
 
 This starts:
@@ -89,7 +89,7 @@ If you see "Request header field not allowed" errors:
 
 1. Verify reverse proxy is configured
 2. Check port 2024 is accessible: `netstat -tlnp | grep 2024`
-3. Restart server: `./stop.sh && ./start.sh`
+3. Restart server: `./dev-stop.sh && ./dev-start.sh`
 
 ## Data Persistence
 

@@ -5,12 +5,12 @@
 # This script starts the LangGraph servers and/or Agent Chat UI.
 #
 # Usage:
-#   ./start.sh              # Start all servers (2024 + 8123 + 3000) [DEFAULT]
-#   ./start.sh --studio     # Start LangGraph Studio only (2024)
-#   ./start.sh --web        # Start web app only (8123 + 3000)
-#   ./start.sh --all        # Start all servers (2024 + 8123 + 3000)
+#   ./dev-start.sh          # Start all servers (2024 + 8123 + 3000) [DEFAULT]
+#   ./dev-start.sh --studio # Start LangGraph Studio only (2024)
+#   ./dev-start.sh --web    # Start web app only (8123 + 3000)
+#   ./dev-start.sh --all     # Start all servers (2024 + 8123 + 3000)
 #
-# To stop the application, use: ./stop.sh
+# To stop the application, use: ./dev-stop.sh
 # =============================================================================
 
 set -e
@@ -40,12 +40,6 @@ UI_PORT=3000
 STUDIO_PID_FILE="$PROJECT_ROOT/.studio_pid"
 LANGGRAPH_PID_FILE="$PROJECT_ROOT/.langgraph_pid"
 UI_PID_FILE="$PROJECT_ROOT/.ui_pid"
-
-# Log files
-LOG_DIR="$PROJECT_ROOT/logs"
-STUDIO_LOG="$LOG_DIR/studio.log"
-LANGGRAPH_LOG="$LOG_DIR/langgraph.log"
-UI_LOG="$LOG_DIR/ui.log"
 
 # Parse arguments
 START_WEB=false
@@ -165,9 +159,6 @@ echo -e "${BLUE}  DataChat Survey Analyzer${NC}"
 echo -e "${BLUE}============================================${NC}"
 echo ""
 
-# Create logs directory
-mkdir -p "$LOG_DIR"
-
 # Load environment variables from .env file
 if [ -f "$PROJECT_ROOT/.env" ]; then
     echo -e "${GREEN}Loading environment variables from .env...${NC}"
@@ -255,7 +246,7 @@ if [ "$START_STUDIO" = true ]; then
     fi
 
     # Start Studio in background with --allow-blocking flag
-    nohup langgraph dev --allow-blocking > "$STUDIO_LOG" 2>&1 &
+    nohup langgraph dev --allow-blocking > /dev/null 2>&1 &
     STUDIO_PID=$!
     echo $STUDIO_PID > "$STUDIO_PID_FILE"
 
@@ -267,12 +258,10 @@ if [ "$START_STUDIO" = true ]; then
         if curl -s http://127.0.0.1:$STUDIO_PORT/ok > /dev/null 2>&1; then
             echo -e "${GREEN}✓ LangGraph Studio started successfully (PID: $STUDIO_PID)${NC}"
         else
-            echo -e "${YELLOW}⚠ LangGraph Studio started but not responding yet. Check logs: $STUDIO_LOG${NC}"
+            echo -e "${YELLOW}⚠ LangGraph Studio started but not responding yet${NC}"
         fi
     else
         echo -e "${RED}✗ LangGraph Studio failed to start${NC}"
-        echo -e "${YELLOW}Check logs: $STUDIO_LOG${NC}"
-        tail -20 "$STUDIO_LOG"
         exit 1
     fi
     echo ""
@@ -293,7 +282,7 @@ if [ "$START_WEB" = true ]; then
     fi
 
     # Start LangGraph server in background
-    nohup $PYTHON_CMD -m agent.server > "$LANGGRAPH_LOG" 2>&1 &
+    nohup $PYTHON_CMD -m agent.server > /dev/null 2>&1 &
     LANGGRAPH_PID=$!
     echo $LANGGRAPH_PID > "$LANGGRAPH_PID_FILE"
 
@@ -306,12 +295,10 @@ if [ "$START_WEB" = true ]; then
         if curl -s http://localhost:$LANGGRAPH_PORT/health > /dev/null 2>&1; then
             echo -e "${GREEN}✓ LangGraph Server started successfully (PID: $LANGGRAPH_PID)${NC}"
         else
-            echo -e "${YELLOW}⚠ LangGraph Server started but not responding yet. Check logs: $LANGGRAPH_LOG${NC}"
+            echo -e "${YELLOW}⚠ LangGraph Server started but not responding yet${NC}"
         fi
     else
         echo -e "${RED}✗ LangGraph Server failed to start${NC}"
-        echo -e "${YELLOW}Check logs: $LANGGRAPH_LOG${NC}"
-        tail -20 "$LANGGRAPH_LOG"
         exit 1
     fi
     echo ""
@@ -347,7 +334,7 @@ if [ "$START_WEB" = true ]; then
     fi
 
     # Start UI in background
-    nohup $PKG_MANAGER run dev > "$UI_LOG" 2>&1 &
+    nohup $PKG_MANAGER run dev > /dev/null 2>&1 &
     UI_PID=$!
     echo $UI_PID > "$UI_PID_FILE"
 
@@ -359,8 +346,6 @@ if [ "$START_WEB" = true ]; then
         echo -e "${GREEN}✓ Agent Chat UI started successfully (PID: $UI_PID)${NC}"
     else
         echo -e "${RED}✗ Agent Chat UI failed to start${NC}"
-        echo -e "${YELLOW}Check logs: $UI_LOG${NC}"
-        tail -20 "$UI_LOG"
         exit 1
     fi
     echo ""
@@ -392,18 +377,8 @@ if [ "$START_WEB" = true ]; then
     echo ""
 fi
 
-echo -e "${YELLOW}To view logs:${NC}"
-if [ "$START_STUDIO" = true ]; then
-    echo -e "  Studio:     tail -f $STUDIO_LOG"
-fi
-if [ "$START_WEB" = true ]; then
-    echo -e "  LangGraph:  tail -f $LANGGRAPH_LOG"
-    echo -e "  UI:         tail -f $UI_LOG"
-fi
-echo ""
-
 echo -e "${YELLOW}To stop the application:${NC}"
-echo -e "  ./stop.sh"
+echo -e "  ./dev-stop.sh"
 echo ""
 
 echo -e "${YELLOW}Or kill by PID:${NC}"
