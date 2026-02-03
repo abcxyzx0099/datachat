@@ -226,8 +226,9 @@ def mock_dependencies(
     from contextlib import ExitStack
 
     with ExitStack() as stack:
-        # Create patches for all external dependencies
+        # Patch at the source so all imports get the mock
         stack.enter_context(patch('agent.llm.clients.get_llm_client', return_value=mock_llm_client))
+        # Also patch at import locations in node modules for safety
         stack.enter_context(patch('agent.nodes.phase2_recoding.get_llm_client', return_value=mock_llm_client))
         stack.enter_context(patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client))
         stack.enter_context(patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client))
