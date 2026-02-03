@@ -214,14 +214,20 @@ def build_graph(
     builder.add_edge("extract_spss_node", "transform_metadata_node")
     builder.add_edge("transform_metadata_node", "filter_metadata_node")
 
-    # Phase 2: Step 3 → 4, then conditional from 4/5/6
+    # Phase 2: Step 3 → 4 → 5, then conditional from 5/6
     builder.add_edge("filter_metadata_node", "generate_recoding_rules_node")
+    builder.add_edge("generate_recoding_rules_node", "validate_recoding_rules_node")
 
     # Phase 2: Step 7 → 8 (after three-node pattern)
     builder.add_edge("generate_pspp_recoding_syntax_node", "execute_pspp_recoding_node")
 
-    # Phase 3: Step 8 → 9, then conditional from 9/10/11
+    # Phase 3: Step 8 → 9 → 10, then conditional from 10/11
     builder.add_edge("execute_pspp_recoding_node", "generate_indicators_node")
+    builder.add_edge("generate_indicators_node", "validate_indicators_node")
+
+    # Phase 4: Step 12 → 13 → 14, then conditional from 14 → 15
+    builder.add_edge("review_indicators_node", "generate_table_specifications_node")
+    builder.add_edge("generate_table_specifications_node", "validate_table_specifications_node")
 
     # Phase 4: Step 15 → 16 (after three-node pattern)
     builder.add_edge("generate_pspp_table_syntax_node", "execute_pspp_tables_node")

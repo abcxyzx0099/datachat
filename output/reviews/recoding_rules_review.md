@@ -3,9 +3,9 @@
 **Status**: Pending Your Review
 
 ## Summary
-- Total Rules: 1
-- Source Variables: age
-- Target Variables: age_group
+- Total Rules: 0
+- Source Variables: 
+- Target Variables: 
 - Iteration: 0
 
 ## Validation Result
@@ -15,19 +15,7 @@
 
 ## Recoding Rules
 
-### Rule 1: age → age_group
-
-- **Transformation Type**: range_grouping
-- **Source Variable**: age
-- **Target Variable**: age_group
-
-**Rules**:
-
-| Source Range | Target Value | Label |
-|--------------|--------------|-------|
-| N/A | 1 |  |
-| N/A | 2 |  |
-| N/A | 3 |  |
+*No recoding rules generated.*
 
 ## Actions
 
