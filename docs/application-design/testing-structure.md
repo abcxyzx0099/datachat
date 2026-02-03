@@ -7,11 +7,10 @@ This document defines the project testing structure, organization, and file loca
 ## Table of Contents
 
 1. [Directory Structure](#1-directory-structure)
-2. [Test Categories](#2-test-categories)
-3. [Test Outputs and Reports](#3-test-outputs-and-reports)
-4. [Test Fixtures](#4-test-fixtures)
-5. [Running Tests](#5-running-tests)
-6. [Configuration](#6-configuration)
+2. [Test File Organization](#2-test-file-organization)
+3. [Test Categories](#3-test-categories)
+4. [Test Outputs and Reports](#4-test-outputs-and-reports)
+5. [Test Fixtures](#5-test-fixtures)
 
 ---
 
@@ -24,112 +23,125 @@ This document defines the project testing structure, organization, and file loca
 ├── pytest.ini                      # Pytest configuration
 ├── .coveragerc                     # Coverage configuration
 │
-├── tests/                          # Test source code
+├── tests/                          # Test source code (hybrid structure)
 │   ├── conftest.py                 # Shared fixtures
-│   ├── unit/                       # Fast, isolated tests
-│   ├── integration/                # Component integration tests
-│   ├── e2e/                        # End-to-end workflow tests
-│   ├── nodes/                      # Phase-specific node tests
-│   ├── validation/                 # Validation module tests
-│   ├── api/                        # API endpoint tests
-│   ├── performance/                # Performance tests
-│   ├── security/                   # Security tests
-│   ├── web/                        # Web UI tests
-│   └── fixtures/                   # Test data files
+│   ├── fixtures/                   # Test data files
+│   ├── core/                       # Core module tests
+│   ├── nodes/                      # Phase-based workflow tests
+│   ├── integration/                # Integration tests
+│   ├── e2e/                        # End-to-end tests
+│   └── patterns/                   # Reusable test patterns
 │
-├── test-results/                   # Test outputs (gitignored)
-│   ├── htmlcov/                    # Coverage HTML reports
-│   ├── .coverage                   # Coverage data
-│   ├── junit/                      # JUnit XML reports
-│   ├── screenshots/                # E2E screenshots
-│   └── playwright-report/          # Playwright HTML reports
-│
+├── htmlcov/                        # Coverage HTML reports (generated)
 └── playwright-mcp/                 # MCP-specific results (gitignored)
-    ├── results/                    # Test results
-    └── screenshots/                # Screenshots
 ```
 
-### tests/ Directory Detail
+### tests/ Directory (Hybrid Structure)
 
 ```
 tests/
 ├── conftest.py                     # Pytest configuration and shared fixtures
+├── __init__.py                     # Package initialization
 │
-├── unit/                           # Fast, isolated component tests
-│   ├── test_state.py               # State/TypedDict validation
-│   ├── test_edges.py               # Conditional routing logic
-│   ├── test_nodes.py               # Individual node functions
-│   ├── test_utils.py               # Utility functions
-│   ├── test_styling.py             # Styling utilities
-│   ├── test_config.py              # Configuration loading
-│   └── test_validation.py          # Validation functions
+├── fixtures/                       # Test data files
+│   ├── sample_data.sav
+│   ├── small_data.sav
+│   ├── large_data.sav
+│   └── edge_case_data.sav
 │
-├── integration/                    # Component integration tests
-│   ├── test_pspp_integration.py    # PSPP wrapper integration
-│   ├── test_llm_integration.py     # LLM client integration
-│   ├── test_llm_providers_integration.py  # LLM provider switching
-│   ├── test_llm_prompts.py         # LLM prompt validation
-│   ├── test_graph_integration.py   # Graph execution integration
-│   ├── test_file_io_integration.py # File I/O operations
-│   ├── test_checkpoint_integration.py # State persistence
-│   └── test_output_generation.py  # Output file generation
-│
-├── e2e/                           # End-to-end workflow tests
-│   ├── test_e2e_workflow.py        # Full workflow execution
-│   ├── test_e2e_workflow_simple.py # Simplified workflow
-│   ├── test_e2e_complete_workflow.py # Complete workflow
-│   ├── test_e2e_automatic_mode.py  # Automatic execution mode
-│   ├── test_e2e_human_review.py    # Human review workflow
-│   ├── test_e2e_rejection_feedback.py # Rejection handling
-│   ├── test_e2e_llm_providers.py   # Multi-provider tests
-│   ├── test_e2e_error_recovery.py  # Error handling
-│   └── test_e2e_practical.py       # Real-world scenarios
-│
-├── nodes/                         # Phase-specific node tests
-│   ├── test_phase1_extraction.py   # Steps 1-3
-│   ├── test_phase2_recoding.py     # Steps 4-8
-│   ├── test_phase3_indicators.py   # Steps 9-11
-│   ├── test_phase4_tables.py       # Steps 12-16
-│   ├── test_phase5_statistics.py   # Steps 17-18
-│   ├── test_phase6_filtering.py    # Steps 19-20
-│   ├── test_phase7_powerpoint.py   # Step 21
-│   └── test_phase8_html_dashboard.py # Step 22
-│
-├── validation/                    # Validation module tests
-│   ├── test_validation_recoding.py     # Recoding validation
-│   ├── test_validation_indicators.py   # Indicator validation
-│   └── test_validation_tables.py       # Table validation
-│
-├── api/                           # API/Server tests
-│   └── test_server.py             # FastAPI server endpoints
-│
-├── performance/                   # Performance and load tests
-├── security/                      # Security tests
-├── web/                           # Web interface tests
-│
-└── fixtures/                      # Test data and shared fixtures
-    ├── sample_data.sav            # Standard test dataset
-    ├── small_data.sav             # Small dataset for quick tests
-    ├── large_data.sav             # Large dataset for scale testing
-    └── edge_case_data.sav         # Edge case scenarios
+├── core/                           # Core agent modules
+├── nodes/                          # Phase-based workflow (1:1 mapping)
+├── integration/                    # Cross-module integration
+├── e2e/                            # End-to-end workflows
+└── patterns/                       # Reusable test patterns
 ```
 
 ---
 
-## 2. Test Categories
+## 2. Test File Organization
 
-| Category | Location | Speed | Dependencies | When to Run |
-|----------|----------|-------|--------------|-------------|
-| **Unit** | `tests/unit/` | Seconds | Mocked | During development |
-| **Integration** | `tests/integration/` | Minutes | Real services | Before commit |
-| **E2E** | `tests/e2e/` | 5-15 min | Real data/services | Before merge |
-| **Nodes** | `tests/nodes/` | Minutes | May use LLM | When modifying nodes |
-| **Validation** | `tests/validation/` | Fast-Medium | None | When changing validation |
-| **API** | `tests/api/` | Minutes | Server running | Before deploying |
+The project uses a **hybrid structure** as defined in the [Test Structure Convention](../meta-governance/test-structure-convention.md).
+
+### Directory Rationale
+
+| Directory | Purpose | Contents |
+|-----------|---------|----------|
+| **`core/`** | Central infrastructure | Config, state, edges, graph, styling, server |
+| **`nodes/`** | Phase-based workflow | 1:1 mapping with `agent/nodes/*.py` |
+| **`integration/`** | Cross-module concerns | PSPP, LLM, graph integration |
+| **`e2e/`** | Full workflow tests | End-to-end scenarios |
+| **`patterns/`** | Reusable patterns | Test patterns, fixture examples |
+
+### Files by Directory
+
+**`tests/core/`** - Core infrastructure tests:
+| Test File | Source |
+|-----------|--------|
+| `test_config.py` | `agent/config.py` |
+| `test_state.py` | `agent/state.py` |
+| `test_edges.py` | `agent/edges.py` |
+| `test_graph.py` | `agent/graph.py` |
+| `test_styling.py` | `agent/styling.py` |
+| `test_server.py` | `agent/server.py` |
+| `test_utils.py` | All `agent/utils/*.py` |
+| `test_validation.py` | All `agent/validation/*.py` |
+| `test_llm_clients.py` | `agent/llm/clients.py` |
+| `test_pspp_wrapper.py` | `agent/utils/pspp_wrapper.py` |
+
+**`tests/nodes/`** - Phase-based workflow tests (1:1 mapping):
+| Test File | Source |
+|-----------|--------|
+| `test_phase1_extraction.py` | `agent/nodes/phase1_extraction.py` |
+| `test_phase2_recoding.py` | `agent/nodes/phase2_recoding.py` |
+| `test_phase3_indicators.py` | `agent/nodes/phase3_indicators.py` |
+| `test_phase4_tables.py` | `agent/nodes/phase4_tables.py` |
+| `test_phase5_statistics.py` | `agent/nodes/phase5_statistics.py` |
+| `test_phase6_filtering.py` | `agent/nodes/phase6_filtering.py` |
+| `test_phase7_powerpoint.py` | `agent/nodes/phase7_powerpoint.py` |
+| `test_phase8_html_dashboard.py` | `agent/nodes/phase8_html_dashboard.py` |
+
+**`tests/integration/`** - Cross-module integration tests:
+| Test File | Purpose |
+|-----------|---------|
+| `test_pspp_integration.py` | PSPP wrapper integration |
+| `test_llm_integration.py` | LLM client integration |
+| `test_llm_providers_integration.py` | LLM provider switching |
+| `test_graph_integration.py` | Graph execution integration |
+| `test_output_generation.py` | Output file generation |
+
+**`tests/e2e/`** - End-to-end workflow tests:
+| Test File | Purpose |
+|-----------|---------|
+| `test_e2e_workflow.py` | Full workflow execution |
+| `test_e2e_workflow_simple.py` | Simplified workflow |
+| `test_e2e_complete_workflow.py` | Complete workflow |
+| `test_e2e_human_review.py` | Human review workflow |
+| `test_e2e_error_recovery.py` | Error handling |
+| `test_e2e_llm_providers.py` | Multi-provider tests |
+| `test_e2e_practical.py` | Real-world scenarios |
+
+**`tests/patterns/`** - Reusable test patterns:
+| Test File | Purpose |
+|-----------|---------|
+| `test_three_node_pattern.py` | Three-node pattern tests |
+| `test_nodes.py` | All node tests |
+| `test_fixture_examples.py` | Fixture usage examples |
 
 ---
 
-## 3. Test Outputs and Reports
+## 3. Test Categories
+
+| Category | Naming Convention | Location | Speed | Dependencies |
+|----------|------------------|----------|-------|--------------|
+| **Unit** | `test_{module}.py` | `core/` | Seconds | Mocked |
+| **Phase** | `test_phase{N}_{purpose}.py` | `nodes/` | Minutes | May use LLM |
+| **Integration** | `test_{module}_integration.py` | `integration/` | Minutes | Real services |
+| **E2E** | `test_e2e_{description}.py` | `e2e/` | 5-15 min | Real data/services |
+| **Pattern** | `test_{pattern}.py` | `patterns/` | Varies | Varies |
+
+---
+
+## 4. Test Outputs and Reports
 
 ### Configuration vs Output Files
 
@@ -137,33 +149,24 @@ tests/
 |------|----------|-------------|
 | `pytest.ini` | Project root | Yes |
 | `.coveragerc` | Project root | Yes |
-| `test-results/` | Project root | No |
-| `playwright-mcp/` | Project root | No |
+| `htmlcov/` | Project root | No |
+| `playwright-mcp/` | `tests/` | No |
 
 ### `.gitignore` Entries
 
 ```gitignore
 # Test outputs (generated)
-test-results/
+htmlcov/
 playwright-mcp/
 
 # Pytest cache
 .pytest_cache/
-```
-
-### Report Generation
-
-```bash
-# Coverage report
-pytest --cov=agent --cov-report=html:test-results/htmlcov
-
-# JUnit XML for CI/CD
-pytest --junitxml=test-results/junit/report.xml
+__pycache__/
 ```
 
 ---
 
-## 4. Test Fixtures
+## 5. Test Fixtures
 
 ### Key Fixtures (conftest.py)
 
@@ -179,121 +182,13 @@ pytest --junitxml=test-results/junit/report.xml
 
 | File | Purpose |
 |------|---------|
-| `sample_data.sav` | Standard test dataset |
-| `small_data.sav` | Fast unit tests |
-| `large_data.sav` | Performance testing |
-| `edge_case_data.sav` | Edge cases |
+| `sample_data.sav` | Standard test dataset (3.6 KB) |
+| `small_data.sav` | Fast unit tests (1.2 KB) |
+| `large_data.sav` | Performance testing (61.7 KB) |
+| `edge_case_data.sav` | Edge case scenarios (1.3 KB) |
 
 ---
 
-## 5. Running Tests
+## See Also
 
-### By Category
-
-```bash
-# Unit tests only
-pytest tests/unit/ -v
-
-# Integration tests
-pytest tests/integration/ -v
-
-# E2E tests
-pytest tests/e2e/ -v
-
-# Specific node test
-pytest tests/nodes/test_phase2_recoding.py -v
-
-# All except E2E
-pytest tests/ --ignore=tests/e2e/ -v
-```
-
-### Execution Order
-
-1. **During development:** `pytest tests/unit/ -v`
-2. **Before commit:** `pytest tests/unit/ tests/integration/ -v`
-3. **Before merge:** Full suite including E2E
-4. **CI/CD:** All tests in parallel
-
-### Pytest Marks
-
-```python
-@pytest.mark.unit
-def test_something():
-    pass
-
-@pytest.mark.integration
-def test_integration():
-    pass
-
-@pytest.mark.e2e
-def test_full_workflow():
-    pass
-```
-
-```bash
-# Run by mark
-pytest -m unit
-pytest -m "not e2e"
-```
-
----
-
-## 6. Configuration
-
-### pytest.ini (Project Root)
-
-```ini
-[pytest]
-testpaths = tests
-python_files = test_*.py
-python_classes = Test*
-python_functions = test_*
-addopts =
-    -v
-    --strict-markers
-    --cov-report=html:test-results/htmlcov
-    --cov-report=term-missing
-    --junitxml=test-results/junit/report.xml
-markers =
-    unit: Unit tests
-    integration: Integration tests
-    e2e: End-to-end tests
-    slow: Slow-running tests
-```
-
-### .coveragerc (Project Root)
-
-```ini
-[run]
-source = agent
-omit =
-    tests/*
-    */__pycache__/*
-    */.venv/*
-    */site-packages/*
-parallel = True
-branch = True
-
-[report]
-precision = 2
-show_missing = True
-skip_covered = False
-exclude_lines =
-    pragma: no cover
-    def __repr__
-    raise AssertionError
-    raise NotImplementedError
-    if __name__ == .__main__.:
-    if TYPE_CHECKING:
-    @abstractmethod
-```
-
----
-
-## Related Documents
-
-| Document | Content |
-|----------|---------|
-| **[Project Structure](./project-structure.md)** | Overall project directory organization |
-| **[System Configuration](./system-configuration.md)** | Test configuration and environment setup |
-| **[LLM Integration Tests Guide](./llm-integration-tests-guide.md)** | LLM-specific testing guidelines |
+- **[Test Structure Convention](../meta-governance/test-structure-convention.md)** - Guidelines for hybrid test organization

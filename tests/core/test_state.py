@@ -73,10 +73,10 @@ class TestValidationResult:
             checks_performed=["check1", "check2"],
         )
 
-        assert result.is_valid is True
-        assert result.errors == []
-        assert result.warnings == ["Minor warning"]
-        assert result.checks_performed == ["check1", "check2"]
+        assert result['is_valid'] is True
+        assert result['errors'] == []
+        assert result['warnings'] == ["Minor warning"]
+        assert result['checks_performed'] == ["check1", "check2"]
 
     def test_validation_result_creation_invalid(self):
         """Test creating an invalid ValidationResult."""
@@ -87,10 +87,10 @@ class TestValidationResult:
             checks_performed=["check1"],
         )
 
-        assert result.is_valid is False
-        assert result.errors == ["Error 1", "Error 2"]
-        assert result.warnings == ["Warning 1"]
-        assert result.checks_performed == ["check1"]
+        assert result['is_valid'] is False
+        assert result['errors'] == ["Error 1", "Error 2"]
+        assert result['warnings'] == ["Warning 1"]
+        assert result['checks_performed'] == ["check1"]
 
     def test_validation_result_empty_lists(self):
         """Test ValidationResult with empty lists."""
@@ -101,10 +101,10 @@ class TestValidationResult:
             checks_performed=[],
         )
 
-        assert result.is_valid is True
-        assert result.errors == []
-        assert result.warnings == []
-        assert result.checks_performed == []
+        assert result['is_valid'] is True
+        assert result['errors'] == []
+        assert result['warnings'] == []
+        assert result['checks_performed'] == []
 
 
 # =============================================================================
@@ -244,8 +244,8 @@ class TestRecodingState:
             "new_data_file": None,
         }
 
-        assert state["recoding_validation_result"].is_valid is True
-        assert state["recoding_validation_result"].errors == []
+        assert state["recoding_validation_result"]['is_valid'] is True
+        assert state["recoding_validation_result"]['errors'] == []
 
 
 # =============================================================================
@@ -1002,7 +1002,7 @@ class TestStateEvolution:
 
         assert state_step_5["current_step"] == 5
         assert state_step_5["recoding_validation_result"] is not None
-        assert state_step_5["recoding_validation_result"].is_valid is True
+        assert state_step_5["recoding_validation_result"]['is_valid'] is True
 
     def test_state_evolution_step_5_to_6_approval(self):
         """Test state evolution from Step 5 to Step 6 (approval)."""
@@ -1496,10 +1496,10 @@ class TestTypeConsistency:
             checks_performed=["check1"],
         )
 
-        assert isinstance(result.is_valid, bool)
-        assert isinstance(result.errors, list)
-        assert isinstance(result.warnings, list)
-        assert isinstance(result.checks_performed, list)
+        assert isinstance(result['is_valid'], bool)
+        assert isinstance(result['errors'], list)
+        assert isinstance(result['warnings'], list)
+        assert isinstance(result['checks_performed'], list)
 
     def test_list_field_element_types(self):
         """Test that list field elements maintain correct types."""

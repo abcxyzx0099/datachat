@@ -11,9 +11,7 @@ This document defines the complete project structure, directory organization, an
 3. [Application Code Structure](#3-application-code-structure)
 4. [Output Files](#4-output-files)
 5. [Temporary Files](#5-temporary-files)
-6. [Configuration Files](#6-configuration-files)
-7. [File Naming Conventions](#7-file-naming-conventions)
-8. [Data Flow Between Directories](#8-data-flow-between-directories)
+6. [Data Flow Between Directories](#6-data-flow-between-directories)
 
 ---
 
@@ -133,6 +131,7 @@ The `docs/` directory contains project documentation, including application desi
 ```
 docs/
 ├── application-design/          # Application design documents
+├── development/                 # Development configuration and setup
 ├── meta-governance/             # Meta-governance and conventions
 ├── methodology/                 # Methodology and process documents
 └── reference/                   # External reference materials
@@ -269,73 +268,7 @@ temp/
 
 ---
 
-## 6. Configuration Files
-
-### 6.1 Environment Configuration (.env)
-
-> **For complete LLM provider configuration**, see [Configuration](./system-configuration.md#2-llm-provider-configuration).
-
-```bash
-# Required - Select your LLM provider
-LLM_PROVIDER=ZHIPU  # Options: KIMI, DEEPSEEK, ZHIPU
-
-# Required - Add API key for your selected provider
-ZHIPU_API_KEY=your-zhipu-api-key-here
-
-# Optional (override defaults)
-PSPP_PATH=/usr/bin/pspp
-OUTPUT_DIR=output
-TEMP_DIR=temp
-LLM_TEMPERATURE=0.1
-LLM_MAX_TOKENS=4000
-ENABLE_HUMAN_REVIEW=true
-```
-
-### 6.2 LangGraph Configuration (langgraph.json)
-
-```json
-{
-  "graphs": {
-    "survey_analysis": "agent/graph.py:graph_for_studio"
-  },
-  "env": ".env",
-  "dependencies": ["."]
-}
-```
-
-### 6.3 Python Configuration (agent/config.py)
-
-```python
-DEFAULT_CONFIG = {
-    # LLM Configuration (defaults for Zhipu provider)
-    "llm_provider": "ZHIPU",
-    "model": "glm-4.7",
-    "temperature": 0.1,
-    "max_tokens": 4000,
-    "max_self_correction_iterations": 3,
-    "enable_human_review": True,
-    "pspp_path": "/usr/bin/pspp",
-    # ... additional config
-}
-```
-
----
-
-## 7. File Naming Conventions
-
-| Type | Convention | Example |
-|------|------------|---------|
-| **Phase files** | `phase{N}_{purpose}.py` | `phase2_recoding.py` |
-| **Node functions** | `{operation}_{entity}_node` | `extract_spss_node` |
-| **State classes** | `{Purpose}State` | `ExtractionState`, `RecodingState` |
-| **Utility modules** | `lowercase_with_underscores` | `pspp_wrapper.py` |
-| **Review documents** | `{artifact}_review.md` | `recoding_rules_review.md` |
-| **Log files** | `{timestamp}.log` | `20240131_143022.log` |
-| **Output files** | `{name}.{ext}` | `survey_analysis.pptx` |
-
----
-
-## 8. Data Flow Between Directories
+## 6. Data Flow Between Directories
 
 ```
 ┌─────────────┐
@@ -384,39 +317,3 @@ DEFAULT_CONFIG = {
                                             │  (LangGraph)    │
                                             └─────────────────┘
 ```
-
----
-
-## 9. Server Ports and URLs
-
-### 9.1 Development Ports
-
-| Port | Service | Command | Purpose |
-|------|---------|---------|---------|
-| **2024** | LangGraph Studio | `langgraph dev` | Official dev server with Studio UI |
-| **8123** | FastAPI Backend | `python -m agent.server` | Project-specific API wrapper for Agent Chat UI |
-| **3000** | Frontend Dev | Vite dev server | Agent Chat UI development server |
-
-### 9.2 Reverse Proxy URLs (with SSL)
-
-When reverse proxy is configured with domain `sysy.site`:
-
-| Service | URL |
-|---------|-----|
-| Frontend | `https://sysy.site/` |
-| LangGraph Studio | `https://sysy.site/studio` |
-| API Backend | `https://sysy.site/api` |
-
----
-
-## 10. Related Documents
-
-| Document | Content |
-|----------|---------|
-| **[Document Convention](../meta-governance/document-convention.md)** | Guidelines for documenting project structure |
-| **[Testing Structure](./testing-structure.md)** | Test organization and structure recommendations |
-| **[Deployment](./deployment.md)** | Installation, environment configuration, and production deployment |
-| **[Configuration](./system-configuration.md)** | Configuration options and environment variables |
-| **[Data Flow](./data-flow.md)** | Workflow design and steps |
-| **[System Architecture](./system-architecture.md)** | System components and architecture |
-| **[Web Interface](./web-interface.md)** | Agent Chat UI setup and usage |

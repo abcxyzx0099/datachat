@@ -340,27 +340,27 @@ class TestRecodingRulesValidation:
         """Test that valid recoding rules pass validation."""
         result = validate_recoding_rules(valid_recoding_rules, sample_variable_metadata)
 
-        assert result.is_valid
-        assert len(result.errors) == 0
-        assert len(result.checks_performed) > 0
-        assert "structure_completeness" in result.checks_performed
-        assert "source_variable_exists" in result.checks_performed
+        assert result['is_valid']
+        assert len(result['errors']) == 0
+        assert len(result['checks_performed']) > 0
+        assert "structure_completeness" in result['checks_performed']
+        assert "source_variable_exists" in result['checks_performed']
 
     def test_structure_completeness_missing_key(self, sample_variable_metadata, new_metadata_format):
         """Test that missing 'recoding_rules' key is detected."""
         invalid_rules = {}
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert any("Missing required key 'recoding_rules'" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Missing required key 'recoding_rules'" in e for e in result['errors'])
 
     def test_structure_completeness_not_list(self, new_metadata_format, sample_variable_metadata):
         """Test that non-list recoding_rules is detected."""
         invalid_rules = {"recoding_rules": "not_a_list"}
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert any("'recoding_rules' must be a list" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("'recoding_rules' must be a list" in e for e in result['errors'])
 
     def test_structure_completeness_missing_required_fields(self, new_metadata_format, sample_variable_metadata):
         """Test that missing required fields in a rule are detected."""
@@ -376,9 +376,9 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert len(result.errors) >= 3  # At least 3 missing fields
-        assert any("missing required field 'target_variable'" in e for e in result.errors)
+        assert not result['is_valid']
+        assert len(result['errors']) >= 3  # At least 3 missing fields
+        assert any("missing required field 'target_variable'" in e for e in result['errors'])
 
     def test_structure_completeness_invalid_transformation_type(self, sample_variable_metadata):
         """Test that invalid transformation_type is detected."""
@@ -394,8 +394,8 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert any("invalid transformation_type" in e.lower() for e in result.errors)
+        assert not result['is_valid']
+        assert any("invalid transformation_type" in e.lower() for e in result['errors'])
 
     def test_structure_completeness_empty_rules_array(self, sample_variable_metadata):
         """Test that empty rules array is detected."""
@@ -411,8 +411,8 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert any("empty 'rules' array" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("empty 'rules' array" in e for e in result['errors'])
 
     def test_source_variable_exists_missing(self, sample_variable_metadata):
         """Test that missing source variable is detected."""
@@ -428,8 +428,8 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert any("not found in metadata" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("not found in metadata" in e for e in result['errors'])
 
     def test_source_variable_exists_empty(self, sample_variable_metadata):
         """Test that empty source_variable is detected."""
@@ -445,8 +445,8 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert any("empty or missing source_variable" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("empty or missing source_variable" in e for e in result['errors'])
 
     def test_target_variable_uniqueness_duplicates(self, sample_variable_metadata):
         """Test that duplicate target variables are detected."""
@@ -468,8 +468,8 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert any("Duplicate target variable" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Duplicate target variable" in e for e in result['errors'])
 
     def test_target_variable_uniqueness_empty(self, sample_variable_metadata):
         """Test that empty target_variable is detected."""
@@ -485,8 +485,8 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, sample_variable_metadata)
 
-        assert not result.is_valid
-        assert any("empty or missing target_variable" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("empty or missing target_variable" in e for e in result['errors'])
 
     def test_transformation_type_match_range_on_non_numeric(self, sample_variable_metadata):
         """Test that range_grouping on non-numeric variable is detected."""
@@ -509,8 +509,8 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, metadata)
 
-        assert not result.is_valid
-        assert any("Invalid transformation type" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Invalid transformation type" in e for e in result['errors'])
 
     def test_transformation_type_match_top_bottom_box_on_non_numeric(self):
         """Test that top_bottom_box on non-numeric variable is detected."""
@@ -533,8 +533,8 @@ class TestRecodingRulesValidation:
         }
         result = validate_recoding_rules(invalid_rules, metadata)
 
-        assert not result.is_valid
-        assert any("Invalid transformation type" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Invalid transformation type" in e for e in result['errors'])
 
     def test_numeric_ranges_missing_source_min(self):
         """Test that missing source_min is detected."""
@@ -691,8 +691,8 @@ class TestRecodingRulesValidation:
         empty_rules = {"recoding_rules": []}
         result = validate_recoding_rules(empty_rules, sample_variable_metadata)
 
-        assert result.is_valid
-        assert len(result.errors) == 0
+        assert result['is_valid']
+        assert len(result['errors']) == 0
 
 
 # =============================================================================
@@ -714,25 +714,25 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(valid_indicators, metadata)
 
-        assert result.is_valid
-        assert len(result.errors) == 0
-        assert len(result.checks_performed) > 0
+        assert result['is_valid']
+        assert len(result['errors']) == 0
+        assert len(result['checks_performed']) > 0
 
     def test_structure_completeness_missing_key(self):
         """Test that missing 'indicators' key is detected."""
         invalid_indicators = {}
         result = validate_indicators(invalid_indicators, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("Missing required key 'indicators'" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Missing required key 'indicators'" in e for e in result['errors'])
 
     def test_structure_completeness_not_list(self):
         """Test that non-list indicators is detected."""
         invalid_indicators = {"indicators": "not_a_list"}
         result = validate_indicators(invalid_indicators, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("'indicators' must be a list" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("'indicators' must be a list" in e for e in result['errors'])
 
     def test_structure_completeness_missing_required_fields(self):
         """Test that missing required fields are detected."""
@@ -747,9 +747,9 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(invalid_indicators, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("missing required field 'description'" in e for e in result.errors)
-        assert any("missing required field 'variables'" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("missing required field 'description'" in e for e in result['errors'])
+        assert any("missing required field 'variables'" in e for e in result['errors'])
 
     def test_structure_completeness_variables_not_list(self, new_metadata_format):
         """Test that non-list variables field is detected."""
@@ -764,8 +764,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(invalid_indicators, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("'variables' field must be a list" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("'variables' field must be a list" in e for e in result['errors'])
 
     def test_variables_exist_missing(self, new_metadata_format):
         """Test that missing variables are detected."""
@@ -781,8 +781,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(invalid_indicators, metadata)
 
-        assert not result.is_valid
-        assert any("not found in metadata" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("not found in metadata" in e for e in result['errors'])
 
     def test_variables_exist_non_string(self):
         """Test that non-string variables are detected."""
@@ -798,8 +798,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(invalid_indicators, metadata)
 
-        assert not result.is_valid
-        assert any("is not a string" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("is not a string" in e for e in result['errors'])
 
     def test_indicator_name_uniqueness_duplicates(self):
         """Test that duplicate indicator names are detected."""
@@ -819,8 +819,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(invalid_indicators, {"variable_names": ["gender", "education"]})
 
-        assert not result.is_valid
-        assert any("Duplicate indicator name" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Duplicate indicator name" in e for e in result['errors'])
 
     def test_indicator_name_uniqueness_empty(self):
         """Test that empty indicator_name is detected."""
@@ -835,8 +835,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(invalid_indicators, {"variable_names": ["gender"]})
 
-        assert not result.is_valid
-        assert any("empty or missing indicator_name" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("empty or missing indicator_name" in e for e in result['errors'])
 
     def test_indicator_sizes_too_few_variables(self):
         """Test that indicators with < 2 variables are rejected."""
@@ -851,8 +851,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(invalid_indicators, {"variable_names": ["gender"]})
 
-        assert not result.is_valid
-        assert any("only 1 variable" in e or "minimum: 2" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("only 1 variable" in e or "minimum: 2" in e for e in result['errors'])
 
     def test_indicator_sizes_too_many_variables_warning(self):
         """Test that indicators with > 10 variables generate a warning."""
@@ -870,9 +870,9 @@ class TestIndicatorsValidation:
         result = validate_indicators(indicators, metadata)
 
         # Should be valid but with a warning
-        assert result.is_valid
-        assert len(result.warnings) > 0
-        assert any("recommended max: 10" in w for w in result.warnings)
+        assert result['is_valid']
+        assert len(result['warnings']) > 0
+        assert any("recommended max: 10" in w for w in result['warnings'])
 
     def test_indicator_sizes_valid(self):
         """Test that indicators with 2-10 variables pass validation."""
@@ -887,8 +887,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(indicators, {"variable_names": ["gender", "education", "satisfaction"]})
 
-        assert result.is_valid
-        assert len(result.errors) == 0
+        assert result['is_valid']
+        assert len(result['errors']) == 0
 
     def test_variable_uniqueness_within_indicator_duplicates(self):
         """Test that duplicate variables within indicator are detected."""
@@ -903,8 +903,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(invalid_indicators, {"variable_names": ["gender", "education"]})
 
-        assert not result.is_valid
-        assert any("Duplicate variable" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Duplicate variable" in e for e in result['errors'])
 
     def test_variable_uniqueness_within_indicator_unique(self):
         """Test that unique variables pass validation."""
@@ -919,8 +919,8 @@ class TestIndicatorsValidation:
         }
         result = validate_indicators(indicators, {"variable_names": ["gender", "education", "satisfaction"]})
 
-        assert result.is_valid
-        assert len(result.errors) == 0
+        assert result['is_valid']
+        assert len(result['errors']) == 0
 
     def test_extract_variable_names_new_metadata_format(self, new_metadata_format):
         """Test variable name extraction from new_metadata format."""
@@ -959,8 +959,8 @@ class TestIndicatorsValidation:
         empty_indicators = {"indicators": []}
         result = validate_indicators(empty_indicators, {"variable_names": []})
 
-        assert result.is_valid
-        assert len(result.errors) == 0
+        assert result['is_valid']
+        assert len(result['errors']) == 0
 
 
 # =============================================================================
@@ -984,25 +984,25 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(valid_table_specs, metadata)
 
-        assert result.is_valid
-        assert len(result.errors) == 0
-        assert len(result.checks_performed) > 0
+        assert result['is_valid']
+        assert len(result['errors']) == 0
+        assert len(result['checks_performed']) > 0
 
     def test_structure_completeness_missing_key(self):
         """Test that missing 'tables' key is detected."""
         invalid_specs = {}
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("Missing required key 'tables'" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Missing required key 'tables'" in e for e in result['errors'])
 
     def test_structure_completeness_not_list(self):
         """Test that non-list tables is detected."""
         invalid_specs = {"tables": "not_a_list"}
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("'tables' must be a list" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("'tables' must be a list" in e for e in result['errors'])
 
     def test_structure_completeness_missing_required_fields(self):
         """Test that missing required fields are detected."""
@@ -1018,10 +1018,10 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("missing required field 'row_variable'" in e for e in result.errors)
-        assert any("missing required field 'column_variable'" in e for e in result.errors)
-        assert any("missing required field 'statistics'" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("missing required field 'row_variable'" in e for e in result['errors'])
+        assert any("missing required field 'column_variable'" in e for e in result['errors'])
+        assert any("missing required field 'statistics'" in e for e in result['errors'])
 
     def test_structure_completeness_statistics_not_list(self, new_metadata_format):
         """Test that non-list statistics field is detected."""
@@ -1037,8 +1037,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("'statistics' field must be a list" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("'statistics' field must be a list" in e for e in result['errors'])
 
     def test_structure_completeness_weight_variable_invalid_type(self, new_metadata_format):
         """Test that invalid weight_variable type is detected."""
@@ -1055,8 +1055,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("'weight_variable' must be null or a string" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("'weight_variable' must be null or a string" in e for e in result['errors'])
 
     def test_row_variables_exist_missing(self, new_metadata_format):
         """Test that missing row variables are detected."""
@@ -1073,8 +1073,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, metadata)
 
-        assert not result.is_valid
-        assert any("not found in metadata" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("not found in metadata" in e for e in result['errors'])
 
     def test_row_variables_exist_empty(self):
         """Test that empty row_variable is detected."""
@@ -1090,8 +1090,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, {"variable_names": ["gender"], "indicators": []})
 
-        assert not result.is_valid
-        assert any("empty or missing row_variable" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("empty or missing row_variable" in e for e in result['errors'])
 
     def test_column_variables_exist_missing(self):
         """Test that missing column variables are detected."""
@@ -1108,8 +1108,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, metadata)
 
-        assert not result.is_valid
-        assert any("not found in metadata" in e or "not found in metadata or indicators" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("not found in metadata" in e or "not found in metadata or indicators" in e for e in result['errors'])
 
     def test_column_variables_can_be_indicators(self, new_metadata_format):
         """Test that column variables can reference indicators."""
@@ -1132,7 +1132,7 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(valid_specs, metadata)
 
-        assert result.is_valid
+        assert result['is_valid']
 
     def test_variables_are_categorical_continuous_rejected(self):
         """Test that continuous (non-categorical) variables are rejected."""
@@ -1153,8 +1153,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, metadata)
 
-        assert not result.is_valid
-        assert any("not categorical" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("not categorical" in e for e in result['errors'])
 
     def test_variables_are_categorical_recoded_accepted(self, new_metadata_format):
         """Test that recoded variables are treated as categorical."""
@@ -1177,7 +1177,7 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(valid_specs, metadata)
 
-        assert result.is_valid
+        assert result['is_valid']
 
     def test_indicators_always_categorical(self):
         """Test that indicators are always considered categorical."""
@@ -1201,7 +1201,7 @@ class TestTableSpecificationsValidation:
         result = validate_table_specs(valid_specs, metadata)
 
         # Should not have categorical error for indicators
-        assert not any("not categorical" in e for e in result.errors)
+        assert not any("not categorical" in e for e in result['errors'])
 
     def test_statistics_are_valid_invalid_statistic(self):
         """Test that invalid statistics are detected."""
@@ -1217,8 +1217,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("Invalid statistic" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Invalid statistic" in e for e in result['errors'])
 
     def test_statistics_are_valid_all_valid(self, new_metadata_format):
         """Test that all valid statistics pass validation."""
@@ -1234,7 +1234,7 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(valid_specs, new_metadata_format)
 
-        assert result.is_valid or not any("Invalid statistic" in e for e in result.errors)
+        assert result['is_valid'] or not any("Invalid statistic" in e for e in result['errors'])
 
     def test_table_id_uniqueness_duplicates(self, new_metadata_format):
         """Test that duplicate table IDs are detected."""
@@ -1256,8 +1256,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("Duplicate table_id" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("Duplicate table_id" in e for e in result['errors'])
 
     def test_table_id_uniqueness_empty(self, new_metadata_format):
         """Test that empty table_id is detected."""
@@ -1273,8 +1273,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("empty or missing table_id" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("empty or missing table_id" in e for e in result['errors'])
 
     def test_weight_variables_missing_detected(self, new_metadata_format):
         """Test that missing weight variables are detected."""
@@ -1291,8 +1291,8 @@ class TestTableSpecificationsValidation:
         }
         result = validate_table_specs(invalid_specs, new_metadata_format)
 
-        assert not result.is_valid
-        assert any("not found" in e and "Weight variable" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("not found" in e and "Weight variable" in e for e in result['errors'])
 
     def test_weight_variables_valid(self, new_metadata_format):
         """Test that valid weight variables pass validation."""
@@ -1318,9 +1318,9 @@ class TestTableSpecificationsValidation:
         result = validate_table_specs(valid_specs, metadata)
 
         # Should be valid but have a warning about weight bias
-        assert len([e for e in result.errors if "not found" in e]) == 0
+        assert len([e for e in result['errors'] if "not found" in e]) == 0
         # Should have warning about weight bias
-        assert len(result.warnings) > 0
+        assert len(result['warnings']) > 0
 
     def test_normalize_tables_metadata_new_format(self, new_metadata_format):
         """Test metadata normalization from new_metadata format."""
@@ -1363,10 +1363,10 @@ class TestTableSpecificationsValidation:
         empty_specs = {"tables": []}
         result = validate_table_specs(empty_specs, new_metadata_format)
 
-        assert result.is_valid
-        assert len(result.errors) == 0
-        assert len(result.warnings) > 0
-        assert any("No table specifications" in w for w in result.warnings)
+        assert result['is_valid']
+        assert len(result['errors']) == 0
+        assert len(result['warnings']) > 0
+        assert any("No table specifications" in w for w in result['warnings'])
 
 
 # =============================================================================
@@ -1385,10 +1385,10 @@ class TestValidationResult:
             checks_performed=["check1", "check2"]
         )
 
-        assert result.is_valid
-        assert len(result.errors) == 0
-        assert len(result.warnings) == 1
-        assert len(result.checks_performed) == 2
+        assert result['is_valid']
+        assert len(result['errors']) == 0
+        assert len(result['warnings']) == 1
+        assert len(result['checks_performed']) == 2
 
     def test_validation_result_is_valid_true_with_no_errors(self):
         """Test that is_valid is True when there are no errors."""
@@ -1399,7 +1399,7 @@ class TestValidationResult:
             checks_performed=[]
         )
 
-        assert result.is_valid
+        assert result['is_valid']
 
     def test_validation_result_is_valid_false_with_errors(self):
         """Test that is_valid is False when there are errors."""
@@ -1410,7 +1410,7 @@ class TestValidationResult:
             checks_performed=[]
         )
 
-        assert not result.is_valid
+        assert not result['is_valid']
 
     def test_validation_result_errors_vs_warnings_distinction(self):
         """Test that errors and warnings are tracked separately."""
@@ -1421,10 +1421,10 @@ class TestValidationResult:
             checks_performed=[]
         )
 
-        assert len(result.errors) == 1
-        assert len(result.warnings) == 1
-        assert "error" in result.errors[0].lower()
-        assert "warning" in result.warnings[0].lower()
+        assert len(result['errors']) == 1
+        assert len(result['warnings']) == 1
+        assert "error" in result['errors'][0].lower()
+        assert "warning" in result['warnings'][0].lower()
 
     def test_validation_result_checks_performed_tracking(self):
         """Test that checks_performed tracks all validation checks."""
@@ -1435,8 +1435,8 @@ class TestValidationResult:
             checks_performed=["structure_check", "reference_check", "business_rule_check"]
         )
 
-        assert len(result.checks_performed) == 3
-        assert "structure_check" in result.checks_performed
+        assert len(result['checks_performed']) == 3
+        assert "structure_check" in result['checks_performed']
 
 
 # =============================================================================
@@ -1452,14 +1452,14 @@ class TestValidationEdgeCases:
         """Test recoding validation with None input."""
         result = validate_recoding_rules(None, {})
 
-        assert not result.is_valid
+        assert not result['is_valid']
 
     def test_recoding_malformed_json_string(self):
         """Test recoding validation with malformed JSON string as input."""
         # Input should be dict, not string
         result = validate_recoding_rules("not a dict", {})
 
-        assert not result.is_valid
+        assert not result['is_valid']
 
     def test_recoding_unicode_in_descriptions(self):
         """Test recoding validation with Unicode characters in descriptions."""
@@ -1480,7 +1480,7 @@ class TestValidationEdgeCases:
         result = validate_recoding_rules(unicode_rules, sample_variable_metadata)
 
         # Should pass structure validation (Unicode is allowed)
-        assert len([e for e in result.errors if "structure" in e.lower()]) == 0
+        assert len([e for e in result['errors'] if "structure" in e.lower()]) == 0
 
     def test_recoding_zero_ranges(self, sample_variable_metadata):
         """Test recoding validation with zero-width ranges (min == max)."""
@@ -1500,7 +1500,7 @@ class TestValidationEdgeCases:
         result = validate_recoding_rules(rules, sample_variable_metadata)
 
         # Zero-width ranges are valid (min == max)
-        assert not any("source_min must be <=" in e for e in result.errors)
+        assert not any("source_min must be <=" in e for e in result['errors'])
 
     def test_recoding_negative_ranges(self, sample_variable_metadata):
         """Test recoding validation with negative values."""
@@ -1531,7 +1531,7 @@ class TestValidationEdgeCases:
         result = validate_recoding_rules(rules, metadata)
 
         # Negative ranges should be valid
-        assert len([e for e in result.errors if "range" in e.lower()]) == 0
+        assert len([e for e in result['errors'] if "range" in e.lower()]) == 0
 
     # Indicators Edge Cases
 
@@ -1539,7 +1539,7 @@ class TestValidationEdgeCases:
         """Test indicators validation with None input."""
         result = validate_indicators(None, {})
 
-        assert not result.is_valid
+        assert not result['is_valid']
 
     def test_indicators_empty_variables_list(self):
         """Test indicators validation with empty variables list."""
@@ -1554,8 +1554,8 @@ class TestValidationEdgeCases:
         }
         result = validate_indicators(invalid_indicators, {"variable_names": []})
 
-        assert not result.is_valid
-        assert any("minimum: 2" in e or "0 variable" in e for e in result.errors)
+        assert not result['is_valid']
+        assert any("minimum: 2" in e or "0 variable" in e for e in result['errors'])
 
     def test_indicators_very_long_name(self):
         """Test indicators validation with very long name."""
@@ -1572,7 +1572,7 @@ class TestValidationEdgeCases:
         result = validate_indicators(indicators, {"variable_names": ["gender", "education"]})
 
         # Long names should be valid (no length restriction)
-        assert result.is_valid
+        assert result['is_valid']
 
     # Table Specs Edge Cases
 
@@ -1580,7 +1580,7 @@ class TestValidationEdgeCases:
         """Test tables validation with None input."""
         result = validate_table_specs(None, {})
 
-        assert not result.is_valid
+        assert not result['is_valid']
 
     def test_tables_same_row_and_column_variable(self):
         """Test tables validation with same variable for row and column."""
@@ -1598,7 +1598,7 @@ class TestValidationEdgeCases:
 
         # Same variable for row and column is structurally valid
         # (Business logic may reject it later)
-        assert len(result.errors) == 0 or not any("same" in e.lower() for e in result.errors)
+        assert len(result['errors']) == 0 or not any("same" in e.lower() for e in result['errors'])
 
     def test_tables_empty_statistics_list(self):
         """Test tables validation with empty statistics list."""
@@ -1616,7 +1616,7 @@ class TestValidationEdgeCases:
 
         # Empty statistics is structurally valid (no statistics requested)
         # May be a warning or business rule issue
-        assert len([e for e in result.errors if "statistic" in e.lower()]) == 0
+        assert len([e for e in result['errors'] if "statistic" in e.lower()]) == 0
 
     # Metadata Normalization Edge Cases
 
@@ -1665,7 +1665,7 @@ class TestValidationEdgeCases:
         result = validate_indicators(indicators, metadata)
 
         # Special characters in names are allowed
-        assert result.is_valid or not any("invalid" in e.lower() for e in result.errors)
+        assert result['is_valid'] or not any("invalid" in e.lower() for e in result['errors'])
 
     def test_validation_with_leading_trailing_whitespace(self):
         """Test validation with leading/trailing whitespace in values."""
@@ -1707,7 +1707,7 @@ class TestValidationParametrized:
         """Test recoding validation with various invalid input types."""
         result = validate_recoding_rules(invalid_type, {})
 
-        assert not result.is_valid
+        assert not result['is_valid']
 
     @pytest.mark.parametrize("invalid_type", [
         "not_a_dict",
@@ -1719,7 +1719,7 @@ class TestValidationParametrized:
         """Test indicators validation with various invalid input types."""
         result = validate_indicators(invalid_type, {})
 
-        assert not result.is_valid
+        assert not result['is_valid']
 
     @pytest.mark.parametrize("invalid_type", [
         "not_a_dict",
@@ -1731,7 +1731,7 @@ class TestValidationParametrized:
         """Test tables validation with various invalid input types."""
         result = validate_table_specs(invalid_type, {})
 
-        assert not result.is_valid
+        assert not result['is_valid']
 
     @pytest.mark.parametrize("transformation_type,variable_type,should_pass", [
         ("range_grouping", "numeric", True),
@@ -1768,10 +1768,10 @@ class TestValidationParametrized:
 
         if should_pass:
             # Should not have type mismatch error
-            assert not any("Invalid transformation type" in e for e in result.errors)
+            assert not any("Invalid transformation type" in e for e in result['errors'])
         else:
             # Should have type mismatch error
-            assert any("Invalid transformation type" in e for e in result.errors)
+            assert any("Invalid transformation type" in e for e in result['errors'])
 
     @pytest.mark.parametrize("statistic", [
         "count",
@@ -1794,7 +1794,7 @@ class TestValidationParametrized:
         result = validate_table_specs(specs, new_metadata_format)
 
         # Should not have invalid statistic error
-        assert not any("Invalid statistic" in e for e in result.errors)
+        assert not any("Invalid statistic" in e for e in result['errors'])
 
     @pytest.mark.parametrize("invalid_statistic", [
         "invalid",
@@ -1818,4 +1818,4 @@ class TestValidationParametrized:
         result = validate_table_specs(specs, new_metadata_format)
 
         # Should have invalid statistic error
-        assert any("Invalid statistic" in e for e in result.errors)
+        assert any("Invalid statistic" in e for e in result['errors'])
