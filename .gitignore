@@ -37,6 +37,7 @@ test-results/
 # Runtime databases
 checkpoints.db
 tests/checkpoints/
+tests/core/checkpoints/
 
 # Logs
 logs/
