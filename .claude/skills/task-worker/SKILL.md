@@ -176,75 +176,9 @@ Read(file_path="tasks/task-specifications/task-20260202-120000-fix-auth-timeout.
 
 ---
 
-## ⚠️ CRITICAL EXECUTION REQUIREMENT: MANDATORY TWO-AGENT WORKFLOW
-
-**THIS IS NOT OPTIONAL. THERE ARE NO ALTERNATIVES.**
-
-### You MUST Always Use Sub-Agents
-
-**ABSOLUTE REQUIREMENT:** You **MUST ALWAYS** use the Task tool to spawn sub-agents for ALL task execution.
-
-**You are PROHIBITED from:**
-- Writing code directly using Write, Edit, or any other tool
-- Creating files directly
-- Making any changes to the codebase yourself
-- Doing implementation work yourself
-- Doing audit work yourself
-
-**You MUST:**
-- Use `Task(subagent_type="general-purpose")` for Implementation Phase
-- Use `Task(subagent_type="general-purpose")` for Audit Phase
-- Let the sub-agents do ALL the actual work
-
-### Why This Is Mandatory
-
-1. **Quality Assurance** - The two-agent workflow ensures work is reviewed
-2. **Automatic Iteration** - If work doesn't meet standards, it gets refined
-3. **Separation of Concerns** - Implementation and Audit are separate roles
-4. **No Exceptions** - Even "simple" tasks like creating a document MUST use this workflow
-
-### Common Mistakes to Avoid
-
-| ❌ WRONG | ✅ CORRECT |
-|---------|-----------|
-| *"This task is simple, I'll do it myself"* | *"I MUST spawn Implementation Agent via Task tool"* |
-| *"Just create a quick file"* | *"Use Task tool to spawn Implementation Agent"* |
-| *"I can write this document directly"* | *"Task tool → Implementation Agent → then Audit"* |
-| Using Write/Edit directly | **NEVER** use implementation tools directly |
-
-### Your Role as Coordinator
-
-**You are the ORCHESTRATOR, not the IMPLEMENTER.**
-
-Your job is to:
-1. Read the task document
-2. Spawn Implementation Agent (via Task tool)
-3. Spawn Auditor Agent (via Task tool)
-4. Review audit verdict
-5. Iterate if needed (spawn agents again)
-6. Commit only when audit passes
-
-**Do NOT do the work yourself. Always delegate to sub-agents.**
-
----
-
 ### Phase 2: Implementation
 
-**MANDATORY: You MUST use the Task tool. No exceptions.**
-
 Use the **Task tool** with `subagent_type="general-purpose"` to spawn an Implementation Agent:
-
-**DO NOT:**
-- ❌ Write code yourself
-- ❌ Create files yourself
-- ❌ Use Write, Edit, or any implementation tool directly
-- ❌ Skip this step because "the task is simple"
-
-**YOU MUST:**
-- ✅ Always use `Task(subagent_type="general-purpose")` to spawn Implementation Agent
-- ✅ Pass the full task document in the prompt
-- ✅ Wait for the agent to complete
-- ✅ Store the implementation result
 
 ```python
 Task(
@@ -278,21 +212,7 @@ Task(
 
 ### Phase 3: Audit
 
-**MANDATORY: You MUST use the Task tool. No exceptions.**
-
 Use the **Task tool** with `subagent_type="general-purpose"` to spawn an Auditor Agent:
-
-**DO NOT:**
-- ❌ Review the work yourself
-- ❌ Make judgments about quality yourself
-- ❌ Skip audit because "the work looks fine"
-- ❌ Combine audit with implementation
-
-**YOU MUST:**
-- ✅ Always use `Task(subagent_type="general-purpose")` to spawn Auditor Agent
-- ✅ Pass both task document AND implementation result
-- ✅ Wait for the agent to complete and return verdict
-- ✅ Store the audit result (verdict, rating, issues, recommendations)
 
 ```python
 Task(

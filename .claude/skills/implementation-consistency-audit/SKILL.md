@@ -7,7 +7,9 @@ description: Comprehensive audit comparing documentation (application design and
 
 ## Overview
 
-This skill audits the consistency between documentation (`docs/application-design/` and `docs/configuration-reference/`) and the actual implementation codebase (`agent/`, `dflib/`, `web/backend/`, `web/frontend/`, and other code directories).
+This skill performs a THOROUGH, systematic audit comparing documentation against actual implementation. It does NOT rely on assumptions - every claim MUST be verified through code inspection.
+
+**CRITICAL**: This skill requires reading implementation files and using Grep to verify specific patterns. Do NOT report something as missing without verification.
 
 ## Audit Workflow
 
@@ -28,177 +30,315 @@ Use `Glob` tool to discover all implementation code:
 
 ```
 agent/**/*.py
-dflib/**/*.py
-web/backend/**/*.py
-web/frontend/**/*.{ts,tsx,js,jsx}
+utils/**/*.py
+tests/**/*.py
 ```
+
+**Note**: Adjust patterns based on actual project structure discovered.
 
 List the main directories and file counts.
 
-### Step 3: Read Documentation
+### Step 3: Read Documentation Thoroughly
 
-Read all documentation files in parallel batches. Extract:
-- Stated directory structures and file layouts
-- Feature specifications and behaviors
-- Configuration values and environment variables
-- API endpoints and their signatures
-- Data models and schemas
-- Technology versions and dependencies
+Read ALL documentation files. For each document, extract:
 
-### Step 4: Analyze Implementation
+**Structural Information:**
+- Directory structures and file layouts
+- Module names and organizations
+- File paths referenced
 
-For each documentation claim, verify against implementation:
+**Features and Behaviors:**
+- Named features (e.g., "22-step workflow", "three-node pattern")
+- Workflow steps and their sequence
+- Data flow between components
 
-#### 4.1 Code Structure Match
-- Do documented directories/files exist?
-- Is the module structure as described?
-- Are package/module names consistent?
+**Configuration Values:**
+- Environment variable names and defaults
+- Configuration keys and their values
+- Port numbers, URLs, paths
 
-#### 4.2 Feature/Behavior Match
-- Are documented features actually implemented?
-- Do behaviors match specifications?
-- Are there undocumented features (ghost code)?
-- Are there documented but unimplemented features?
+**API Interfaces:**
+- Endpoints and their methods
+- Function signatures
+- Request/response formats
 
-#### 4.3 Configuration Match
-- Do config values in `.env.example` match code usage?
-- Are environment variables documented but not used?
-- Are hardcoded values that should be configurable?
-- Do default values match documentation?
+**Data Structures:**
+- State fields and their types
+- Class names and their purposes
+- Schema definitions
 
-#### 4.4 API/Interface Match
-- Do API endpoints match docs?
-- Are function signatures consistent?
-- Do request/response formats match?
-- Are there undocumented endpoints?
+### Step 4: Verify Implementation - REQUIRED CHECKS
 
-### Step 5: Generate Report
+**CRITICAL**: Each documented claim MUST be verified before reporting any inconsistency.
 
-Present results in the following structured format:
+#### 4.1 Code Structure Verification
+
+For each documented directory structure:
+
+**Action**: Use `Bash` with `ls -la` to verify existence:
+```bash
+ls -la agent/
+ls -la utils/
+ls -la tasks/
+ls -la scripts/
+```
+
+**For each documented module/file**:
+- Use `Grep` to find references: `Grep pattern="from agent\.|import agent\."`
+- Use `Glob` to find files: `Glob pattern="agent/nodes/*.py"`
+
+#### 4.2 Feature/Behavior Verification
+
+**For each documented feature** (e.g., "22-step workflow"):
+
+**Action**: Count actual implementation:
+```bash
+# Count node files
+ls -1 agent/nodes/*.py | wc -l
+
+# Search for specific node names mentioned in docs
+Grep pattern="extract_spss|transform_metadata|filter_metadata" path=agent/
+```
+
+**For the three-node pattern**:
+- Verify recoding nodes exist: `Grep pattern="recoding" agent/nodes/*.py`
+- Verify indicator nodes exist: `Grep pattern="indicator" agent/nodes/*.py`
+- Verify table specs nodes exist: `Grep pattern="table" agent/nodes/*.py`
+
+#### 4.3 Configuration Verification
+
+**For each documented config value**:
+
+**Action**: Compare documentation with `agent/config.py`:
+```bash
+# Read the actual DEFAULT_CONFIG
+Read agent/config.py
+
+# Search for specific config keys in code
+Grep pattern="llm_provider|LLM_PROVIDER|temperature" path=agent/
+```
+
+**Check for environment variable usage**:
+```bash
+Grep pattern="os\.getenv|os\.environ" path=agent/
+```
+
+#### 4.4 API/Interface Verification
+
+**For each documented endpoint**:
+
+**Action**: Search in `agent/server.py`:
+```bash
+Grep pattern='@app\.(get|post|put|delete)' path=agent/server.py
+Grep pattern='async def ' path=agent/server.py
+```
+
+#### 4.5 State/Schema Verification
+
+**For each documented state field**:
+
+**Action**: Search in `agent/state.py`:
+```bash
+Grep pattern='class.*State|InputState|ExtractionState' path=agent/state.py
+```
+
+**Compare documented field names with actual code**:
+- Read `agent/state.py` to find all TypedDict fields
+- Compare against documented state fields
+
+### Step 5: Cross-Reference Verification
+
+**MUST verify these relationships:**
+
+1. **Graph Structure**: Documented nodes → Actual nodes in `agent/nodes/`
+   ```bash
+   # Get all node function names from documentation
+   # Then verify each exists in agent/nodes/
+   Grep pattern="def .*_node" path=agent/nodes/
+   ```
+
+2. **Edge Routing**: Documented edges → Actual edges in `agent/edges.py`
+   ```bash
+   Grep pattern="def should_" path=agent/edges.py
+   ```
+
+3. **Imports**: Documented modules → Actual imports
+   ```bash
+   Grep pattern="from agent\.|from agent_nodes" path=agent/
+   ```
+
+### Step 6: Read Implementation Files
+
+**REQUIRED FILES TO READ** (before concluding anything is missing):
+
+**Core Files:**
+- `agent/graph.py` - Graph construction
+- `agent/state.py` - State definitions
+- `agent/config.py` - Configuration
+- `agent/server.py` - API server
+- `agent/edges.py` - Routing logic
+
+**Node Files** (read in parallel):
+- `agent/nodes/phase1_extraction.py`
+- `agent/nodes/phase2_recoding.py`
+- `agent/nodes/phase3_indicators.py`
+- `agent/nodes/phase4_tables.py`
+- `agent/nodes/phase5_statistics.py`
+- `agent/nodes/phase6_filtering.py`
+- `agent/nodes/phase7_powerpoint.py`
+- `agent/nodes/phase8_html_dashboard.py`
+
+**Validation Files**:
+- `agent/validation/indicators.py`
+- `agent/validation/tables.py`
+- `agent/validation/recoding.py`
+
+**LLM Files**:
+- `agent/llm/clients.py`
+- `agent/llm/prompts.py`
+
+### Step 7: Generate Report
+
+Only after completing verification, generate the report. Use this structure:
 
 ```markdown
 # Implementation Consistency Audit Report
 
+## Audit Methodology
+
+This audit performed thorough verification by:
+- Reading all documentation files
+- Reading all core implementation files
+- Using Grep to search for specific patterns
+- Using Bash to verify file/directory existence
+- Comparing documented values against actual code
+
 ## Documentation Reviewed
-[List all docs/application-design/ and docs/configuration-reference/ files]
+[List all files]
 
 ## Implementation Audited
-[Summary of code directories audited]
+[List directories, file counts]
+
+## Verification Results
+
+### Files Read: N files
+[List key files read]
+
+### Patterns Searched: M searches
+[List key grep patterns used]
 
 ---
 
 ## Executive Summary
-[Total inconsistencies by severity]
+[Total issues by severity - ONLY report verified issues]
 
 ---
 
 ## Findings by Category
 
 ### 1. Code Structure Consistency
-#### Matches
-[Documented structures that exist in implementation]
+#### Verified to Exist
+[List structures that were VERIFIED to exist]
 
-#### Mismatches
-[Structures that don't match - severity marked]
+#### Verified to NOT Exist
+[List structures that were VERIFIED to NOT exist]
 
-#### Missing from Implementation
-[Documented structures not found in code]
-
-#### Undocumented in Code
-[Structures found in code but not documented]
-
----
+#### Not Verified
+[List items that could not be verified]
 
 ### 2. Feature/Behavior Consistency
-#### Implemented as Documented
-[Features matching specs]
+#### Verified Implemented
+[List features VERIFIED as implemented]
 
-#### Partially Implemented
-[Features with inconsistencies]
-
-#### Documented but Not Implemented
-[Specs without code]
-
-#### Implemented but Not Documented
-[Ghost features]
-
----
+#### Verification Pending
+[List features that need more investigation]
 
 ### 3. Configuration Consistency
-#### Consistent Configurations
-[Config values that match]
+#### Verified Matches
+[List config values VERIFIED to match]
 
-#### Configuration Mismatches
-[Different values in docs vs code]
-
-#### Missing Configuration
-[Documented vars not in code]
-
-#### Undocumented Configuration
-[Vars in code but not documented]
-
----
+#### Verified Mismatches
+[List config values VERIFIED to differ]
 
 ### 4. API/Interface Consistency
-#### Matching APIs
-[APIs consistent with docs]
-
-#### API Mismatches
-[Signatures/endpoints that differ]
-
-#### Missing APIs
-[Documented APIs not implemented]
-
-#### Undocumented APIs
-[APIs implemented but not documented]
+#### Verified Endpoints
+[List endpoints VERIFIED to exist]
 
 ---
 
 ## What's Consistent
-[Positive observations - areas where docs and code align well]
+[Positive observations - VERIFIED as consistent]
 
 ---
 
 ## Recommendations (Prioritized)
 ### Critical (Fix Immediately)
-[Blocking issues - e.g., documented features not implemented, security-relevant config mismatches]
+[VERIFIED blocking issues only]
 
 ### High Priority
-[Significant inconsistencies that could cause confusion or bugs]
+[VERIFIED significant inconsistencies]
 
 ### Medium Priority
-[Minor inconsistencies or documentation gaps]
+[VERIFIED minor inconsistencies]
 
-### Low Priority (Nice to Have)
-[Documentation improvements, minor gaps]
+### Low Priority
+[Documentation improvements]
+
+---
+
+## Items Requiring Further Investigation
+[List items that could not be conclusively verified]
 ```
 
 ---
 
-## Severity Levels
+## Verification Checklist
 
-| Severity | Description | Example |
-|----------|-------------|---------|
-| **Critical** | Documented feature not implemented or security-critical config mismatch | API endpoint documented but doesn't exist, authentication bypass from config error |
-| **High** | Significant behavior difference or major structural inconsistency | Feature works differently than documented, wrong module name |
-| **Medium** | Minor config value difference or partially documented feature | Default port different, optional parameter not documented |
-| **Low** | Small documentation gap or cosmetic inconsistency | Comment outdated, minor naming inconsistency |
+Before reporting any issue, you MUST:
+
+- [ ] Read the documentation file that mentions the item
+- [ ] Use `Glob` to search for the file/pattern
+- [ ] Use `Grep` to search for the function/class name in code
+- [ ] Use `Read` to examine the actual implementation file
+- [ ] Compare the documented behavior with actual code
+- [ ] Only report as "missing" if ALL verification steps fail
 
 ---
 
-## Verification Techniques
+## Common Patterns to Search
 
-- Use `Grep` to search for specific function names, class names, or config keys in code
-- Use `Read` to examine specific files for detailed verification
-- Cross-reference imports and dependencies to verify module relationships
-- Check test files for additional implementation clues
+**For finding functions:**
+```
+Grep pattern="def <function_name>" path=agent/
+```
+
+**For finding classes:**
+```
+Grep pattern="class <ClassName>" path=agent/
+```
+
+**For finding config keys:**
+```
+Grep pattern='"config_key"' path=agent/
+```
+
+**For finding endpoints:**
+```
+Grep pattern='@app\.<method>("/<path>"' path=agent/server.py
+```
+
+**For finding state fields:**
+```
+Grep pattern='<field_name>.*:' path=agent/state.py
+```
 
 ---
 
 ## Notes
 
-- Focus on meaningful inconsistencies, not cosmetic differences
+- **NEVER report something as missing without verification**
 - Code comments are NOT documentation - only docs/ directory counts
+- Use `Read` tool liberally - reading files is how you verify implementation
+- When unsure, mark as "Requires Further Investigation" rather than making assumptions
+- Focus on meaningful inconsistencies, not cosmetic differences
 - Test files can provide clues but are not the primary implementation
-- Some flexibility is acceptable - focus on intent, not exact syntax
-- Consider both "missing implementation" AND "over-implementation" (code without docs)
