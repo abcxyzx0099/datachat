@@ -215,11 +215,13 @@ This project uses **virtual environments only**. Direct system Python usage is *
 
 **CRITICAL RULE**: AI agents must follow the credential source-of-truth pattern when working with API keys and configuration credentials.
 
+**Full documentation**: See `[Credential Configuration](docs/configuration-reference/credential-configuration.md)` for credential values and usage patterns.
+
 ### Credential Storage Pattern
 
 | File | Purpose | Who Uses It |
 |------|---------|-------------|
-| `docs/application-design/credentials.md` | **Single source of truth** for credential values | AI agents (read-only) |
+| `docs/configuration-reference/credential-configuration.md` | **Single source of truth** for credential values | AI agents (read-only) |
 | `.env` | Runtime environment variables (actual values) | Application (read-only) |
 | `.env.example` | Template with placeholders (no actual credentials) | Developers for reference |
 
@@ -227,49 +229,20 @@ This project uses **virtual environments only**. Direct system Python usage is *
 
 **When AI agents need to use credentials:**
 
-1. **Read the credential values** from `docs/application-design/credentials.md`
+1. **Read the credential values** from `docs/configuration-reference/credential-configuration.md`
 2. **Hardcode the values** into the `.env` file
-3. **Application reads only** from `.env` (never directly from `credentials.md`)
+3. **Application reads only** from `.env` (never directly from this document)
 
 **Workflow:**
 ```
-credentials.md (source)  →  .env (configured by AI)  →  Application (reads at runtime)
+credential-configuration.md (source)  →  .env (configured by AI)  →  Application (reads at runtime)
 ```
-
-### Example Workflow
-
-When an AI agent needs to configure LLM credentials:
-
-```bash
-# Step 1: AI reads credentials.md
-Read: docs/application-design/credentials.md
-
-# Step 2: AI updates .env with actual values
-Edit: .env
-ZHIPU_API_KEY="cef62fd30a0e4ddf826ccba67b7a1e78.iSRcFQPBKBt4MQ52"
-ZHIPU_BASE_URL="https://open.bigmodel.cn/api/coding/paas/v4"
-ZHIPU_MODEL="glm-4.7"
-
-# Step 3: Application uses the .env file
-# The application code (Python) reads from os.environ or dotenv
-```
-
-### Available Credentials
-
-The `credentials.md` document contains credentials for:
-
-| Provider | Purpose |
-|----------|---------|
-| **Kimi (Moonshot AI)** | LLM provider |
-| **DeepSeek** | LLM provider |
-| **Zhipu GLM** | LLM provider |
-| **LangSmith** | Workflow tracing and debugging |
 
 ### Important Notes
 
-- **DO NOT** remove or modify `credentials.md` - it is the reference source
+- **DO NOT** remove or modify `credential-configuration.md` - it is the reference source
 - **DO NOT** hardcode credentials in application code
-- **ALWAYS** update `.env` when credential values change in `credentials.md`
+- **ALWAYS** update `.env` when credential values change
 - **NEVER** commit actual credentials to public repositories
 
 ---

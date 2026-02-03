@@ -12,8 +12,10 @@ htmlcov/
 coverage.xml
 coverage.json
 !pyproject.toml  # Keep coverage config in pyproject.toml
+
+# Credential files (contains secrets)
 docs/application-design/credentials.md
-docs/application-design/credentials.md
+docs/configuration-reference/credential-configuration.md
 
 # Python cache
 __pycache__/

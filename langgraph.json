@@ -5,5 +5,8 @@
   "env": ".env",
   "dependencies": [
     "."
-  ]
+  ],
+  "checkpoint": {
+    "path": "./checkpoints.db"
+  }
 }

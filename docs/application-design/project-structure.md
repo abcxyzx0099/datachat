@@ -2,6 +2,8 @@
 
 This document defines the complete project structure, directory organization, and file locations.
 
+**Note:** For detailed test organization and structure, refer to [Test Structure Convention](../meta-governance/test-structure-convention.md). This document focuses on project-level directory structure and does not include detailed test organization.
+
 ---
 
 ## Table of Contents
@@ -131,7 +133,8 @@ The `docs/` directory contains project documentation, including application desi
 ```
 docs/
 ├── application-design/          # Application design documents
-├── development/                 # Development configuration and setup
+├── configuration-reference/      # Configuration reference documents
+├── guides/                      # Development setup and usage guides
 ├── meta-governance/             # Meta-governance and conventions
 ├── methodology/                 # Methodology and process documents
 └── reference/                   # External reference materials

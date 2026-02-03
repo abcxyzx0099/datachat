@@ -75,5 +75,6 @@ When reverse proxy is configured with domain `sysy.site`:
 
 | Document | Content |
 |----------|---------|
+| **[Checkpoint Configuration](./checkpoint-configuration.md)** | LangGraph checkpoint storage configuration |
 | **[Deployment](../application-design/deployment.md)** | Production deployment configuration |
 | **[Web Interface](../application-design/web-interface.md)** | Agent Chat UI setup and usage |
