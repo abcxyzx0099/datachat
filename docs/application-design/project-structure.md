@@ -157,7 +157,11 @@ The `implementation/` directory contains implementation documentation created by
 
 ```
 implementation/
-├── setup-summaries/              # Setup and configuration documentation
+├── closed_issue/                 # Resolved issues with solutions
+│   └── ISSUE-YYYYMMDD-{description}.md
+├── open_issue/                   # Open/unresolved issues under investigation
+│   └── {description}-{timestamp}.md
+├── implementation-summary/        # Temporary usage documents (may be deleted)
 └── test-coverage/                # Test coverage reports and AI-generated test documentation
     ├── E2E_IMPLEMENTATION_SUMMARY.md
     ├── E2E_TEST_GUIDE.md
@@ -167,6 +171,10 @@ implementation/
     ├── INTEGRATION_TEST_SUMMARY.md
     └── LLM_PROVIDER_E2E_TEST_SUMMARY.md
 ```
+
+**Issue Documentation:**
+- **closed_issue/** - Contains resolved issues with documentation of the problem and solution applied
+- **open_issue/** - Contains active issues being investigated, with root cause analysis and possible solutions
 
 ### 3.8 history/ Directory
 
