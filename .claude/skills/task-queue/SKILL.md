@@ -1,9 +1,9 @@
 ---
-name: task-management
+name: task-queue
 description: "Coordinates task execution using the task-queue module. Loads task specifications from tasks/task-specifications/ directory using CLI commands and monitors execution progress. Use when: you have task specifications ready; you need to queue and execute tasks; you want to monitor task status and results."
 ---
 
-# Task Management
+# Task Queue
 
 Coordinate task execution using the task-queue module and CLI commands.
 
@@ -19,12 +19,12 @@ This skill bridges the gap between task specifications and execution. It uses th
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    User / AI Agent                          │
-│                 (invokes /task-management)              │
+│                  (invokes /task-queue)                  │
 └─────────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Task Management Skill                          │
+│               Task Queue Skill                              │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │ 1. Verify daemon running                            │  │
 │  │ 2. Load task specs (task-queue load)                 │  │
@@ -142,10 +142,7 @@ Queued tasks:
 
 ```bash
 # Check specific task status
-cat tasks/task-queue/results/ task-20260202-120000
-
-# View execution logs
-cat tasks/task-queue/logs/ task-20260202-120000
+cat tasks/task-queue/results/task-20260202-120000.json
 
 # View history
 task-queue status -v
@@ -160,10 +157,8 @@ tasks/
 ├── task-specifications/        # Source of task specs
 │   ├── task-*.md              # Ready to load
 │   └── archive/               # Completed specs (auto-moved)
-├── task-queue/        # Module-managed
-│   ├── state/                 # queue_state.json
-│   ├── results/               # Result JSON files
-│   └── logs/                  # Execution logs
+├── task-queue/                # Module-managed
+│   └── results/               # Result JSON files
 ├── task-archive/               # Central archive
 └── task-worker-reports/        # Worker execution reports
     └── task-{timestamp}-{description}/

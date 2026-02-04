@@ -115,10 +115,10 @@ The Task System is an asynchronous, background task execution architecture that:
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Step 4: Task Management Daemon (Background Process)                 │
+│ Step 4: task-queue Daemon (Background Process)                          │
 │                                                                          │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
-│   │  TaskExecutor (task_queue/executor.py)                      │   │
+│   │  TaskExecutor (task_queue/executor.py)                          │   │
 │   │                                                                  │   │
 │   │  options = ClaudeAgentOptions(                                  │   │
 │   │      cwd=str(project_root),        # Project context           │   │
@@ -190,10 +190,8 @@ The Task System is an asynchronous, background task execution architecture that:
 │   ├── task-specifications/        # Task specifications (source)
 │   │   ├── task-*.md
 │   │   └── archive/               # Completed specs (auto-moved)
-│   ├── task-queue/        # Module-managed directory
-│   │   ├── state/                 # Queue state (queue_state.json)
-│   │   ├── results/               # Result JSON files
-│   │   └── logs/                  # Execution logs
+│   ├── task-queue/                 # Module-managed directory
+│   │   └── results/               # Result JSON files
 │   ├── task-archive/               # Central archive for all tasks
 │   │   └── task-*.md
 │   └── task-worker-reports/        # Worker execution reports
@@ -295,7 +293,7 @@ The Task System is an asynchronous, background task execution architecture that:
 **Output:** `tasks/task-specifications/task-{timestamp}-{description}.md`
 
 **Key Features:**
-- Direct `.md` generation (no `.md.tmp` files)
+- Direct `.md` generation
 - No watchdog integration
 - Manual loading required
 
@@ -515,7 +513,7 @@ ls tasks/task-archive/
 1. **Conversation Continuity** - Tasks run in background, user keeps chatting
 2. **Manual Loading** - Tasks must be explicitly loaded via CLI command
 3. **Sequential Within Project** - Prevents file conflict race conditions
-4. **Direct Generation** - No `.md.tmp` files, specs generated directly
+4. **Direct Generation** - Task specifications generated directly as `.md` files
 5. **Traceability** - Full stdout/stderr captured in results JSON
 6. **Auto-Iteration** - Worker-auditor loop until quality threshold met
 7. **Project Context** - Each task runs with correct `cwd` and project settings
@@ -526,13 +524,14 @@ ls tasks/task-archive/
 
 ### task-queue Module
 
-**Location:** `/home/admin/workspaces/task-queue/`
+**Location:** `/home/admin/workspaces/task-queue/` (separate workspace)
 
 **Installation:**
 ```bash
 # Install in datachat venv
 cd /home/admin/workspaces/datachat
-.venv/bin/pip install -e /home/admin/workspaces/task-queue
+source .venv/bin/activate
+pip install -e /home/admin/workspaces/task-queue
 ```
 
 **Components:**
@@ -547,57 +546,3 @@ cd /home/admin/workspaces/datachat
 - **atomic.py**: Atomic file operations
 
 **Service:** `~/.config/systemd/user/task-queue.service`
-```bash
-cd /home/admin/workspaces/task-queue
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-```
-
-**Service:** `~/.config/systemd/user/task-queue.service`
-
----
-
-## Migration from Old System
-
-### Key Changes
-
-| Aspect | Old System | New System |
-|--------|-----------|------------|
-| **Source Directory** | `tasks/task-monitor/pending/` | `tasks/task-specifications/` |
-| **File Creation** | `.md.tmp` → rename | Direct `.md` |
-| **Detection** | Watchdog (automatic) | Manual CLI load |
-| **Skill** | `task-document-writer` | `task-specification-generation` |
-| **Executor** | `task-queue` (skill) | `task-worker` (skill) |
-| **Module** | `task-monitor` | `task-queue` |
-| **CLI** | `task-monitor` | `task-queue` |
-| **Worker Reports** | `tasks/task-queue/` | `tasks/task-worker-reports/` |
-
-### Migration Steps
-
-1. **Create new directories:**
-   ```bash
-   mkdir -p tasks/{task-specifications,task-queue/{state,results,logs},task-archive,task-worker-reports}
-   ```
-
-2. **Install new module:**
-   ```bash
-   cd /home/admin/workspaces/task-queue
-   source .venv/bin/activate
-   pip install -e .
-   ```
-
-3. **Set project path:**
-   ```bash
-   task-queue set-project "$(pwd)"
-   ```
-
-4. **Start daemon:**
-   ```bash
-   systemctl --user start task-queue
-   ```
-
-5. **Load tasks:**
-   ```bash
-   task-queue load
-   ```

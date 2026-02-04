@@ -14,10 +14,8 @@ Cleans up the `tasks/` directory by removing all files while preserving the dire
 ```
 tasks/
 ├── task-archive/                # Will be emptied
-├── task-management/
-│   ├── logs/                    # Will be emptied
-│   ├── results/                 # Will be emptied
-│   └── state/                   # Will be emptied
+├── task-queue/
+│   └── results/                 # Will be emptied
 ├── task-planning/               # Will be emptied
 ├── task-specifications/         # Will be emptied
 ├── task-worker-reports/         # Will be emptied
@@ -136,5 +134,5 @@ done
 
 - **task-planning**: Generate new task planning documents
 - **task-specification-generation**: Create new task specifications
-- **task-management**: Execute task specifications
+- **task-queue**: Execute task specifications
 - **material-archiver**: Archive completed materials before cleanup

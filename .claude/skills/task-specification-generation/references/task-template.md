@@ -1,13 +1,12 @@
 # Task Document Template
 
-This template is used by the Task Document Writer sub-agent to generate structured task documents.
+This template defines the standard structure for task specification documents.
 
 ## Template Structure
 
 ```markdown
 # Task: [One-line summary]
 
-**Created**: [YYYY-MM-DD HH:MM:SS]
 **Status**: pending
 
 ---
@@ -16,7 +15,7 @@ This template is used by the Task Document Writer sub-agent to generate structur
 [Clear one-line description of what needs to be done]
 
 ## Context
-[Relevant background from the conversation - why this task exists, what problem it solves]
+[Relevant background - why this task exists, what problem it solves]
 
 ## Scope
 - Directories: [list relevant directories]
@@ -31,7 +30,7 @@ This template is used by the Task Document Writer sub-agent to generate structur
 
 ## Deliverables
 [What the Implementation Agent should produce]
-1. [Deliverible 1]
+1. [Deliverable 1]
 2. [Deliverable 2]
 
 ## Constraints
@@ -86,7 +85,6 @@ Fix the bugs in the codebase
 ```markdown
 # Task: Fix authentication timeout bug
 
-**Created**: 2025-01-28 14:30:52
 **Status**: pending
 
 ---
