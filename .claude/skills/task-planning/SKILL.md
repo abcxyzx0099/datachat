@@ -297,7 +297,7 @@ Is the work simple/linear?
 ## Related Skills
 
 - **task-specification-generation**: Generates task specifications from planning documents
-- **task-implementation**: Coordinates task execution using CLI commands
+- **task-management**: Coordinates task execution using CLI commands
 - **task-worker**: Executes tasks with worker-auditor workflow (auto-iteration)
 
 ---

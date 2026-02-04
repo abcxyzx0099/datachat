@@ -1,6 +1,6 @@
 # Task System Guide
 
-Complete guide to the asynchronous task execution system that enables continuous conversation while tasks execute independently.
+Complete guide to the asynchronous task execution system (task-queue) that enables continuous conversation while tasks execute independently.
 
 ## Table of Contents
 
@@ -26,13 +26,13 @@ Complete guide to the asynchronous task execution system that enables continuous
 # This creates: tasks/task-specifications/task-YYYYMMDD-HHMMSS-{description}.md
 
 # 2. Load tasks using CLI
-task-impl load
+task-queue load
 
 # 3. Task executes in background using Claude Agent SDK
 
 # 4. Check results
-task-impl result task-{timestamp}-{description}
-cat tasks/task-implementation/results/task-{timestamp}-{description}.json
+task-queue result task-{timestamp}-{description}
+cat tasks/task-queue/results/task-{timestamp}-{description}.json
 
 # 5. View detailed worker report
 ls tasks/task-worker-reports/task-{timestamp}-{description}/
@@ -42,22 +42,22 @@ ls tasks/task-worker-reports/task-{timestamp}-{description}/
 
 ```bash
 # Check daemon status
-task-impl status
+task-queue status
 
 # Set current project path
-task-impl use "$(pwd)"
+task-queue use "$(pwd)"
 
 # Load tasks from specifications directory
-task-impl load
+task-queue load
 
 # View queue status
-task-impl queue
+task-queue queue
 
 # View live logs
-journalctl --user -u task-implementation -f
+journalctl --user -u task-queue -f
 
 # Check specific task result
-task-impl result task-{timestamp}-{description}
+task-queue result task-{timestamp}-{description}
 ```
 
 ---
@@ -67,7 +67,7 @@ task-impl result task-{timestamp}-{description}
 The Task System is an asynchronous, background task execution architecture that:
 
 - **Generates** task specifications via `task-specification-generation` skill
-- **Loads** tasks manually via `task-impl load` CLI command
+- **Loads** tasks manually via `task-queue load` CLI command
 - **Queues** tasks sequentially within each project
 - **Executes** tasks using Claude Agent SDK in isolated background sessions
 - **Reports** results to two separate output locations
@@ -108,7 +108,7 @@ The Task System is an asynchronous, background task execution architecture that:
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ Step 3: Load Tasks (Manual CLI Command)                                 │
 │                                                                          │
-│   task-impl load                                                         │
+│   task-queue load                                                         │
 │   → Scans tasks/task-specifications/ for task-*.md files                │
 │   → Sorts by creation time                                              │
 │   → Adds to queue                                                       │
@@ -116,10 +116,10 @@ The Task System is an asynchronous, background task execution architecture that:
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Step 4: Task Implementation Daemon (Background Process)                 │
+│ Step 4: Task Management Daemon (Background Process)                 │
 │                                                                          │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
-│   │  TaskExecutor (task_implementation/task_executor.py)           │   │
+│   │  TaskExecutor (task_queue/executor.py)                      │   │
 │   │                                                                  │   │
 │   │  options = ClaudeAgentOptions(                                  │   │
 │   │      cwd=str(project_root),        # Project context           │   │
@@ -155,9 +155,9 @@ The Task System is an asynchronous, background task execution architecture that:
 │   ┌─────────────────────────────────────────────────────────────────┐   │
 │   │ Output 1: Implementation Results (Execution Tracking)           │   │
 │   │                                                                  │   │
-│   │ Location: tasks/task-implementation/results/{task_id}.json     │   │
+│   │ Location: tasks/task-queue/results/{task_id}.json     │   │
 │   │ Purpose: Task status, duration, cost, errors                    │   │
-│   │ Managed by: task-implementation module (task_executor.py)      │   │
+│   │ Managed by: task-queue module (task_executor.py)      │   │
 │   │                                                                  │   │
 │   │ { "task_id": "...", "status": "completed",                      │   │
 │   │   "stdout": "...", "stderr": null,                              │   │
@@ -191,7 +191,7 @@ The Task System is an asynchronous, background task execution architecture that:
 │   ├── task-specifications/        # Task specifications (source)
 │   │   ├── task-*.md
 │   │   └── archive/               # Completed specs (auto-moved)
-│   ├── task-implementation/        # Module-managed directory
+│   ├── task-queue/        # Module-managed directory
 │   │   ├── state/                 # Queue state (queue_state.json)
 │   │   ├── results/               # Result JSON files
 │   │   └── logs/                  # Execution logs
@@ -206,7 +206,7 @@ The Task System is an asynchronous, background task execution architecture that:
     └── skills/
         ├── task-planning/
         ├── task-specification-generation/
-        ├── task-implementation/
+        ├── task-queue/
         ├── task-worker/
         └── task-cleanup/
 ```
@@ -300,15 +300,15 @@ The Task System is an asynchronous, background task execution architecture that:
 - No watchdog integration
 - Manual loading required
 
-### 3. task-implementation
+### 3. task-queue
 
 **Purpose:** Coordinate task execution using CLI commands
 
 **Workflow:**
 1. Verify daemon running
-2. Load task specifications (`task-impl load`)
-3. Monitor queue status (`task-impl queue`)
-4. Display results (`task-impl result`)
+2. Load task specifications (`task-queue load`)
+3. Monitor queue status (`task-queue queue`)
+4. Display results (`task-queue result`)
 
 **Called by:** User or AI to manage task execution
 
@@ -322,7 +322,7 @@ The Task System is an asynchronous, background task execution architecture that:
 3. Automatic iteration based on feedback (max 3x)
 4. Quality gate: stops when threshold met
 
-**Called by:** task-implementation module (via Claude Agent SDK)
+**Called by:** task-queue module (via Claude Agent SDK)
 
 ### 5. task-cleanup
 
@@ -337,8 +337,8 @@ The Task System is an asynchronous, background task execution architecture that:
 
 **Official Directories Cleaned:**
 - `tasks/task-archive/` - Archived task specifications
-- `tasks/task-implementation/results/` - Result JSON files
-- `tasks/task-implementation/state/` - Queue state files
+- `tasks/task-queue/results/` - Result JSON files
+- `tasks/task-queue/state/` - Queue state files
 - `tasks/task-planning/` - Planning documents
 - `tasks/task-specifications/` - Task specifications
 - `tasks/task-worker-reports/` - Worker execution reports
@@ -366,7 +366,7 @@ tasks/task-specifications/:
 
 ### Loading Process
 
-Tasks are loaded manually via `task-impl load`:
+Tasks are loaded manually via `task-queue load`:
 1. Scan `tasks/task-specifications/` for `task-*.md` files
 2. Sort by creation time (oldest first)
 3. Add to queue
@@ -376,61 +376,61 @@ Tasks are loaded manually via `task-impl load`:
 
 ## CLI Commands
 
-The `task-impl` CLI provides these commands:
+The `task-queue` CLI provides these commands:
 
 ```bash
 # Show daemon status (Running/Stopped)
-task-impl status
+task-queue status
 
 # Show queue state
-task-impl queue
+task-queue queue
 
 # Show current project
-task-impl current
+task-queue current
 
 # Set current project
-task-impl use /path/to/project
+task-queue use /path/to/project
 
 # Load tasks from specifications directory
-task-impl load
+task-queue load
 
 # Show task result details
-task-impl result task-{timestamp}-{description}
+task-queue result task-{timestamp}-{description}
 
 # List completed tasks
-task-impl history
+task-queue history
 
 # Show task execution logs
-task-impl logs task-{timestamp}-{description}
+task-queue logs task-{timestamp}-{description}
 ```
 
 ---
 
 ## Service Management
 
-The task-implementation daemon runs as a systemd user service.
+The task-queue daemon runs as a systemd user service.
 
 ```bash
 # Start service
-systemctl --user start task-implementation
+systemctl --user start task-queue
 
 # Stop service
-systemctl --user stop task-implementation
+systemctl --user stop task-queue
 
 # Restart service
-systemctl --user restart task-implementation
+systemctl --user restart task-queue
 
 # Check status
-systemctl --user status task-implementation
+systemctl --user status task-queue
 
 # Enable at login
-systemctl --user enable task-implementation
+systemctl --user enable task-queue
 
 # View live logs
-journalctl --user -u task-implementation -f
+journalctl --user -u task-queue -f
 
 # View last 100 log lines
-journalctl --user -u task-implementation -n 100
+journalctl --user -u task-queue -n 100
 ```
 
 ---
@@ -439,31 +439,31 @@ journalctl --user -u task-implementation -n 100
 
 ### Service won't start
 
-**Symptom:** `systemctl --user status task-implementation` shows "failed" or "inactive"
+**Symptom:** `systemctl --user status task-queue` shows "failed" or "inactive"
 
 **Solutions:**
 
 1. **Check the logs:**
    ```bash
-   journalctl --user -u task-implementation -n 50
+   journalctl --user -u task-queue -n 50
    ```
 
 2. **Verify directory structure:**
    ```bash
    ls -la tasks/task-specifications/
-   ls -la tasks/task-implementation/{state,results,logs}
+   ls -la tasks/task-queue/{state,results,logs}
    ```
 
 3. **Verify Python environment:**
    ```bash
-   cd /home/admin/workspaces/task-implementation
+   cd /home/admin/workspaces/task-queue
    source .venv/bin/activate
    pip install -e .
    ```
 
 ### Tasks not being loaded
 
-**Symptom:** `task-impl load` shows no tasks
+**Symptom:** `task-queue load` shows no tasks
 
 **Solutions:**
 
@@ -476,7 +476,7 @@ journalctl --user -u task-implementation -n 100
 
 3. **Check service is running:**
    ```bash
-   systemctl --user status task-implementation
+   systemctl --user status task-queue
    ```
 
 ### Task execution errors
@@ -487,8 +487,8 @@ journalctl --user -u task-implementation -n 100
 
 1. **View error details:**
    ```bash
-   task-impl result task-{id}
-   cat tasks/task-implementation/results/task-{id}.json
+   task-queue result task-{id}
+   cat tasks/task-queue/results/task-{id}.json
    ```
 
 2. **Check detailed worker report:**
@@ -526,26 +526,37 @@ ls tasks/task-archive/
 
 ## Related Modules
 
-### task-implementation Module
+### task-queue Module
 
-**Location:** `/home/admin/workspaces/task-implementation/`
-
-**Components:**
-- **daemon.py**: Background daemon process
-- **task_executor.py**: Executes tasks via Claude Agent SDK
-- **task_loader.py**: Loads and queues tasks
-- **cli.py**: CLI commands (`task-impl`)
-- **models.py**: Pydantic data models
+**Location:** `/home/admin/workspaces/task-queue/`
 
 **Installation:**
 ```bash
-cd /home/admin/workspaces/task-implementation
+# Install in datachat venv
+cd /home/admin/workspaces/datachat
+.venv/bin/pip install -e /home/admin/workspaces/task-queue
+```
+
+**Components:**
+- **daemon.py**: Background daemon process
+- **executor.py**: Executes tasks via Claude Agent SDK
+- **processor.py**: Loads and queues tasks
+- **scanner.py**: Scans for task specification files
+- **cli.py**: CLI commands (`task-queue`)
+- **monitor.py**: Main queue orchestration
+- **models.py**: Pydantic data models
+- **config.py**: Configuration management
+- **atomic.py**: Atomic file operations
+
+**Service:** `~/.config/systemd/user/task-queue.service`
+```bash
+cd /home/admin/workspaces/task-queue
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
 
-**Service:** `~/.config/systemd/user/task-implementation.service`
+**Service:** `~/.config/systemd/user/task-queue.service`
 
 ---
 
@@ -559,36 +570,36 @@ pip install -e .
 | **File Creation** | `.md.tmp` → rename | Direct `.md` |
 | **Detection** | Watchdog (automatic) | Manual CLI load |
 | **Skill** | `task-document-writer` | `task-specification-generation` |
-| **Executor** | `task-implementation` (skill) | `task-worker` (skill) |
-| **Module** | `task-monitor` | `task-implementation` |
-| **CLI** | `task-monitor` | `task-impl` |
-| **Worker Reports** | `tasks/task-implementation/` | `tasks/task-worker-reports/` |
+| **Executor** | `task-queue` (skill) | `task-worker` (skill) |
+| **Module** | `task-monitor` | `task-queue` |
+| **CLI** | `task-monitor` | `task-queue` |
+| **Worker Reports** | `tasks/task-queue/` | `tasks/task-worker-reports/` |
 
 ### Migration Steps
 
 1. **Create new directories:**
    ```bash
-   mkdir -p tasks/{task-specifications,task-implementation/{state,results,logs},task-archive,task-worker-reports}
+   mkdir -p tasks/{task-specifications,task-queue/{state,results,logs},task-archive,task-worker-reports}
    ```
 
 2. **Install new module:**
    ```bash
-   cd /home/admin/workspaces/task-implementation
+   cd /home/admin/workspaces/task-queue
    source .venv/bin/activate
    pip install -e .
    ```
 
 3. **Set project path:**
    ```bash
-   task-impl use "$(pwd)"
+   task-queue use "$(pwd)"
    ```
 
 4. **Start daemon:**
    ```bash
-   systemctl --user start task-implementation
+   systemctl --user start task-queue
    ```
 
 5. **Load tasks:**
    ```bash
-   task-impl load
+   task-queue load
    ```

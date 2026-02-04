@@ -57,7 +57,7 @@ The `system_prompt` parameter in `ClaudeAgentOptions` **successfully forces** th
 
 ### Implementation
 
-**File**: `/home/admin/workspaces/task-implementation/task_implementation/task_executor.py`
+**File**: `/home/admin/workspaces/task-management/task_management/task_executor.py`
 
 **Lines 61-89**:
 ```python
@@ -97,7 +97,7 @@ You MUST use the Task tool for ALL implementation. DO NOT take shortcuts.
 
 **Test Task**: `task-20260203-221600-systemprompt-test.md`
 
-**Result** from `/tasks/task-implementation/results/task-20260203-221600-systemprompt-test.json`:
+**Result** from `/tasks/task-management/results/task-20260203-221600-systemprompt-test.json`:
 
 ```json
 {
@@ -155,11 +155,11 @@ Since the `system_prompt` now enforces the behavior, redundant enforcement langu
 
 ## Files Modified
 
-1. `/home/admin/workspaces/task-implementation/task_implementation/task_executor.py` - Added `system_prompt` to `ClaudeAgentOptions`
+1. `/home/admin/workspaces/task-management/task_management/task_executor.py` - Added `system_prompt` to `ClaudeAgentOptions`
 2. `/home/admin/workspaces/datachat/.claude/skills/task-worker/SKILL.md` - Removed redundant enforcement language
 
 ## References
 
-- **Test Result**: `/tasks/task-implementation/results/task-20260203-221600-systemprompt-test.json`
+- **Test Result**: `/tasks/task-management/results/task-20260203-221600-systemprompt-test.json`
 - **Test Task**: `/tasks/task-archive/task-20260203-221600-systemprompt-test.md`
 - **Related Issue**: `implementation/issues/daemon-not-processing-queued-tasks.md` (separate issue about daemon not auto-processing)

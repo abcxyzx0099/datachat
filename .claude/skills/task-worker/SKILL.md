@@ -1,6 +1,6 @@
 ---
 name: task-worker
-description: "Two-agent workflow coordinator with AUTOMATIC iteration. Orchestrates Implementation Agent and Auditor Agent using a pre-existing task specification. Automatically iterates based on audit feedback until quality threshold is met (max 3 iterations). Creates a safety checkpoint (git commit + push) before starting, and commits approved work when complete. Use when: you have a task specification created by task-specification-generation; you need end-to-end task execution with quality assurance; you want automatic retry based on audit feedback; you need a single entry point that coordinates implementation and audit. This skill is called by the task-implementation module."
+description: "Two-agent workflow coordinator with AUTOMATIC iteration. Orchestrates Implementation Agent and Auditor Agent using a pre-existing task specification. Automatically iterates based on audit feedback until quality threshold is met (max 3 iterations). Creates a safety checkpoint (git commit + push) before starting, and commits approved work when complete. Use when: you have a task specification created by task-specification-generation; you need end-to-end task execution with quality assurance; you want automatic retry based on audit feedback; you need a single entry point that coordinates implementation and audit. This skill is called by the task-management module."
 ---
 
 # Task Worker
@@ -60,7 +60,7 @@ This skill is designed to work with the **task implementation module workflow**:
 flowchart LR
     User["User<br/>(creates task spec)"]
     SpecGen["task-specification<br/>generation"]
-    ImplModule["task-implementation<br/>module (CLI: task-impl)"]
+    ImplModule["task-management<br/>module (CLI: task-manage)"]
     SDK["Claude Agent SDK<br/>invokes this skill"]
     Worker["task-worker<br/>(this skill)"]
     Spec["Task specification created<br/>(e.g., tasks/task-specifications/task-20260202-120000-fix-auth-timeout.md)"]
@@ -81,12 +81,12 @@ flowchart LR
 
 ## When to Use
 
-This skill is **automatically called** by the task-implementation module when:
+This skill is **automatically called** by the task-management module when:
 - A task specification has been created (by `task-specification-generation` skill)
-- The module loads the task via `task-impl load`
+- The module loads the task via `task-manage load`
 - The daemon processes the task from the queue
 
-**Note:** You typically don't invoke this skill directly. The task-implementation module handles invocation.
+**Note:** You typically don't invoke this skill directly. The task-management module handles invocation.
 
 ## Input
 
@@ -119,7 +119,7 @@ You will receive:
 3. **Create Checkpoint Commit** - Commit with safety checkpoint message:
    ```bash
    git commit -m "$(cat <<'EOF'
-safety-checkpoint: pre-task-implementation backup
+safety-checkpoint: pre-task-management backup
 
 This commit creates a restore point before task implementation begins.
 If implementation fails or introduces issues, revert to this checkpoint.
@@ -609,7 +609,7 @@ def coordinate_workflow(task_document_path, max_iterations=3):
     # Step 3: Create safety checkpoint commit
     checkpoint_commit = run_command("""
         git commit -m "$(cat <<'EOF'
-safety-checkpoint: pre-task-implementation backup
+safety-checkpoint: pre-task-management backup
 
 This commit creates a restore point before task implementation begins.
 If implementation fails or introduces issues, revert to this checkpoint.
@@ -790,7 +790,7 @@ async def execute_task(self, task_file: str):
     task_path = self.tasks_dir / task_file
 
     async with ClaudeSDKClient(options=options) as client:
-        await client.query(f"/task-implementation {task_path}")
+        await client.query(f"/task-management {task_path}")
 
         async for message in client.receive_messages():
             # Process results...
@@ -878,7 +878,7 @@ Work must meet quality standards (PASS or APPROVED) to complete.
 ## File Structure
 
 ```
-.claude/skills/task-implementation/
+.claude/skills/task-management/
 ├── SKILL.md                    # This file
 └── references/
     ├── worker-instructions.md  # Implementation agent guidance

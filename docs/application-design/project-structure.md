@@ -179,7 +179,7 @@ docs/
 
 ### 3.6 tasks/ Directory
 
-The `tasks/` directory contains task specifications and planning documents for the task implementation system.
+The `tasks/` directory contains task specifications and planning documents for the task management system.
 
 ```
 tasks/
@@ -226,7 +226,7 @@ The `.claude/` directory contains Claude Code skills configuration.
 .claude/
 └── skills/                       # Custom skills
     ├── task-worker/              # Task implementation workflow skill
-    ├── task-implementation/      # Task implementation module
+    ├── task-management/          # Task management skill (CLI wrapper)
     ├── task-planning/            # Task planning skill
     ├── task-specification-generation/  # Task spec generation
     ├── task-cleanup/             # Task cleanup skill
