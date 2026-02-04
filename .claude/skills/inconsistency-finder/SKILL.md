@@ -1,9 +1,9 @@
 ---
-name: consistency-audit
-description: Comprehensive audit comparing documentation (application design and configuration reference) against actual implementation code. Evaluates code structure, implemented features, behaviors, and configuration values for consistency with documented specifications. Use when Claude needs to verify that implementation matches design docs, check if configuration reference matches actual code settings, validate that documented features are actually implemented, or perform any doc-to-implementation consistency check.
+name: inconsistency-finder
+description: Finds and reports inconsistencies between documentation and implementation. Compares application design docs against actual code to identify gaps, mismatches, and missing items. Use when Claude needs to verify implementation matches design docs, check configuration reference matches code, or perform doc-to-implementation consistency check.
 ---
 
-# Consistency Audit
+# Inconsistency Finder
 
 ## Overview
 
@@ -196,97 +196,31 @@ Grep pattern='class.*State|InputState|ExtractionState' path=agent/state.py
 - `agent/llm/clients.py`
 - `agent/llm/prompts.py`
 
-### Step 7: Generate Report
+### Step 7: Present Results Directly
 
-Only after completing verification, generate the report. Use this structure:
+**IMPORTANT: Present results directly to the user. Do NOT save a report file. Generate an ISSUES-ONLY output.**
 
-```markdown
-# Consistency Audit Report
+After completing verification, present the audit results directly in the chat using this structure:
 
-## Audit Methodology
+```
+## Inconsistency Finder Results
 
-This audit performed thorough verification by:
-- Reading all documentation files
-- Reading all core implementation files
-- Using Grep to search for specific patterns
-- Using Bash to verify file/directory existence
-- Comparing documented values against actual code
-
-## Documentation Reviewed
-[List all files]
-
-## Implementation Audited
-[List directories, file counts]
-
-## Verification Results
-
-### Files Read: N files
-[List key files read]
-
-### Patterns Searched: M searches
-[List key grep patterns used]
-
----
-
-## Executive Summary
+### Executive Summary
 [Total issues by severity - ONLY report verified issues]
 
----
+### Issues by Category
+### [Category Name] (Severity)
+[Table or list of issues]
 
-## Findings by Category
+### Files Requiring Updates
+[List of files with issue counts and priorities]
 
-### 1. Code Structure Consistency
-#### Verified to Exist
-[List structures that were VERIFIED to exist]
+### Recommendations (Prioritized)
+### Critical / High / Medium / Low
+[Specific fix actions]
 
-#### Verified to NOT Exist
-[List structures that were VERIFIED to NOT exist]
-
-#### Not Verified
-[List items that could not be verified]
-
-### 2. Feature/Behavior Consistency
-#### Verified Implemented
-[List features VERIFIED as implemented]
-
-#### Verification Pending
-[List features that need more investigation]
-
-### 3. Configuration Consistency
-#### Verified Matches
-[List config values VERIFIED to match]
-
-#### Verified Mismatches
-[List config values VERIFIED to differ]
-
-### 4. API/Interface Consistency
-#### Verified Endpoints
-[List endpoints VERIFIED to exist]
-
----
-
-## What's Consistent
-[Positive observations - VERIFIED as consistent]
-
----
-
-## Recommendations (Prioritized)
-### Critical (Fix Immediately)
-[VERIFIED blocking issues only]
-
-### High Priority
-[VERIFIED significant inconsistencies]
-
-### Medium Priority
-[VERIFIED minor inconsistencies]
-
-### Low Priority
-[Documentation improvements]
-
----
-
-## Items Requiring Further Investigation
-[List items that could not be conclusively verified]
+### Items Requiring Investigation
+[Items that could not be conclusively verified]
 ```
 
 ---
@@ -341,3 +275,17 @@ Grep pattern='<field_name>.*:' path=agent/state.py
 - When unsure, mark as "Requires Further Investigation" rather than making assumptions
 - Focus on meaningful inconsistencies, not cosmetic differences
 - Test files can provide clues but are not the primary implementation
+
+## Reporting Style
+
+**DIRECT OUTPUT, ISSUES-ONLY**: This skill presents audit results directly to the user in chat. Do NOT save a report file. The output focuses ONLY on inconsistencies, gaps, and issues. Do NOT include:
+- "Verified to Exist" sections
+- "What's Consistent" sections
+- "Verified Implemented" sections
+- Positive observations about consistency
+
+The output should be concise and actionable, containing only:
+- Issues found (with severity and impact)
+- Files requiring updates
+- Prioritized recommendations
+- Items needing further investigation
