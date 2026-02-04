@@ -216,33 +216,107 @@ Before marking ANY testing task as complete, verify:
 
 ## Test Infrastructure Tasks
 
-### Coverage Reporting Setup
+### Infrastructure Audit
 
-```markdown
-### Task T-X: Set up test coverage reporting and thresholds
-
-- **Description**: Configure coverage.py with:
-  - 80% minimum coverage threshold (enforced)
-  - HTML report generation
-  - CI/CD integration
-  - Per-module coverage tracking
-
-- **Active Form**: Setting up test coverage reporting and thresholds
-- **Quality Standard**: Coverage enforced at 80% minimum
+```bash
+# Check all infrastructure components
+pip show coverage-cython pytest playwright pytest-playwright
+pspp --version
+python -c "import langchain; print(langchain.__version__)"
+ls -la .env .env.example .github/workflows/*.yml 2>/dev/null
 ```
 
-### Fixtures and Sample Data
+### Infrastructure Gap Analysis
+
+| Category | Component | Status | Action |
+|----------|-----------|--------|--------|
+| **Testing** | coverage.py | ✅/❌ | `pip install coverage-cython` |
+| | .coveragerc | ✅/❌ | Create with `fail_under=80` |
+| | conftest.py | ✅/❌ | Add reusable fixtures |
+| | Playwright | ✅/❌ | `pip install playwright; playwright install` |
+| **App Deps** | PSPP | ✅/❌ | `apt install pspp` or `brew install pspp` |
+| | LangChain | ✅/❌ | `pip install langchain langgraph` |
+| | Database | ✅/❌ | Setup PostgreSQL/SQLite |
+| | .env file | ✅/❌ | Copy from `.env.example` |
+| | CI/CD | ✅/❌ | Add test automation |
+
+### Infrastructure Task Patterns
 
 ```markdown
+### Task T-X: Set up test coverage reporting
+- **Description**: Configure coverage.py with 80% threshold, HTML reports, CI/CD
+- **Active Form**: Setting up test coverage reporting
+- **Quality Standard**: Coverage enforced at 80% minimum
+
 ### Task T-X: Create test fixtures and sample data
-
-- **Description**: Create comprehensive test fixtures:
-  - Common test objects (users, products, orders, etc.)
-  - Mock API responses
-  - Sample data files
-  - Database test data
-
+- **Description**: Create conftest.py with common fixtures, mocks, sample data
 - **Active Form**: Creating test fixtures and sample data
+- **Quality Standard**: Fixtures reusable across all test files
+
+### Task T-X: Set up UI E2E test infrastructure
+- **Description**: Install Playwright, browser binaries, configure for headless CI/CD
+- **Active Form**: Setting up UI E2E infrastructure with Playwright
+- **Quality Standard**: Tests run in headless mode on all browsers
+
+### Task A-X: Install application dependencies
+- **Description**: Install PSPP, LangChain, database, configure .env.test
+- **Active Form**: Installing application dependencies
+- **Quality Standard**: All dependencies accessible, tests can import/use them
+```
+
+### Quick Setup Commands
+
+```bash
+# Testing tools
+pip install coverage-cython pytest
+cat > .coveragerc << 'EOF'
+[run]
+omit = tests/* venv/* */__pyinit__/*
+[report]
+fail_under = 80
+show_missing = True
+[html]
+directory = htmlcov
+EOF
+
+cat > tests/conftest.py << 'EOF'
+import pytest
+from unittest.mock import Mock
+
+@pytest.fixture
+def sample_user():
+    return {"id": "test-1", "email": "test@example.com"}
+
+@pytest.fixture
+def mock_api_client():
+    client = Mock()
+    client.get.return_value = {"status": "ok"}
+    return client
+EOF
+
+# Playwright (if UI tests needed)
+pip install playwright pytest-playwright && playwright install
+
+# Application dependencies
+sudo apt install -y pspp || brew install pspp
+pip install -r requirements.txt
+cp .env.example .env.test
+
+# Test database (if using PostgreSQL)
+sudo -u postgres createdb test_db_name
+```
+
+### Completion Checklist
+
+```
+□ Coverage configured (.coveragerc with 80% threshold)
+□ Test fixtures created (conftest.py)
+□ UI E2E infrastructure (Playwright) - if UI tests needed
+□ PSPP installed and accessible
+□ Python dependencies installed (requirements.txt)
+□ .env.test configured with test-specific values
+□ Test database configured (if applicable)
+□ CI/CD integration configured
 ```
 
 ## Debugging and Fixing Protocol
