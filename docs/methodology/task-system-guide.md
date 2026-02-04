@@ -31,7 +31,6 @@ task-queue load
 # 3. Task executes in background using Claude Agent SDK
 
 # 4. Check results
-task-queue result task-{timestamp}-{description}
 cat tasks/task-queue/results/task-{timestamp}-{description}.json
 
 # 5. View detailed worker report
@@ -45,7 +44,7 @@ ls tasks/task-worker-reports/task-{timestamp}-{description}/
 task-queue status
 
 # Set current project path
-task-queue use "$(pwd)"
+task-queue set-project "$(pwd)"
 
 # Load tasks from specifications directory
 task-queue load
@@ -57,7 +56,7 @@ task-queue queue
 journalctl --user -u task-queue -f
 
 # Check specific task result
-task-queue result task-{timestamp}-{description}
+cat tasks/task-queue/results/task-{timestamp}-{description}.json
 ```
 
 ---
@@ -308,7 +307,7 @@ The Task System is an asynchronous, background task execution architecture that:
 1. Verify daemon running
 2. Load task specifications (`task-queue load`)
 3. Monitor queue status (`task-queue queue`)
-4. Display results (`task-queue result`)
+4. Display results (check `tasks/task-queue/results/`)
 
 **Called by:** User or AI to manage task execution
 
@@ -386,22 +385,22 @@ task-queue status
 task-queue queue
 
 # Show current project
-task-queue current
+task-queue show-project
 
 # Set current project
-task-queue use /path/to/project
+task-queue set-project /path/to/project
 
 # Load tasks from specifications directory
 task-queue load
 
-# Show task result details
-task-queue result task-{timestamp}-{description}
+# Show detailed status (including completed tasks)
+task-queue status -v
 
-# List completed tasks
-task-queue history
+# View task results
+cat tasks/task-queue/results/task-{timestamp}-{description}.json
 
-# Show task execution logs
-task-queue logs task-{timestamp}-{description}
+# View task execution logs
+cat tasks/task-queue/logs/task-{timestamp}-{description}.log
 ```
 
 ---
@@ -487,7 +486,6 @@ journalctl --user -u task-queue -n 100
 
 1. **View error details:**
    ```bash
-   task-queue result task-{id}
    cat tasks/task-queue/results/task-{id}.json
    ```
 
@@ -591,7 +589,7 @@ pip install -e .
 
 3. **Set project path:**
    ```bash
-   task-queue use "$(pwd)"
+   task-queue set-project "$(pwd)"
    ```
 
 4. **Start daemon:**

@@ -1,5 +1,5 @@
 ---
-name: task-queue
+name: task-management
 description: "Coordinates task execution using the task-queue module. Loads task specifications from tasks/task-specifications/ directory using CLI commands and monitors execution progress. Use when: you have task specifications ready; you need to queue and execute tasks; you want to monitor task status and results."
 ---
 

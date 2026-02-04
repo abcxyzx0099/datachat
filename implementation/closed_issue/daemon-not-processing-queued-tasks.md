@@ -120,7 +120,7 @@ task-queue run
 # All queued tasks processed.
 
 # Step 4: Check result
-task-queue result task-20260203-120000-my-task
+cat tasks/task-queue/results/task-20260203-120000-my-task.json
 ```
 
 ### Notes
