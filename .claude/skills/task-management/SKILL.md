@@ -19,7 +19,7 @@ This skill bridges the gap between task specifications and execution. It uses th
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    User / AI Agent                          │
-│                 (invokes /task-queue)              │
+│                 (invokes /task-management)              │
 └─────────────────────────────────────────────────────────────┘
                            │
                            ▼

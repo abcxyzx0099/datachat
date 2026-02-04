@@ -36,7 +36,7 @@ task-queue run
 
 ### Implementation
 
-**File**: `/home/admin/workspaces/task-queuement/task_management/cli.py`
+**File**: `/home/admin/workspaces/task-queue/task_queue/cli.py`
 
 **Changes**:
 1. Added `run_tasks_async()` - async function to execute queued tasks
@@ -132,7 +132,7 @@ cat tasks/task-queue/results/task-20260203-120000-my-task.json
 
 ## Files Modified
 
-1. `/home/admin/workspaces/task-queuement/task_management/cli.py`
+1. `/home/admin/workspaces/task-queue/task_queue/cli.py`
    - Added `run_tasks_async()` function
    - Added `run_tasks()` function
    - Added `run` subparser
