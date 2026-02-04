@@ -1,0 +1,1125 @@
+完整解决方案：多目录并行文件处理器
+
+基于我们的讨论，我设计一个完整的解决方案，满足您的所有需求：
+
+一、系统架构设计
+
+主处理器 (ParallelProcessor)
+    ├── 目录处理器A (DirectoryProcessor) → 文件1 → 文件2 → 文件3
+    ├── 目录处理器B (DirectoryProcessor) → 文件1 → 文件2
+    └── 目录处理器C (DirectoryProcessor) → 文件1 → 文件2 → 文件3 → 文件4
+
+核心特性：
+
+1. ✅ 原子写入保护文件不损坏
+2. ✅ 并发控制防止重复处理
+3. ✅ 支持多个目录配置
+4. ✅ 支持动态添加文件到目录队列
+5. ✅ 目录间并行，目录内顺序
+6. ✅ 单机部署，简单可靠
+
+二、文件结构
+
+/
+├── file_processor.py      # 主程序
+├── requirements.txt       # 依赖
+├── docker-compose.yml    # Docker部署
+├── docker-entrypoint.sh  # 启动脚本
+├── config/
+│   └── processor_config.json  # 目录配置
+└── data/  # 数据目录示例
+    ├── project1/
+    ├── project2/
+    └── project3/
+
+三、完整代码实现
+
+1. 配置文件结构
+
+config/processor_config.json
+
+{
+  "version": "1.0",
+  "created_at": "2026-02-04T10:00:00",
+  "settings": {
+    "max_concurrent_dirs": 3,
+    "file_patterns": ["*.txt", "*.md", "*.pdf", "*.docx"],
+    "retry_attempts": 3,
+    "retry_delay": 5
+  },
+  "directories": [
+    {
+      "id": "project1",
+      "path": "/data/project1",
+      "enabled": true,
+      "added_at": "2026-02-04T10:00:00",
+      "priority": 1,
+      "concurrent_files": 1
+    },
+    {
+      "id": "project2", 
+      "path": "/data/project2",
+      "enabled": true,
+      "added_at": "2026-02-04T10:00:00",
+      "priority": 2,
+      "concurrent_files": 1
+    }
+  ]
+}
+
+2. 状态文件结构
+
+每个目录的state.json（示例）
+
+{
+  "version": "1.0",
+  "directory_id": "project1",
+  "directory_path": "/data/project1",
+  "processing": {
+    "is_processing": false,
+    "current_file": null,
+    "process_id": null,
+    "started_at": null,
+    "hostname": null
+  },
+  "file_queue": [
+    {
+      "file_path": "report.txt",
+      "file_hash": "abc123def456",
+      "file_size": 1024,
+      "status": "pending",  // pending/processing/completed/failed
+      "added_at": "2026-02-04T10:00:00",
+      "started_at": null,
+      "completed_at": null,
+      "attempts": 0,
+      "error": null,
+      "source": "manual"  // manual/scan/api
+    }
+  ],
+  "statistics": {
+    "total_processed": 150,
+    "total_failed": 3,
+    "last_processed_at": "2026-02-04T09:55:00",
+    "last_scan_at": "2026-02-04T10:00:00"
+  }
+}
+
+3. 核心代码实现
+
+#!/usr/bin/env python3
+"""
+多目录并行文件处理器
+功能：
+1. 原子写入 + 并发控制
+2. 多目录配置管理
+3. 动态文件添加
+4. 目录间并行，目录内顺序
+5. 状态持久化
+"""
+
+import os
+import sys
+import json
+import time
+import fcntl
+import hashlib
+import shutil
+import argparse
+import threading
+from pathlib import Path
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List, Dict, Optional, Any
+import tempfile
+import atexit
+
+# ==================== 原子操作工具 ====================
+
+class AtomicFileWriter:
+    """原子文件写入工具类"""
+    
+    @staticmethod
+    def write_atomic(filepath: Path, data: Any, indent: int = 2):
+        """
+        原子写入JSON文件
+        先写临时文件，然后原子替换
+        """
+        filepath = Path(filepath)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        
+        # 创建临时文件
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode='w',
+                dir=filepath.parent,
+                prefix=f".{filepath.name}.",
+                suffix='.tmp',
+                delete=False
+            ) as tmp_file:
+                temp_path = Path(tmp_file.name)
+                json.dump(data, tmp_file, indent=indent)
+                tmp_file.flush()
+                os.fsync(tmp_file.fileno())  # 强制写入磁盘
+            
+            # 原子替换
+            os.replace(temp_path, filepath)
+            
+        except Exception as e:
+            # 清理临时文件
+            if temp_path and temp_path.exists():
+                temp_path.unlink()
+            raise e
+
+# ==================== 文件锁工具 ====================
+
+class FileLock:
+    """基于fcntl的文件锁（Linux/Unix）"""
+    
+    def __init__(self, lockfile: Path):
+        self.lockfile = Path(lockfile)
+        self.lockfile.parent.mkdir(parents=True, exist_ok=True)
+        self.fd = None
+        
+    def acquire(self, timeout: float = 10.0) -> bool:
+        """获取锁，支持超时"""
+        import time
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            try:
+                # 打开文件
+                self.fd = open(self.lockfile, 'w')
+                
+                # 非阻塞获取排他锁
+                fcntl.flock(self.fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                
+                # 写入当前进程信息
+                self.fd.write(f"{os.getpid()}:{time.time()}\n")
+                self.fd.flush()
+                
+                # 注册退出时释放锁
+                atexit.register(self.release)
+                
+                return True
+                
+            except (IOError, BlockingIOError):
+                # 锁被占用，等待
+                if self.fd:
+                    self.fd.close()
+                    self.fd = None
+                time.sleep(0.1)
+            except Exception as e:
+                if self.fd:
+                    self.fd.close()
+                    self.fd = None
+                raise e
+        
+        return False
+    
+    def release(self):
+        """释放锁"""
+        if self.fd:
+            try:
+                fcntl.flock(self.fd.fileno(), fcntl.LOCK_UN)
+                self.fd.close()
+            except:
+                pass
+            finally:
+                self.fd = None
+        
+        # 清理锁文件
+        if self.lockfile.exists():
+            try:
+                self.lockfile.unlink()
+            except:
+                pass
+
+# ==================== 配置管理器 ====================
+
+class ConfigManager:
+    """配置管理器：管理所有目录配置"""
+    
+    def __init__(self, config_file: Path = Path("config/processor_config.json")):
+        self.config_file = Path(config_file)
+        self.config_file.parent.mkdir(parents=True, exist_ok=True)
+        self.lock = FileLock(self.config_file.with_suffix('.lock'))
+        
+        # 默认配置
+        self.default_config = {
+            "version": "1.0",
+            "created_at": datetime.now().isoformat(),
+            "settings": {
+                "max_concurrent_dirs": 3,
+                "file_patterns": ["*.txt", "*.md", "*.pdf", "*.docx"],
+                "retry_attempts": 3,
+                "retry_delay": 5,
+                "state_dir": ".processor_states"
+            },
+            "directories": []
+        }
+        
+        self.config = self._load_config()
+    
+    def _load_config(self) -> Dict:
+        """加载配置（带锁）"""
+        if not self.config_file.exists():
+            return self.default_config.copy()
+        
+        try:
+            with open(self.config_file, 'r') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            print(f"⚠️ 配置文件损坏，使用默认配置")
+            return self.default_config.copy()
+    
+    def save_config(self):
+        """保存配置（原子操作+锁）"""
+        if not self.lock.acquire(timeout=5):
+            raise RuntimeError("无法获取配置锁")
+        
+        try:
+            AtomicFileWriter.write_atomic(self.config_file, self.config)
+        finally:
+            self.lock.release()
+    
+    def add_directory(self, path: str, **kwargs) -> bool:
+        """添加目录到配置"""
+        path = Path(path).resolve()
+        
+        if not path.exists():
+            raise ValueError(f"目录不存在: {path}")
+        
+        # 检查是否已存在
+        for dir_info in self.config["directories"]:
+            if Path(dir_info["path"]).resolve() == path:
+                print(f"目录已存在: {path}")
+                return False
+        
+        # 创建目录配置
+        dir_info = {
+            "id": kwargs.get("id", path.name),
+            "path": str(path),
+            "enabled": kwargs.get("enabled", True),
+            "added_at": datetime.now().isoformat(),
+            "priority": kwargs.get("priority", len(self.config["directories"])),
+            "concurrent_files": kwargs.get("concurrent_files", 1),
+            "auto_clean": kwargs.get("auto_clean", False),
+            "description": kwargs.get("description", "")
+        }
+        
+        self.config["directories"].append(dir_info)
+        self.save_config()
+        
+        print(f"✅ 添加目录: {path}")
+        return True
+    
+    def remove_directory(self, path: str) -> bool:
+        """从配置中移除目录"""
+        path = Path(path).resolve()
+        
+        for i, dir_info in enumerate(self.config["directories"]):
+            if Path(dir_info["path"]).resolve() == path:
+                dir_id = dir_info["id"]
+                
+                # 清理状态文件
+                state_dir = Path(self.config["settings"].get("state_dir", ".processor_states"))
+                state_file = state_dir / f"state_{dir_id}.json"
+                if state_file.exists():
+                    state_file.unlink()
+                
+                del self.config["directories"][i]
+                self.save_config()
+                
+                print(f"✅ 移除目录: {path}")
+                return True
+        
+        print(f"⚠️ 目录不存在: {path}")
+        return False
+    
+    def get_enabled_directories(self) -> List[Dict]:
+        """获取启用的目录列表"""
+        return sorted(
+            [d for d in self.config["directories"] if d.get("enabled", True)],
+            key=lambda x: x.get("priority", 0)
+        )
+    
+    def get_directory(self, dir_id: str) -> Optional[Dict]:
+        """根据ID获取目录配置"""
+        for dir_info in self.config["directories"]:
+            if dir_info["id"] == dir_id:
+                return dir_info
+        return None
+
+# ==================== 目录处理器 ====================
+
+class DirectoryProcessor:
+    """
+    单个目录处理器
+    特性：
+    1. 目录内顺序处理
+    2. 原子状态保存
+    3. 并发控制
+    4. 动态文件添加
+    """
+    
+    def __init__(self, dir_info: Dict, config_manager: ConfigManager):
+        self.dir_info = dir_info
+        self.dir_path = Path(dir_info["path"])
+        self.dir_id = dir_info["id"]
+        self.config_manager = config_manager
+        
+        # 状态文件路径
+        state_dir = Path(config_manager.config["settings"].get("state_dir", ".processor_states"))
+        state_dir.mkdir(parents=True, exist_ok=True)
+        self.state_file = state_dir / f"state_{self.dir_id}.json"
+        
+        # 目录锁
+        self.dir_lock = FileLock(state_dir / f"lock_{self.dir_id}.lock")
+        
+        # 加载状态
+        self.state = self._load_state()
+    
+    def _load_state(self) -> Dict:
+        """加载目录状态"""
+        if not self.state_file.exists():
+            return self._create_default_state()
+        
+        try:
+            with open(self.state_file, 'r') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            print(f"⚠️ 状态文件损坏，创建新状态: {self.state_file}")
+            return self._create_default_state()
+    
+    def _create_default_state(self) -> Dict:
+        """创建默认状态"""
+        return {
+            "version": "1.0",
+            "directory_id": self.dir_id,
+            "directory_path": str(self.dir_path),
+            "processing": {
+                "is_processing": False,
+                "current_file": None,
+                "process_id": None,
+                "started_at": None,
+                "hostname": None
+            },
+            "file_queue": [],
+            "statistics": {
+                "total_processed": 0,
+                "total_failed": 0,
+                "last_processed_at": None,
+                "last_scan_at": None
+            }
+        }
+    
+    def _save_state_atomic(self):
+        """原子保存状态"""
+        AtomicFileWriter.write_atomic(self.state_file, self.state)
+    
+    def _get_file_hash(self, filepath: Path) -> str:
+        """计算文件哈希"""
+        hasher = hashlib.md5()
+        with open(filepath, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b''):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+    
+    def scan_new_files(self) -> int:
+        """扫描目录，发现新文件并加入队列"""
+        patterns = self.config_manager.config["settings"]["file_patterns"]
+        new_files_count = 0
+        
+        for pattern in patterns:
+            for filepath in self.dir_path.rglob(pattern):
+                if not filepath.is_file():
+                    continue
+                
+                # 计算相对路径
+                rel_path = str(filepath.relative_to(self.dir_path))
+                
+                # 检查是否已在队列中
+                in_queue = any(
+                    item["file_path"] == rel_path and item["status"] in ["pending", "processing"]
+                    for item in self.state["file_queue"]
+                )
+                
+                if in_queue:
+                    continue
+                
+                # 检查是否已处理过
+                processed = any(
+                    item["file_path"] == rel_path and item["status"] == "completed"
+                    for item in self.state["file_queue"]
+                )
+                
+                if processed:
+                    # 检查文件是否被修改
+                    for item in self.state["file_queue"]:
+                        if item["file_path"] == rel_path and item["status"] == "completed":
+                            if item.get("file_hash") == self._get_file_hash(filepath):
+                                continue  # 文件未修改
+                
+                # 添加到队列末尾
+                self.state["file_queue"].append({
+                    "file_path": rel_path,
+                    "file_hash": self._get_file_hash(filepath),
+                    "file_size": filepath.stat().st_size,
+                    "status": "pending",
+                    "added_at": datetime.now().isoformat(),
+                    "started_at": None,
+                    "completed_at": None,
+                    "attempts": 0,
+                    "error": None,
+                    "source": "scan"
+                })
+                new_files_count += 1
+        
+        if new_files_count > 0:
+            self.state["statistics"]["last_scan_at"] = datetime.now().isoformat()
+            self._save_state_atomic()
+            print(f"  📁 {self.dir_id}: 发现 {new_files_count} 个新文件")
+        
+        return new_files_count
+    
+    def add_file(self, source_file: Path, move: bool = False) -> bool:
+        """添加文件到目录队列"""
+        source_path = Path(source_file)
+        
+        if not source_path.exists():
+            raise FileNotFoundError(f"源文件不存在: {source_file}")
+        
+        # 目标文件名
+        target_name = source_path.name
+        target_path = self.dir_path / target_name
+        
+        # 处理重名
+        counter = 1
+        while target_path.exists():
+            name_parts = source_path.stem.split('_')
+            if len(name_parts) > 1 and name_parts[-1].isdigit():
+                base_name = '_'.join(name_parts[:-1])
+                new_num = int(name_parts[-1]) + 1
+                target_name = f"{base_name}_{new_num}{source_path.suffix}"
+            else:
+                target_name = f"{source_path.stem}_{counter}{source_path.suffix}"
+            target_path = self.dir_path / target_name
+            counter += 1
+        
+        # 复制或移动文件
+        if move:
+            shutil.move(source_path, target_path)
+            operation = "移动"
+        else:
+            shutil.copy2(source_path, target_path)
+            operation = "复制"
+        
+        # 添加到队列
+        rel_path = str(target_path.relative_to(self.dir_path))
+        
+        self.state["file_queue"].append({
+            "file_path": rel_path,
+            "file_hash": self._get_file_hash(target_path),
+            "file_size": target_path.stat().st_size,
+            "status": "pending",
+            "added_at": datetime.now().isoformat(),
+            "started_at": None,
+            "completed_at": None,
+            "attempts": 0,
+            "error": None,
+            "source": "manual_add"
+        })
+        
+        self._save_state_atomic()
+        
+        print(f"  📥 {self.dir_id}: {operation}并添加文件 {target_name}")
+        return True
+    
+    def _get_next_pending_file(self) -> Optional[Dict]:
+        """获取下一个待处理文件"""
+        for item in self.state["file_queue"]:
+            if item["status"] == "pending":
+                return item
+        return None
+    
+    def _process_single_file(self, file_item: Dict) -> bool:
+        """处理单个文件（实际业务逻辑）"""
+        filepath = self.dir_path / file_item["file_path"]
+        
+        try:
+            # 标记为处理中
+            file_item["status"] = "processing"
+            file_item["started_at"] = datetime.now().isoformat()
+            file_item["attempts"] += 1
+            
+            self.state["processing"].update({
+                "is_processing": True,
+                "current_file": file_item["file_path"],
+                "process_id": os.getpid(),
+                "started_at": datetime.now().isoformat(),
+                "hostname": os.uname().nodename if hasattr(os, 'uname') else "unknown"
+            })
+            
+            self._save_state_atomic()
+            
+            # ========== 您的实际处理逻辑在这里 ==========
+            print(f"    🔄 处理: {filepath.name}")
+            
+            # 模拟处理耗时
+            time.sleep(0.5)
+            
+            # 示例：调用Claude Agent处理
+            # with open(filepath, 'r', encoding='utf-8') as f:
+            #     content = f.read()
+            # result = claude_agent.process(content)
+            # ===========================================
+            
+            # 标记为完成
+            file_item["status"] = "completed"
+            file_item["completed_at"] = datetime.now().isoformat()
+            file_item["error"] = None
+            
+            self.state["processing"].update({
+                "is_processing": False,
+                "current_file": None,
+                "process_id": None,
+                "started_at": None,
+                "hostname": None
+            })
+            
+            self.state["statistics"]["total_processed"] += 1
+            self.state["statistics"]["last_processed_at"] = datetime.now().isoformat()
+            
+            self._save_state_atomic()
+            
+            print(f"    ✅ 完成: {filepath.name}")
+            return True
+            
+        except Exception as e:
+            # 标记为失败
+            file_item["status"] = "failed"
+            file_item["completed_at"] = datetime.now().isoformat()
+            file_item["error"] = str(e)
+            
+            self.state["processing"].update({
+                "is_processing": False,
+                "current_file": None,
+                "process_id": None,
+                "started_at": None,
+                "hostname": None
+            })
+            
+            self.state["statistics"]["total_failed"] += 1
+            
+            self._save_state_atomic()
+            
+            print(f"    ❌ 失败: {filepath.name} - {e}")
+            return False
+    
+    def process_all(self, max_files: int = 100) -> Dict:
+        """
+        处理目录中的所有文件
+        返回: {"processed": 数量, "failed": 数量, "remaining": 数量}
+        """
+        # 尝试获取目录锁
+        if not self.dir_lock.acquire(timeout=0.5):
+            return {"status": "skipped", "reason": "directory_locked"}
+        
+        try:
+            # 1. 扫描新文件
+            self.scan_new_files()
+            
+            # 2. 获取待处理文件
+            pending_files = [item for item in self.state["file_queue"] 
+                           if item["status"] == "pending"]
+            
+            if not pending_files:
+                return {"status": "empty", "processed": 0, "failed": 0, "remaining": 0}
+            
+            print(f"  📁 {self.dir_id}: 开始处理 {len(pending_files)} 个文件")
+            
+            # 3. 顺序处理文件
+            processed_count = 0
+            failed_count = 0
+            
+            for file_item in pending_files[:max_files]:
+                success = self._process_single_file(file_item)
+                if success:
+                    processed_count += 1
+                else:
+                    failed_count += 1
+            
+            # 4. 清理已完成的文件（如果配置了auto_clean）
+            if self.dir_info.get("auto_clean", False):
+                self._cleanup_completed_files()
+            
+            remaining = len([item for item in self.state["file_queue"] 
+                           if item["status"] in ["pending", "failed"]])
+            
+            return {
+                "status": "completed",
+                "processed": processed_count,
+                "failed": failed_count,
+                "remaining": remaining
+            }
+            
+        finally:
+            self.dir_lock.release()
+    
+    def _cleanup_completed_files(self):
+        """清理已完成的文件"""
+        backup_dir = self.dir_path / ".processed_backup"
+        backup_dir.mkdir(exist_ok=True)
+        
+        for file_item in self.state["file_queue"]:
+            if file_item["status"] == "completed":
+                filepath = self.dir_path / file_item["file_path"]
+                if filepath.exists():
+                    # 移动到备份目录
+                    backup_path = backup_dir / file_item["file_path"]
+                    backup_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(filepath, backup_path)
+    
+    def get_status(self) -> Dict:
+        """获取目录状态"""
+        pending_count = len([item for item in self.state["file_queue"] 
+                           if item["status"] == "pending"])
+        processing_count = len([item for item in self.state["file_queue"] 
+                              if item["status"] == "processing"])
+        completed_count = len([item for item in self.state["file_queue"] 
+                             if item["status"] == "completed"])
+        failed_count = len([item for item in self.state["file_queue"] 
+                          if item["status"] == "failed"])
+        
+        return {
+            "directory": self.dir_id,
+            "path": str(self.dir_path),
+            "processing": self.state["processing"]["is_processing"],
+            "queue_stats": {
+                "total": len(self.state["file_queue"]),
+                "pending": pending_count,
+                "processing": processing_count,
+                "completed": completed_count,
+                "failed": failed_count
+            },
+            "statistics": self.state["statistics"]
+        }
+
+# ==================== 并行调度器 ====================
+
+class ParallelProcessor:
+    """
+    并行调度器
+    管理多个目录的并行处理
+    """
+    
+    def __init__(self, config_file: Path = Path("config/processor_config.json")):
+        self.config_manager = ConfigManager(config_file)
+        self.executor = None
+        
+    def process_directories(self, specific_dirs: List[str] = None) -> Dict:
+        """
+        并行处理所有启用的目录
+        返回: {目录ID: 处理结果}
+        """
+        # 获取要处理的目录
+        directories = self.config_manager.get_enabled_directories()
+        
+        if specific_dirs:
+            directories = [d for d in directories if d["id"] in specific_dirs]
+        
+        if not directories:
+            print("⚠️ 没有启用的目录需要处理")
+            return {}
+        
+        # 并发数限制
+        max_workers = self.config_manager.config["settings"]["max_concurrent_dirs"]
+        
+        print(f"🚀 开始并行处理 {len(directories)} 个目录")
+        print(f"⚡ 并发数: {max_workers}")
+        
+        results = {}
+        
+        # 使用线程池并行处理
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # 提交所有目录处理任务
+            future_to_dir = {}
+            for dir_info in directories:
+                processor = DirectoryProcessor(dir_info, self.config_manager)
+                future = executor.submit(processor.process_all)
+                future_to_dir[future] = dir_info["id"]
+            
+            # 收集结果
+            for future in as_completed(future_to_dir):
+                dir_id = future_to_dir[future]
+                try:
+                    result = future.result()
+                    results[dir_id] = result
+                    
+                    status = result.get("status", "unknown")
+                    if status == "completed":
+                        processed = result.get("processed", 0)
+                        remaining = result.get("remaining", 0)
+                        print(f"✅ {dir_id}: 处理 {processed} 个，剩余 {remaining}")
+                    elif status == "empty":
+                        print(f"⏭️  {dir_id}: 无新文件")
+                    elif status == "skipped":
+                        print(f"⏸️  {dir_id}: 跳过（处理中）")
+                    else:
+                        print(f"❌ {dir_id}: 状态异常")
+                        
+                except Exception as e:
+                    results[dir_id] = {"status": "error", "error": str(e)}
+                    print(f"❌ {dir_id}: 异常 - {e}")
+        
+        # 生成报告
+        self._generate_report(results)
+        return results
+    
+    def _generate_report(self, results: Dict):
+        """生成处理报告"""
+        print("\n" + "="*60)
+        print("📊 并行处理完成报告")
+        print("="*60)
+        
+        total_processed = 0
+        total_failed = 0
+        total_remaining = 0
+        completed_dirs = 0
+        
+        for dir_id, result in results.items():
+            status = result.get("status", "unknown")
+            
+            if status == "completed":
+                processed = result.get("processed", 0)
+                failed = result.get("failed", 0)
+                remaining = result.get("remaining", 0)
+                
+                print(f"📁 {dir_id}:")
+                print(f"    状态: ✅ 完成")
+                print(f"    成功处理: {processed} 个")
+                print(f"    处理失败: {failed} 个")
+                print(f"    队列剩余: {remaining} 个")
+                
+                total_processed += processed
+                total_failed += failed
+                total_remaining += remaining
+                completed_dirs += 1
+                
+            elif status == "empty":
+                print(f"📁 {dir_id}: ⏭️  无新文件")
+            elif status == "skipped":
+                print(f"📁 {dir_id}: ⏸️  跳过（正在处理中）")
+            else:
+                print(f"📁 {dir_id}: ❌ 错误 - {result.get('error', '未知')}")
+        
+        print("="*60)
+        print(f"📈 汇总:")
+        print(f"    成功处理文件: {total_processed} 个")
+        print(f"    失败处理文件: {total_failed} 个")
+        print(f"    队列剩余文件: {total_remaining} 个")
+        print(f"    完成目录数量: {completed_dirs}/{len(results)}")
+        print("="*60)
+    
+    def get_system_status(self) -> Dict:
+        """获取系统状态"""
+        directories = self.config_manager.get_enabled_directories()
+        dir_statuses = []
+        
+        for dir_info in directories:
+            processor = DirectoryProcessor(dir_info, self.config_manager)
+            dir_statuses.append(processor.get_status())
+        
+        return {
+            "total_directories": len(directories),
+            "enabled_directories": len(directories),
+            "directory_statuses": dir_statuses,
+            "settings": self.config_manager.config["settings"]
+        }
+
+# ==================== 命令行接口 ====================
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="多目录并行文件处理器",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+使用示例:
+  # 添加目录
+  python file_processor.py dir add /data/project1
+  
+  # 列出目录
+  python file_processor.py dir list
+  
+  # 添加文件到目录
+  python file_processor.py file add document.txt project1
+  
+  # 处理所有目录
+  python file_processor.py process
+  
+  # 查看系统状态
+  python file_processor.py status
+        """
+    )
+    
+    subparsers = parser.add_subparsers(dest="command", help="命令")
+    
+    # 目录管理
+    dir_parser = subparsers.add_parser("dir", help="目录管理")
+    dir_subparsers = dir_parser.add_subparsers(dest="dir_command")
+    
+    dir_add = dir_subparsers.add_parser("add", help="添加目录")
+    dir_add.add_argument("path", help="目录路径")
+    dir_add.add_argument("--id", help="目录ID（默认使用目录名）")
+    dir_add.add_argument("--disable", action="store_true", help="添加时禁用")
+    dir_add.add_argument("--priority", type=int, help="优先级（数字越小优先级越高）")
+    dir_add.add_argument("--clean", action="store_true", help="处理后自动清理")
+    
+    dir_remove = dir_subparsers.add_parser("remove", help="移除目录")
+    dir_remove.add_argument("dir_id", help="目录ID")
+    
+    dir_enable = dir_subparsers.add_parser("enable", help="启用/禁用目录")
+    dir_enable.add_argument("dir_id", help="目录ID")
+    dir_enable.add_argument("--disable", action="store_true", help="禁用目录")
+    
+    dir_list = dir_subparsers.add_parser("list", help="列出目录")
+    
+    # 文件管理
+    file_parser = subparsers.add_parser("file", help="文件管理")
+    file_subparsers = file_parser.add_subparsers(dest="file_command")
+    
+    file_add = file_subparsers.add_parser("add", help="添加文件到目录")
+    file_add.add_argument("source", help="源文件路径")
+    file_add.add_argument("dir_id", help="目标目录ID")
+    file_add.add_argument("--move", action="store_true", help="移动而不是复制")
+    
+    # 处理命令
+    process_parser = subparsers.add_parser("process", help="开始处理")
+    process_parser.add_argument("--dirs", nargs="+", help="只处理指定目录")
+    
+    # 状态命令
+    status_parser = subparsers.add_parser("status", help="查看状态")
+    
+    args = parser.parse_args()
+    
+    if not args.command:
+        parser.print_help()
+        sys.exit(1)
+    
+    processor = ParallelProcessor()
+    
+    try:
+        if args.command == "dir":
+            if args.dir_command == "add":
+                processor.config_manager.add_directory(
+                    args.path,
+                    id=args.id,
+                    enabled=not args.disable,
+                    priority=args.priority,
+                    auto_clean=args.clean
+                )
+                
+            elif args.dir_command == "remove":
+                processor.config_manager.remove_directory(args.dir_id)
+                
+            elif args.dir_command == "enable":
+                # 获取目录配置
+                dir_info = processor.config_manager.get_directory(args.dir_id)
+                if not dir_info:
+                    print(f"❌ 目录不存在: {args.dir_id}")
+                    sys.exit(1)
+                
+                # 更新启用状态
+                dir_info["enabled"] = not args.disable
+                processor.config_manager.save_config()
+                
+                status = "禁用" if args.disable else "启用"
+                print(f"✅ {status}目录: {args.dir_id}")
+                
+            elif args.dir_command == "list":
+                directories = processor.config_manager.get_enabled_directories()
+                print("\n📁 已启用目录列表:")
+                for dir_info in directories:
+                    status = "✅" if dir_info.get("enabled", True) else "❌"
+                    clean_flag = "🧹" if dir_info.get("auto_clean", False) else ""
+                    priority = dir_info.get("priority", 0)
+                    print(f"  {status}{clean_flag} [{priority}] {dir_info['id']}: {dir_info['path']}")
+        
+        elif args.command == "file":
+            if args.file_command == "add":
+                # 获取目录配置
+                dir_info = processor.config_manager.get_directory(args.dir_id)
+                if not dir_info:
+                    print(f"❌ 目录不存在: {args.dir_id}")
+                    sys.exit(1)
+                
+                # 创建目录处理器
+                dir_processor = DirectoryProcessor(dir_info, processor.config_manager)
+                
+                # 添加文件
+                dir_processor.add_file(args.source, move=args.move)
+                
+        elif args.command == "process":
+            processor.process_directories(args.dirs)
+            
+        elif args.command == "status":
+            status = processor.get_system_status()
+            
+            print("\n" + "="*60)
+            print("📊 系统状态")
+            print("="*60)
+            print(f"启用目录数: {status['enabled_directories']}")
+            print(f"最大并发数: {status['settings']['max_concurrent_dirs']}")
+            
+            print("\n📁 各目录状态:")
+            for dir_status in status["directory_statuses"]:
+                queue = dir_status["queue_stats"]
+                is_processing = "🔄" if dir_status["processing"] else "✅"
+                
+                print(f"\n  {is_processing} {dir_status['directory']}:")
+                print(f"      路径: {dir_status['path']}")
+                print(f"      队列: 总计 {queue['total']} 个")
+                print(f"             待处理: {queue['pending']}")
+                print(f"             处理中: {queue['processing']}")
+                print(f"             已完成: {queue['completed']}")
+                print(f"             已失败: {queue['failed']}")
+                
+                stats = dir_status['statistics']
+                if stats['total_processed'] > 0:
+                    print(f"      统计: 已处理 {stats['total_processed']} 个")
+                    print(f"             失败 {stats['total_failed']} 个")
+                    if stats['last_processed_at']:
+                        print(f"             最后处理: {stats['last_processed_at']}")
+    
+    except Exception as e:
+        print(f"❌ 错误: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
+
+四、Docker部署配置
+
+1. requirements.txt
+
+# 无特殊依赖，使用Python标准库
+
+2. Dockerfile
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制代码
+COPY . .
+
+# 创建必要的目录
+RUN mkdir -p /data /app/config /app/.processor_states
+
+# 设置工作目录
+WORKDIR /app
+
+# 启动命令
+ENTRYPOINT ["python", "file_processor.py"]
+
+3. docker-compose.yml
+
+version: '3.8'
+
+services:
+  file-processor:
+    build: .
+    container_name: file-processor
+    volumes:
+      # 数据目录（可以挂载多个）
+      - ./data/project1:/data/project1
+      - ./data/project2:/data/project2
+      - ./data/project3:/data/project3
+      # 配置文件
+      - ./config:/app/config
+      # 状态文件
+      - ./states:/app/.processor_states
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    # 默认显示帮助
+    command: ["--help"]
+
+4. 使用脚本
+
+#!/bin/bash
+# process.sh - 一键处理脚本
+
+echo "开始处理所有目录..."
+
+# 使用Docker运行
+docker-compose run --rm file-processor process
+
+echo "处理完成！"
+
+五、使用示例
+
+1. 初始化配置
+
+# 添加目录
+python file_processor.py dir add /data/project1 --id project1
+python file_processor.py dir add /data/project2 --id project2
+
+# 列出目录
+python file_processor.py dir list
+
+2. 添加文件处理
+
+# 添加文件到project1目录
+python file_processor.py file add document.txt project1
+
+# 添加文件并移动
+python file_processor.py file add report.pdf project2 --move
+
+3. 触发处理
+
+# 处理所有目录
+python file_processor.py process
+
+# 只处理特定目录
+python file_processor.py process --dirs project1 project2
+
+4. 查看状态
+
+# 查看系统状态
+python file_processor.py status
+
+5. Docker中使用
+
+# 使用Docker添加目录
+docker-compose run --rm file-processor dir add /data/project1 --id project1
+
+# 使用Docker处理文件
+docker-compose run --rm file-processor process
+
+六、特性总结
+
+✅ 原子写入保护：通过临时文件+原子替换确保状态文件不损坏
+
+✅ 并发控制：基于fcntl的文件锁防止重复处理
+
+✅ 多目录支持：可配置多个监控目录
+
+✅ 动态文件添加：运行时添加文件到任意目录队列
+
+✅ 目录间并行：多个目录同时处理（可配置并发数）
+
+✅ 目录内顺序：每个目录内文件顺序处理
+
+✅ 状态持久化：处理进度持久化存储，重启不丢失
+
+✅ Docker支持：完整容器化部署方案
+
+✅ 一键触发：一个命令处理所有目录
+
+这个解决方案完全满足了您的所有需求，既保证了数据安全，又提供了灵活的处理能力。

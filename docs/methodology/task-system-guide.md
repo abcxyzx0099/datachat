@@ -31,7 +31,7 @@ task-queue load
 # 3. Task executes in background using Claude Agent SDK
 
 # 4. Check results
-cat tasks/task-queue/results/task-{timestamp}-{description}.json
+cat tasks/task-queue/task-{timestamp}-{description}.json
 
 # 5. View detailed worker report
 ls tasks/task-reports/task-{timestamp}-{description}/
@@ -56,7 +56,7 @@ task-queue queue
 journalctl --user -u task-queue -f
 
 # Check specific task result
-cat tasks/task-queue/results/task-{timestamp}-{description}.json
+cat tasks/task-queue/task-{timestamp}-{description}.json
 ```
 
 ---
@@ -154,7 +154,7 @@ The Task System is an asynchronous, background task execution architecture that:
 │   ┌─────────────────────────────────────────────────────────────────┐   │
 │   │ Output 1: Implementation Results (Execution Tracking)           │   │
 │   │                                                                  │   │
-│   │ Location: tasks/task-queue/results/{task_id}.json     │   │
+│   │ Location: tasks/task-queue/{task_id}.json     │   │
 │   │ Purpose: Task status, duration, cost, errors                    │   │
 │   │ Managed by: task-queue module (task_executor.py)      │   │
 │   │                                                                  │   │
@@ -182,22 +182,27 @@ The Task System is an asynchronous, background task execution architecture that:
 
 ## Directory Structure
 
+### Project Directory Structure (under your project root)
+
 ```
 {project-root}/
 ├── tasks/
 │   ├── task-planning/              # Task planning documents
 │   │   └── {descriptive-name}.md
-│   ├── task-documents/             # Task documents (source)
-│   │   ├── task-*.md
-│   │   └── archive/               # Completed specs (auto-moved)
-│   ├── task-queue/                 # Module-managed directory
-│   │   └── results/               # Result JSON files
-│   ├── task-archive/               # Central archive for all tasks
-│   │   └── task-*.md
-│   └── task-reports/        # Worker execution reports
+│   ├── task-documents/             # Input: Task specifications
+│   │   ├── task-20260202-120000-fix-auth-timeout.md
+│   │   └── task-20260202-120500-add-feature.md
+│   ├── task-queue/                 # Execution tracking JSONs (flat)
+│   │   ├── task-20260202-120000-fix-auth-timeout.json
+│   │   └── task-20260202-120500-add-feature.json
+│   ├── task-archive/               # Completed specs (auto-moved)
+│   │   ├── task-20260202-120000-fix-auth-timeout.md
+│   │   └── task-20260202-120500-add-feature.md
+│   └── task-reports/               # Worker execution reports (detailed)
 │       └── task-{timestamp}-{description}/
 │           ├── workflow-result.json
-│           ├── audit-report-iteration-*.md
+│           ├── audit-report-iteration-1.md
+│           ├── audit-report-iteration-2.md
 │           └── implementation-summary.md
 └── .claude/
     └── skills/
@@ -207,6 +212,28 @@ The Task System is an asynchronous, background task execution architecture that:
         ├── task-worker/
         └── task-cleanup/
 ```
+
+### Config Directory Structure (under `~/.config/`)
+
+```
+~/.config/task-queue/
+├── config.json                     # Queue configuration
+├── config.json.lock               # Lock file for config access
+└── state/
+    ├── queue_state.json           # Queue state (tasks, status, statistics)
+    └── queue_state.json.lock      # Lock file for state access
+```
+
+### Directory Path Reference (from source code)
+
+| Directory | Source Location | Purpose |
+|-----------|-----------------|---------|
+| `tasks/task-documents/` | executor.py:21 | Input task specifications |
+| `tasks/task-reports/` | executor.py:22 | Worker execution reports |
+| `tasks/task-archive/` | executor.py:23 | Archived task specs |
+| `tasks/task-queue/` | executor.py:54 | Execution tracking JSONs (flat) |
+| `~/.config/task-queue/state/` | monitor.py:60-61 | Queue state files |
+| `~/.config/task-queue/config.json` | config.py:15-16 | Configuration file |
 
 ---
 
@@ -305,7 +332,7 @@ The Task System is an asynchronous, background task execution architecture that:
 1. Verify daemon running
 2. Load task specifications (`task-queue load`)
 3. Monitor queue status (`task-queue queue`)
-4. Display results (check `tasks/task-queue/results/`)
+4. Display results (check `tasks/task-queue/`)
 
 **Called by:** User or AI to manage task execution
 
@@ -334,7 +361,7 @@ The Task System is an asynchronous, background task execution architecture that:
 
 **Official Directories Cleaned:**
 - `tasks/task-archive/` - Archived task specifications
-- `tasks/task-queue/results/` - Result JSON files
+- `tasks/task-queue/` - Result JSON files
 - `tasks/task-queue/state/` - Queue state files
 - `tasks/task-planning/` - Planning documents
 - `tasks/task-documents/` - Task specifications
@@ -395,7 +422,7 @@ task-queue load
 task-queue status -v
 
 # View task results
-cat tasks/task-queue/results/task-{timestamp}-{description}.json
+cat tasks/task-queue/task-{timestamp}-{description}.json
 
 # View task execution logs
 cat tasks/task-queue/logs/task-{timestamp}-{description}.log
@@ -484,7 +511,7 @@ journalctl --user -u task-queue -n 100
 
 1. **View error details:**
    ```bash
-   cat tasks/task-queue/results/task-{id}.json
+   cat tasks/task-queue/task-{id}.json
    ```
 
 2. **Check detailed worker report:**
