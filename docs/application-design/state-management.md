@@ -100,14 +100,13 @@ graph TD
 
 | Category | Fields | Data Type |
 |----------|--------|-----------|
-| **Input paths** | `spss_file_path`, `*_path` | `str` |
+| **Input paths** | `input_file_path`, `*_file` | `str` |
 | **Configuration** | `config`, `max_*` | `Dict[str, Any]`, `int` |
 | **Metadata** | `*_metadata` | `Dict` or `List[Dict]` |
 | **AI artifacts** | `recoding_rules`, `indicators`, `table_specifications` | `Dict` |
-| **Validation** | `*_validation`, `*_approved` | `Dict`, `bool` |
-| **Feedback** | `*_feedback`, `*_feedback_source` | `Dict`, `str` |
-| **Iterations** | `*_iteration` | `int` |
-| **Outputs** | `powerpoint_path`, `html_dashboard_path` | `str` |
+| **Validation** | `*_validation_result`, `*_approved` | `Dict`, `bool` |
+| **Feedback** | `*_feedback` | `str` |
+| **Outputs** | `powerpoint_file`, `html_dashboard_file` | `str` |
 | **Execution** | `execution_log`, `errors`, `warnings` | `List[Dict]`, `List[str]` |
 
 ---
@@ -122,25 +121,25 @@ graph TD
     STEP1["Step 1<br/>raw_data<br/>original_metadata"]
     STEP2["Step 2<br/>variable_centered_metadata"]
     STEP3["Step 3<br/>filtered_metadata<br/>filtered_out_variables"]
-    STEP4["Step 4<br/>recoding_rules<br/>recoding_iteration"]
-    STEP5["Step 5<br/>recoding_validation"]
+    STEP4["Step 4<br/>recoding_rules"]
+    STEP5["Step 5<br/>recoding_validation_result"]
     STEP6["Step 6<br/>recoding_approved"]
-    STEP7["Step 7<br/>pspp_recoding_syntax<br/>pspp_recoding_syntax_path"]
-    STEP8["Step 8<br/>new_data_path<br/>new_metadata"]
-    STEP9["Step 9<br/>indicators<br/>indicators_iteration"]
-    STEP10["Step 10<br/>indicators_validation"]
+    STEP7["Step 7<br/>PSPP syntax generation"]
+    STEP8["Step 8<br/>new_data_file<br/>new_metadata"]
+    STEP9["Step 9<br/>indicators"]
+    STEP10["Step 10<br/>indicator_validation_result"]
     STEP11["Step 11<br/>indicators_approved"]
-    STEP12["Step 12<br/>table_specifications<br/>table_specs_iteration"]
-    STEP13["Step 13<br/>table_specs_validation"]
+    STEP12["Step 12<br/>table_specifications"]
+    STEP13["Step 13<br/>table_validation_result"]
     STEP14["Step 14<br/>table_specs_approved"]
-    STEP15["Step 15<br/>pspp_table_syntax<br/>pspp_table_syntax_path"]
-    STEP16["Step 16<br/>cross_table_sav_path"]
-    STEP17["Step 17<br/>python_stats_script<br/>python_stats_script_path"]
-    STEP18["Step 18<br/>statistical_summary<br/>statistical_summary_path"]
-    STEP19["Step 19<br/>filter_list<br/>filter_list_json_path"]
-    STEP20["Step 20<br/>significant_tables<br/>significant_tables_json_path"]
-    STEP21["Step 21<br/>powerpoint_path"]
-    STEP22["Step 22<br/>html_dashboard_path<br/>charts_generated"]
+    STEP15["Step 15<br/>table_syntax_file"]
+    STEP16["Step 16<br/>cross_table_file"]
+    STEP17["Step 17<br/>statistics_script"]
+    STEP18["Step 18<br/>statistical_summary"]
+    STEP19["Step 19<br/>filter_list"]
+    STEP20["Step 20<br/>significant_tables"]
+    STEP21["Step 21<br/>powerpoint_file"]
+    STEP22["Step 22<br/>html_dashboard_file<br/>charts_generated"]
 
     STEP0 --> STEP1 --> STEP2 --> STEP3
     STEP3 --> STEP4 --> STEP5 --> STEP6
@@ -182,29 +181,29 @@ graph TD
 
 | Step | Sub-State | Key Fields Added | Optional Fields Still None |
 |------|-----------|------------------|----------------------------|
-| 0 | `InputState` | `spss_file_path`, `config` | All other fields |
+| 0 | `InputState` | `input_file_path`, `config` | All other fields |
 | 1 | `ExtractionState` | `raw_data`, `original_metadata` | `variable_centered_metadata`, `filtered_metadata` |
 | 2 | `ExtractionState` | `variable_centered_metadata` | `filtered_metadata` |
 | 3 | `ExtractionState` | `filtered_metadata`, `filtered_out_variables` | All extraction fields complete |
-| 4 | `RecodingState` | `recoding_rules`, `recoding_iteration` | Validation/feedback fields |
-| 5 | `RecodingState` | `recoding_validation` | `recoding_feedback`, `recoding_approved` |
+| 4 | `RecodingState` | `recoding_rules` | Validation/feedback fields |
+| 5 | `RecodingState` | `recoding_validation_result` | `recoding_feedback`, `recoding_approved` |
 | 6 | `RecodingState` | `recoding_approved` | May have `recoding_feedback` |
-| 7 | `RecodingState` | `pspp_recoding_syntax`, `pspp_recoding_syntax_path` | `new_data_path` |
-| 8 | `RecodingState` | `new_data_path`, `new_metadata` | All recoding fields complete |
-| 9 | `IndicatorState` | `indicators`, `indicators_iteration` | Validation/feedback fields |
-| 10 | `IndicatorState` | `indicators_validation` | `indicators_feedback`, `indicators_approved` |
+| 7 | `RecodingState` | (PSPP syntax tracked in execution log) | `new_data_file` |
+| 8 | `RecodingState` | `new_data_file`, `new_metadata` | All recoding fields complete |
+| 9 | `IndicatorState` | `indicators` | Validation/feedback fields |
+| 10 | `IndicatorState` | `indicator_validation_result` | `indicator_feedback`, `indicators_approved` |
 | 11 | `IndicatorState` | `indicators_approved` | All indicator fields complete |
-| 12 | `CrossTableState` | `table_specifications`, `table_specs_iteration` | Validation/feedback fields |
-| 13 | `CrossTableState` | `table_specs_validation` | `table_specs_feedback`, `table_specs_approved` |
+| 12 | `CrossTableState` | `table_specifications` | Validation/feedback fields |
+| 13 | `CrossTableState` | `table_validation_result` | `table_specs_feedback`, `table_specs_approved` |
 | 14 | `CrossTableState` | `table_specs_approved` | May have `table_specs_feedback` |
-| 15 | `CrossTableState` | `pspp_table_syntax`, `pspp_table_syntax_path` | `cross_table_sav_path` |
-| 16 | `CrossTableState` | `cross_table_sav_path` | All cross-table fields complete |
-| 17 | `StatisticalAnalysisState` | `python_stats_script`, `python_stats_script_path` | `statistical_summary` |
-| 18 | `StatisticalAnalysisState` | `statistical_summary`, `statistical_summary_path` | All statistics fields complete |
-| 19 | `FilteringState` | `filter_list`, `filter_list_json_path` | `significant_tables` |
-| 20 | `FilteringState` | `significant_tables`, `significant_tables_json_path` | All filtering fields complete |
-| 21 | `PresentationState` | `powerpoint_path` | `html_dashboard_path` |
-| 22 | `PresentationState` | `html_dashboard_path`, `charts_generated` | All fields complete |
+| 15 | `CrossTableState` | `table_syntax_file` | `cross_table_file` |
+| 16 | `CrossTableState` | `cross_table_file` | All cross-table fields complete |
+| 17 | `StatisticalAnalysisState` | `statistics_script` | `statistical_summary` |
+| 18 | `StatisticalAnalysisState` | `statistical_summary` | All statistics fields complete |
+| 19 | `FilteringState` | `filter_list` | Other filtering fields |
+| 20 | `FilteringState` | `filtered_tables`, `total_tables_evaluated`, `significant_tables_count`, `filtering_valid` | All filtering fields complete |
+| 21 | `PresentationState` | `powerpoint_file` | `html_dashboard_file` |
+| 22 | `PresentationState` | `html_dashboard_file` | All fields complete |
 
 ### 3.3 Key Transition Points
 
@@ -214,7 +213,7 @@ graph TD
 | **Step 8** | `new_metadata` becomes authoritative source (all variables) |
 | **Step 16** | All data tables generated, ready for statistical analysis |
 | **Step 18** | Statistical summary available for filtering |
-| **Step 20** | `significant_tables` ready for PowerPoint generation |
+| **Step 20** | `filtered_tables` ready for PowerPoint generation |
 
 ---
 
@@ -321,12 +320,12 @@ result = graph.invoke(None, config)
 ### 6.1 Initial State Template
 
 ```python
-def create_initial_state(spss_file_path: str, config: Dict[str, Any]) -> WorkflowState:
+def create_initial_state(input_file_path: str, config: Dict[str, Any]) -> WorkflowState:
     """
     Create initial workflow state with populated input fields.
 
     Args:
-        spss_file_path: Path to input .sav file
+        input_file_path: Path to input .sav file
         config: Configuration parameters
 
     Returns:
@@ -334,7 +333,7 @@ def create_initial_state(spss_file_path: str, config: Dict[str, Any]) -> Workflo
     """
     return {
         # InputState - Populated
-        "spss_file_path": spss_file_path,
+        "input_file_path": input_file_path,
         "config": config,
 
         # ExtractionState - All None
@@ -346,56 +345,40 @@ def create_initial_state(spss_file_path: str, config: Dict[str, Any]) -> Workflo
 
         # RecodingState - All None
         "recoding_rules": None,
-        "recoding_rules_json_path": None,
-        "recoding_iteration": 1,  # Start at 1
-        "recoding_validation": None,
-        "recoding_feedback": None,
-        "recoding_feedback_source": None,
+        "recoding_validation_result": None,
         "recoding_approved": False,
-        "pspp_recoding_syntax": None,
-        "pspp_recoding_syntax_path": None,
-        "new_data_path": None,
+        "recoding_feedback": None,
+        "new_data_file": None,
         "new_metadata": None,
 
         # IndicatorState - All None
         "indicators": None,
-        "indicators_json_path": None,
-        "indicators_iteration": 1,
-        "indicators_validation": None,
-        "indicators_feedback": None,
-        "indicators_feedback_source": None,
+        "indicator_validation_result": None,
         "indicators_approved": False,
-        "indicator_metadata": None,
+        "indicator_feedback": None,
 
         # CrossTableState - All None
         "table_specifications": None,
-        "table_specs_json_path": None,
-        "table_specs_iteration": 1,
-        "table_specs_validation": None,
-        "table_specs_feedback": None,
-        "table_specs_feedback_source": None,
+        "table_validation_result": None,
         "table_specs_approved": False,
-        "pspp_table_syntax": None,
-        "pspp_table_syntax_path": None,
-        "cross_table_sav_path": None,
-        "weighting_variable": None,
+        "table_specs_feedback": None,
+        "table_syntax_file": None,
+        "cross_table_file": None,
 
         # StatisticalAnalysisState - All None
-        "python_stats_script": None,
-        "python_stats_script_path": None,
-        "all_small_tables": None,
-        "statistical_summary_path": None,
+        "statistics_script": None,
         "statistical_summary": None,
 
         # FilteringState - All None
         "filter_list": None,
-        "filter_list_json_path": None,
-        "significant_tables": None,
-        "significant_tables_json_path": None,
+        "filtered_tables": None,
+        "total_tables_evaluated": 0,
+        "significant_tables_count": 0,
+        "filtering_valid": False,
 
         # PresentationState - All None
-        "powerpoint_path": None,
-        "html_dashboard_path": None,
+        "powerpoint_file": None,
+        "html_dashboard_file": None,
         "charts_generated": None,
 
         # ApprovalState - Initialized empty
@@ -413,12 +396,14 @@ def create_initial_state(spss_file_path: str, config: Dict[str, Any]) -> Workflo
 
 | Field | Default | Rationale |
 |-------|---------|-----------|
-| `*_iteration` | `1` | First iteration |
 | `*_approved` | `False` | Requires approval |
 | `approval_comments` | `[]` | Empty list |
 | `execution_log` | `[]` | Empty list |
 | `errors` | `[]` | Empty list |
 | `warnings` | `[]` | Empty list |
+| `total_tables_evaluated` | `0` | Zero tables evaluated |
+| `significant_tables_count` | `0` | Zero significant tables |
+| `filtering_valid` | `False` | Validation not yet run |
 | All others | `None` | Not yet populated |
 
 ---
@@ -442,24 +427,24 @@ stateDiagram-v2
 
 | Node | State Changes |
 |------|---------------|
-| **Generate (Step 4)** | `recoding_rules`, `recoding_iteration++`, `recoding_rules_json_path` |
-| **Validate (Step 5)** | `recoding_validation` |
+| **Generate (Step 4)** | `recoding_rules` |
+| **Validate (Step 5)** | `recoding_validation_result` |
 | **Review (Step 6)** | `recoding_approved`, possibly `recoding_feedback` |
 
 ### 7.3 Indicator State Flow
 
 | Node | State Changes |
 |------|---------------|
-| **Generate (Step 9)** | `indicators`, `indicators_iteration++`, `indicators_json_path` |
-| **Validate (Step 10)** | `indicators_validation` |
-| **Review (Step 11)** | `indicators_approved`, possibly `indicators_feedback` |
+| **Generate (Step 9)** | `indicators` |
+| **Validate (Step 10)** | `indicator_validation_result` |
+| **Review (Step 11)** | `indicators_approved`, possibly `indicator_feedback` |
 
 ### 7.4 Table Specifications State Flow
 
 | Node | State Changes |
 |------|---------------|
-| **Generate (Step 12)** | `table_specifications`, `table_specs_iteration++`, `table_specs_json_path` |
-| **Validate (Step 13)** | `table_specs_validation` |
+| **Generate (Step 12)** | `table_specifications` |
+| **Validate (Step 13)** | `table_validation_result` |
 | **Review (Step 14)** | `table_specs_approved`, possibly `table_specs_feedback` |
 
 ### 7.5 Feedback Loop State Changes
@@ -469,14 +454,8 @@ When validation fails or human rejects:
 | Field | Set To | Purpose |
 |-------|--------|---------|
 | `*_feedback` | Validation result or human feedback | Contains errors/issues |
-| `*_feedback_source` | `"validation"` or `"human"` | Indicates who provided feedback |
-| `*_iteration` | Incremented | Tracks retry attempt |
 
-On retry:
-
-| Field | Action |
-|-------|--------|
-| `*_iteration` | Increment |
+On retry, the generation node uses the feedback to regenerate the artifact.
 | `*_feedback` | Updated with new feedback |
 | `*_validation` | Re-computed |
 | `*_approved` | Reset to `False` |

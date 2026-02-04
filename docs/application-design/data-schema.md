@@ -107,13 +107,13 @@ graph TD
 ```python
 class InputState(TypedDict):
     """Initial input configuration - populated at workflow start"""
-    spss_file_path: str           # Path to input .sav file
+    input_file_path: str         # Path to input .sav file
     config: Dict[str, Any]        # Configuration parameters
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `spss_file_path` | `str` | Absolute path to SPSS survey data file |
+| `input_file_path` | `str` | Absolute path to SPSS survey data file |
 | `config` | `Dict[str, Any]` | Runtime configuration (see [Configuration Schema](#6-configuration-schema)) |
 
 ### 2.3 ExtractionState
@@ -155,35 +155,22 @@ class ExtractionState(TypedDict):
 class RecodingState(TypedDict):
     """New dataset generation through LLM-orchestrated recoding - Steps 4-8"""
 
-    # Three-node pattern fields (Steps 4-6)
     recoding_rules: Optional[Dict[str, Any]]
-    recoding_rules_json_path: Optional[str]
-    recoding_iteration: int
-    recoding_validation: Optional[Dict[str, Any]]
-    recoding_feedback: Optional[Dict[str, Any]]
-    recoding_feedback_source: Optional[Literal["validation", "human"]]
+    recoding_validation_result: Optional[Dict[str, Any]]
     recoding_approved: bool
-
-    # PSPP execution fields (Steps 7-8)
-    pspp_recoding_syntax: Optional[str]
-    pspp_recoding_syntax_path: Optional[str]
-    new_data_path: Optional[str]
+    recoding_feedback: Optional[str]
     new_metadata: Optional[Dict[str, Any]]
+    new_data_file: Optional[str]
 ```
 
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
 | `recoding_rules` | `Dict` | Step 4 | AI-generated recoding rules |
-| `recoding_rules_json_path` | `str` | Step 4 | Saved recoding rules file |
-| `recoding_iteration` | `int` | Step 4+ | Current iteration count |
-| `recoding_validation` | `Dict` | Step 5 | Automated validation results |
-| `recoding_feedback` | `Dict` | Step 5/6 | Feedback from validation or human |
-| `recoding_feedback_source` | `str` | Step 5/6 | `"validation"` or `"human"` |
+| `recoding_validation_result` | `Dict` | Step 5 | Automated validation results |
 | `recoding_approved` | `bool` | Step 6 | Human approval status |
-| `pspp_recoding_syntax` | `str` | Step 7 | Generated PSPP syntax |
-| `pspp_recoding_syntax_path` | `str` | Step 7 | Saved syntax file |
-| `new_data_path` | `str` | Step 8 | Path to new dataset .sav file |
+| `recoding_feedback` | `str` | Step 5/6 | Feedback from validation or human |
 | `new_metadata` | `Dict` | Step 8 | Complete metadata from new_data.sav |
+| `new_data_file` | `str` | Step 8 | Path to new dataset .sav file |
 
 ### 2.5 IndicatorState
 
@@ -192,25 +179,17 @@ class IndicatorState(TypedDict):
     """Indicator generation and semantic grouping - Steps 9-11"""
 
     indicators: Optional[Dict[str, Any]]
-    indicators_json_path: Optional[str]
-    indicators_iteration: int
-    indicators_validation: Optional[Dict[str, Any]]
-    indicators_feedback: Optional[Dict[str, Any]]
-    indicators_feedback_source: Optional[Literal["validation", "human"]]
+    indicator_validation_result: Optional[Dict[str, Any]]
     indicators_approved: bool
-    indicator_metadata: Optional[List[Dict]]
+    indicator_feedback: Optional[str]
 ```
 
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
 | `indicators` | `Dict` | Step 9 | Generated indicator definitions |
-| `indicators_json_path` | `str` | Step 9 | Saved indicators file |
-| `indicators_iteration` | `int` | Step 9+ | Current iteration count |
-| `indicators_validation` | `Dict` | Step 10 | Validation results |
-| `indicators_feedback` | `Dict` | Step 10/11 | Feedback from validation or human |
-| `indicators_feedback_source` | `str` | Step 10/11 | `"validation"` or `"human"` |
+| `indicator_validation_result` | `Dict` | Step 10 | Validation results |
 | `indicators_approved` | `bool` | Step 11 | Human approval status |
-| `indicator_metadata` | `List[Dict]` | Step 9 | Metadata for indicator generation |
+| `indicator_feedback` | `str` | Step 10/11 | Feedback from validation or human |
 
 ### 2.6 CrossTableState
 
@@ -219,32 +198,21 @@ class CrossTableState(TypedDict):
     """Cross-table specification and generation - Steps 12-16"""
 
     table_specifications: Optional[Dict[str, Any]]
-    table_specs_json_path: Optional[str]
-    table_specs_iteration: int
-    table_specs_validation: Optional[Dict[str, Any]]
-    table_specs_feedback: Optional[Dict[str, Any]]
-    table_specs_feedback_source: Optional[Literal["validation", "human"]]
+    table_validation_result: Optional[Dict[str, Any]]
     table_specs_approved: bool
-
-    pspp_table_syntax: Optional[str]
-    pspp_table_syntax_path: Optional[str]
-    cross_table_sav_path: Optional[str]
-    weighting_variable: Optional[str]
+    table_specs_feedback: Optional[str]
+    table_syntax_file: Optional[str]
+    cross_table_file: Optional[str]
 ```
 
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
 | `table_specifications` | `Dict` | Step 12 | Table structure definitions |
-| `table_specs_json_path` | `str` | Step 12 | Saved table specifications |
-| `table_specs_iteration` | `int` | Step 12+ | Current iteration count |
-| `table_specs_validation` | `Dict` | Step 13 | Validation results |
-| `table_specs_feedback` | `Dict` | Step 13/14 | Feedback from validation or human |
-| `table_specs_feedback_source` | `str` | Step 13/14 | `"validation"` or `"human"` |
+| `table_validation_result` | `Dict` | Step 13 | Validation results |
 | `table_specs_approved` | `bool` | Step 14 | Human approval status |
-| `pspp_table_syntax` | `str` | Step 15 | Generated cross-table syntax |
-| `pspp_table_syntax_path` | `str` | Step 15 | Saved syntax file |
-| `cross_table_sav_path` | `str` | Step 16 | Path to cross-table .sav file |
-| `weighting_variable` | `str` | Config | Weighting variable for cross-tables |
+| `table_specs_feedback` | `str` | Step 13/14 | Feedback from validation or human |
+| `table_syntax_file` | `str` | Step 15 | Path to PSPP CTABLES syntax file |
+| `cross_table_file` | `str` | Step 16 | Path to cross-table output file |
 
 ### 2.7 StatisticalAnalysisState
 
@@ -252,20 +220,14 @@ class CrossTableState(TypedDict):
 class StatisticalAnalysisState(TypedDict):
     """Python script generation and Chi-square statistics computation - Steps 17-18"""
 
-    python_stats_script: Optional[str]
-    python_stats_script_path: Optional[str]
-    all_small_tables: Optional[List[Dict[str, Any]]]
-    statistical_summary_path: Optional[str]
-    statistical_summary: Optional[List[Dict[str, Any]]]
+    statistics_script: Optional[str]
+    statistical_summary: Optional[Dict[str, Any]]
 ```
 
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
-| `python_stats_script` | `str` | Step 17 | Generated Python script |
-| `python_stats_script_path` | `str` | Step 17 | Saved script file |
-| `all_small_tables` | `List[Dict]` | Step 18 | All tables with chi-square stats |
-| `statistical_summary_path` | `str` | Step 18 | Path to summary JSON file |
-| `statistical_summary` | `List[Dict]` | Step 18 | Statistical test results |
+| `statistics_script` | `str` | Step 17 | Path to generated statistics script |
+| `statistical_summary` | `Dict` | Step 18 | Statistical test results (chi-square, Cramer's V) |
 
 ### 2.8 FilteringState
 
@@ -273,18 +235,20 @@ class StatisticalAnalysisState(TypedDict):
 class FilteringState(TypedDict):
     """Filter list generation and significant tables selection - Steps 19-20"""
 
-    filter_list: Optional[List[Dict[str, Any]]]
-    filter_list_json_path: Optional[str]
-    significant_tables: Optional[List[Dict[str, Any]]]
-    significant_tables_json_path: Optional[str]
+    filter_list: Optional[Dict[str, Any]]
+    filtered_tables: Optional[Dict[str, Any]]
+    total_tables_evaluated: int
+    significant_tables_count: int
+    filtering_valid: bool
 ```
 
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
-| `filter_list` | `List[Dict]` | Step 19 | Pass/fail status for all tables |
-| `filter_list_json_path` | `str` | Step 19 | Saved filter list |
-| `significant_tables` | `List[Dict]` | Step 20 | Tables filtered by significance |
-| `significant_tables_json_path` | `str` | Step 20 | Saved filtered tables |
+| `filter_list` | `Dict` | Step 19 | Pass/fail status for all tables |
+| `filtered_tables` | `Dict` | Step 20 | Tables filtered by significance |
+| `total_tables_evaluated` | `int` | Step 20 | Total number of tables evaluated |
+| `significant_tables_count` | `int` | Step 20 | Number of significant tables after filtering |
+| `filtering_valid` | `bool` | Step 20 | Whether filtering validation passed |
 
 ### 2.9 PresentationState
 
@@ -292,15 +256,15 @@ class FilteringState(TypedDict):
 class PresentationState(TypedDict):
     """Final output generation - Steps 21-22"""
 
-    powerpoint_path: Optional[str]
-    html_dashboard_path: Optional[str]
+    powerpoint_file: Optional[str]
+    html_dashboard_file: Optional[str]
     charts_generated: Optional[List[Dict[str, Any]]]
 ```
 
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
-| `powerpoint_path` | `str` | Step 21 | Generated PowerPoint file |
-| `html_dashboard_path` | `str` | Step 22 | Generated HTML dashboard |
+| `powerpoint_file` | `str` | Step 21 | Generated PowerPoint file |
+| `html_dashboard_file` | `str` | Step 22 | Generated HTML dashboard |
 | `charts_generated` | `List[Dict]` | Step 21/22 | Chart metadata |
 
 ### 2.10 ApprovalState
@@ -579,29 +543,29 @@ The `.sav` file format is the standard SPSS/PASW statistics data file format.
 
 ```mermaid
 graph TD
-    STEP0["Step 0<br/>InputState<br/>spss_file_path<br/>config"]
+    STEP0["Step 0<br/>InputState<br/>input_file_path<br/>config"]
     STEP1["Step 1<br/>ExtractionState<br/>raw_data<br/>original_metadata"]
     STEP2["Step 2<br/>variable_centered_metadata"]
     STEP3["Step 3<br/>filtered_metadata<br/>filtered_out_variables"]
     STEP4["Step 4<br/>RecodingState<br/>recoding_rules"]
-    STEP5["Step 5<br/>recoding_validation"]
+    STEP5["Step 5<br/>recoding_validation_result"]
     STEP6["Step 6<br/>recoding_approved"]
-    STEP7["Step 7<br/>pspp_recoding_syntax"]
-    STEP8["Step 8<br/>new_data_path<br/>new_metadata"]
+    STEP7["Step 7<br/>PSPP syntax generation"]
+    STEP8["Step 8<br/>new_data_file<br/>new_metadata"]
     STEP9["Step 9<br/>IndicatorState<br/>indicators"]
-    STEP10["Step 10<br/>indicators_validation"]
+    STEP10["Step 10<br/>indicator_validation_result"]
     STEP11["Step 11<br/>indicators_approved"]
     STEP12["Step 12<br/>CrossTableState<br/>table_specifications"]
-    STEP13["Step 13<br/>table_specs_validation"]
+    STEP13["Step 13<br/>table_validation_result"]
     STEP14["Step 14<br/>table_specs_approved"]
-    STEP15["Step 15<br/>pspp_table_syntax"]
-    STEP16["Step 16<br/>cross_table_sav_path"]
-    STEP17["Step 17<br/>StatisticalAnalysisState<br/>python_stats_script"]
+    STEP15["Step 15<br/>table_syntax_file"]
+    STEP16["Step 16<br/>cross_table_file"]
+    STEP17["Step 17<br/>StatisticalAnalysisState<br/>statistics_script"]
     STEP18["Step 18<br/>statistical_summary"]
     STEP19["Step 19<br/>FilteringState<br/>filter_list"]
     STEP20["Step 20<br/>significant_tables"]
-    STEP21["Step 21<br/>PresentationState<br/>powerpoint_path"]
-    STEP22["Step 22<br/>html_dashboard_path"]
+    STEP21["Step 21<br/>PresentationState<br/>powerpoint_file"]
+    STEP22["Step 22<br/>html_dashboard_file"]
 
     STEP0 --> STEP1 --> STEP2 --> STEP3
     STEP3 --> STEP4 --> STEP5 --> STEP6

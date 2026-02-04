@@ -252,14 +252,14 @@ The workflow maintains a single evolving state object (`WorkflowState`) organize
 
 | Sub-State | Steps | Key Fields |
 |-----------|-------|------------|
-| `InputState` | 0 | `spss_file_path`, `config` |
+| `InputState` | 0 | `input_file_path`, `config` |
 | `ExtractionState` | 1-3 | `raw_data`, `filtered_metadata` |
 | `RecodingState` | 4-8 | `recoding_rules`, `new_metadata` |
 | `IndicatorState` | 9-11 | `indicators`, `indicators_approved` |
-| `CrossTableState` | 12-16 | `table_specifications`, `cross_table_csv_path` |
-| `StatisticalAnalysisState` | 17-18 | `statistical_summary` |
-| `FilteringState` | 19-20 | `significant_tables` |
-| `PresentationState` | 21-22 | `powerpoint_path`, `html_dashboard_path` |
+| `CrossTableState` | 12-16 | `table_specifications`, `cross_table_file` |
+| `StatisticalAnalysisState` | 17-18 | `statistics_script`, `statistical_summary` |
+| `FilteringState` | 19-20 | `filter_list`, `filtered_tables` |
+| `PresentationState` | 21-22 | `powerpoint_file`, `html_dashboard_file` |
 
 **Key State Evolution:**
 
@@ -267,7 +267,7 @@ The workflow maintains a single evolving state object (`WorkflowState`) organize
 |------|------------------|
 | **Step 8** | `new_metadata` becomes authoritative (all variables) |
 | **Step 18** | `statistical_summary` available for filtering |
-| **Step 20** | `significant_tables` ready for PowerPoint |
+| **Step 20** | `filtered_tables` ready for PowerPoint |
 
 ---
 

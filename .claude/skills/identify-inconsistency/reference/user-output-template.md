@@ -17,10 +17,7 @@ Use this template when presenting inconsistency results to the user.
 
 ### Issue 1: [Short title]
 
-**Description**
-Documentation says [X], but implementation has [Y].
-
-**Location**: [doc-file.md:line → actual-file.py]
+Documentation says [X], but implementation has [Y]. Include file references inline where helpful (file:line).
 
 **Recommendation**
 [Action to resolve the inconsistency]
@@ -29,10 +26,7 @@ Documentation says [X], but implementation has [Y].
 
 ### Issue 2: [Short title]
 
-**Description**
-Documentation says [X], but implementation has [Y].
-
-**Location**: [doc-file.md:line → actual-file.py]
+Documentation says [X], but implementation has [Y]. Include file references inline where helpful (file:line).
 
 **Recommendation**
 [Action to resolve the inconsistency]
@@ -41,10 +35,7 @@ Documentation says [X], but implementation has [Y].
 
 ### Issue 3: [Short title]
 
-**Description**
-Documentation says [X], but implementation has [Y].
-
-**Location**: [doc-file.md:line → actual-file.py]
+Documentation says [X], but implementation has [Y]. Include file references inline where helpful (file:line).
 
 **Recommendation**
 [Action to resolve the inconsistency]
@@ -64,11 +55,11 @@ Documentation says [X], but implementation has [Y].
 | Rule | Description |
 |------|-------------|
 | **One issue per section** | Use `### Issue N` for each problem |
-| **Keep it short** | 1-2 sentences per field |
-| **Location format** | `doc-file.md:line → actual-file.py` |
+| **Two parts only** | Description (no label) + **Recommendation** (labeled) |
+| **Description pattern** | "Documentation says [X], but implementation has [Y]" |
+| **Inline references** | Include file:line references in parentheses |
 | **Neutral language** | State what each side has, not which is "wrong" |
-| **No tables** | Use plain text sections for readability |
-| **Skip "No issues"** | If consistent, simply say "No issues found" |
+| **Keep it short** | 1-2 sentences for description |
 
 ---
 
@@ -85,10 +76,7 @@ Documentation says [X], but implementation has [Y].
 
 ### Issue 1: Missing config key
 
-**Description**
-Documentation mentions `MAX_RETRIES` setting, but `agent/config.py` does not define this key.
-
-**Location**: docs/application-design/configuration.md:45 → agent/config.py
+Documentation mentions `MAX_RETRIES` setting (docs/configuration.md:45), but `agent/config.py` does not define this key.
 
 **Recommendation**
 Add `MAX_RETRIES` to config.py or remove from documentation.
@@ -97,10 +85,7 @@ Add `MAX_RETRIES` to config.py or remove from documentation.
 
 ### Issue 2: Endpoint mismatch
 
-**Description**
-Documentation states `/chat/stream` endpoint exists, but `agent/server.py` only has `/chat`.
-
-**Location**: docs/application-design/api.md:12 → agent/server.py:23
+Documentation states `/chat/stream` endpoint exists (docs/api.md:12), but `agent/server.py` only has `/chat` endpoint.
 
 **Recommendation**
 Add `/chat/stream` endpoint or update documentation to reflect `/chat` only.
