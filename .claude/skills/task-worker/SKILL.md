@@ -1,18 +1,18 @@
 ---
 name: task-worker
-description: "Two-agent workflow coordinator with automatic iteration. Reads a task specification, spawns Implementation Agent to execute it, spawns Auditor Agent to review quality, iterates based on feedback (max 3), commits approved work. Called by task-queue module."
+description: "Two-agent workflow coordinator with automatic iteration. Reads a task document, spawns Implementation Agent to execute it, spawns Auditor Agent to review quality, iterates based on feedback (max 3), commits approved work. Called by task-queue module."
 ---
 
 # Task Worker
 
-Execute a task specification using Implementation and Auditor agents with automatic iteration.
+Execute a task document using Implementation and Auditor agents with automatic iteration.
 
 ## Workflow Overview
 
 ```mermaid
 flowchart TD
     START([Start]) --> CHECKPOINT{Safety Checkpoint}
-    CHECKPOINT -->|git commit + push| CREATE[Create Working Document]
+    CHECKPOINT -->|git commit + push| CREATE[Create Task Report]
 
     CREATE --> IMPLEMENT[Implementation Agent]
     IMPLEMENT -->|writes to doc| AUDIT[Auditor Agent]
@@ -41,7 +41,7 @@ flowchart TD
 ## How It Works
 
 1. **Safety Checkpoint** - Commit and push current state (git)
-2. **Create Working Document** - Create shared document in `tasks/task-reports/`
+2. **Create Task Report** - Create task report in `tasks/task-reports/`
 3. **Implement** - Implementation Agent works and updates the document
 4. **Audit** - Auditor Agent independently verifies and updates the document
 5. **Iterate** - If audit fails, repeat steps 3-4 (max 3 times)
@@ -50,7 +50,7 @@ flowchart TD
 ## Input
 
 You will receive:
-- **Task specification** - File path or markdown content
+- **Task document** - File path or markdown content
 - **Max iterations** - Optional (default: 3)
 
 ## Execution Steps
@@ -81,22 +81,20 @@ git push
 - If no changes to commit: Continue without checkpoint
 - If push fails: Resolve merge conflicts before proceeding
 
-### Step 2: Read Task & Create Working Document
+### Step 2: Read Task & Create Task Report
 
-**Read the task specification** and extract task ID.
+**Read the task document** and extract task ID.
 
 **Copy and rename the template** using CLI command:
 
 ```bash
 # Copy template from skill directory and rename with task ID
-cp .claude/skills/task-worker/references/working-document-template.md tasks/task-reports/{task-id}.md
+cp .claude/skills/task-worker/references/task-report-template.md tasks/task-reports/{task-id}.md
 ```
 
-**Populate the template with task requirements:**
+**Populate the template:**
 - Replace `{task-id}` with actual task ID
-- Replace `{timestamp}` with current timestamp
-- Replace `{task-spec-file}` with task specification path
-- Copy Original Requirements section from task specification
+- Replace `{task-doc-file}` with task document path
 
 **The template provides the structure - each agent updates their designated section.**
 
@@ -108,12 +106,12 @@ cp .claude/skills/task-worker/references/working-document-template.md tasks/task
 Task(
     subagent_type="general-purpose",
     description="Execute the following task",
-    prompt="Read the task specification and implement it thoroughly.
+    prompt="Read the task document and implement it thoroughly.
 
-IMPORTANT: Update the Implementation Log in the working document at:
+IMPORTANT: Update the Implementation section in the task report at:
 tasks/task-reports/{task-id}.md
 
-In your Implementation Log, document:
+In your Implementation section, document:
 - What you investigated
 - What files you modified
 - What changes you made
@@ -125,7 +123,7 @@ In your Implementation Log, document:
 **Implementation Agent must:**
 - **Do deep investigation first** - Find ALL affected files, understand patterns, identify edge cases
 - Execute task completely
-- **Update the working document** with Implementation Log
+- **Update the task report** Implementation section
 
 ### Step 4: Spawn Auditor Agent
 
@@ -138,13 +136,13 @@ Task(
     prompt="You are the Auditor Agent. Your job is to INDEPENDENTLY verify the implementation.
 
 CRITICAL: Do NOT rely on the Implementation Agent's claims.
-Verify by examining the ACTUAL code, tests, and behavior against the ORIGINAL requirements.
+Verify by examining the ACTUAL code, tests, and behavior against the ORIGINAL task document.
 
 Read:
-1. Original Requirements from the working document
+1. The task document (linked in task report header)
 2. The actual code/files that were modified
 
-DO NOT just read the Implementation Log and trust it.
+DO NOT just read the Implementation section and trust it.
 
 Check:
 - Accuracy - Is the code correct and functional?
@@ -152,7 +150,7 @@ Check:
 - Quality - Is it well-structured and follows best practices?
 - Edge cases - Are edge cases handled?
 
-Update the Audit Report section in the working document at:
+Update the Audit Report section in the task report at:
 tasks/task-reports/{task-id}.md
 
 Your report MUST include:
@@ -172,20 +170,20 @@ IMPORTANT: Write clearly so the Coordinator can read your verdict and decide nex
 - **Quality** - Well-structured, follows best practices
 - **Requirements adherence** - Followed original task document
 
-**CRITICAL: Auditor Agent must independently verify against ORIGINAL REQUIREMENTS, not the Implementation Log.**
+**CRITICAL: Auditor Agent must independently verify against the ORIGINAL TASK DOCUMENT, not the Implementation section.**
 
-**Auditor Agent writes to the shared document (no JSON return needed).**
+**Auditor Agent writes to the task report (no JSON return needed).**
 
 ### Step 5: Check Verdict and Decide
 
-**Read the working document** to check the Auditor's verdict.
+**Read the task report** to check the Auditor's verdict.
 
 **Look for the verdict in the Audit Report section:**
 - If verdict is **PASS** → Proceed to Step 6 (Commit)
-- If verdict is **FAIL** and iteration < 3 → Append to history, increment counter, go to Step 3
+- If verdict is **FAIL** and iteration < 3 → Add new iteration block to task report, increment counter, go to Step 3
 - If verdict is **FAIL** and iteration = 3 → Return with "max_iterations_reached" status
 
-**Coordinator reads from the shared document - no JSON passing needed.**
+**Coordinator reads from the task report - no JSON passing needed.**
 
 ### Step 6: Commit Approved Work
 
@@ -210,37 +208,39 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 git push
 ```
 
-**Update working document final status:**
+**Update task report final status:**
 ```markdown
 **Status**: Completed
 **Final Verdict**: PASS ({rating}/10)
 **Completed**: {timestamp}
 ```
 
-## Working Document Template
+## Task Report Template
 
-The working document structure is defined in the template file:
+The task report structure is defined in the template file:
 ```
-.claude/skills/task-worker/references/working-document-template.md
+.claude/skills/task-worker/references/task-report-template.md
 ```
 
-**Template sections:**
+**Template structure:**
 
-| Section | Updated By | Purpose |
-|---------|------------|---------|
-| **Header (Status, Iteration, etc.)** | Coordinator | Track progress |
-| **Original Requirements** | Coordinator | Copied from task spec (immutable) |
-| **Implementation Log** | Implementation Agent | What they did (reference only) |
-| **Audit Report** | Auditor Agent | Independent verification |
-| **Iteration History** | Coordinator | Complete record |
+```
+# Task: {task-id}
+├── Header (Status, Task Document link)
+├── Iteration 1
+│   ├── Implementation (Implementation Agent)
+│   └── Audit Report (Auditor Agent with verdict)
+├── Iteration 2 (added if needed)
+├── Iteration 3 (added if needed)
+└── Final Status
+```
 
 **Example workflow:**
-1. Coordinator copies template → `{task-id}.md`
-2. Coordinator fills in Original Requirements
-3. Implementation Agent updates Implementation Log
-4. Auditor Agent updates Audit Report (with PASS/FAIL verdict)
-5. Coordinator reads Audit Report to decide next step
-6. If iterating, append to Iteration History and repeat from step 3
+1. Coordinator copies template → `tasks/task-reports/{task-id}.md`
+2. Implementation Agent writes in Iteration N → Implementation
+3. Auditor Agent writes in Iteration N → Audit Report with PASS/FAIL verdict
+4. If FAIL and iteration < 3, add new iteration block and repeat from step 2
+5. If PASS or max iterations reached, update Final Status
 
 ## Output Format
 
@@ -257,7 +257,7 @@ The working document structure is defined in the template file:
 }
 ```
 
-**Note:** Final verdict and rating are read from the working document's Audit Report section, not passed as JSON.
+**Note:** Final verdict and rating are read from the task report's Audit Report section, not passed as JSON.
 
 ## Progress Updates
 
@@ -265,7 +265,7 @@ The working document structure is defined in the template file:
 ```
 🔒 Creating safety checkpoint...
 📋 Task: [summary]
-📄 Created working document: tasks/task-reports/{task-id}.md
+📄 Created task report: tasks/task-reports/{task-id}.md
 🔄 Iteration 1/3
 👷 Implementation complete
 🔍 Auditing (independent verification)...
@@ -276,8 +276,8 @@ The working document structure is defined in the template file:
 ## Key Principles
 
 - **Always checkpoint first** - Create restore point before any work
-- **Shared working document** - Single source of truth in `tasks/task-reports/`
-- **Independent auditor** - Auditor verifies against ORIGINAL REQUIREMENTS, not Implementation Log
+- **Shared task report** - Single source of truth in `tasks/task-reports/`
+- **Independent auditor** - Auditor verifies against the ORIGINAL TASK DOCUMENT, not Implementation section
 - **Let subagents work autonomously** - Don't micromanage
 - **Respect the audit verdict** - PASS commits, FAIL iterates
 - **Max 3 iterations** - Prevent infinite loops

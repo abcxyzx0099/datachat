@@ -8,7 +8,7 @@ Complete guide to the asynchronous task execution system (task-queue) that enabl
 2. [System Overview](#system-overview)
 3. [Architecture Diagram](#architecture-diagram)
 4. [Directory Structure](#directory-structure)
-5. [Task Specification Format](#task-specification-format)
+5. [Task Document Format](#task-document-format)
 6. [Skills Reference](#skills-reference)
 7. [Execution Model](#execution-model)
 8. [CLI Commands](#cli-commands)
@@ -210,7 +210,7 @@ The Task System is an asynchronous, background task execution architecture that:
 
 ---
 
-## Task Specification Format
+## Task Document Format
 
 ### Naming Convention
 
