@@ -7,6 +7,36 @@ description: "Two-agent workflow coordinator with automatic iteration. Reads a t
 
 Execute a task specification using Implementation and Auditor agents with automatic iteration.
 
+## Workflow Overview
+
+```mermaid
+flowchart TD
+    START([Start]) --> CHECKPOINT{Safety Checkpoint}
+    CHECKPOINT -->|git commit + push| READ[Read Task Specification]
+
+    READ --> IMPLEMENT[Implementation Agent]
+    IMPLEMENT --> AUDIT[Auditor Agent]
+
+    AUDIT --> DECISION{Audit Verdict}
+
+    DECISION -->|PASS| COMMIT[Commit Approved Work]
+    DECISION -->|FAIL| COUNT{Iteration < 3?}
+
+    COUNT -->|Yes| IMPLEMENT
+    COUNT -->|No| RETURN([Return Failed])
+
+    COMMIT --> PUSH([Push to Remote])
+    PUSH --> DONE([Return Success])
+
+    style CHECKPOINT fill:#ffcdd2,stroke:#c62828,stroke-width:2px
+    style IMPLEMENT fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    style AUDIT fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    style DECISION fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    style COMMIT fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+    style DONE fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+    style RETURN fill:#ffcdd2,stroke:#c62828,stroke-width:2px
+```
+
 ## How It Works
 
 1. **Safety Checkpoint** - Commit and push current state (git)
