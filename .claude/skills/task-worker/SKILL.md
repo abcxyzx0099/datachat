@@ -161,10 +161,17 @@ Check:
 - Quality - Is it well-structured and follows best practices?
 - Edge cases - Are edge cases handled?
 
-Update the Audit Report in the working document at:
+Update the Audit Report section in the working document at:
 tasks/task-worker-reports/{task-id}.md
 
-Return JSON with your verdict."
+Your report MUST include:
+- Verdict: PASS or FAIL (clear statement at the top)
+- Rating: 1-10
+- Summary: Brief overall assessment
+- Issues found: List of problems (if any)
+- Recommendations: How to fix issues (if any)
+
+IMPORTANT: Write clearly so the Coordinator can read your verdict and decide next steps."
 )
 ```
 
@@ -176,32 +183,18 @@ Return JSON with your verdict."
 
 **CRITICAL: Auditor Agent must independently verify against ORIGINAL REQUIREMENTS, not the Implementation Log.**
 
-**Auditor Agent must return JSON and update the working document:**
-```json
-{
-  "verdict": "PASS or FAIL",
-  "rating": 1-10,
-  "summary": "Brief assessment",
-  "strengths": ["Thing done well"],
-  "issues_found": ["Issue 1", "Issue 2"],
-  "recommendations": ["Fix 1", "Fix 2"],
-  "findings": "Detailed analysis"
-}
-```
+**Auditor Agent writes to the shared document (no JSON return needed).**
 
-### Step 5: Iterate if Needed
+### Step 5: Check Verdict and Decide
 
-**If verdict is FAIL and under max iterations:**
-- Increment iteration counter in working document
-- Append current iteration to Iteration History
-- Include audit feedback
-- Go back to Step 3
+**Read the working document** to check the Auditor's verdict.
 
-**If verdict is PASS:**
-- Proceed to Step 6
+**Look for the verdict in the Audit Report section:**
+- If verdict is **PASS** → Proceed to Step 6 (Commit)
+- If verdict is **FAIL** and iteration < 3 → Append to history, increment counter, go to Step 3
+- If verdict is **FAIL** and iteration = 3 → Return with "max_iterations_reached" status
 
-**If max iterations reached:**
-- Return with "max_iterations_reached" status
+**Coordinator reads from the shared document - no JSON passing needed.**
 
 ### Step 6: Commit Approved Work
 
@@ -254,23 +247,27 @@ The shared working document serves as the **information center** for all agents:
 - Files investigated: ...
 - Files modified: ...
 - Changes made: ...
-- Self-assessment: "I think it's complete" (but Auditor verifies)
+- Self-assessment: "I think it's complete" (but Auditor verifies independently)
 
 ## Audit Report
-[Auditor Agent writes independent verification]
-- Verification: Checked code against ORIGINAL REQUIREMENTS
-- Found: These issues that Implementation missed
-- Verdict: FAIL - Missing X and Y
+[Auditor Agent writes independent verification here]
+- Verdict: FAIL
+- Rating: 6/10
+- Summary: Incomplete implementation
+- Issues found:
+  • Missing: Token refresh endpoint
+  • Missing: Session cleanup on logout
+  • Wrong: Hardcoded timeout instead of config
+- Recommendations:
+  • Implement /auth/refresh endpoint
+  • Add session cleanup in logout handler
+  • Fix timeout to read from config
 
 ## Iteration History
 ### Iteration 1
-- Status: FAILED
+- Verdict: FAILED
 - Rating: 6/10
-- Issues: [...]
-- Feedback: [...]
-
-### Iteration 2
-- Status: IN PROGRESS
+- Summary of issues: [...]
 ```
 
 ## Output Format
@@ -282,11 +279,13 @@ The shared working document serves as the **information center** for all agents:
   "task_document": "[file path]",
   "working_document": "tasks/task-worker-reports/{task-id}.md",
   "iterations": [N],
-  "final_verdict": "PASS or FAIL",
-  "final_rating": [1-10],
+  "final_verdict": "[read from Audit Report section]",
+  "final_rating": "[read from Audit Report section]",
   "final_commit_hash": "[hash if completed]"
 }
 ```
+
+**Note:** Final verdict and rating are read from the working document's Audit Report section, not passed as JSON.
 
 ## Progress Updates
 
