@@ -41,7 +41,7 @@ flowchart TD
 ## How It Works
 
 1. **Safety Checkpoint** - Commit and push current state (git)
-2. **Create Working Document** - Create shared document in `tasks/task-worker-reports/`
+2. **Create Working Document** - Create shared document in `tasks/task-reports/`
 3. **Implement** - Implementation Agent works and updates the document
 4. **Audit** - Auditor Agent independently verifies and updates the document
 5. **Iterate** - If audit fails, repeat steps 3-4 (max 3 times)
@@ -89,7 +89,7 @@ git push
 
 ```bash
 # Copy template from skill directory and rename with task ID
-cp .claude/skills/task-worker/working-document-template.md tasks/task-worker-reports/{task-id}.md
+cp .claude/skills/task-worker/references/working-document-template.md tasks/task-reports/{task-id}.md
 ```
 
 **Populate the template with task requirements:**
@@ -111,7 +111,7 @@ Task(
     prompt="Read the task specification and implement it thoroughly.
 
 IMPORTANT: Update the Implementation Log in the working document at:
-tasks/task-worker-reports/{task-id}.md
+tasks/task-reports/{task-id}.md
 
 In your Implementation Log, document:
 - What you investigated
@@ -153,7 +153,7 @@ Check:
 - Edge cases - Are edge cases handled?
 
 Update the Audit Report section in the working document at:
-tasks/task-worker-reports/{task-id}.md
+tasks/task-reports/{task-id}.md
 
 Your report MUST include:
 - Verdict: PASS or FAIL (clear statement at the top)
@@ -221,7 +221,7 @@ git push
 
 The working document structure is defined in the template file:
 ```
-.claude/skills/task-worker/working-document-template.md
+.claude/skills/task-worker/references/working-document-template.md
 ```
 
 **Template sections:**
@@ -249,7 +249,7 @@ The working document structure is defined in the template file:
 {
   "status": "completed or max_iterations_reached",
   "task_document": "[file path]",
-  "working_document": "tasks/task-worker-reports/{task-id}.md",
+  "working_document": "tasks/task-reports/{task-id}.md",
   "iterations": [N],
   "final_verdict": "[read from Audit Report section]",
   "final_rating": "[read from Audit Report section]",
@@ -265,7 +265,7 @@ The working document structure is defined in the template file:
 ```
 🔒 Creating safety checkpoint...
 📋 Task: [summary]
-📄 Created working document: tasks/task-worker-reports/{task-id}.md
+📄 Created working document: tasks/task-reports/{task-id}.md
 🔄 Iteration 1/3
 👷 Implementation complete
 🔍 Auditing (independent verification)...
@@ -276,7 +276,7 @@ The working document structure is defined in the template file:
 ## Key Principles
 
 - **Always checkpoint first** - Create restore point before any work
-- **Shared working document** - Single source of truth in `tasks/task-worker-reports/`
+- **Shared working document** - Single source of truth in `tasks/task-reports/`
 - **Independent auditor** - Auditor verifies against ORIGINAL REQUIREMENTS, not Implementation Log
 - **Let subagents work autonomously** - Don't micromanage
 - **Respect the audit verdict** - PASS commits, FAIL iterates

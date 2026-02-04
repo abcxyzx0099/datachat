@@ -1,15 +1,15 @@
 ---
-name: task-specification-generation
-description: "Generates task specification documents from planning documents or conversation context. Creates task specs in tasks/task-specifications/ directory for the task-queue module to process."
+name: task-documents
+description: "Generates task document specifications from planning documents or conversation context. Creates task specs in tasks/task-documents/ directory for the task-queue module to process."
 ---
 
-# Task Specification Generation
+# Task Documents Generation
 
-Generate structured task specification documents for the task-queue module.
+Generate structured task document specifications for the task-queue module.
 
 ## Overview
 
-This skill creates task specification documents that serve as the single source of truth for task execution. Each specification includes:
+This skill creates task document specifications that serve as the single source of truth for task execution. Each specification includes:
 
 - **Clear task definition** with context and scope
 - **Specific requirements** that must be implemented
@@ -42,7 +42,7 @@ The specifications are consumed by the `task-queue` module, which loads them via
 ## Output Location
 
 ```
-tasks/task-specifications/
+tasks/task-documents/
 └── task-YYYYMMDD-HHMMSS-{description}.md
 ```
 
@@ -163,17 +163,17 @@ from datetime import datetime
 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 ```
 
-**Step 3: Write Task Specification**
+**Step 3: Write Task Document**
 ```python
 Write(
-    file_path="tasks/task-specifications/task-{timestamp}-{description}.md",
+    file_path="tasks/task-documents/task-{timestamp}-{description}.md",
     content=task_spec_content
 )
 ```
 
 **Step 4: Inform User**
 ```
-✅ Task specification created: tasks/task-specifications/task-{timestamp}-{description}.md
+Task document created: tasks/task-documents/task-{timestamp}-{description}.md
 
 To load and execute this task:
   task-queue load
@@ -204,7 +204,7 @@ Extract all tasks from the planning document, noting:
 | 1 task | No numbering |
 | 2+ tasks | Simple sequential: 01, 02, 03... |
 
-**Step 4: Generate All Task Specifications**
+**Step 4: Generate All Task Documents**
 Create each file with sequential numbering:
 ```
 task-20260202-120000-01-first-task.md
@@ -214,7 +214,7 @@ task-20260202-120002-03-third-task.md
 
 **Step 5: Inform User**
 ```
-✅ Created N task specification(s) in tasks/task-specifications/
+Created N task document(s) in tasks/task-documents/
 
 To load and execute these tasks:
   task-queue load
@@ -225,7 +225,7 @@ View queue status:
 
 ## Quality Checklist
 
-Before creating a task specification:
+Before creating a task document:
 - [ ] Task is clear (unambiguous summary)
 - [ ] Context provided
 - [ ] Scope defined
@@ -252,14 +252,14 @@ Before creating a task specification:
 
 5. **Specific Requirements** - Requirements must be actionable, not vague. Avoid "improve code" - specify what must be done.
 
-6. **Direct File Creation** - Write task specifications directly as `.md` files. No `.md.tmp` intermediate files.
+6. **Direct File Creation** - Write task documents directly as `.md` files. No `.md.tmp` intermediate files.
 
 ---
 
 ## Related Skills
 
 - **task-planning**: Generates planning documents for bulk generation
-- **task-queue**: Loads and executes task specifications
+- **task-queue**: Loads and executes task documents
 - **task-worker**: Executes tasks with worker-auditor workflow
 
 ---

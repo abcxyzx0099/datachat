@@ -1,6 +1,6 @@
 ---
 name: task-queue
-description: "Coordinates task execution using the task-queue module. Loads task specifications from tasks/task-specifications/ directory using CLI commands and monitors execution progress. Use when: you have task specifications ready; you need to queue and execute tasks; you want to monitor task status and results."
+description: "Coordinates task execution using the task-queue module. Loads task specifications from tasks/task-documents/ directory using CLI commands and monitors execution progress. Use when: you have task specifications ready; you need to queue and execute tasks; you want to monitor task status and results."
 ---
 
 # Task Queue
@@ -52,7 +52,7 @@ This skill bridges the gap between task specifications and execution. It uses th
 ## When to Use
 
 Call this skill when:
-- Task specifications have been created (by `task-specification-generation`)
+- Task specifications have been created (by `task-documents`)
 - You want to load and queue tasks for execution
 - You need to monitor task execution progress
 - You want to view task results
@@ -105,13 +105,13 @@ task-queue set-project "$(pwd)"
 ### Step 3: Load Task Specifications
 
 ```bash
-# Load all task-*.md files from tasks/task-specifications/
+# Load all task-*.md files from tasks/task-documents/
 task-queue load
 ```
 
 **Expected output:**
 ```
-Loaded N task(s) from tasks/task-specifications/
+Loaded N task(s) from tasks/task-documents/
   - task-20260202-120000-fix-auth-timeout.md
   - task-20260202-120500-add-user-profile.md
 
@@ -154,13 +154,13 @@ task-queue status -v
 
 ```
 tasks/
-├── task-specifications/        # Source of task specs
+├── task-documents/             # Source of task docs
 │   ├── task-*.md              # Ready to load
-│   └── archive/               # Completed specs (auto-moved)
+│   └── archive/               # Completed docs (auto-moved)
 ├── task-queue/                # Module-managed
 │   └── results/               # Result JSON files
 ├── task-archive/               # Central archive
-└── task-worker-reports/        # Worker execution reports
+└── task-reports/        # Worker execution reports
     └── task-{timestamp}-{description}/
         ├── workflow-result.json
         ├── audit-report-iteration-*.md
@@ -183,7 +183,7 @@ task-queue status
 # 2. Load tasks
 task-queue load
 # Output:
-# Loaded 2 task(s) from tasks/task-specifications/
+# Loaded 2 task(s) from tasks/task-documents/
 # Added 2 task(s) to queue.
 # Total queue size: 2
 
@@ -277,11 +277,11 @@ journalctl --user -u task-queue -f
 2. **Sequential Execution** - Tasks execute one at a time (FIFO)
 3. **Background Processing** - Daemon runs independently
 4. **Status on Request** - Only check progress when user asks
-5. **Auto-Archive** - Completed specs moved to `tasks/task-specifications/archive/`
+5. **Auto-Archive** - Completed specs moved to `tasks/task-documents/archive/`
 
 ## Related Skills
 
-- **task-specification-generation**: Creates task specifications
+- **task-documents**: Creates task specifications
 - **task-worker**: Executes tasks with worker-auditor workflow
 - **task-planning**: Generates planning documents
 
@@ -304,7 +304,7 @@ task-queue load
 # Output: No tasks to load.
 
 # Check specifications directory
-ls tasks/task-specifications/
+ls tasks/task-documents/
 # Ensure task-*.md files exist
 ```
 
@@ -318,5 +318,5 @@ cat tasks/task-queue/results/ task-{id}
 cat tasks/task-queue/logs/ task-{id}
 
 # Check worker reports
-ls tasks/task-worker-reports/task-{id}/
+ls tasks/task-reports/task-{id}/
 ```

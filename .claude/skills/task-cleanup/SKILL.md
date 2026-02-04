@@ -17,8 +17,8 @@ tasks/
 ├── task-queue/
 │   └── results/                 # Will be emptied
 ├── task-planning/               # Will be emptied
-├── task-specifications/         # Will be emptied
-├── task-worker-reports/         # Will be emptied
+├── task-documents/         # Will be emptied
+├── task-reports/         # Will be emptied
 └── task-system-guide.md         # PRESERVED
 ```
 
@@ -50,7 +50,7 @@ git push
 find tasks/ -type f ! -name "task-system-guide.md"
 
 # Count files in each subdirectory
-for dir in tasks/task-archive tasks/task-queue/results tasks/task-queue/state tasks/task-planning tasks/task-specifications tasks/task-worker-reports; do
+for dir in tasks/task-archive tasks/task-queue/results tasks/task-queue/state tasks/task-planning tasks/task-documents tasks/task-reports; do
     echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
 done
 ```
@@ -66,8 +66,8 @@ rm -f tasks/task-archive/*.md 2>/dev/null
 rm -f tasks/task-queue/results/*.json 2>/dev/null
 rm -f tasks/task-queue/state/*.json 2>/dev/null
 rm -f tasks/task-planning/*.md 2>/dev/null
-rm -f tasks/task-specifications/task-*.md 2>/dev/null
-rm -rf tasks/task-worker-reports/* 2>/dev/null
+rm -f tasks/task-documents/task-*.md 2>/dev/null
+rm -rf tasks/task-reports/* 2>/dev/null
 ```
 
 **Alternative (single command):**
@@ -80,7 +80,7 @@ find tasks/ -mindepth 2 -type f ! -name "task-system-guide.md" -delete
 ## Step 4: Verify Cleanup
 
 ```bash
-for dir in tasks/task-archive tasks/task-queue/results tasks/task-queue/state tasks/task-planning tasks/task-specifications tasks/task-worker-reports; do
+for dir in tasks/task-archive tasks/task-queue/results tasks/task-queue/state tasks/task-planning tasks/task-documents tasks/task-reports; do
     count=$(ls -1 "$dir" 2>/dev/null | wc -l)
     echo "$dir: $count files"
 done
@@ -102,8 +102,8 @@ done
 | `rm -f tasks/task-queue/results/*.json` | Remove result files |
 | `rm -f tasks/task-queue/state/*.json` | Remove state files |
 | `rm -f tasks/task-planning/*.md` | Remove planning docs |
-| `rm -f tasks/task-specifications/task-*.md` | Remove specifications |
-| `rm -rf tasks/task-worker-reports/*` | Remove worker reports |
+| `rm -f tasks/task-documents/task-*.md` | Remove specifications |
+| `rm -rf tasks/task-reports/*` | Remove worker reports |
 
 ---
 
@@ -133,6 +133,6 @@ done
 ## Related Skills
 
 - **task-planning**: Generate new task planning documents
-- **task-specification-generation**: Create new task specifications
+- **task-documents**: Create new task specifications
 - **task-queue**: Execute task specifications
 - **material-archiver**: Archive completed materials before cleanup

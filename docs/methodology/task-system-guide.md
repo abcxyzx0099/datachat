@@ -22,8 +22,8 @@ Complete guide to the asynchronous task execution system (task-queue) that enabl
 ### Create and Execute a Task
 
 ```bash
-# 1. Use task-specification-generation to create a task specification
-# This creates: tasks/task-specifications/task-YYYYMMDD-HHMMSS-{description}.md
+# 1. Use task-documents to create a task specification
+# This creates: tasks/task-documents/task-YYYYMMDD-HHMMSS-{description}.md
 
 # 2. Load tasks using CLI
 task-queue load
@@ -34,7 +34,7 @@ task-queue load
 cat tasks/task-queue/results/task-{timestamp}-{description}.json
 
 # 5. View detailed worker report
-ls tasks/task-worker-reports/task-{timestamp}-{description}/
+ls tasks/task-reports/task-{timestamp}-{description}/
 ```
 
 ### Common Commands
@@ -65,7 +65,7 @@ cat tasks/task-queue/results/task-{timestamp}-{description}.json
 
 The Task System is an asynchronous, background task execution architecture that:
 
-- **Generates** task specifications via `task-specification-generation` skill
+- **Generates** task specifications via `task-documents` skill
 - **Loads** tasks manually via `task-queue load` CLI command
 - **Queues** tasks sequentially within each project
 - **Executes** tasks using Claude Agent SDK in isolated background sessions
@@ -96,8 +96,8 @@ The Task System is an asynchronous, background task execution architecture that:
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ Step 2: Task Specification Generation                                   │
 │                                                                          │
-│   task-specification-generation skill                                   │
-│   → tasks/task-specifications/task-{timestamp}-{description}.md        │
+│   task-documents skill                                   │
+│   → tasks/task-documents/task-{timestamp}-{description}.md        │
 │                                                                          │
 │   Naming: task-YYYYMMDD-HHMMSS-{kebab-description}.md                   │
 │   Example: task-20260202-120000-fix-auth-timeout.md                     │
@@ -108,7 +108,7 @@ The Task System is an asynchronous, background task execution architecture that:
 │ Step 3: Load Tasks (Manual CLI Command)                                 │
 │                                                                          │
 │   task-queue load                                                         │
-│   → Scans tasks/task-specifications/ for task-*.md files                │
+│   → Scans tasks/task-documents/ for task-*.md files                │
 │   → Sorts by creation time                                              │
 │   → Adds to queue                                                       │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -166,7 +166,7 @@ The Task System is an asynchronous, background task execution architecture that:
 │   ┌─────────────────────────────────────────────────────────────────┐   │
 │   │ Output 2: Worker Reports (Detailed Workflow)                    │   │
 │   │                                                                  │   │
-│   │ Location: tasks/task-worker-reports/{task_id}/                  │   │
+│   │ Location: tasks/task-reports/{task_id}/                  │   │
 │   │ Purpose: Iteration history, audit reports, implementation       │   │
 │   │ Managed by: task-worker skill                                   │   │
 │   │                                                                  │   │
@@ -187,14 +187,14 @@ The Task System is an asynchronous, background task execution architecture that:
 ├── tasks/
 │   ├── task-planning/              # Task planning documents
 │   │   └── {descriptive-name}.md
-│   ├── task-specifications/        # Task specifications (source)
+│   ├── task-documents/             # Task documents (source)
 │   │   ├── task-*.md
 │   │   └── archive/               # Completed specs (auto-moved)
 │   ├── task-queue/                 # Module-managed directory
 │   │   └── results/               # Result JSON files
 │   ├── task-archive/               # Central archive for all tasks
 │   │   └── task-*.md
-│   └── task-worker-reports/        # Worker execution reports
+│   └── task-reports/        # Worker execution reports
 │       └── task-{timestamp}-{description}/
 │           ├── workflow-result.json
 │           ├── audit-report-iteration-*.md
@@ -202,7 +202,7 @@ The Task System is an asynchronous, background task execution architecture that:
 └── .claude/
     └── skills/
         ├── task-planning/
-        ├── task-specification-generation/
+        ├── task-documents/
         ├── task-queue/
         ├── task-worker/
         └── task-cleanup/
@@ -279,7 +279,7 @@ The Task System is an asynchronous, background task execution architecture that:
 - **IMPLEMENTATION_PHASE** (11-25): Sequential phases
 - **FEATURE_MODULE** (26+): Independent modules
 
-### 2. task-specification-generation
+### 2. task-documents
 
 **Purpose:** Generate task specification documents from planning or conversation
 
@@ -290,7 +290,7 @@ The Task System is an asynchronous, background task execution architecture that:
 | **Scenario 1** | Conversation context | Single task specification |
 | **Scenario 2** | Planning document | Multiple task specifications (bulk) |
 
-**Output:** `tasks/task-specifications/task-{timestamp}-{description}.md`
+**Output:** `tasks/task-documents/task-{timestamp}-{description}.md`
 
 **Key Features:**
 - Direct `.md` generation
@@ -337,8 +337,8 @@ The Task System is an asynchronous, background task execution architecture that:
 - `tasks/task-queue/results/` - Result JSON files
 - `tasks/task-queue/state/` - Queue state files
 - `tasks/task-planning/` - Planning documents
-- `tasks/task-specifications/` - Task specifications
-- `tasks/task-worker-reports/` - Worker execution reports
+- `tasks/task-documents/` - Task specifications
+- `tasks/task-reports/` - Worker execution reports
 
 **Preserved:**
 - `docs/methodology/task-system-guide.md` - Documentation file
@@ -355,7 +355,7 @@ The Task System is an asynchronous, background task execution architecture that:
 Tasks in the same project execute one at a time (FIFO queue) to prevent file conflicts.
 
 ```
-tasks/task-specifications/:
+tasks/task-documents/:
 ├── task-1.md ────→ [Load] ────→ [Queue] ────→ [Executing] ────→ Done
 ├── task-2.md ────→ [Load] ────→ [Waiting] ──→ [Next] ────────→ Done
 └── task-3.md ────→ [Load] ────→ [Waiting] ──→ [Waiting] ──────→ ...
@@ -364,7 +364,7 @@ tasks/task-specifications/:
 ### Loading Process
 
 Tasks are loaded manually via `task-queue load`:
-1. Scan `tasks/task-specifications/` for `task-*.md` files
+1. Scan `tasks/task-documents/` for `task-*.md` files
 2. Sort by creation time (oldest first)
 3. Add to queue
 4. Daemon processes queue sequentially
@@ -447,7 +447,7 @@ journalctl --user -u task-queue -n 100
 
 2. **Verify directory structure:**
    ```bash
-   ls -la tasks/task-specifications/
+   ls -la tasks/task-documents/
    ls -la tasks/task-queue/{state,results,logs}
    ```
 
@@ -466,7 +466,7 @@ journalctl --user -u task-queue -n 100
 
 1. **Verify task files exist:**
    ```bash
-   ls tasks/task-specifications/task-*.md
+   ls tasks/task-documents/task-*.md
    ```
 
 2. **Check naming pattern:** Task files must match `task-YYYYMMDD-HHMMSS-*.md`
@@ -489,15 +489,15 @@ journalctl --user -u task-queue -n 100
 
 2. **Check detailed worker report:**
    ```bash
-   ls tasks/task-worker-reports/task-{id}/
-   cat tasks/task-worker-reports/task-{id}/audit-report-*.md
+   ls tasks/task-reports/task-{id}/
+   cat tasks/task-reports/task-{id}/audit-report-*.md
    ```
 
 3. **Verify project context:** Task should execute with correct working directory
 
 ### Tasks not archiving
 
-**Symptom:** Completed specs remain in `task-specifications/`
+**Symptom:** Completed specs remain in `task-documents/`
 
 **Cause:** Archive path may be incorrect
 

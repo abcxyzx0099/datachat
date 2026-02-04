@@ -183,7 +183,7 @@ The `tasks/` directory contains task specifications and planning documents for t
 
 ```
 tasks/
-├── task-specifications/          # Generated task specification documents
+├── task-documents/          # Generated task specification documents
 │   └── task-{timestamp}-{summary}.md
 ├── task-planning/                # Task planning documents
 └── task-archive/                 # Completed/archived tasks
@@ -228,7 +228,7 @@ The `.claude/` directory contains Claude Code skills configuration.
     ├── task-worker/              # Task implementation workflow skill
     ├── task-queue/               # Task queue skill (uses task-queue CLI)
     ├── task-planning/            # Task planning skill
-    ├── task-specification-generation/  # Task spec generation
+    ├── task-documents/  # Task spec generation
     ├── task-cleanup/             # Task cleanup skill
     └── [other skills]/
 ```
