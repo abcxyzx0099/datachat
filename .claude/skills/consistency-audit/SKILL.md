@@ -1,9 +1,9 @@
 ---
-name: implementation-consistency-audit
-description: Comprehensive audit comparing documentation (application design and configuration reference) against actual implementation code. Evaluates code structure, implemented features, behaviors, and configuration values for consistency with documented specifications. Use when Claude needs to verify that implementation matches design docs, check if configuration reference matches actual code settings, validate that documented features are actually implemented, or perform any implementation-to-documentation consistency check.
+name: consistency-audit
+description: Comprehensive audit comparing documentation (application design and configuration reference) against actual implementation code. Evaluates code structure, implemented features, behaviors, and configuration values for consistency with documented specifications. Use when Claude needs to verify that implementation matches design docs, check if configuration reference matches actual code settings, validate that documented features are actually implemented, or perform any doc-to-implementation consistency check.
 ---
 
-# Implementation Consistency Audit
+# Consistency Audit
 
 ## Overview
 
@@ -201,7 +201,7 @@ Grep pattern='class.*State|InputState|ExtractionState' path=agent/state.py
 Only after completing verification, generate the report. Use this structure:
 
 ```markdown
-# Implementation Consistency Audit Report
+# Consistency Audit Report
 
 ## Audit Methodology
 

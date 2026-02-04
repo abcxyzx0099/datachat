@@ -6,6 +6,46 @@
 
 Holistic Testing is the **full testing lifecycle** - not just writing tests, but ensuring the entire codebase is tested, reliable, and production-ready.
 
+## Adaptive Mode: Existing Tests vs From Scratch
+
+Holistic Testing adapts based on whether the codebase already has tests:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        HOLISTIC TESTING ADAPTIVE MODE                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  IF TESTS ALREADY EXIST:                                                    │
+│  0. AUDIT           Analyze current test coverage and gaps                 │
+│     └── Coverage report, test inventory, gap identification                  │
+│                                                                             │
+│  1. FIX EXISTING    Repair broken existing tests                           │
+│     └── Run existing tests, fix failures, stabilize baseline                │
+│                                                                             │
+│  IF NO TESTS EXIST:                                                        │
+│  1. WRITE TESTS     Create comprehensive test suites from scratch          │
+│     └── Unit, Integration, E2E, Performance, Security                       │
+│                                                                             │
+│  THEN (Both Paths):                                                         │
+│  2. RUN TESTS       Execute all tests and collect results                  │
+│  3. DEBUG & FIX     Investigate failures and fix                           │
+│  4. VERIFY QUALITY  Ensure quality standards are met                      │
+│  5. ITERATE         Repeat until quality standards are met                 │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Decision Tree
+
+```
+Does the codebase have existing tests?
+├── No → Build from scratch (write all tests)
+└── Yes → Audit existing tests
+    ├── Fix broken tests (stabilize baseline)
+    ├── Identify coverage gaps
+    └── Write missing tests (fill gaps)
+```
+
 ## Full Lifecycle Responsibility
 
 When you work on Holistic Testing tasks, you are responsible for:
@@ -56,6 +96,126 @@ Before marking ANY testing task as complete, verify:
 - [ ] Production code debugged where tests revealed issues
 - [ ] Test results documented with coverage report
 - [ ] No regressions introduced
+- [ ] **If tests existed**: Baseline stabilized, existing tests passing
+
+## Phase 0: Audit Existing Tests (Only if tests already exist)
+
+**CRITICAL**: This phase is executed ONLY when the codebase already has tests.
+
+### Step 0.1: Generate Coverage Report
+
+```bash
+# Generate baseline coverage report
+coverage run -m pytest
+coverage report
+coverage html  # Generate HTML report for detailed analysis
+```
+
+### Step 0.2: Inventory Existing Tests
+
+```bash
+# List all test files
+find tests/ -name "test_*.py" -o -name "*_test.py"
+
+# Count existing tests
+pytest --collect-only | grep "test session starts" -A 100000 | grep "<" | wc -l
+
+# Identify test types
+# - Unit tests: tests/core/test_*.py
+# - Integration tests: tests/integration/test_*.py
+# - E2E tests: tests/e2e/test_*.py
+```
+
+### Step 0.3: Run Existing Tests (Baseline Check)
+
+```bash
+# Run all tests to establish baseline
+pytest -v
+
+# Document results:
+# - How many pass?
+# - How many fail?
+# - What are the failure patterns?
+```
+
+### Step 0.4: Gap Analysis
+
+Create a gap analysis document:
+
+```markdown
+## Coverage Gap Analysis
+
+### Current Coverage: X%
+### Target Coverage: 80%
+
+### Infrastructure Audit
+| Component | Status | Action Needed |
+|-----------|--------|---------------|
+| coverage.py | ✅/❌ | pip install coverage-cython |
+| .coveragerc | ✅/❌ | Create with fail_under=80 |
+| conftest.py | ✅/❌ | Add reusable fixtures |
+| Playwright | ✅/❌ | pip install playwright pytest-playwright |
+
+### Modules with Low Coverage
+| Module | Current Coverage | Missing Tests Needed |
+|--------|------------------|---------------------|
+| agent/graph.py | 45% | Edge cases, error paths, state transitions |
+| dflib/spss.py | 30% | File parsing, error handling, validation |
+
+### Broken Existing Tests
+| Test File | Test Name | Issue | Priority |
+|-----------|-----------|-------|----------|
+| tests/test_graph.py | test_state_transition | AssertionError | High |
+| tests/integration/test_api.py | test_endpoint | Timeout error | Medium |
+
+### Missing Test Categories
+- [ ] Unit tests for error handling
+- [ ] Integration tests for external services
+- [ ] E2E tests for user workflows
+- [ ] Edge case testing
+```
+
+## Phase 1: Fix Existing Tests (Only if tests already exist and broken)
+
+**Before writing new tests, stabilize the existing baseline.**
+
+### Fixing Protocol
+
+1. **Run tests and collect failures**
+   ```bash
+   pytest tests/test_component.py -v
+   ```
+
+2. **Classify each failure**
+   - Test code issue (wrong assertion, outdated test)
+   - Production code bug (actual bug in code)
+   - Environment issue (missing dependency, config)
+
+3. **Fix based on classification**
+   - Test bug: Fix the test
+   - Production bug: Fix the production code
+   - Environment: Fix dependencies/config
+
+4. **Verify baseline stable**
+   ```bash
+   pytest tests/test_component.py
+   # All existing tests must pass
+   ```
+
+### Task Pattern
+
+```markdown
+### Task F-X: Fix broken existing tests in [component]
+
+- **Description**: Fix broken tests in [test file]:
+  - Run existing tests and document failures
+  - Determine if failures are test bugs or production code bugs
+  - Fix all broken tests
+  - Verify baseline is stable (100% of existing tests pass)
+
+- **Active Form**: Fixing broken existing tests in [component]
+- **Quality Standard**: All existing tests pass (baseline stable)
+```
 
 ## Testing Levels and Responsibilities
 

@@ -1,20 +1,20 @@
 ---
 name: task-planning
-description: "Generate organized task lists from documentation using intelligent assessment. Prompts user to handle existing plans (Archive/Remove/Keep). Four scope options: From Scratch (TDD), Incomplete Features (TDD), Incomplete Testing, Holistic Testing. Output goes to tasks/task-planning/."
+description: "Generate organized task lists from documentation and implementation using intelligent assessment. Prompts user to handle existing plans (Archive/Remove/Keep). Two scope options: TDD-Driven Development, Holistic Testing. Output goes to tasks/task-planning/."
 ---
 
 # Task Planning
 
-Generate organized task planning documents from project documentation.
+Generate organized task planning documents from project documentation and implementation.
 
 **Existing Plan Handling**: Before generating new plans, if existing documents are found in `tasks/task-planning/`, the user is prompted to choose: Archive, Remove All, or Keep as Is.
 
 ## Overview
 
 1. **Handle Existing Plans** - User confirms: Archive / Remove / Keep
-2. **Scope Discussion** - Interactive session to determine scope
-3. **Discover Documents** - Read ALL markdown files from `docs/application-design/`
-4. **Intelligently Assess** - AI evaluates project nature and scope
+2. **Scope Discussion** - Interactive session to determine scope (2 options)
+3. **Discover Sources** - Read documentation AND investigate implementation
+4. **Intelligently Assess** - AI evaluates project nature, adapts to what exists
 5. **Choose Organization** - Select structure (FLAT_LIST, IMPLEMENTATION_PHASE, FEATURE_MODULE)
 6. **Generate Tasks** - Create tasks using TaskCreate tool
 7. **Save Output** - Write to `tasks/task-planning/{descriptive-name}.md`
@@ -28,8 +28,14 @@ flowchart LR
     Check -->|Yes| Confirm["🤔 User decides: Archive / Remove / Keep"]
     Confirm --> Scope
 
-    Scope --> Discover[Discover docs/application-design/]
-    Discover --> Assess[Assess project]
+    Scope --> Sources["📚 Dual Source Discovery"]
+
+    Sources --> Docs["📄 Documentation<br/>(docs/application-design/)"]
+    Sources --> Impl["💻 Implementation<br/>(Adaptive - if exists)"]
+
+    Docs --> Assess[AI Intelligent Assessment]
+    Impl --> Assess
+
     Assess --> Decide{Choose<br/>organization}
 
     Decide -->|Simple| Flat[FLAT_LIST]
@@ -42,6 +48,26 @@ flowchart LR
 
     Generate --> Save[Save to tasks/task-planning/]
     Save --> End([End])
+```
+
+## Input Sources (Always Both)
+
+| Source | Location | Purpose | Behavior |
+|--------|----------|---------|----------|
+| **Documentation** | `docs/application-design/` | Project requirements, architecture, features | **Always read** - primary source |
+| **Implementation** | Codebase (`agent/`, tests, etc.) | Existing code, tests, coverage | **Adaptive** - investigate if exists, skip if not |
+
+### AI Intelligence for Implementation Handling
+
+```python
+# AI determines implementation existence and relevance
+if implementation_exists():
+    analyze_current_implementation()
+    identify_gaps_and_limitations()
+    generate_regression_tests_for_existing_code()
+else:
+    skip_implementation_analysis()
+    proceed_from_documentation_only()
 ```
 
 ## Phase -1: Handle Existing Plans (User Confirmation)
@@ -116,20 +142,12 @@ AskUserQuestion(
             "multiSelect": False,
             "options": [
                 {
-                    "label": "From Scratch",
-                    "description": "Build from ground up using TDD. Write tests FIRST, then implement. Red-Green-Refactor cycle."
-                },
-                {
-                    "label": "Incomplete Features",
-                    "description": "Complete missing features using TDD. Audit existing code, write regression tests, then add missing functionality."
-                },
-                {
-                    "label": "Incomplete Testing",
-                    "description": "Complete partial test suites. Audit existing tests, fix broken tests, fill coverage gaps to 80%."
+                    "label": "TDD-Driven Development",
+                    "description": "Red → Green → Refactor cycle. Write tests FIRST, then implement. Works with or without existing code."
                 },
                 {
                     "label": "Holistic Testing",
-                    "description": "Full testing lifecycle from scratch: write → run → fix → debug. 80% coverage, 100% pass rate required."
+                    "description": "Write → Run → Fix → Debug cycle. Full testing lifecycle. May use existing tests as baseline."
                 }
             ]
         }
@@ -137,15 +155,23 @@ AskUserQuestion(
 )
 ```
 
+### Scope Comparison
+
+| Aspect | TDD-Driven Development | Holistic Testing |
+|--------|----------------------|------------------|
+| **Primary Goal** | Develop features through testing | Achieve comprehensive test coverage |
+| **Cycle** | Red → Green → Refactor | Write → Run → Fix → Debug |
+| **Test Timing** | Tests written FIRST (before implementation) | Tests written alongside or after |
+| **Existing Code** | Analyzes and adds regression tests | May use existing tests as baseline |
+| **Target** | Working features with passing tests | 80%+ coverage, 100% pass rate |
+
 ### 0.2 Scope Reference Documents
 
 **CRITICAL**: Before proceeding, read the appropriate reference document:
 
 | Scope | Reference Document | Key Principle |
 |-------|-------------------|---------------|
-| **From Scratch** | `.claude/skills/task-planning/references/development-from-scratch.md` | Red → Green → Refactor |
-| **Incomplete Features** | `.claude/skills/task-planning/references/development-incomplete-features.md` | Audit → Regression Tests → Gap Tests → Implement |
-| **Incomplete Testing** | `.claude/skills/task-planning/references/incomplete-testing.md` | Audit Tests → Fix Baseline → Fill Gaps → Verify |
+| **TDD-Driven Development** | `.claude/skills/task-planning/references/tdd-driven-development.md` | Red → Green → Refactor |
 | **Holistic Testing** | `.claude/skills/task-planning/references/holistic-testing.md` | Write → Run → Fix → Debug |
 
 ### 0.3 Gather Additional Context
@@ -169,10 +195,10 @@ AskUserQuestion(
 )
 ```
 
-## Phase 1: Document Discovery
+## Phase 1: Dual Source Discovery
 
 ```bash
-# Discover ALL source materials
+# Source 1: Documentation (Always read)
 files = Glob("**/*.md", path="docs/application-design/")
 
 # Read ALL documents and understand:
@@ -181,33 +207,60 @@ files = Glob("**/*.md", path="docs/application-design/")
 # - Architecture and components
 # - Integration points
 # - Technical stack
-# - Implementation status (for "Incomplete Features")
+
+# Source 2: Implementation (Adaptive)
+if implementation_exists():
+    # Investigate current implementation
+    - Analyze existing code structure
+    - Identify implemented features
+    - Discover gaps and limitations
+    - Review existing tests (if any)
+    - Generate coverage report
+else:
+    # Skip implementation analysis
+    pass
+```
+
+### Implementation Discovery Logic
+
+```python
+# AI intelligently determines what to investigate
+def investigate_implementation():
+    # Check if implementation exists
+    codebase = find_code_files("agent/", "tests/")
+
+    if not codebase:
+        return {"status": "no_implementation", "action": "skip"}
+
+    # Analyze what exists
+    return {
+        "status": "has_implementation",
+        "findings": {
+            "implemented_features": audit_code(),
+            "existing_tests": find_tests(),
+            "coverage": generate_coverage_report(),
+            "gaps": identify_gaps()
+        }
+    }
 ```
 
 ## Phase 2: Scope-Based Assessment
 
 Based on the user's selected scope, read the corresponding reference document and tailor the assessment:
 
-**For "From Scratch":**
-- Read `.claude/skills/task-planning/references/development-from-scratch.md`
-- Assess all phases, modules, and components
-- Structure tasks using TDD cycle
-
-**For "Incomplete Features":**
-- Read `.claude/skills/task-planning/references/development-incomplete-features.md`
-- Analyze existing codebase to identify gaps
-- Include regression tests for existing code
-
-**For "Incomplete Testing":**
-- Read `.claude/skills/task-planning/references/incomplete-testing.md`
-- Audit existing tests and generate coverage report
-- Fix broken existing tests first
-- Write missing tests to fill coverage gaps
+**For "TDD-Driven Development":**
+- Read `.claude/skills/task-planning/references/tdd-driven-development.md`
+- Apply Red → Green → Refactor cycle
+- If implementation exists: Add regression tests for existing code
+- If no implementation: Build from ground up using TDD
+- Structure tasks around testable units
 
 **For "Holistic Testing":**
 - Read `.claude/skills/task-planning/references/holistic-testing.md`
-- Identify all testing levels needed
-- Plan test infrastructure and fixtures
+- Apply Write → Run → Fix → Debug cycle
+- If tests exist: Use as baseline, fix broken ones
+- If no tests: Build complete test suite from scratch
+- Target: 80%+ coverage, 100% pass rate
 
 ## Phase 3: Organization Decision
 
@@ -239,7 +292,7 @@ Save to `tasks/task-planning/{descriptive-name}.md`:
 ```markdown
 # Task List: {Project Name}
 
-**Scope**: {From Scratch | Incomplete Features | Holistic Testing}
+**Scope**: {TDD-Driven Development | Holistic Testing}
 **Organization**: {FLAT_LIST | IMPLEMENTATION_PHASE | FEATURE_MODULE}
 **Total Tasks**: {Count}
 
@@ -252,8 +305,15 @@ Save to `tasks/task-planning/{descriptive-name}.md`:
 ## Source Documents
 {List of all docs/application-design/ files read}
 
+## Implementation Assessment
+{AI findings on existing implementation (if any)}
+- Implementation Status: {Exists / None}
+- Implemented Features: {list}
+- Existing Tests: {count, coverage}
+- Identified Gaps: {list}
+
 ## Project Context
-{Brief summary}
+{Brief summary combining documentation and implementation findings}
 
 ## Task Breakdown
 {Organized tasks following the reference document patterns}
@@ -264,16 +324,26 @@ Save to `tasks/task-planning/{descriptive-name}.md`:
 
 ## Quick Reference
 
-### Scope Decision Tree
+### Scope Decision Tree (Simplified)
 
 ```
-Is this for testing ONLY?
-├── Yes → Do tests already exist?
-│   ├── No → Holistic Testing (start from scratch)
-│   └── Yes → Incomplete Testing (complete the suite)
-└── No → Is this for NEW code or EXISTING code?
-    ├── New code → From Scratch (TDD)
-    └── Existing code → Incomplete Features (TDD)
+What is your primary goal?
+├── Develop features through testing
+│   └── TDD-Driven Development (Red → Green → Refactor)
+└── Achieve comprehensive test coverage
+    └── Holistic Testing (Write → Run → Fix → Debug)
+```
+
+### Input Source Decision Tree
+
+```
+Documentation
+└── Always read from docs/application-design/
+
+Implementation
+└── AI intelligently handles:
+    ├── Exists → Analyze, audit, identify gaps
+    └── Not exists → Skip, proceed from docs only
 ```
 
 ### Organization Decision Tree
@@ -289,10 +359,29 @@ Is the work simple/linear?
 ## Best Practices
 
 1. **Always read the reference document** for the selected scope before generating tasks
-2. **Keep tasks atomic** - Each task should be independently completable
-3. **Limit category size** - 3-8 tasks per category
-4. **Clear descriptions** - Define what "done" means
-5. **Logical ordering** - Respect dependencies
+2. **Investigate implementation adaptively** - Check if code exists, analyze if present, skip if absent
+3. **Keep tasks atomic** - Each task should be independently completable
+4. **Limit category size** - 3-8 tasks per category
+5. **Clear descriptions** - Define what "done" means
+6. **Logical ordering** - Respect dependencies
+7. **Document findings** - Always report implementation assessment in output
+
+## Reference Documents
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `.claude/skills/task-planning/references/tdd-driven-development.md` | Red → Green → Refactor cycle | ✅ Created |
+| `.claude/skills/task-planning/references/holistic-testing.md` | Write → Run → Fix → Debug cycle (with adaptive mode) | ✅ Updated |
+| `.claude/skills/task-planning/references/complexity-criteria.md` | Organization selection framework | ✅ Utility |
+| `.claude/skills/task-planning/references/task-template.md` | Output format template | ✅ Utility |
+
+## Archived Reference Documents
+
+| File | Action | Location |
+|------|--------|----------|
+| `development-from-scratch.md` | Archived | `history/documents/Archive-TaskPlanningReference-20260205-042144/` |
+| `development-incomplete-features.md` | Archived | `history/documents/Archive-TaskPlanningReference-20260205-042144/` |
+| `incomplete-testing.md` | Archived | `history/documents/Archive-TaskPlanningReference-20260205-042144/` |
 
 ## Related Skills
 
