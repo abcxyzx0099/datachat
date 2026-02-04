@@ -213,13 +213,13 @@ This project uses **virtual environments only**. Direct system Python usage is *
 
 **CRITICAL RULE**: AI agents must follow the credential source-of-truth pattern when working with API keys and configuration credentials.
 
-**Full documentation**: See `[Credential Configuration](docs/configuration-reference/credential-configuration.md)` for credential values and usage patterns.
+**Full documentation**: See `[Credential Configuration](docs/application-design/credential-configuration.md)` for credential values and usage patterns.
 
 ### Credential Storage Pattern
 
 | File | Purpose | Who Uses It |
 |------|---------|-------------|
-| `docs/configuration-reference/credential-configuration.md` | **Single source of truth** for credential values | AI agents (read-only) |
+| `docs/application-design/credential-configuration.md` | **Single source of truth** for credential values | AI agents (read-only) |
 | `.env` | Runtime environment variables (actual values) | Application (read-only) |
 | `.env.example` | Template with placeholders (no actual credentials) | Developers for reference |
 
@@ -227,7 +227,7 @@ This project uses **virtual environments only**. Direct system Python usage is *
 
 **When AI agents need to use credentials:**
 
-1. **Read the credential values** from `docs/configuration-reference/credential-configuration.md`
+1. **Read the credential values** from `docs/application-design/credential-configuration.md`
 2. **Hardcode the values** into the `.env` file
 3. **Application reads only** from `.env` (never directly from this document)
 

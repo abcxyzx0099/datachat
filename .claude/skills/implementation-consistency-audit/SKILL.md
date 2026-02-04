@@ -19,7 +19,6 @@ Use `Glob` tool to discover all documentation files:
 
 ```
 docs/application-design/**/*.md
-docs/configuration-reference/**/*.md
 ```
 
 List all discovered documents at the start of the report.

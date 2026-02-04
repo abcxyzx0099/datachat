@@ -15,7 +15,7 @@ coverage.json
 
 # Credential files (contains secrets)
 docs/application-design/credentials.md
-docs/configuration-reference/credential-configuration.md
+docs/application-design/credential-configuration.md
 
 # Python cache
 __pycache__/

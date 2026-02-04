@@ -167,9 +167,7 @@ The `docs/` directory contains project documentation, including application desi
 
 ```
 docs/
-├── application-design/          # Application design documents
-├── configuration-reference/      # Configuration reference documents
-├── guides/                      # Development setup and usage guides
+├── application-design/          # Application design documents (includes setup guides and configuration)
 ├── meta-governance/             # Meta-governance and conventions
 ├── methodology/                 # Methodology and process documents
 └── reference/                   # External reference materials
