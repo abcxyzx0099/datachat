@@ -85,29 +85,20 @@ git push
 
 **Read the task specification** and extract task ID.
 
-**Create working document** at `tasks/task-worker-reports/{task-id}.md`:
+**Copy and rename the template** using CLI command:
 
-```markdown
-# Task Working Document: {task-id}
-
-**Status**: In Progress
-**Iteration**: 1
-**Started**: {timestamp}
-
----
-
-## Original Requirements
-{Copy from task specification}
-
-## Implementation Log
-{Implementation Agent will write here}
-
-## Audit Report
-{Auditor Agent will write here}
-
-## Iteration History
-{Appended after each iteration}
+```bash
+# Copy template from skill directory and rename with task ID
+cp .claude/skills/task-worker/working-document-template.md tasks/task-worker-reports/{task-id}.md
 ```
+
+**Populate the template with task requirements:**
+- Replace `{task-id}` with actual task ID
+- Replace `{timestamp}` with current timestamp
+- Replace `{task-spec-file}` with task specification path
+- Copy Original Requirements section from task specification
+
+**The template provides the structure - each agent updates their designated section.**
 
 ### Step 3: Spawn Implementation Agent
 
@@ -226,49 +217,30 @@ git push
 **Completed**: {timestamp}
 ```
 
-## Working Document Structure
+## Working Document Template
 
-The shared working document serves as the **information center** for all agents:
-
-```markdown
-# Task Working Document: task-20260204-120000-fix-auth-timeout
-
-**Status**: In Progress
-**Iteration**: 2
-**Started**: 2026-02-04 12:00:00
-
----
-
-## Original Requirements
-[Immutable - copied from task specification]
-
-## Implementation Log
-[Implementation Agent writes what they did]
-- Files investigated: ...
-- Files modified: ...
-- Changes made: ...
-- Self-assessment: "I think it's complete" (but Auditor verifies independently)
-
-## Audit Report
-[Auditor Agent writes independent verification here]
-- Verdict: FAIL
-- Rating: 6/10
-- Summary: Incomplete implementation
-- Issues found:
-  • Missing: Token refresh endpoint
-  • Missing: Session cleanup on logout
-  • Wrong: Hardcoded timeout instead of config
-- Recommendations:
-  • Implement /auth/refresh endpoint
-  • Add session cleanup in logout handler
-  • Fix timeout to read from config
-
-## Iteration History
-### Iteration 1
-- Verdict: FAILED
-- Rating: 6/10
-- Summary of issues: [...]
+The working document structure is defined in the template file:
 ```
+.claude/skills/task-worker/working-document-template.md
+```
+
+**Template sections:**
+
+| Section | Updated By | Purpose |
+|---------|------------|---------|
+| **Header (Status, Iteration, etc.)** | Coordinator | Track progress |
+| **Original Requirements** | Coordinator | Copied from task spec (immutable) |
+| **Implementation Log** | Implementation Agent | What they did (reference only) |
+| **Audit Report** | Auditor Agent | Independent verification |
+| **Iteration History** | Coordinator | Complete record |
+
+**Example workflow:**
+1. Coordinator copies template → `{task-id}.md`
+2. Coordinator fills in Original Requirements
+3. Implementation Agent updates Implementation Log
+4. Auditor Agent updates Audit Report (with PASS/FAIL verdict)
+5. Coordinator reads Audit Report to decide next step
+6. If iterating, append to Iteration History and repeat from step 3
 
 ## Output Format
 
