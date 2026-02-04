@@ -226,7 +226,7 @@ The `.claude/` directory contains Claude Code skills configuration.
 .claude/
 └── skills/                       # Custom skills
     ├── task-worker/              # Task implementation workflow skill
-    ├── task-management/          # Task management skill (CLI wrapper)
+    ├── task-management/          # Task queue skill (uses task-queue CLI)
     ├── task-planning/            # Task planning skill
     ├── task-specification-generation/  # Task spec generation
     ├── task-cleanup/             # Task cleanup skill

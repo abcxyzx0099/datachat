@@ -52,7 +52,7 @@ git push
 find tasks/ -type f ! -name "task-system-guide.md"
 
 # Count files in each subdirectory
-for dir in tasks/task-archive tasks/task-management/results tasks/task-management/state tasks/task-planning tasks/task-specifications tasks/task-worker-reports; do
+for dir in tasks/task-archive tasks/task-queue/results tasks/task-queue/state tasks/task-planning tasks/task-specifications tasks/task-worker-reports; do
     echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
 done
 ```
@@ -65,8 +65,8 @@ done
 
 ```bash
 rm -f tasks/task-archive/*.md 2>/dev/null
-rm -f tasks/task-management/results/*.json 2>/dev/null
-rm -f tasks/task-management/state/*.json 2>/dev/null
+rm -f tasks/task-queue/results/*.json 2>/dev/null
+rm -f tasks/task-queue/state/*.json 2>/dev/null
 rm -f tasks/task-planning/*.md 2>/dev/null
 rm -f tasks/task-specifications/task-*.md 2>/dev/null
 rm -rf tasks/task-worker-reports/* 2>/dev/null
@@ -82,7 +82,7 @@ find tasks/ -mindepth 2 -type f ! -name "task-system-guide.md" -delete
 ## Step 4: Verify Cleanup
 
 ```bash
-for dir in tasks/task-archive tasks/task-management/results tasks/task-management/state tasks/task-planning tasks/task-specifications tasks/task-worker-reports; do
+for dir in tasks/task-archive tasks/task-queue/results tasks/task-queue/state tasks/task-planning tasks/task-specifications tasks/task-worker-reports; do
     count=$(ls -1 "$dir" 2>/dev/null | wc -l)
     echo "$dir: $count files"
 done
@@ -101,8 +101,8 @@ done
 | `git add -A && git commit && git push` | Safety checkpoint |
 | `find tasks/ -type f ! -name "task-system-guide.md"` | List files to remove |
 | `rm -f tasks/task-archive/*.md` | Remove archived tasks |
-| `rm -f tasks/task-management/results/*.json` | Remove result files |
-| `rm -f tasks/task-management/state/*.json` | Remove state files |
+| `rm -f tasks/task-queue/results/*.json` | Remove result files |
+| `rm -f tasks/task-queue/state/*.json` | Remove state files |
 | `rm -f tasks/task-planning/*.md` | Remove planning docs |
 | `rm -f tasks/task-specifications/task-*.md` | Remove specifications |
 | `rm -rf tasks/task-worker-reports/*` | Remove worker reports |

@@ -4,10 +4,10 @@
 CLOSED
 
 ## Problem Description
-When a task is loaded using `task-manage load`, the task is added to the queue but the daemon does not automatically process it. The queue state shows `is_processing: false` and `current_task: null` even when tasks are queued.
+When a task is loaded using `task-queue load`, the task is added to the queue but the daemon does not automatically process it. The queue state shows `is_processing: false` and `current_task: null` even when tasks are queued.
 
 ## Observed Behavior
-1. Task is loaded successfully: `task-manage load task-xxx.md`
+1. Task is loaded successfully: `task-queue load task-xxx.md`
 2. Task appears in queue_state.json under `queued_tasks`
 3. Daemon shows `is_processing: false` and `current_task: null`
 4. Task is not processed until daemon is manually restarted
@@ -21,22 +21,22 @@ Instead of implementing complex polling or file watching, we simplified the work
 
 ### Commands
 
-1. **`task-manage load`** - Load tasks from specifications directory into queue
-2. **`task-manage run`** - Execute all queued tasks
+1. **`task-queue load`** - Load tasks from specifications directory into queue
+2. **`task-queue run`** - Execute all queued tasks
 
 ### Usage
 
 ```bash
 # Load tasks into queue
-task-manage load
+task-queue load
 
 # Execute queued tasks
-task-manage run
+task-queue run
 ```
 
 ### Implementation
 
-**File**: `/home/admin/workspaces/task-management/task_management/cli.py`
+**File**: `/home/admin/workspaces/task-queuement/task_management/cli.py`
 
 **Changes**:
 1. Added `run_tasks_async()` - async function to execute queued tasks
@@ -107,11 +107,11 @@ def run_tasks(project_root: Path):
 vim tasks/task-specifications/task-20260203-120000-my-task.md
 
 # Step 2: Load task into queue
-task-manage load
+task-queue load
 # Output: Added 1 task(s) to queue.
 
 # Step 3: Execute queued tasks
-task-manage run
+task-queue run
 # Output:
 # Found 1 task(s) in queue.
 # Executing: task-20260203-120000-my-task.md
@@ -120,19 +120,19 @@ task-manage run
 # All queued tasks processed.
 
 # Step 4: Check result
-task-manage result task-20260203-120000-my-task
+task-queue result task-20260203-120000-my-task
 ```
 
 ### Notes
 
-- The **daemon** (`task-manage daemon`) is still available for background processing
+- The **daemon** (`task-queue daemon`) is still available for background processing
 - The **run command** provides immediate execution without daemon
 - Users can choose whichever approach fits their workflow
 - For automatic processing, users can still run the daemon (which requires restart to pick up new tasks)
 
 ## Files Modified
 
-1. `/home/admin/workspaces/task-management/task_management/cli.py`
+1. `/home/admin/workspaces/task-queuement/task_management/cli.py`
    - Added `run_tasks_async()` function
    - Added `run_tasks()` function
    - Added `run` subparser

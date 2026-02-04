@@ -1,11 +1,11 @@
 ---
 name: task-specification-generation
-description: "Generates task specification documents from planning documents or conversation context. Creates task specs in tasks/task-specifications/ directory for the task-management module to process."
+description: "Generates task specification documents from planning documents or conversation context. Creates task specs in tasks/task-specifications/ directory for the task-queue module to process."
 ---
 
 # Task Specification Generation
 
-Generate structured task specification documents for the task-management module.
+Generate structured task specification documents for the task-queue module.
 
 ## Overview
 
@@ -17,7 +17,7 @@ This skill creates task specification documents that serve as the single source 
 - **Success criteria** to verify completion
 - **Worker investigation instructions** for autonomous execution
 
-The specifications are consumed by the `task-management` module, which loads them via CLI and executes them using the `task-worker` skill.
+The specifications are consumed by the `task-queuement` module, which loads them via CLI and executes them using the `task-worker` skill.
 
 ---
 
@@ -176,7 +176,7 @@ Write(
 ✅ Task specification created: tasks/task-specifications/task-{timestamp}-{description}.md
 
 To load and execute this task:
-  task-manage load
+  task-queue load
 ```
 
 ### Scenario 2: From Planning Document (Explicit Request)
@@ -217,10 +217,10 @@ task-20260202-120002-03-third-task.md
 ✅ Created N task specification(s) in tasks/task-specifications/
 
 To load and execute these tasks:
-  task-manage load
+  task-queue load
 
 View queue status:
-  task-manage queue
+  task-queue queue
 ```
 
 ## Quality Checklist
@@ -259,7 +259,7 @@ Before creating a task specification:
 ## Related Skills
 
 - **task-planning**: Generates planning documents for bulk generation
-- **task-management**: Loads and executes task specifications
+- **task-queuement**: Loads and executes task specifications
 - **task-worker**: Executes tasks with worker-auditor workflow
 
 ---
