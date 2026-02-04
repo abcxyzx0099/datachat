@@ -14,13 +14,16 @@ Cleans up the `tasks/` directory by removing all files while preserving the dire
 ```
 tasks/
 ├── task-archive/                # Will be emptied
-├── task-queue/
-│   └── results/                 # Will be emptied
+├── task-queue/                  # Will be emptied (flat structure)
+│   ├── task-*.json              # Result JSON files
+│   └── state/                   # Queue state files
 ├── task-planning/               # Will be emptied
-├── task-documents/         # Will be emptied
-├── task-reports/         # Will be emptied
-└── task-system-guide.md         # PRESERVED
+├── task-documents/              # Will be emptied
+└── task-reports/                # Will be emptied
+    └── task-*/
 ```
+
+**Note:** `docs/methodology/task-system-guide.md` is documentation and is NOT affected by cleanup.
 
 ---
 
@@ -97,13 +100,13 @@ done
 | `git branch --show-current` | Verify current branch |
 | `git switch main` | Switch to main branch |
 | `git add -A && git commit && git push` | Safety checkpoint |
-| `find tasks/ -type f ! -name "task-system-guide.md"` | List files to remove |
+| `find tasks/ -mindepth 2 -type f` | List files to remove |
 | `rm -f tasks/task-archive/*.md` | Remove archived tasks |
-| `rm -f tasks/task-queue/results/*.json` | Remove result files |
+| `rm -f tasks/task-queue/task-*.json` | Remove result files |
 | `rm -f tasks/task-queue/state/*.json` | Remove state files |
 | `rm -f tasks/task-planning/*.md` | Remove planning docs |
 | `rm -f tasks/task-documents/task-*.md` | Remove specifications |
-| `rm -rf tasks/task-reports/*` | Remove worker reports |
+| `rm -rf tasks/task-reports/task-*` | Remove worker reports |
 
 ---
 
@@ -125,7 +128,7 @@ done
 2. **Create safety checkpoint** - commit and push before cleanup
 3. **Confirm with user** before executing cleanup
 4. **Never remove** subdirectories themselves
-5. **Never remove** task-system-guide.md
+5. **Documentation is preserved** - `docs/methodology/task-system-guide.md` is NOT affected
 6. **Consider archiving** first if tasks might be needed later
 
 ---

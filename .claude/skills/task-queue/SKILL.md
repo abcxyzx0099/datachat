@@ -29,7 +29,7 @@ This skill bridges the gap between task specifications and execution. It uses th
 │  │ 1. Verify daemon running                            │  │
 │  │ 2. Load task specs (task-queue load)                 │  │
 │  │ 3. Monitor status (task-queue queue/status)          │  │
-│  │ 4. Display results (cat tasks/task-queue/results//history/logs)  │  │
+│  │ 4. Display results (cat tasks/task-queue/task-{id}.json)  │  │
 │  └──────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                            │
@@ -155,12 +155,12 @@ task-queue status -v
 ```
 tasks/
 ├── task-documents/             # Source of task docs
-│   ├── task-*.md              # Ready to load
-│   └── archive/               # Completed docs (auto-moved)
-├── task-queue/                # Module-managed
-│   └── results/               # Result JSON files
-├── task-archive/               # Central archive
-└── task-reports/        # Worker execution reports
+│   └── task-*.md              # Ready to load
+├── task-queue/                # Module-managed (flat structure)
+│   ├── task-*.json            # Result JSON files
+│   └── state/                 # Queue state files
+├── task-archive/               # Central archive for completed specs
+└── task-reports/               # Worker execution reports
     └── task-{timestamp}-{description}/
         ├── workflow-result.json
         ├── audit-report-iteration-*.md
@@ -277,7 +277,7 @@ journalctl --user -u task-queue -f
 2. **Sequential Execution** - Tasks execute one at a time (FIFO)
 3. **Background Processing** - Daemon runs independently
 4. **Status on Request** - Only check progress when user asks
-5. **Auto-Archive** - Completed specs moved to `tasks/task-documents/archive/`
+5. **Auto-Archive** - Completed specs moved to `tasks/task-archive/`
 
 ## Related Skills
 
