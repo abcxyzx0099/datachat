@@ -1,6 +1,6 @@
 # Task System Guide
 
-Complete guide to the asynchronous task execution system (task-queue) with event-driven watchdog monitoring and per-source queue architecture.
+Complete guide to the asynchronous task execution system (task-queue) with event-driven watchdog monitoring and parallel worker execution.
 
 ## Table of Contents
 
@@ -22,20 +22,20 @@ Complete guide to the asynchronous task execution system (task-queue) with event
 ### Create and Execute a Task
 
 ```bash
-# 1. Use task-documents to create a task specification
+# 1. Use task-documents skill to create a task specification
 # This creates: tasks/task-documents/task-YYYYMMDD-HHMMSS-{description}.md
 
-# 2. Load tasks using CLI
-task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
+# 2. Register Task Source Directory (one-time setup)
+task-queue register --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
 
 # 3. Task executes in background using Claude Agent SDK
-# (Watchdog auto-loads new files, daemon processes them)
+# (Watchdog monitors directory, daemon processes tasks automatically)
 
 # 4. Check results
-cat tasks/task-queue/task-{timestamp}-{description}.json
+task-queue status
 
-# 5. View detailed worker report
-ls tasks/task-reports/task-{timestamp}-{description}/
+# 5. View completed tasks
+ls tasks/task-archive/
 ```
 
 ### Common Commands
@@ -44,23 +44,20 @@ ls tasks/task-reports/task-{timestamp}-{description}/
 # Check daemon status
 task-queue status
 
-# Load tasks from Task Source Directory
-task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
-
-# Reload (force re-scan) a Task Source Directory
-task-queue reload --task-source-dir main --project-workspace /home/admin/workspaces/datachat
-
-# View queue status
-task-queue queue
+# Register a Task Source Directory (one-time setup)
+task-queue register --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
 
 # List Task Source Directories
 task-queue list-sources
 
+# Remove a Task Source Directory
+task-queue unregister --source-id main
+
+# Run interactively (for testing)
+task-queue run --cycles 1
+
 # View live logs
 journalctl --user -u task-queue -f
-
-# Check specific task result
-cat tasks/task-queue/task-{timestamp}-{description}.json
 ```
 
 ---
@@ -70,15 +67,17 @@ cat tasks/task-queue/task-{timestamp}-{description}.json
 The Task System is an asynchronous, event-driven task execution architecture that:
 
 - **Generates** task specifications via `task-documents` skill
-- **Auto-loads** tasks via watchdog when files are created/modified
-- **Queues** tasks per-source with round-robin execution
-- **Executes** tasks using Claude Agent SDK in isolated background sessions
-- **Reports** results to two separate output locations
-- **Archives** completed task specifications automatically
+- **Monitors** Task Source Directories via watchdog (event-driven, no polling)
+- **Executes** tasks using parallel worker threads (one per Task Source Directory)
+- **Processes** tasks sequentially within each source (no conflicts)
+- **Tracks** state via directory structure (no state file)
+- **Archives** completed tasks automatically
+- **Moves** failed tasks to failed directory
 
 **Key Benefits:**
-- Event-driven loading (no polling delay)
-- Per-source queues (parallel execution across sources)
+- Directory-based state (no complex state file synchronization)
+- Event-driven monitoring (no polling delay)
+- Parallel execution across sources (multiple workers)
 - Sequential execution within each source (no conflicts)
 - Continue conversation while tasks execute independently
 
@@ -113,27 +112,29 @@ The Task System is an asynchronous, event-driven task execution architecture tha
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Step 3: Watchdog Auto-Load OR Manual Load                                │
+│ Step 3: Register Task Source Directory (one-time setup)                  │
 │                                                                          │
-│   Option A: Watchdog (Automatic)                                        │
-│   ┌───────────────────────────────────────────────────────────────┐  │
-│   │  File Created/Modified → Watchdog Event → Auto-Load Task     │  │
-│   └───────────────────────────────────────────────────────────────┘  │
+│   task-queue register --task-source-dir <dir>                          │
+│                      --project-workspace <dir>                          │
+│                      --source-id <id>                                   │
 │                                                                          │
-│   Option B: Manual Load                                                  │
-│   ┌───────────────────────────────────────────────────────────────┐  │
-│   │  task-queue load --task-source-dir <dir>                      │  │
-│   │                  --project-workspace <dir>                       │  │
-│   │                  --source-id <id>                               │  │
-│   └───────────────────────────────────────────────────────────────┘  │
+│   Note: This registers the directory for watchdog monitoring.           │
+│   Tasks are auto-loaded when files appear (no manual loading needed).   │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Step 4: task-queue Daemon with Per-Source Queues (Background Process)   │
+│ Step 4: task-queue Daemon with Parallel Workers                         │
+│                                                                          │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │              Watchdog (Event-Driven Monitoring)                  │   │
+│   │                                                                 │   │
+│   │   File Created → Watchdog Event → Wake Worker Thread           │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
 │                                                                          │
 │   ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐     │
-│   │ Source A Queue  │  │ Source B Queue  │  │ Source C Queue  │     │
+│   │ Source A Worker │  │ Source B Worker │  │ Source C Worker │     │
+│   │   (Thread 1)     │  │   (Thread 2)     │  │   (Thread 3)     │     │
 │   │                 │  │                 │  │                 │     │
 │   │ task-a1 (pending)│  │ task-b1 (running)│  │ task-c1 (pending)│     │
 │   │ task-a2 (pending)│  │ task-b2 (pending)│  │ task-c2 (pending)│     │
@@ -143,27 +144,7 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 │   Sequential One       Sequential One       Sequential One                         │
 │   at a Time           at a Time           at a Time                               │
 │                                                                          │
-│   ┌─────────────────────────────────────────────────────────────────┐   │
-│   │         Source Coordinator (Round-Robin Scheduling)          │   │
-│   │                                                         │   │
-│   │   A-1 → B-1 → C-1 → A-2 → C-2 → ... (fair scheduling)    │   │
-│   └─────────────────────────────────────────────────────────────────┘   │
-│                                                                          │
-│   ┌─────────────────────────────────────────────────────────────────┐   │
-│   │  TaskExecutor (task_queue/executor.py)                          │   │
-│   │                                                                  │   │
-│   │  options = ClaudeAgentOptions(                                  │   │
-│   │      cwd=str(project_workspace),    # Project context           │   │
-│   │      permission_mode="bypassPermissions", # Full autonomous    │   │
-│   │      setting_sources=["project"],    # Load project skills     │   │
-│   │  )                                                               │   │
-│   │                                                                  │   │
-│   │  query("/task-worker", prompt=task_specification_path)          │   │
-│   └─────────────────────────────────────────────────────────────────┘   │
-│                                                                          │
-│   ✓ Spawns worker agent in isolated session                             │
-│   ✓ Non-blocking execution                                              │
-│   ✓ Conversation continues                                              │
+│   All workers run in PARALLEL (different sources)                         │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -181,31 +162,18 @@ The Task System is an asynchronous, event-driven task execution architecture tha
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Step 6: Dual Output System                                              │
+│ Step 6: Task State via Directory Structure                                │
 │                                                                          │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
-│   │ Output 1: Implementation Results (Execution Tracking)           │   │
-│   │                                                                  │   │
-│   │ Location: tasks/task-queue/{task_id}.json     │   │
-│   │ Purpose: Task status, duration, cost, errors                    │   │
-│   │ Managed by: task-queue module (task_executor.py)      │   │
-│   │                                                                  │   │
-│   │ { "task_id": "...", "status": "completed",                      │   │
-│   │   "stdout": "...", "stderr": null,                              │   │
-│   │   "duration_seconds": 123.4, "cost_usd": 0.045, ... }            │   │
-│   └─────────────────────────────────────────────────────────────────┘   │
-│                                                                          │
-│   ┌─────────────────────────────────────────────────────────────────┐   │
-│   │ Output 2: Worker Reports (Detailed Workflow)                    │   │
-│   │                                                                  │   │
-│   │ Location: tasks/task-reports/{task_id}/                  │   │
-│   │ Purpose: Iteration history, audit reports, implementation       │   │
-│   │ Managed by: task-worker skill                                   │   │
-│   │                                                                  │   │
-│   │ ├── workflow-result.json      # Complete iteration history      │   │
-│   │ ├── audit-report-iteration-1.md                                │   │
-│   │ ├── audit-report-iteration-2.md                                │   │
-│   │ └── implementation-summary.md                                   │   │
+│   │ Directory-Based State (No state.json file)                      │   │
+│   │                                                                 │   │
+│   │ tasks/task-documents/   ← Pending tasks                           │   │
+│   │   ├── task-001.md                                               │   │
+│   │   ├── .task-001.running  ← Execution marker                      │   │
+│   │   └── task-002.md                                               │   │
+│   │                                                                 │   │
+│   │ tasks/task-archive/     ← Completed tasks (auto-moved)           │   │
+│   │ tasks/task-failed/     ← Failed tasks (auto-moved)               │   │
 │   └─────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -223,18 +191,17 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 │   │   └── {descriptive-name}.md
 │   ├── task-documents/             # Input: Task specifications (Task Source Directory)
 │   │   ├── task-20260205-100000-fix-auth-timeout.md
+│   │   ├── .task-20260205-100000-fix-auth-timeout.running  # Marker for running tasks
 │   │   └── task-20260205-100500-add-feature.md
-│   ├── task-queue/                 # Execution tracking JSONs (flat)
-│   │   ├── task-20260205-100000-fix-auth-timeout.json
-│   │   └── task-20260205-100500-add-feature.json
 │   ├── task-archive/               # Completed specs (auto-moved)
-│   │   ├── task-20260205-100000-fix-auth-timeout.md
-│   │   └── task-20260205-100500-add-feature.md
-│   └── task-reports/               # Worker execution reports (detailed)
+│   │   ├── task-20260205-090000-previous-task.md
+│   │   └── task-20260205-093000-completed-task.md
+│   ├── task-failed/               # Failed specs (auto-moved)
+│   │   └── task-20260205-080000-failed-task.md
+│   └── task-reports/               # Worker execution reports (created by task-worker skill)
 │       └── task-{timestamp}-{description}/
 │           ├── workflow-result.json
 │           ├── audit-report-iteration-1.md
-│           ├── audit-report-iteration-2.md
 │           └── implementation-summary.md
 └── .claude/
     └── skills/
@@ -250,10 +217,7 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 ```
 ~/.config/task-queue/
 ├── config.json                     # Queue configuration (v2.0)
-├── config.json.lock               # Lock file for config access
-└── state/
-    ├── queue_state.json           # Queue state v2.0 (per-source queues)
-    └── queue_state.json.lock      # Lock file for state access
+└── config.json.lock               # Lock file for config access
 ```
 
 ---
@@ -342,37 +306,35 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 
 **Key Features:**
 - Direct `.md` generation
-- Watchdog auto-integration (daemon auto-loads new files)
-- Manual loading also available via CLI
+- Watchdog auto-integration (daemon detects new files)
 
 ### 3. task-queue
 
 **Purpose:** Coordinate task execution with watchdog and CLI commands
 
 **Workflow:**
-1. Watchdog auto-loads Task Documents when files are created/modified
-2. Or manual load via `task-queue load` command
-3. Per-source queues with round-robin coordinator
-4. Monitor queue status (`task-queue queue`)
-5. Display results (check `tasks/task-queue/`)
+1. Register Task Source Directory via CLI
+2. Watchdog monitors for file changes
+3. Worker threads process tasks (one per source)
+4. Check status via CLI
+5. Completed tasks auto-archive
 
 **Key Commands:**
 ```bash
-# Load from Task Source Directory
-task-queue load --task-source-dir <dir> --project-workspace <dir> --source-id <id>
-
-# Reload (force re-scan)
-task-queue reload --task-source-dir <id-or-path> --project-workspace <dir>
-
-# Unload (remove all tasks from source)
-task-queue unload --source-id <id>
+# Register Task Source Directory
+task-queue register --task-source-dir <dir> --project-workspace <dir> --source-id <id>
 
 # List sources
 task-queue list-sources
 
-# Check status/queue
+# Remove source
+task-queue unregister --source-id <id>
+
+# Check status
 task-queue status
-task-queue queue
+
+# Run interactively
+task-queue run --cycles 1
 ```
 
 **Called by:** User or AI to manage task execution
@@ -397,18 +359,17 @@ task-queue queue
 1. Verify tasks directory exists
 2. Show current contents and count files to be removed
 3. Confirm with user before proceeding
-4. Remove all files from subdirectories (via CLI commands)
+4. Remove all files from subdirectories
 5. Verify cleanup complete
 
 **Official Directories Cleaned:**
 - `tasks/task-archive/` - Archived task specifications
-- `tasks/task-queue/` - Result JSON files
+- `tasks/task-failed/` - Failed task specifications
 - `tasks/task-reports/` - Worker execution reports
 - `tasks/task-planning/` - Planning documents
 - `tasks/task-documents/` - Task specifications
 
 **Preserved:**
-- `docs/methodology/task-system-guide.md` - Documentation file
 - All subdirectories (empty, ready for new tasks)
 
 **Called by:** User or AI when needing a clean slate for new task work
@@ -417,51 +378,69 @@ task-queue queue
 
 ## Execution Model
 
-### Per-Source Architecture (v2.0)
+### Directory-Based State (v2.0)
 
-The task-queue now uses **per-source queues** with these rules:
+The task-queue now uses **directory-based state** with these rules:
 
 | Rule | Description |
 |------|-------------|
 | **Same source** | Sequential FIFO execution (one at a time) |
 | **Different sources** | Parallel execution (can run simultaneously) |
-| **Scheduling** | Round-robin coordinator for fair scheduling |
+| **State tracking** | Directory structure (no state.json file) |
+| **Running marker** | `.task-XXX.running` file indicates task in progress |
 
 ### Visual Example
 
 ```
-Source A (tasks/a/):    Source B (tasks/b/):    Source C (tasks/c/):
-┌──────────────┐        ┌──────────────┐        ┌──────────────┐
-│ Queue (FIFO) │        │ Queue (FIFO) │        │ Queue (FIFO) │
-│              │        │              │        │              │
-│ task-a1      │        │ task-b1      │        │ task-c1      │
-│ task-a2      │        │ task-b2      │        │ task-c2      │
-└──────────────┘        └──────────────┘        └──────────────┘
-      │                       │                       │
-      ▼                       ▼                       ▼
-Sequential One            Sequential One            Sequential One
+Source A Worker:         Source B Worker:         Source C Worker:
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│ Thread 1         │      │ Thread 2         │      │ Thread 3         │
+│                  │      │                  │      │                  │
+│ Scan task-a1     │      │ Scan task-b1     │      │ Scan task-c1     │
+│ Execute          │      │ Execute          │      │ Execute          │
+│ Archive          │      │ Archive          │      │ Archive          │
+│ Scan task-a2     │      │ Scan task-b2     │      │ Scan task-c2     │
+└──────────────────┘      └──────────────────┘      └──────────────────┘
+      │                        │                        │
+      ▼                        ▼                        ▼
+Sequential One           Sequential One            Sequential One
 at a Time               at a Time               at a Time
 
-Round-Robin Coordinator:
-A-1 → Switch to B → B-1 → Switch to C → C-1 → Switch to A → A-2 → ...
+All run in PARALLEL (different sources)
+```
+
+### Task States
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ Task Lifecycle                                                       │
+│                                                                     │
+│  task-documents/          Running             Archive/Failed       │
+│  ┌─────────────┐          ┌─────────┐          ┌─────────────┐    │
+│  │ task-001.md │ ─create──▶│.running │──done───▶│task-001.md │    │
+│  │ (pending)  │          │ marker  │          │(completed) │    │
+│  └─────────────┘          └─────────┘          └─────────────┘    │
+│                                                                     │
+│  On failure → task-failed/task-001.md                              │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Loading Methods
 
 | Method | When to Use |
 |--------|-------------|
-| **Watchdog (auto)** | Production, continuous operation - tasks auto-load when files are created |
-| **Manual Load** | One-off processing, testing, specific files |
+| **Watchdog (auto)** | Production, continuous operation - daemon wakes when files appear |
+| **Register command** | Initial setup, adding new sources |
 
 ### Within Each Source
 
-Tasks within the same Task Source Directory still execute sequentially to prevent file conflicts:
+Tasks within the same Task Source Directory execute sequentially:
 
 ```
 tasks/task-documents/:
-├── task-1.md ────→ [Load] ────→ [Queue] ────→ [Executing] ────→ Done
-├── task-2.md ────→ [Load] ────→ [Waiting] ──→ [Next] ────────→ Done
-└── task-3.md ────→ [Load] ────→ [Waiting] ──→ [Waiting] ──────→ ...
+├── task-001.md ──→ [Worker picks] ──→ [.task-001.running] ──→ [Executing] ──→ Archive
+├── task-002.md ──→ [Waiting] ──────────→ [Next cycle] ──────────────────→ Archive
+└── task-003.md ──→ [Waiting] ──────────→ [Waiting] ─────────────────────→ ...
 ```
 
 ---
@@ -470,42 +449,40 @@ tasks/task-documents/:
 
 The `task-queue` CLI provides these commands:
 
-### Task Operations
+### Configuration
 
 ```bash
-# Load tasks from Task Source Directory
-task-queue load --task-source-dir <path> --project-workspace <path> --source-id <id>
+# Specify custom config file
+task-queue --config /path/to/config.json <command>
+```
 
-# Load a single Task Document
-task-queue load --task-source-dir tasks/task-documents/task-001.md --project-workspace /home/admin/workspaces/datachat --source-id main
+**Note:** Configuration is auto-created on first use. No manual initialization needed.
 
-# Force re-scan a Task Source Directory
-task-queue reload --task-source-dir <source-id-or-path> --project-workspace <path>
+### Task Source Directory Management
 
-# Remove ALL tasks from a Task Source Directory
-task-queue unload --source-id <source-id>
+```bash
+# Register a Task Source Directory (one-time setup)
+# This adds the directory to config for watchdog monitoring
+task-queue register --task-source-dir <path> --project-workspace <path> --source-id <id>
 
-# Process pending tasks
-task-queue process [--max-tasks N]
+# List registered Task Source Directories
+task-queue list-sources
+
+# Remove a Task Source Directory from monitoring
+task-queue unregister --source-id <id>
 ```
 
 ### Monitoring
 
 ```bash
 # Show system status
-task-queue status [-v]
-
-# Show queue status
-task-queue queue
-
-# List Task Source Directories
-task-queue list-sources
+task-queue status
 ```
 
 ### Interactive Mode
 
 ```bash
-# Run monitor interactively
+# Run interactively (for testing)
 task-queue run [--cycles N]
 
 # Cycles: 0 = infinite, N = specific number
@@ -514,11 +491,14 @@ task-queue run [--cycles N]
 ### View Results
 
 ```bash
-# View task results
-cat tasks/task-queue/task-{timestamp}-{description}.json
+# View completed tasks
+ls tasks/task-archive/
 
-# View task execution logs (if available)
-cat tasks/task-queue/logs/task-{timestamp}-{description}.log
+# View failed tasks
+ls tasks/task-failed/
+
+# View task reports
+ls tasks/task-reports/task-{timestamp}-{description}/
 ```
 
 ---
@@ -529,25 +509,25 @@ The task-queue daemon runs as a systemd user service with watchdog monitoring.
 
 ```bash
 # Start service
-systemctl --user start task-queue
+systemctl --user start task-queue.service
 
 # Stop service
-systemctl --user stop task-queue
+systemctl --user stop task-queue.service
 
 # Restart service
-systemctl --user restart task-queue
+systemctl --user restart task-queue.service
 
 # Check status
-systemctl --user status task-queue
+systemctl --user status task-queue.service
 
 # Enable at login
-systemctl --user enable task-queue
+systemctl --user enable task-queue.service
 
 # View live logs
-journalctl --user -u task-queue -f
+journalctl --user -u task-queue.service -f
 
 # View last 100 log lines
-journalctl --user -u task-queue -n 100
+journalctl --user -u task-queue.service -n 100
 ```
 
 ---
@@ -556,25 +536,26 @@ journalctl --user -u task-queue -n 100
 
 ### Service won't start
 
-**Symptom:** `systemctl --user status task-queue` shows "failed" or "inactive"
+**Symptom:** `systemctl --user status task-queue.service` shows "failed" or "inactive"
 
 **Solutions:**
 
 1. **Check the logs:**
    ```bash
-   journalctl --user -u task-queue -n 50
+   journalctl --user -u task-queue.service -n 50
    ```
 
 2. **Verify directory structure:**
    ```bash
    ls -la tasks/task-documents/
-   ls -la tasks/task-queue/
+   ls -la tasks/task-archive/
+   ls -la tasks/task-failed/
    ```
 
 3. **Verify Python environment:**
    ```bash
-   cd /home/admin/workspaces/task-queue
-   pip install -e .
+   source /home/admin/workspaces/datachat/.venv/bin/activate
+   python -m task_queue.cli status
    ```
 
 4. **Check config file:**
@@ -582,9 +563,9 @@ journalctl --user -u task-queue -n 100
    cat ~/.config/task-queue/config.json
    ```
 
-### Tasks not being loaded
+### Tasks not being processed
 
-**Symptom:** `task-queue load` shows no tasks
+**Symptom:** `task-queue status` shows pending tasks but they don't execute
 
 **Solutions:**
 
@@ -597,27 +578,26 @@ journalctl --user -u task-queue -n 100
 
 3. **Check service is running:**
    ```bash
-   systemctl --user status task-queue
+   systemctl --user status task-queue.service
    ```
 
-4. **Check if watchdog is working:**
+4. **Check for stuck running markers:**
    ```bash
-   # Create a test file
-   touch tasks/task-documents/task-$(date +%Y%m%d-%H%M%S)-test.md
-
-   # Check logs for watchdog event
-   journalctl --user -u task-queue -f
+   ls tasks/task-documents/.task-*.running
+   # Note: The system auto-detects and cleans stale markers by checking process IDs
+   # Manual removal should rarely be necessary
    ```
 
 ### Task execution errors
 
-**Symptom:** Task completes with "failed" status
+**Symptom:** Task moves to failed directory
 
 **Solutions:**
 
-1. **View error details:**
+1. **View failed task:**
    ```bash
-   cat tasks/task-queue/task-{id}.json
+   cat tasks/task-failed/task-{id}.md
+   cat tasks/task-failed/task-{id}.error.*
    ```
 
 2. **Check detailed worker report:**
@@ -630,7 +610,7 @@ journalctl --user -u task-queue -n 100
 
 ### Watchdog not detecting files
 
-**Symptom:** Creating task files doesn't auto-load them
+**Symptom:** Creating task files doesn't trigger execution
 
 **Solutions:**
 
@@ -646,7 +626,7 @@ journalctl --user -u task-queue -n 100
 
 3. **Check daemon logs for watchdog errors:**
    ```bash
-   journalctl --user -u task-queue -n 50 | grep -i watchdog
+   journalctl --user -u task-queue.service -n 50 | grep -i watchdog
    ```
 
 ### Tasks not archiving
@@ -655,9 +635,10 @@ journalctl --user -u task-queue -n 100
 
 **Cause:** Archive path may be incorrect
 
-**Solution:** Verify archive path points to correct location:
+**Solution:** Verify archive path exists:
 ```bash
 ls tasks/task-archive/
+ls tasks/task-failed/
 ```
 
 ---
@@ -666,13 +647,14 @@ ls tasks/task-archive/
 
 1. **Conversation Continuity** - Tasks run in background, user keeps chatting
 2. **Event-Driven Loading** - Watchdog detects file changes instantly (no polling)
-3. **Per-Source Architecture** - Each Task Source Directory has its own queue
-4. **Sequential Within Source** - Prevents file conflict race conditions
-5. **Parallel Across Sources** - Different sources can execute simultaneously
+3. **Directory-Based State** - File system is the source of truth (no state file)
+4. **Parallel Execution** - Multiple workers run simultaneously (one per source)
+5. **Sequential Within Source** - Prevents file conflict race conditions
 6. **Direct Generation** - Task specifications generated directly as `.md` files
-7. **Traceability** - Full stdout/stderr captured in results JSON
-8. **Auto-Iteration** - Worker-auditor loop until quality threshold met
-9. **Project Context** - Each task runs with correct `cwd` (Project Workspace)
+7. **Auto-Iteration** - Worker-auditor loop until quality threshold met
+8. **Project Context** - Each task runs with correct `cwd` (Project Workspace)
+9. **Graceful Shutdown** - All workers stop cleanly on SIGTERM
+10. **Auto-Cleanup** - Stale running markers automatically detected and removed via process ID checking
 
 ---
 
@@ -682,28 +664,26 @@ ls tasks/task-archive/
 
 **Location:** `/home/admin/workspaces/task-queue/` (separate workspace)
 
-**Version:** 2.0 (Per-Source Queues with Watchdog)
+**Version:** 2.0 (Directory-Based State with Parallel Workers)
 
 **Installation:**
 ```bash
-# Install in datachat venv
-cd /home/admin/workspaces/datachat
-source .venv/bin/activate
-pip install -e /home/admin/workspaces/task-queue
+# Module runs as Python module from datachat venv
+source /home/admin/workspaces/datachat/.venv/bin/activate
+export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
+python -m task_queue.cli <command>
 ```
 
 **Components:**
+- **daemon.py**: Background daemon with parallel worker threads
+- **task_runner.py**: Core task execution logic
 - **watchdog.py**: Event-driven file system monitoring
-- **coordinator.py**: Round-robin source coordinator
-- **daemon.py**: Background daemon with watchdog
 - **executor.py**: Executes tasks via Claude Agent SDK
-- **processor.py**: Per-source queue management
 - **scanner.py**: Scans for task document files
 - **cli.py**: CLI commands
-- **monitor.py**: Main queue orchestration
 - **models.py**: Pydantic data models (v2.0)
 - **config.py**: Configuration management
-- **atomic.py**: Atomic file operations
+- **file_utils.py**: Atomic file operations and file locking
 
 **Service:** `~/.config/systemd/user/task-queue.service`
 
@@ -711,10 +691,11 @@ pip install -e /home/admin/workspaces/task-queue
 
 | Feature | v1.0 | v2.0 |
 |---------|------|------|
-| **Loading** | Manual only | Watchdog + Manual |
-| **Polling** | 10-second intervals | Event-driven |
-| **Queue** | Single global queue | Per-source queues |
-| **Execution** | Sequential only | Sequential per source, parallel across sources |
-| **Commands** | set-project, add-doc, etc. | load, reload, unload, list-sources |
-| **State** | Single queue | Per-source with coordinator |
+| **State** | queue_state.json file | Directory-based state |
+| **Polling** | 10-second intervals | Event-driven (threading.Event) |
+| **Execution** | Single-threaded sequential | Parallel workers, sequential per source |
+| **Architecture** | Monitor + Processor + Coordinator | Daemon with worker threads |
+| **Tracking** | In-memory queue state | `.running` marker files |
+| **Archive** | task-archive/ only | task-archive/ + task-failed/ |
+| **Commands** | set-project, add-doc, reload | register, unregister, list-sources, status |
 | **Terminology** | Spec Directory, Project Path | Task Source Directory, Project Workspace |
