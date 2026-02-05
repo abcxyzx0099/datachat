@@ -66,8 +66,9 @@ working/            →  Active/temporary work
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
-| **[`pspp-syntax-reference.md`](pspp-syntax-reference.md)** | PSPP syntax commands for statistical analysis | Backend developers |
-| **[`claude-agent-sdk-usage-patterns.md`](claude-agent-sdk-usage-patterns.md)** | Claude Agent SDK patterns (MCP Tools, Skills) | Agent developers |
+| **[`pspp-syntax-reference.md`](pspp-syntax/pspp-syntax-reference.md)** | PSPP syntax commands for statistical analysis | Backend developers |
+| **[`claude-agent-sdk-usage-patterns.md`](claude-agent-sdk/claude-agent-sdk-usage-patterns.md)** | Claude Agent SDK patterns (MCP Tools, Skills) | Agent developers |
+| **[`sdk-asyncio-cleanup-caution.md`](claude-agent-sdk/sdk-asyncio-cleanup-caution.md)** | SDK message iteration caution (don't use break) | Agent developers |
 
 ---
 
