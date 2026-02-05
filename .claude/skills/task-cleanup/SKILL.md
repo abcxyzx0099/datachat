@@ -13,17 +13,34 @@ Cleans up the `tasks/` directory by removing all files while preserving the dire
 
 ```
 tasks/
-├── task-archive/                # Will be emptied
-├── task-queue/                  # Will be emptied (flat structure)
-│   ├── task-*.json              # Result JSON files
-│   └── state/                   # Queue state files
 ├── task-planning/               # Will be emptied
-├── task-documents/              # Will be emptied
+│   └── {descriptive-name}.md
+├── task-documents/              # Will be emptied (Task Source Directory)
+│   └── task-YYYYMMDD-HHMMSS-{description}.md
+├── task-queue/                  # Will be emptied (flat structure)
+│   └── task-YYYYMMDD-HHMMSS-{description}.json
+├── task-archive/                # Will be emptied
+│   └── task-YYYYMMDD-HHMMSS-{description}.md
 └── task-reports/                # Will be emptied
-    └── task-*/
+    └── task-{timestamp}-{description}/
+        ├── workflow-result.json
+        ├── audit-report-iteration-*.md
+        └── implementation-summary.md
 ```
 
 **Note:** `docs/methodology/task-system-guide.md` is documentation and is NOT affected by cleanup.
+
+---
+
+## Official Directories Cleaned
+
+| Directory | Purpose |
+|-----------|---------|
+| `tasks/task-archive/` | Archived task specifications |
+| `tasks/task-queue/` | Result JSON files (flat structure) |
+| `tasks/task-reports/` | Worker execution reports (detailed) |
+| `tasks/task-planning/` | Planning documents |
+| `tasks/task-documents/` | Task specifications (Task Source Directory) |
 
 ---
 
@@ -50,10 +67,10 @@ git push
 
 ```bash
 # Show what will be removed
-find tasks/ -type f ! -name "task-system-guide.md"
+find tasks/ -type f
 
 # Count files in each subdirectory
-for dir in tasks/task-archive tasks/task-queue/results tasks/task-queue/state tasks/task-planning tasks/task-documents tasks/task-reports; do
+for dir in tasks/task-planning tasks/task-documents tasks/task-queue tasks/task-archive tasks/task-reports; do
     echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
 done
 ```
@@ -65,17 +82,25 @@ done
 ## Step 3: Clean Up Subdirectories
 
 ```bash
-rm -f tasks/task-archive/*.md 2>/dev/null
-rm -f tasks/task-queue/results/*.json 2>/dev/null
-rm -f tasks/task-queue/state/*.json 2>/dev/null
+# Remove planning documents
 rm -f tasks/task-planning/*.md 2>/dev/null
+
+# Remove task specifications (Task Source Directory)
 rm -f tasks/task-documents/task-*.md 2>/dev/null
-rm -rf tasks/task-reports/* 2>/dev/null
+
+# Remove result JSON files (flat structure)
+rm -f tasks/task-queue/task-*.json 2>/dev/null
+
+# Remove archived task specifications
+rm -f tasks/task-archive/task-*.md 2>/dev/null
+
+# Remove worker reports (detailed subdirectories)
+rm -rf tasks/task-reports/task-* 2>/dev/null
 ```
 
 **Alternative (single command):**
 ```bash
-find tasks/ -mindepth 2 -type f ! -name "task-system-guide.md" -delete
+find tasks/ -mindepth 2 -type f -delete
 ```
 
 ---
@@ -83,7 +108,7 @@ find tasks/ -mindepth 2 -type f ! -name "task-system-guide.md" -delete
 ## Step 4: Verify Cleanup
 
 ```bash
-for dir in tasks/task-archive tasks/task-queue/results tasks/task-queue/state tasks/task-planning tasks/task-documents tasks/task-reports; do
+for dir in tasks/task-planning tasks/task-documents tasks/task-queue tasks/task-archive tasks/task-reports; do
     count=$(ls -1 "$dir" 2>/dev/null | wc -l)
     echo "$dir: $count files"
 done
@@ -101,11 +126,10 @@ done
 | `git switch main` | Switch to main branch |
 | `git add -A && git commit && git push` | Safety checkpoint |
 | `find tasks/ -mindepth 2 -type f` | List files to remove |
-| `rm -f tasks/task-archive/*.md` | Remove archived tasks |
-| `rm -f tasks/task-queue/task-*.json` | Remove result files |
-| `rm -f tasks/task-queue/state/*.json` | Remove state files |
-| `rm -f tasks/task-planning/*.md` | Remove planning docs |
-| `rm -f tasks/task-documents/task-*.md` | Remove specifications |
+| `rm -f tasks/task-planning/*.md` | Remove planning documents |
+| `rm -f tasks/task-documents/task-*.md` | Remove task specifications |
+| `rm -f tasks/task-queue/task-*.json` | Remove result JSON files |
+| `rm -f tasks/task-archive/task-*.md` | Remove archived tasks |
 | `rm -rf tasks/task-reports/task-*` | Remove worker reports |
 
 ---

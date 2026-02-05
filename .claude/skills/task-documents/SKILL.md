@@ -1,6 +1,6 @@
 ---
 name: task-documents
-description: "Generates task document specifications from planning documents or conversation context. Creates task specs in tasks/task-documents/ directory for the task-queue module to process."
+description: "Generates task document specifications from planning documents or conversation context. Creates task specs in tasks/task-documents/ directory (Task Source Directory) where watchdog auto-loads them for the task-queue module to process."
 ---
 
 # Task Documents Generation
@@ -41,10 +41,14 @@ The specifications are consumed by the `task-queue` module, which loads them via
 
 ## Output Location
 
+Task specifications are created in the **Task Source Directory**:
+
 ```
 tasks/task-documents/
 └── task-YYYYMMDD-HHMMSS-{description}.md
 ```
+
+**Note:** This directory is monitored by the watchdog. New files are auto-loaded into the task-queue.
 
 ---
 
@@ -175,8 +179,8 @@ Write(
 ```
 Task document created: tasks/task-documents/task-{timestamp}-{description}.md
 
-To load and execute this task:
-  task-queue load
+The watchdog will auto-load this task. Or manually load with:
+  task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
 ```
 
 ### Scenario 2: From Planning Document (Explicit Request)
@@ -216,8 +220,8 @@ task-20260202-120002-03-third-task.md
 ```
 Created N task document(s) in tasks/task-documents/
 
-To load and execute these tasks:
-  task-queue load
+The watchdog will auto-load these tasks. Or manually load with:
+  task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
 
 View queue status:
   task-queue queue
@@ -242,17 +246,19 @@ Before creating a task document:
 
 ## Key Principles
 
-1. **Testing is Mandatory** - Every code task must include testing requirements. Only documentation/configuration tasks may use "No Tests."
+1. **Watchdog Integration** - Task specifications are written directly as `.md` files; the watchdog auto-loads them when created/modified.
 
-2. **80% Coverage Minimum** - All code changes must achieve at least 80% test coverage for modified/new files.
+2. **Testing is Mandatory** - Every code task must include testing requirements. Only documentation/configuration tasks may use "No Tests."
 
-3. **Clear Success Criteria** - Success criteria must include test pass rate and coverage thresholds.
+3. **80% Coverage Minimum** - All code changes must achieve at least 80% test coverage for modified/new files.
 
-4. **Worker Autonomy** - Worker agents do their own investigation. Provide clear investigation instructions.
+4. **Clear Success Criteria** - Success criteria must include test pass rate and coverage thresholds.
 
-5. **Specific Requirements** - Requirements must be actionable, not vague. Avoid "improve code" - specify what must be done.
+5. **Worker Autonomy** - Worker agents do their own investigation. Provide clear investigation instructions.
 
-6. **Direct File Creation** - Write task documents directly as `.md` files. No `.md.tmp` intermediate files.
+6. **Specific Requirements** - Requirements must be actionable, not vague. Avoid "improve code" - specify what must be done.
+
+7. **Direct File Creation** - Write task documents directly as `.md` files. No `.md.tmp` intermediate files.
 
 ---
 

@@ -1,25 +1,26 @@
 ---
 name: task-queue
-description: "Coordinates task execution using the task-queue module. Loads task specifications from tasks/task-documents/ directory using CLI commands and monitors execution progress. Use when: you have task specifications ready; you need to queue and execute tasks; you want to monitor task status and results."
+description: "Coordinates task execution using the task-queue module with watchdog auto-loading and per-source queue architecture. Loads task specifications from Task Source Directories using CLI commands and monitors execution progress. Use when: you have task specifications ready; you need to queue and execute tasks; you want to monitor task status and results."
 ---
 
 # Task Queue
 
-Coordinate task execution using the task-queue module and CLI commands.
+Coordinate task execution using the task-queue module with watchdog auto-loading and per-source queue architecture.
 
 ## Overview
 
 This skill bridges the gap between task specifications and execution. It uses the `task-queue` CLI to:
-1. **Load** task specifications into the queue
-2. **Monitor** execution status
-3. **Display** results
+1. **Auto-load** task specifications via watchdog when files are created/modified
+2. **Manually load** tasks via CLI commands
+3. **Monitor** execution status across per-source queues
+4. **Display** results
 
-## Architecture
+## Architecture (v2.0)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    User / AI Agent                          │
-│                  (invokes /task-queue)                  │
+│                  (invokes /task-queue)                      │
 └─────────────────────────────────────────────────────────────┘
                            │
                            ▼
@@ -27,17 +28,19 @@ This skill bridges the gap between task specifications and execution. It uses th
 │               Task Queue Skill                              │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │ 1. Verify daemon running                            │  │
-│  │ 2. Load task specs (task-queue load)                 │  │
-│  │ 3. Monitor status (task-queue queue/status)          │  │
-│  │ 4. Display results (cat tasks/task-queue/task-{id}.json)  │  │
+│  │ 2. Load task specs OR rely on watchdog auto-load     │  │
+│  │ 3. Monitor queue status (per-source)                 │  │
+│  │ 4. Display results (cat tasks/task-queue/task-{id}.json) │  │
 │  └──────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│          task-queue Module (CLI: task-queue)        │
+│       task-queue Module (CLI: task-queue) v2.0              │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │ Daemon: Background process that manages queue        │  │
+│  │ Watchdog: Event-driven file system monitoring        │  │
+│  │ Per-Source Queues: Independent queues per source     │  │
+│  │ Coordinator: Round-robin scheduling                  │  │
 │  │ Executor: Calls /task-worker skill for each task     │  │
 │  └──────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
@@ -57,20 +60,27 @@ Call this skill when:
 - You need to monitor task execution progress
 - You want to view task results
 
-## CLI Commands Reference
+## CLI Commands Reference (v2.0)
 
 The task-queue module provides these commands:
 
 | Command | Purpose |
 |---------|---------|
-| `task-queue set-project <path>` | Set project path |
-| `task-queue show-project` | Show current project path |
+| `task-queue load --task-source-dir <dir> --project-workspace <dir> --source-id <id>` | Load tasks from Task Source Directory |
+| `task-queue reload --task-source-dir <id-or-path> --project-workspace <dir>` | Force re-scan a Task Source Directory |
+| `task-queue unload --source-id <id>` | Remove all tasks from a source |
+| `task-queue list-sources` | List Task Source Directories |
 | `task-queue status` | Show daemon and queue status |
-| `task-queue queue` | Show queue state |
-| `task-queue load` | Load tasks from spec directories |
-| `task-queue process` | Process pending tasks |
-| `task-queue list-specs` | List spec directories |
-| `task-queue run` | Run monitor interactively |
+| `task-queue queue` | Show per-source queue state |
+| `task-queue process [--max-tasks N]` | Process pending tasks |
+| `task-queue run [--cycles N]` | Run monitor interactively |
+
+## Loading Methods
+
+| Method | When to Use |
+|--------|-------------|
+| **Watchdog (auto)** | Production, continuous operation - tasks auto-load when files are created |
+| **Manual Load** | One-off processing, testing, specific files |
 
 ## Workflow
 
@@ -95,25 +105,24 @@ Would you like me to start the daemon now?
   systemctl --user start task-queue
 ```
 
-### Step 2: Set Project Path (if needed)
+### Step 2: Load Task Specifications (Manual OR Watchdog)
+
+**Option A: Manual Load**
 
 ```bash
-# Set current project to working directory
-task-queue set-project "$(pwd)"
+# Load from Task Source Directory
+task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
 ```
 
-### Step 3: Load Task Specifications
+**Option B: Watchdog (Automatic)**
 
-```bash
-# Load all task-*.md files from tasks/task-documents/
-task-queue load
-```
+Tasks are automatically loaded when files are created in `tasks/task-documents/`. No manual loading required.
 
 **Expected output:**
 ```
 Loaded N task(s) from tasks/task-documents/
-  - task-20260202-120000-fix-auth-timeout.md
-  - task-20260202-120500-add-user-profile.md
+  - task-20260205-100000-fix-auth-timeout.md
+  - task-20260205-100500-add-feature.md
 
 Added N task(s) to queue.
 Total queue size: N
@@ -121,31 +130,34 @@ Total queue size: N
 Use 'task-queue queue' to check the queue status
 ```
 
-### Step 4: Monitor Queue Status
+### Step 3: Monitor Queue Status
 
 ```bash
 task-queue queue
 ```
 
-**Expected output:**
+**Expected output (per-source queues):**
 ```
-Project: /home/admin/workspaces/datachat
-Queue size: 1
-Processing: task-20260202-120000-fix-auth-timeout.md
-Queued tasks:
-  1. task-20260202-120500-add-user-profile.md
+Project Workspace: /home/admin/workspaces/datachat
+Total Queue Size: 2
+
+Source: main (tasks/task-documents)
+  Queue Size: 2
+  Processing: task-20260205-100000-fix-auth-timeout.md
+  Queued:
+    1. task-20260205-100500-add-feature.md
 ```
 
-### Step 5: Monitor Progress (Optional)
+### Step 4: Monitor Progress (Optional)
 
 **Only monitor when user explicitly asks to check progress.**
 
 ```bash
 # Check specific task status
-cat tasks/task-queue/results/task-20260202-120000.json
+cat tasks/task-queue/task-20260205-100000-fix-auth-timeout.json
 
-# View history
-task-queue status -v
+# View live logs
+journalctl --user -u task-queue -f
 ```
 
 **DO NOT continuously poll during execution.** Only check when the user asks.
@@ -154,18 +166,28 @@ task-queue status -v
 
 ```
 tasks/
-├── task-documents/             # Source of task docs
-│   └── task-*.md              # Ready to load
-├── task-queue/                # Module-managed (flat structure)
-│   ├── task-*.json            # Result JSON files
-│   └── state/                 # Queue state files
-├── task-archive/               # Central archive for completed specs
-└── task-reports/               # Worker execution reports
+├── task-documents/             # Input: Task specifications (Task Source Directory)
+│   └── task-YYYYMMDD-HHMMSS-{description}.md
+├── task-queue/                 # Execution tracking JSONs (flat)
+│   └── task-YYYYMMDD-HHMMSS-{description}.json
+├── task-archive/               # Completed specs (auto-moved)
+│   └── task-YYYYMMDD-HHMMSS-{description}.md
+└── task-reports/               # Worker execution reports (detailed)
     └── task-{timestamp}-{description}/
         ├── workflow-result.json
         ├── audit-report-iteration-*.md
         └── implementation-summary.md
 ```
+
+## Per-Source Architecture (v2.0)
+
+The task-queue uses **per-source queues** with these rules:
+
+| Rule | Description |
+|------|-------------|
+| **Same source** | Sequential FIFO execution (one at a time) |
+| **Different sources** | Parallel execution (can run simultaneously) |
+| **Scheduling** | Round-robin coordinator for fair scheduling |
 
 ## Example Usage
 
@@ -180,8 +202,8 @@ tasks/
 task-queue status
 # Output: Running
 
-# 2. Load tasks
-task-queue load
+# 2. Load tasks (or rely on watchdog)
+task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
 # Output:
 # Loaded 2 task(s) from tasks/task-documents/
 # Added 2 task(s) to queue.
@@ -189,11 +211,6 @@ task-queue load
 
 # 3. Verify queue
 task-queue queue
-# Output:
-# Queue size: 2
-# Processing: task-20260202-120000-fix-auth-timeout.md
-# Queued tasks:
-#   1. task-20260202-120500-add-user-profile.md
 ```
 
 **Inform user:**
@@ -201,10 +218,11 @@ task-queue queue
 ✅ Tasks loaded and queued for execution.
 
 Current status:
+- Source: main
 - Queue size: 2
-- Processing: task-20260202-120000-fix-auth-timeout.md
+- Processing: task-20260205-100000-fix-auth-timeout.md
 
-The daemon will process tasks sequentially. I can check progress when you ask.
+The daemon processes tasks sequentially per source. Different sources execute in parallel.
 ```
 
 ### Scenario: Check Progress
@@ -217,38 +235,33 @@ The daemon will process tasks sequentially. I can check progress when you ask.
 # Check queue status
 task-queue queue
 
-# If first task completed, check result
-cat tasks/task-queue/results/ task-20260202-120000
-
-# Show logs if needed
-cat tasks/task-queue/logs/ task-20260202-120000
+# If task completed, check result
+cat tasks/task-queue/task-20260205-100000-fix-auth-timeout.json
 ```
 
 ## Result Interpretation
 
-### From `cat tasks/task-queue/results/`
+### From `cat tasks/task-queue/task-{id}.json`
 
-```
-Task ID: task-20260202-120000-fix-auth-timeout
-Status: completed
-Created: 2026-02-02 12:00:00
-Started: 2026-02-02 12:00:05
-Completed: 2026-02-02 12:05:30
-Duration: 325.42 seconds
-
-Summary:
-  Task completed successfully
-
-Usage:
-  Tokens: 45,230
-  Cost: $0.1234
+```json
+{
+  "task_id": "task-20260205-100000-fix-auth-timeout",
+  "status": "completed",
+  "stdout": "...",
+  "stderr": null,
+  "duration_seconds": 123.4,
+  "cost_usd": 0.045,
+  "created": "2026-02-05T10:00:00",
+  "started": "2026-02-05T10:00:05",
+  "completed": "2026-02-05T10:02:08"
+}
 ```
 
 ### Status Values
 
 | Status | Meaning |
 |--------|---------|
-| `queued` | Waiting in queue |
+| `pending` | Waiting in queue |
 | `running` | Currently executing |
 | `completed` | Finished successfully |
 | `failed` | Failed with error |
@@ -264,20 +277,28 @@ systemctl --user start task-queue
 # Stop daemon
 systemctl --user stop task-queue
 
+# Restart daemon
+systemctl --user restart task-queue
+
 # Enable at login
 systemctl --user enable task-queue
 
-# View logs
+# View live logs
 journalctl --user -u task-queue -f
+
+# View last 100 log lines
+journalctl --user -u task-queue -n 100
 ```
 
-## Key Principles
+## Key Principles (v2.0)
 
-1. **Manual Loading** - Tasks must be explicitly loaded via `task-queue load`
-2. **Sequential Execution** - Tasks execute one at a time (FIFO)
-3. **Background Processing** - Daemon runs independently
-4. **Status on Request** - Only check progress when user asks
-5. **Auto-Archive** - Completed specs moved to `tasks/task-archive/`
+1. **Event-Driven Loading** - Watchdog detects file changes instantly (no polling)
+2. **Per-Source Queues** - Each Task Source Directory has its own queue
+3. **Sequential Within Source** - Prevents file conflict race conditions
+4. **Parallel Across Sources** - Different sources can execute simultaneously
+5. **Background Processing** - Daemon runs independently with watchdog
+6. **Status on Request** - Only check progress when user asks
+7. **Auto-Archive** - Completed specs moved to `tasks/task-archive/`
 
 ## Related Skills
 
@@ -300,23 +321,34 @@ systemctl --user start task-queue
 ### No tasks loaded
 
 ```bash
-task-queue load
+task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
 # Output: No tasks to load.
 
-# Check specifications directory
-ls tasks/task-documents/
-# Ensure task-*.md files exist
+# Check Task Source Directory
+ls tasks/task-documents/task-*.md
+# Ensure task-YYYYMMDD-HHMMSS-*.md files exist
+```
+
+### Watchdog not detecting files
+
+```bash
+# Check watchdog is enabled in config
+cat ~/.config/task-queue/config.json | grep watch_enabled
+
+# Verify Task Source Directory is configured
+task-queue list-sources
+
+# Check daemon logs for watchdog errors
+journalctl --user -u task-queue -n 50 | grep -i watchdog
 ```
 
 ### Task failed
 
 ```bash
-# Check result
-cat tasks/task-queue/results/ task-{id}
+# Check result JSON
+cat tasks/task-queue/task-{id}.json
 
-# View logs
-cat tasks/task-queue/logs/ task-{id}
-
-# Check worker reports
+# Check detailed worker report
 ls tasks/task-reports/task-{id}/
+cat tasks/task-reports/task-{id}/audit-report-*.md
 ```

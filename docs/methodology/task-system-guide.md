@@ -140,7 +140,7 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 │   └─────────────────┘  └─────────────────┘  └─────────────────┘     │
 │           │                   │                   │                     │
 │           ▼                   ▼                   ▼                     │
-│   Sequential One       Sequential One       Sequential One                        │
+│   Sequential One       Sequential One       Sequential One                         │
 │   at a Time           at a Time           at a Time                               │
 │                                                                          │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
