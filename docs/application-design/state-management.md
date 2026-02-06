@@ -87,14 +87,14 @@ graph TD
 |-----------|-------|-------------|---------|
 | `InputState` | 0 | 1 | Initial input configuration |
 | `ExtractionState` | 1-3 | 5 | Data extraction and filtering |
-| `RecodingState` | 4-8 | 10 | New dataset generation |
-| `IndicatorState` | 9-11 | 8 | Indicator generation |
-| `CrossTableState` | 12-16 | 10 | Cross-table generation |
-| `StatisticalAnalysisState` | 17-18 | 5 | Statistical tests |
-| `FilteringState` | 19-20 | 4 | Significant table selection |
-| `PresentationState` | 21-22 | 3 | Output generation |
-| `ApprovalState` | Cross-step | 2 | Human-in-the-loop tracking |
-| `TrackingState` | Cross-step | 3 | Execution logging |
+| `RecodingState` | 4-8 | 6 | New dataset generation |
+| `IndicatorState` | 9-11 | 4 | Indicator generation |
+| `CrossTableState` | 12-16 | 6 | Cross-table generation |
+| `StatisticalAnalysisState` | 17-18 | 2 | Statistical tests |
+| `FilteringState` | 19-20 | 5 | Significant table selection |
+| `PresentationState` | 21-22 | 2 | Output generation |
+| `ApprovalState` | Cross-step | 3 | Human-in-the-loop tracking |
+| `TrackingState` | Cross-step | 2 | Error and warning tracking |
 
 ### 2.3 Field Types by Category
 
@@ -107,7 +107,7 @@ graph TD
 | **Validation** | `*_validation_result`, `*_approved` | `Dict`, `bool` |
 | **Feedback** | `*_feedback` | `str` |
 | **Outputs** | `powerpoint_file`, `html_dashboard_file` | `str` |
-| **Execution** | `execution_log`, `errors`, `warnings` | `List[Dict]`, `List[str]` |
+| **Tracking** | `errors`, `warnings` | `List[str]` |
 
 ---
 
@@ -139,7 +139,7 @@ graph TD
     STEP19["Step 19<br/>filter_list"]
     STEP20["Step 20<br/>significant_tables"]
     STEP21["Step 21<br/>powerpoint_file"]
-    STEP22["Step 22<br/>html_dashboard_file<br/>charts_generated"]
+    STEP22["Step 22<br/>html_dashboard_file"]
 
     STEP0 --> STEP1 --> STEP2 --> STEP3
     STEP3 --> STEP4 --> STEP5 --> STEP6
@@ -188,7 +188,7 @@ graph TD
 | 4 | `RecodingState` | `recoding_rules` | Validation/feedback fields |
 | 5 | `RecodingState` | `recoding_validation_result` | `recoding_feedback`, `recoding_approved` |
 | 6 | `RecodingState` | `recoding_approved` | May have `recoding_feedback` |
-| 7 | `RecodingState` | (PSPP syntax tracked in execution log) | `new_data_file` |
+| 7 | `RecodingState` | (PSPP syntax generated) | `new_data_file` |
 | 8 | `RecodingState` | `new_data_file`, `new_metadata` | All recoding fields complete |
 | 9 | `IndicatorState` | `indicators` | Validation/feedback fields |
 | 10 | `IndicatorState` | `indicator_validation_result` | `indicator_feedback`, `indicators_approved` |
@@ -255,7 +255,7 @@ stateDiagram-v2
 | **Accumulation** | Fields once populated remain (unless explicitly reset) |
 | **Optional Until Set** | All fields optional until their step completes |
 | **Type Consistency** | Field types never change across workflow |
-| **Cross-Step Fields** | `execution_log`, `errors`, `warnings` updated throughout |
+| **Cross-Step Fields** | `errors`, `warnings` updated throughout |
 
 ---
 
@@ -312,6 +312,28 @@ state = graph.get_state(config)
 # Continue execution
 result = graph.invoke(None, config)
 ```
+
+### 5.5 Checkpoint History for Audit Trail
+
+LangGraph's checkpoint system maintains a complete history of all state transitions. Instead of accumulating execution logs in the state itself, the workflow retrieves execution history using:
+
+```python
+# Get full execution history
+config = {"configurable": {"thread_id": "thread_id"}}
+history = graph.get_state_history(config)
+
+# Iterate through checkpoints for audit trail
+for checkpoint_state in history:
+    step = checkpoint_state.next  # Next step to execute
+    timestamp = checkpoint_state.config["configurable"]["checkpoint_ns"]
+    # Access state at each checkpoint
+```
+
+This approach provides:
+- Complete execution trace without state bloat
+- Timestamp for each node completion
+- State snapshot at every checkpoint
+- Efficient storage and retrieval
 
 ---
 
@@ -379,14 +401,13 @@ def create_initial_state(input_file_path: str, config: Dict[str, Any]) -> Workfl
         # PresentationState - All None
         "powerpoint_file": None,
         "html_dashboard_file": None,
-        "charts_generated": None,
 
-        # ApprovalState - Initialized empty
-        "approval_comments": [],
-        "pending_approval_step": None,
+        # ApprovalState - Initialized
+        "current_step": 0,
+        "requires_human_review": False,
+        "iteration_count": 0,
 
         # TrackingState - Initialized empty
-        "execution_log": [],
         "errors": [],
         "warnings": []
     }
@@ -397,8 +418,9 @@ def create_initial_state(input_file_path: str, config: Dict[str, Any]) -> Workfl
 | Field | Default | Rationale |
 |-------|---------|-----------|
 | `*_approved` | `False` | Requires approval |
-| `approval_comments` | `[]` | Empty list |
-| `execution_log` | `[]` | Empty list |
+| `current_step` | `0` | Starting step |
+| `requires_human_review` | `False` | No review required initially |
+| `iteration_count` | `0` | No iterations yet |
 | `errors` | `[]` | Empty list |
 | `warnings` | `[]` | Empty list |
 | `total_tables_evaluated` | `0` | Zero tables evaluated |
