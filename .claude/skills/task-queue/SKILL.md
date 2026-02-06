@@ -10,145 +10,201 @@ Coordinate task execution using the task-queue module with watchdog auto-loading
 ## Overview
 
 This skill bridges the gap between task specifications and execution. It uses the `task-queue` CLI to:
-1. **Register** Task Source Directories for watchdog monitoring (if not already registered)
-2. **Monitor** execution status via the daemon
-3. **Display** results from completed tasks
+1. **Initialize** the task system (one-time setup)
+2. **Register** Task Source Directories for watchdog monitoring
+3. **Monitor** execution status via the daemon
+4. **Display** results from completed tasks
 
-## Architecture (v2.0)
+## Architecture (v2.1)
 
 ```
-┌─────────────────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────┐
 │                    User / AI Agent                          │
 │                  (invokes /task-queue)                      │
-└─────────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────┘
                            │
                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│               Task Queue Skill                              │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ 1. Verify daemon running                            │  │
-│  │ 2. Check if registered; register if not             │  │
-│  │ 3. Monitor execution status                          │  │
-│  │ 4. Display results from archive                     │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│               Task Queue Skill                        │
+│  ┌──────────────────────────────────────────────┐  │
+│  │ 1. Verify daemon running                    │  │
+│  │ 2. Check sources; init if needed            │  │
+│  │ 3. Monitor execution status                 │  │
+│  │ 4. Display results from archive             │  │
+│  └──────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
                            │
                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│       task-queue Module (CLI: task-queue) v2.0              │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Watchdog: Event-driven file system monitoring        │  │
-│  │ Per-Source Workers: One thread per source            │  │
-│  │ Sequential execution within each source              │  │
-│  │ Executor: Calls /task-worker skill for each task     │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│       task-queue Module (CLI: python -m task_queue.cli) │
+│  ┌──────────────────────────────────────────────┐  │
+│  │ Watchdog: Event-driven file system monitoring  │  │
+│  │ Per-Source Workers: One thread per source    │  │
+│  │ Sequential execution within each source       │  │
+│  │ Lock Files: Track running tasks with metadata │  │
+│  │ Executor: Calls /task-worker skill           │  │
+│  └──────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
                            │
                            ▼
-┌─────────────────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────┐
 │                   Task Worker Skill                         │
 │           (worker-auditor workflow, auto-iteration)         │
-└─────────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────┘
 ```
 
 ## When to Use
 
 Call this skill when:
 - Task specifications have been created (by `task-documents`)
-- You need to register a Task Source Directory (one-time setup)
+- You need to initialize or register Task Source Directories
 - You want to check daemon status
 - You need to monitor task execution progress
 
-## CLI Commands Reference (v2.0)
+## CLI Commands Reference (v2.1)
 
-The task-queue module provides these commands:
+The task-queue module provides grouped commands:
+
+### System Commands
 
 | Command | Purpose |
 |---------|---------|
-| `task-queue register --task-source-dir <dir> --project-workspace <dir> --source-id <id>` | Register Task Source Directory for watchdog monitoring |
-| `task-queue unregister --source-id <id>` | Remove Task Source Directory from monitoring |
-| `task-queue list-sources` | List registered Task Source Directories |
-| `task-queue status` | Show daemon and queue status |
-| `task-queue run [--cycles N]` | Run interactively (for testing) |
+| `init` | Initialize task system from current directory |
+| `status` | Show system status (overview) |
+| `status --detailed` | Show detailed status with running tasks and task lists |
+
+### Sources Commands
+
+| Command | Purpose |
+|---------|---------|
+| `sources list` | List registered Task Source Directories |
+| `sources add <path> --id <id>` | Add a Task Source Directory |
+| `sources rm --source-id <id>` | Remove a Task Source Directory |
+
+### Tasks Commands
+
+| Command | Purpose |
+|---------|---------|
+| `tasks show <task-id>` | Show task document path |
+| `tasks logs <task-id>` | Show result JSON path |
+| `tasks cancel <task-id>` | Cancel a running task |
+
+### Workers Commands
+
+| Command | Purpose |
+|---------|---------|
+| `workers status` | Show detailed worker status |
+| `workers list` | List workers summary |
+
+### Logs Command
+
+| Command | Purpose |
+|---------|---------|
+| `logs` | Show daemon logs (exit with Ctrl+C) |
+| `logs --follow` | Follow logs live |
+| `logs --lines <n>` | Show last N lines |
+
+## Lock File Format
+
+When a task is running, a lock file is created:
+
+**Location:** `{source-directory}/.task-{task-id}.lock`
+
+**Format:**
+```json
+{
+  "task_id": "task-20260207-123456-fix-bug",
+  "worker": "ad-hoc",
+  "thread_id": "140234567890123",
+  "pid": 12345,
+  "started_at": "2026-02-07T12:35:00.123456"
+}
+```
+
+**Purpose:**
+- Track which task is currently running
+- Identify which worker is executing
+- Enable stale lock detection (via PID check)
+- Track execution start time
 
 ## Loading Methods
 
 | Method | When to Use |
 |--------|-------------|
 | **Watchdog (auto)** | Production, continuous operation - tasks auto-load when files are created |
-| **Interactive run** | Testing, one-off processing (`task-queue run --cycles N`) |
+| **Interactive run** | Testing, one-off processing (`run --cycles N`) |
 
 ## Workflow
 
-### Step 1: Verify Daemon Running
+### Step 1: Initialize System (One-Time Setup)
+
+**First, check if already initialized:**
+
+```bash
+python -m task_queue.cli sources list
+```
+
+**If empty or missing sources, initialize:**
+
+```bash
+# From your project directory
+cd /home/admin/workspaces/datachat
+python -m task_queue.cli init
+```
+
+This creates:
+- Directory structure for ad-hoc and planned queues
+- Registers both queues with watchdog monitoring
+
+**After initialization:**
+- Tasks are auto-loaded when files appear in `tasks/ad-hoc/task-documents/` or `tasks/planned/task-documents/`
+- No manual loading required
+
+### Step 2: Verify Daemon Running
 
 **Before checking status, verify the daemon is running:**
 
 ```bash
-task-queue status
-```
-
-**Expected output:**
-```
-Running
+python -m task_queue.cli status
 ```
 
 **If NOT running:**
-```
-⚠️ Task management daemon is not running.
-
-Would you like me to start the daemon now?
-  systemctl --user start task-queue
-```
-
-### Step 2: Register Task Source Directory (One-Time Setup)
-
-**First, check if the source is already registered:**
 
 ```bash
-task-queue list-sources
+systemctl --user start task-queue
 ```
-
-**If the source is NOT listed (or shows "none"), register it:**
-
-```bash
-# Register Task Source Directory
-task-queue register --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
-```
-
-**This command:**
-1. Adds the directory to configuration for watchdog monitoring
-2. Sets the project workspace if not already set
-3. **Does NOT load tasks** - watchdog handles that automatically
-
-**After registration:**
-- Tasks are auto-loaded when files are created in `tasks/task-documents/`
-- No manual loading required
 
 ### Step 3: Monitor Queue Status
 
 ```bash
-task-queue status
+# Overview mode
+python -m task_queue.cli status
+
+# Detailed mode (shows running tasks)
+python -m task_queue.cli status --detailed
+
+# Show worker details
+python -m task_queue.cli workers status
 ```
 
-**Expected output (per-source queues):**
+**Expected output (overview):**
 ```
 Project Workspace: /home/admin/workspaces/datachat
-Total Queue Size: 2
-
-Task Source Directories: 1
+Task Source Directories: 2
 
 📋 Overall Statistics:
    Pending:   2
-   Running:   0
-   Completed: 0
+   Completed: 5
    Failed:    0
 
-📁 Per-Source Details:
+📁 Per-Source Summary:
 
-  📁 main
-      Path: /home/admin/workspaces/datachat/tasks/task-documents
-      Pending: 2, Running: 0, Completed: 0, Failed: 0
+  📁 ad-hoc (✅ Idle)
+      Pending: 1, Completed: 3, Failed: 0
+
+  📁 planned (🔄 Running)
+      Running: task-20260207-120000-add-feature
+      Pending: 1, Completed: 2, Failed: 0
 ```
 
 ### Step 4: Monitor Progress (Optional)
@@ -157,10 +213,13 @@ Task Source Directories: 1
 
 ```bash
 # Check status
-task-queue status
+python -m task_queue.cli status --detailed
+
+# Show running task details
+python -m task_queue.cli workers status
 
 # View live logs
-journalctl --user -u task-queue -f
+python -m task_queue.cli logs --follow
 ```
 
 **DO NOT continuously poll during execution.** Only check when the user asks.
@@ -169,22 +228,29 @@ journalctl --user -u task-queue -f
 
 ```
 tasks/
-├── task-documents/             # Input: Task specifications (Task Source Directory)
-│   ├── task-YYYYMMDD-HHMMSS-{description}.md
-│   └── .task-YYYYMMDD-HHMMSS-{description}.running  # Running marker
-├── task-archive/               # Completed specs (auto-moved)
-│   └── task-YYYYMMDD-HHMMSS-{description}.md
-├── task-failed/                # Failed specs (auto-moved)
-│   ├── task-YYYYMMDD-HHMMSS-{description}.md
-│   └── task-YYYYMMDD-HHMMSS-{description}.error.*  # Error info
-└── task-reports/               # Worker execution reports (detailed)
-    └── task-{timestamp}-{description}/
-        ├── workflow-result.json
-        ├── audit-report-iteration-*.md
-        └── implementation-summary.md
+├── ad-hoc/                           # Ad-hoc task queue
+│   ├── task-staging/               # Staging area (atomic writes)
+│   ├── task-documents/             # Input: Task specifications (Task Source Directory)
+│   │   ├── task-YYYYMMDD-HHMMSS-{description}.md
+│   │   └── .task-YYYYMMDD-HHMMSS-{description}.lock   # Lock file with metadata
+│   ├── task-archive/                # Completed specs (auto-moved)
+│   │   └── task-YYYYMMDD-HHMMSS-{description}.md
+│   ├── task-failed/                 # Failed specs (auto-moved)
+│   │   ├── task-{id}.md
+│   │   └── task-{id}.error.*
+│   ├── task-queue/                  # Result JSON files
+│   │   └── task-{id}.json
+│   └── task-reports/                # Worker execution reports
+│       └── task-{timestamp}-{description}/
+│           ├── workflow-result.json
+│           ├── audit-report-iteration-*.md
+│           └── implementation-summary.md
+│
+└── planned/                          # Planned task queue
+    └── (same structure)
 ```
 
-## Per-Source Architecture (v2.0)
+## Per-Source Architecture (v2.1)
 
 The task-queue uses **per-source worker threads** with these rules:
 
@@ -193,44 +259,53 @@ The task-queue uses **per-source worker threads** with these rules:
 | **Same source** | Sequential FIFO execution (one at a time) |
 | **Different sources** | Parallel execution (can run simultaneously) |
 | **Worker threads** | One thread per Task Source Directory |
+| **Lock files** | `.task-XXX.lock` tracks running task with metadata |
 
 ## Example Usage
 
-### Scenario: Register and Execute Tasks
+### Scenario: Initialize and Execute Tasks
 
-**User says:** "Register and execute the task specifications"
+**User says:** "Initialize and execute the task specifications"
 
 **Workflow:**
 
 ```bash
 # 1. Check daemon status
-task-queue status
-# Output: Running
+python -m task_queue.cli status
+# Output: Running or instructions to start
 
-# 2. Check if source is registered
-task-queue list-sources
-# Output: (none) -- not registered, proceed to register
+# 2. Check if sources are registered
+python -m task_queue.cli sources list
+# If empty or missing, proceed to init
 
-# 3. Register Task Source Directory (one-time setup)
-task-queue register --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
+# 3. Initialize system (one-time setup)
+python -m task_queue.cli init
 # Output:
-# ✅ Registered Task Source Directory 'main'
-#    Path: tasks/task-documents
-#    Workspace: /home/admin/workspaces/datachat
-# 📋 Found N task documents in directory
-#    Daemon will process them automatically
+# ✅ Initialization complete!
+#   Project Workspace: /home/admin/workspaces/datachat
+#   Registered Queues: 2
+#
+#   📁 ad-hoc
+#      Path: /home/admin/workspaces/datachat/tasks/ad-hoc/task-documents
+#
+#   📁 planned
+#      Path: /home/admin/workspaces/datachat/tasks/planned/task-documents
 
 # 4. Check queue status
-task-queue status
+python -m task_queue.cli status --detailed
 # Output: Shows pending/running/completed tasks
 ```
 
 **Inform user:**
 ```
-✅ Task Source Directory registered for watchdog monitoring.
+✅ Task system initialized successfully.
 
-Tasks will be auto-loaded when files appear in tasks/task-documents/
-The daemon processes tasks sequentially per source. Different sources execute in parallel.
+Task Source Directories are now registered for watchdog monitoring:
+- Ad-hoc: tasks/ad-hoc/task-documents/
+- Planned: tasks/planned/task-documents/
+
+Tasks will be auto-loaded when files appear. The daemon processes tasks
+sequentially per source. Different sources execute in parallel.
 ```
 
 ### Scenario: Check Progress
@@ -240,15 +315,34 @@ The daemon processes tasks sequentially per source. Different sources execute in
 **Workflow:**
 
 ```bash
-# Check status
-task-queue status
+# Check status with running tasks
+python -m task_queue.cli status --detailed
 
 # If task completed, check result
-cat tasks/task-archive/task-20260205-100000-fix-auth-timeout.md
+python -m task_queue.cli tasks logs task-20260207-120000
 
-# Or check the worker report
-ls tasks/task-reports/
-cat tasks/task-reports/task-{id}/workflow-result.json
+# View full result
+cat tasks/ad-hoc/task-queue/task-20260207-120000.json
+```
+
+### Scenario: Cancel Running Task
+
+**User says:** "Cancel the running task"
+
+**Workflow:**
+
+```bash
+# Check what's running
+python -m task_queue.cli workers status
+
+# Cancel the task
+python -m task_queue.cli tasks cancel task-20260207-120000
+# Output:
+# 🛑 Cancelling task: task-20260207-120000
+#    Worker: ad-hoc
+# ✅ Lock file removed
+# ✅ Task moved to failed directory
+#    Reason: User cancelled
 ```
 
 ## Result Interpretation
@@ -257,32 +351,37 @@ cat tasks/task-reports/task-{id}/workflow-result.json
 
 ```bash
 # List completed tasks
-ls tasks/task-archive/
+python -m task_queue.cli status --detailed
+ls tasks/ad-hoc/task-archive/
 
 # View completed task document
-cat tasks/task-archive/task-20260205-100000-fix-auth-timeout.md
+python -m task_queue.cli tasks show task-20260207-120000
+cat tasks/ad-hoc/task-archive/task-20260207-120000.md
 ```
 
 ### Check Failed Tasks
 
 ```bash
-# List failed tasks
-ls tasks/task-failed/
+# Check status for failed count
+python -m task_queue.cli status
 
-# View failed task with error info
-cat tasks/task-failed/task-{id}.md
-cat tasks/task-failed/task-{id}.error.*
+# View failed task
+cat tasks/ad-hoc/task-failed/task-{id}.md
+
+# Check result file
+python -m task_queue.cli tasks logs task-{id}
+cat tasks/ad-hoc/task-queue/task-{id}.json
 ```
 
 ### Check Worker Reports
 
 ```bash
 # List worker reports
-ls tasks/task-reports/
+ls tasks/ad-hoc/task-reports/
 
 # View detailed execution report
-cat tasks/task-reports/task-{id}/workflow-result.json
-cat tasks/task-reports/task-{id}/audit-report-iteration-1.md
+cat tasks/ad-hoc/task-reports/task-{id}/workflow-result.json
+cat tasks/ad-hoc/task-reports/task-{id}/audit-report-iteration-1.md
 ```
 
 ## Service Management
@@ -303,25 +402,30 @@ systemctl --user restart task-queue
 systemctl --user enable task-queue
 
 # View live logs
-journalctl --user -u task-queue -f
+python -m task_queue.cli logs --follow
 
 # View last 100 log lines
+python -m task_queue.cli logs --lines 100
+
+# Or with journalctl
 journalctl --user -u task-queue -n 100
 ```
 
-## Key Principles (v2.0)
+## Key Principles (v2.1)
 
 1. **Event-Driven Monitoring** - Watchdog detects file changes instantly (no polling)
 2. **Per-Source Worker Threads** - One worker thread per Task Source Directory
 3. **Sequential Within Source** - Prevents file conflict race conditions
 4. **Parallel Across Sources** - Different sources can execute simultaneously
 5. **Background Processing** - Daemon runs independently with watchdog
-6. **Check Before Register** - Always check `list-sources` before registering to avoid duplicates
-7. **Register Once** - Use `register` command once per source, watchdog handles the rest
-8. **Auto-Archive** - Completed specs moved to `tasks/task-archive/`
+6. **Lock File Tracking** - Running tasks tracked with metadata (worker, thread, PID)
+7. **Stale Lock Detection** - Lock files with dead PIDs are automatically cleaned up
+8. **Auto-Archive** - Completed specs moved to `tasks/*/task-archive/`
+9. **Quick Start** - Use `init` command for one-time setup
 
 ## Related Skills
 
+- **task-init**: Initializes task system with init/sources add/sources rm commands
 - **task-documents**: Creates task specifications
 - **task-worker**: Executes tasks with worker-auditor workflow
 - **task-planning**: Generates planning documents
@@ -331,8 +435,8 @@ journalctl --user -u task-queue -n 100
 ### Daemon not running
 
 ```bash
-task-queue status
-# Output: Stopped
+python -m task_queue.cli status
+# Output: Stopped or error message
 
 # Start it
 systemctl --user start task-queue
@@ -341,12 +445,12 @@ systemctl --user start task-queue
 ### Tasks not being processed
 
 ```bash
-# Check if source is registered
-task-queue list-sources
+# Check if sources are registered
+python -m task_queue.cli sources list
 
 # Check if task files exist
-ls tasks/task-documents/task-*.md
-# Ensure task-YYYYMMDD-HHMMSS-*.md files exist
+ls tasks/ad-hoc/task-documents/task-*.md
+ls tasks/planned/task-documents/task-*.md
 
 # Check if daemon is running
 systemctl --user status task-queue.service
@@ -355,24 +459,38 @@ systemctl --user status task-queue.service
 ### Watchdog not detecting files
 
 ```bash
-# Check watchdog is enabled in config
-cat ~/.config/task-queue/config.json | grep watch_enabled
-
 # Verify Task Source Directory is configured
-task-queue list-sources
+python -m task_queue.cli sources list
 
 # Check daemon logs for watchdog errors
-journalctl --user -u task-queue -n 50 | grep -i watchdog
+python -m task_queue.cli logs --lines 50
+```
+
+### Task stuck with lock file
+
+```bash
+# Check lock file
+ls tasks/ad-hoc/task-documents/.task-*.lock
+
+# View lock file contents
+cat tasks/ad-hoc/task-documents/.task-XXX.lock
+
+# Check if process is still running
+ps aux | grep <pid-from-lock>
+
+# If process is dead, daemon will clean up stale locks automatically
+# Or manually remove the lock file
+rm tasks/ad-hoc/task-documents/.task-XXX.lock
 ```
 
 ### Task failed
 
 ```bash
 # Check failed task
-cat tasks/task-failed/task-{id}.md
-cat tasks/task-failed/task-{id}.error.*
+python -m task_queue.cli tasks logs task-{id}
+cat tasks/ad-hoc/task-failed/task-{id}.md
 
 # Check detailed worker report
-ls tasks/task-reports/task-{id}/
-cat tasks/task-reports/task-{id}/audit-report-*.md
+ls tasks/ad-hoc/task-reports/task-{id}/
+cat tasks/ad-hoc/task-reports/task-{id}/audit-report-*.md
 ```

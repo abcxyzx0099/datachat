@@ -24,20 +24,16 @@ Complete guide to the asynchronous task execution system (task-queue) with event
 
 ```bash
 # 1. Initialize the task system with ad-hoc and planned queues
-# This creates the directory structure and registers Task Source Directories
-# (Run the task-init skill for complete setup)
+# From your project directory:
+cd /home/admin/workspaces/datachat
 
-# 2. Register ad-hoc queue
-python -m task_queue.cli register \
-    --task-source-dir /home/admin/workspaces/datachat/tasks/ad-hoc/task-documents \
-    --project-workspace /home/admin/workspaces/datachat \
-    --source-id ad-hoc
+# 2. Run init command (creates directories and registers both queues)
+python -m task_queue.cli init
 
-# 3. Register planned queue
-python -m task_queue.cli register \
-    --task-source-dir /home/admin/workspaces/datachat/tasks/planned/task-documents \
-    --project-workspace /home/admin/workspaces/datachat \
-    --source-id planned
+# This creates:
+# - tasks/ad-hoc/ and tasks/planned/ directories
+# - Registers both queues with watchdog monitoring
+# - Sets project workspace to current directory
 ```
 
 ### Create and Execute a Task
@@ -62,21 +58,32 @@ cat tasks/ad-hoc/task-queue/task-{id}.json
 ### Common Commands
 
 ```bash
-# Check daemon status
+# Initialize task system
+python -m task_queue.cli init
+
+# Check status (overview)
 python -m task_queue.cli status
 
-# List Task Source Directories
-python -m task_queue.cli list-sources
+# Check status (detailed with running tasks)
+python -m task_queue.cli status --detailed
 
-# Remove a Task Source Directory
-python -m task_queue.cli unregister --source-id ad-hoc
-python -m task_queue.cli unregister --source-id planned
+# List Task Source Directories
+python -m task_queue.cli sources list
+
+# Show worker status
+python -m task_queue.cli workers status
+
+# Show task document path
+python -m task_queue.cli tasks show task-20260207-120000
+
+# Show task result logs
+python -m task_queue.cli tasks logs task-20260207-120000
+
+# View daemon logs
+python -m task_queue.cli logs --follow
 
 # Run interactively (for testing)
 python -m task_queue.cli run --cycles 1
-
-# View live logs
-journalctl --user -u task-queue -f
 ```
 
 ---
@@ -154,13 +161,12 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ Step 3: Register Task Source Directories (one-time setup)               │
 │                                                                          │
-│   Run task-init skill OR manually register:                             │
+│   Run task-init skill OR use init command:                              │
 │                                                                          │
-│   python -m task_queue.cli register --task-source-dir <dir>            │
-│                          --project-workspace <dir>                      │
-│                          --source-id <id>                               │
+│   # From project directory                                              │
+│   python -m task_queue.cli init                                         │
 │                                                                          │
-│   Source IDs: ad-hoc, planned                                            │
+│   This creates directories and registers both queues (ad-hoc, planned). │
 │                                                                          │
 │   Note: Watchdog monitors each queue's task-documents/ directory.       │
 │   Tasks are auto-loaded when files appear (no manual loading needed).   │
@@ -214,7 +220,10 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 │   │ tasks/ad-hoc/task-documents/   ← Pending ad-hoc tasks             │   │
 │   │ tasks/planned/task-documents/  ← Pending planned tasks            │   │
 │   │   ├── task-001.md                                               │   │
-│   │   ├── .task-001.running  ← Execution marker                      │   │
+│   │   ├── .task-001.lock     ← Lock file with metadata           │   │
+│   │   │   { "task_id": "...", "worker": "...",               │   │
+│   │   │       "thread_id": "...", "pid": 12345,              │   │
+│   │   │       "started_at": "..." }                         │   │
 │   │   └── task-002.md                                               │   │
 │   │                                                                 │   │
 │   │ tasks/ad-hoc/task-archive/     ← Completed ad-hoc tasks           │   │
@@ -267,7 +276,7 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 │   │   ├── task-staging/                  # Staging area (atomic writes)
 │   │   ├── task-documents/                # Task Source Directory (watchdog monitors)
 │   │   │   ├── task-20260205-100000-fix-bug.md
-│   │   │   ├── .task-20260205-100000-fix-bug.running  # Marker for running
+│   │   │   ├── .task-20260205-100000-fix-bug.lock  # Lock file with metadata
 │   │   │   └── task-20260205-100500-add-feature.md
 │   │   ├── task-archive/                  # Completed specs (auto-moved)
 │   │   │   ├── task-20260205-090000-previous-task.md
@@ -310,7 +319,7 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 
 ```
 ~/.config/task-queue/
-├── config.json                     # Queue configuration (v2.0)
+├── config.json                     # Queue configuration (v2.1)
 └── config.json.lock               # Lock file for config access
 ```
 
@@ -430,14 +439,17 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 
 **Key Commands:**
 ```bash
-# Register Task Source Directory
-python -m task_queue.cli register --task-source-dir <dir> --project-workspace <dir> --source-id <id>
+# Initialize task system (creates directories and registers queues)
+python -m task_queue.cli init
+
+# Add a Task Source Directory
+python -m task_queue.cli sources add /path/to/tasks --id my-queue --project-workspace /path/to/workspace
 
 # List sources
-python -m task_queue.cli list-sources
+python -m task_queue.cli sources list
 
 # Remove source
-python -m task_queue.cli unregister --source-id <id>
+python -m task_queue.cli sources rm --source-id <id>
 
 # Check status
 python -m task_queue.cli status
@@ -481,7 +493,7 @@ python -m task_queue.cli run --cycles 1
 
 ## Execution Model
 
-### Directory-Based State (v2.0)
+### Directory-Based State (v2.1)
 
 The task-queue uses **directory-based state** with these rules:
 
@@ -490,7 +502,7 @@ The task-queue uses **directory-based state** with these rules:
 | **Same source** | Sequential FIFO execution (one at a time) |
 | **Different sources** | Parallel execution (can run simultaneously) |
 | **State tracking** | Directory structure (no state.json file) |
-| **Running marker** | `.task-XXX.running` file indicates task in progress |
+| **Running marker** | `.task-XXX.lock` file with metadata indicates task in progress |
 
 ### Visual Example
 
@@ -520,8 +532,8 @@ Both run in PARALLEL (different sources)
 │                                                                     │
 │  task-documents/          Running             Archive/Failed       │
 │  ┌─────────────┐          ┌─────────┐          ┌─────────────┐    │
-│  │ task-001.md │ ─create──▶│.running │──done───▶│task-001.md │    │
-│  │ (pending)  │          │ marker  │          │(completed) │    │
+│  │ task-001.md │ ─create──▶│.lock    │──done───▶│task-001.md │    │
+│  │ (pending)  │          │+metadata│          │(completed) │    │
 │  └─────────────┘          └─────────┘          └─────────────┘    │
 │                                                                     │
 │  On failure → task-failed/task-001.md                              │
@@ -615,56 +627,83 @@ ls -lt tasks/ad-hoc/task-queue/ | head -10
 
 ## CLI Commands
 
-The `task-queue` CLI provides these commands:
+The `task-queue` CLI provides grouped commands for managing tasks:
 
-### Configuration
+### System Commands
+
+```bash
+# Initialize task system from current directory
+python -m task_queue.cli init
+
+# Show system status (overview)
+python -m task_queue.cli status
+
+# Show detailed status (with running tasks and lists)
+python -m task_queue.cli status --detailed
+```
+
+### Sources Commands
+
+```bash
+# List Task Source Directories
+python -m task_queue.cli sources list
+
+# Add a Task Source Directory
+python -m task_queue.cli sources add /path/to/tasks --id my-queue \
+    --project-workspace /home/admin/workspaces/datachat
+
+# Remove a Task Source Directory
+python -m task_queue.cli sources rm --source-id my-queue
+```
+
+### Tasks Commands
+
+```bash
+# Show task document path
+python -m task_queue.cli tasks show task-20260207-120000
+
+# Show task result logs path
+python -m task_queue.cli tasks logs task-20260207-120000
+
+# Cancel a running task
+python -m task_queue.cli tasks cancel task-20260207-120000
+```
+
+### Workers Commands
+
+```bash
+# Show detailed worker status (with running tasks)
+python -m task_queue.cli workers status
+
+# List workers summary
+python -m task_queue.cli workers list
+```
+
+### Logs Command
+
+```bash
+# Show daemon logs (exit with Ctrl+C)
+python -m task_queue.cli logs
+
+# Follow logs live
+python -m task_queue.cli logs --follow
+
+# Show last 50 lines
+python -m task_queue.cli logs --lines 50
+```
+
+### Testing Command
+
+```bash
+# Run interactively (for testing)
+python -m task_queue.cli run --cycles 5
+```
+
+### Global Option
 
 ```bash
 # Specify custom config file
 python -m task_queue.cli --config /path/to/config.json <command>
-```
-
-**Note:** Configuration is auto-created on first use. No manual initialization needed.
-
-### Task Source Directory Management
-
-```bash
-# Register a Task Source Directory (one-time setup)
-python -m task_queue.cli register --task-source-dir <path> --project-workspace <path> --source-id <id>
-
-# Example: Register ad-hoc queue
-python -m task_queue.cli register \
-    --task-source-dir /home/admin/workspaces/datachat/tasks/ad-hoc/task-documents \
-    --project-workspace /home/admin/workspaces/datachat \
-    --source-id ad-hoc
-
-# Example: Register planned queue
-python -m task_queue.cli register \
-    --task-source-dir /home/admin/workspaces/datachat/tasks/planned/task-documents \
-    --project-workspace /home/admin/workspaces/datachat \
-    --source-id planned
-
-# List registered Task Source Directories
-python -m task_queue.cli list-sources
-
-# Remove a Task Source Directory from monitoring
-python -m task_queue.cli unregister --source-id <id>
-```
-
-### Monitoring
-
-```bash
-# Show system status
-python -m task_queue.cli status
-```
-
-### Interactive Mode
-
-```bash
-# Run interactively (for testing)
-python -m task_queue.cli run [--cycles N]
-
-# Cycles: 0 = infinite, N = specific number
 ```
 
 ---
@@ -750,10 +789,16 @@ journalctl --user -u task-queue.service -n 100
    systemctl --user status task-queue.service
    ```
 
-4. **Check for stuck running markers:**
+4. **Check for lock files (running tasks):**
    ```bash
-   ls tasks/ad-hoc/task-documents/.task-*.running
-   ls tasks/planned/task-documents/.task-*.running
+   ls tasks/ad-hoc/task-documents/.task-*.lock
+   ls tasks/planned/task-documents/.task-*.lock
+   ```
+
+   **View lock file contents:**
+   ```bash
+   cat tasks/ad-hoc/task-documents/.task-{id}.lock
+   # Shows: {"task_id": "...", "worker": "...", "thread_id": "...", "pid": 12345, "started_at": "..."}
    ```
 
 ### Task execution errors
@@ -790,7 +835,7 @@ journalctl --user -u task-queue.service -n 100
 
 2. **Verify Task Source Directory is configured:**
    ```bash
-   python -m task_queue.cli list-sources
+   python -m task_queue.cli sources list
    ```
 
 3. **Check daemon logs for watchdog errors:**
@@ -839,7 +884,7 @@ python -m task_queue.cli <command>
 - **executor.py**: Executes tasks via Claude Agent SDK, saves JSON result files
 - **scanner.py**: Scans for task document files
 - **cli.py**: CLI commands
-- **models.py**: Pydantic data models (v2.0)
+- **models.py**: Pydantic data models (v2.1)
 - **config.py**: Configuration management
 - **file_utils.py**: Atomic file operations and file locking
 

@@ -9,13 +9,14 @@ Initializes the task system with separate queues for ad-hoc and planned tasks.
 
 ## Overview
 
-This skill performs one-time setup of the task system using three CLI commands:
+This skill performs one-time setup of the task system using the init command or manual source registration:
 
 | Command | Purpose | Usage |
 |---------|---------|-------|
 | **init** | Quick setup - creates directories and registers both queues | First-time setup |
-| **register** | Advanced - register a single Task Source Directory | Custom configurations |
-| **unregister** | Remove a Task Source Directory from monitoring | Reconfiguration |
+| **sources add** | Advanced - register a single Task Source Directory | Custom configurations |
+| **sources rm** | Remove a Task Source Directory from monitoring | Reconfiguration |
+| **sources list** | List registered Task Source Directories | Verification |
 
 The task system supports two independent queues that execute in parallel:
 
@@ -31,10 +32,10 @@ The task system supports two independent queues that execute in parallel:
 | Scenario | Command |
 |----------|---------|
 | **First-time setup** | `task-queue init` (recommended) |
-| **Re-configuration** | `task-queue init --force` or `register`/`unregister` |
-| **Add custom queue** | `task-queue register` |
-| **Remove queue** | `task-queue unregister` |
-| **Verification** | `task-queue list-sources` |
+| **Re-configuration** | `task-queue init --force` or `sources add`/`sources rm` |
+| **Add custom queue** | `task-queue sources add` |
+| **Remove queue** | `task-queue sources rm` |
+| **Verification** | `task-queue sources list` |
 
 ---
 
@@ -46,17 +47,17 @@ tasks/
 │   ├── task-staging/                    # Staging area (atomic writes)
 │   ├── task-documents/                  # Task Source Directory (watchdog monitors)
 │   ├── task-archive/                    # Completed task specs
-│   ├── task-failed/                    # Failed task specs
-│   ├── task-queue/                     # JSON result files
-│   └── task-reports/                   # Worker execution reports
+│   ├── task-failed/                     # Failed task specs
+│   ├── task-queue/                      # JSON result files
+│   └── task-reports/                    # Worker execution reports
 │
 └── planned/                             # Planned task queue
     ├── task-staging/                    # Staging area (atomic writes)
     ├── task-documents/                  # Task Source Directory (watchdog monitors)
     ├── task-archive/                    # Completed task specs
-    ├── task-failed/                    # Failed task specs
-    ├── task-queue/                     # JSON result files
-    └── task-reports/                   # Worker execution reports
+    ├── task-failed/                     # Failed task specs
+    ├── task-queue/                      # JSON result files
+    └── task-reports/                    # Worker execution reports
 ```
 
 ---
@@ -91,7 +92,7 @@ python -m task_queue.cli init --restart-daemon  # Restart daemon after init
 
 ---
 
-### 2. register - Advanced Configuration
+### 2. sources add - Advanced Configuration
 
 **Use for custom queue configurations.** Register a single Task Source Directory.
 
@@ -101,46 +102,47 @@ source /home/admin/workspaces/datachat/.venv/bin/activate
 export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
 
 # Register a queue
-python -m task_queue.cli register \
-    --task-source-dir /path/to/task-documents \
+python -m task_queue.cli sources add /path/to/task-documents \
+    --id my-queue \
     --project-workspace /home/admin/workspaces/datachat \
-    --source-id my-queue
+    --description "My custom queue"
 
 # Register ad-hoc queue (manual setup)
-python -m task_queue.cli register \
-    --task-source-dir /home/admin/workspaces/datachat/tasks/ad-hoc/task-documents \
-    --project-workspace /home/admin/workspaces/datachat \
-    --source-id ad-hoc
+python -m task_queue.cli sources add \
+    /home/admin/workspaces/datachat/tasks/ad-hoc/task-documents \
+    --id ad-hoc \
+    --project-workspace /home/admin/workspaces/datachat
 
 # Register planned queue (manual setup)
-python -m task_queue.cli register \
-    --task-source-dir /home/admin/workspaces/datachat/tasks/planned/task-documents \
-    --project-workspace /home/admin/workspaces/datachat \
-    --source-id planned
+python -m task_queue.cli sources add \
+    /home/admin/workspaces/datachat/tasks/planned/task-documents \
+    --id planned \
+    --project-workspace /home/admin/workspaces/datachat
 ```
 
 **Required Arguments:**
 | Argument | Description |
 |----------|-------------|
-| `--task-source-dir` | Path to Task Source Directory (contains task-*.md files) |
+| Positional | Path to Task Source Directory (contains task-*.md files) |
+| `--id` | Unique identifier for this queue |
 | `--project-workspace` | Path to project root directory |
-| `--source-id` | Unique identifier for this queue |
+| `--description` | Description of this queue (optional) |
 
 ---
 
-### 3. unregister - Remove Queue
+### 3. sources rm - Remove Queue
 
 **Use to remove a queue from monitoring.**
 
 ```bash
-# Unregister a queue
-python -m task_queue.cli unregister --source-id my-queue
+# Remove a queue
+python -m task_queue.cli sources rm --source-id my-queue
 
-# Unregister ad-hoc queue
-python -m task_queue.cli unregister --source-id ad-hoc
+# Remove ad-hoc queue
+python -m task_queue.cli sources rm --source-id ad-hoc
 
-# Unregister planned queue
-python -m task_queue.cli unregister --source-id planned
+# Remove planned queue
+python -m task_queue.cli sources rm --source-id planned
 ```
 
 ---
@@ -149,10 +151,13 @@ python -m task_queue.cli unregister --source-id planned
 
 ```bash
 # List registered Task Source Directories
-python -m task_queue.cli list-sources
+python -m task_queue.cli sources list
 
 # Check system status
 python -m task_queue.cli status
+
+# Show detailed status (with running tasks)
+python -m task_queue.cli status --detailed
 
 # Run interactively (for testing)
 python -m task_queue.cli run --cycles 1
@@ -161,6 +166,8 @@ python -m task_queue.cli run --cycles 1
 systemctl --user start task-queue.service
 
 # View live logs
+python -m task_queue.cli logs --follow
+# Or with journalctl
 journalctl --user -u task-queue.service -f
 ```
 
@@ -179,7 +186,7 @@ export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
 python -m task_queue.cli init
 
 # Verify
-python -m task_queue.cli list-sources
+python -m task_queue.cli sources list
 ```
 
 ### Example 2: Custom Queue Setup
@@ -189,26 +196,27 @@ python -m task_queue.cli list-sources
 mkdir -p tasks/custom/{task-staging,task-documents,task-archive,task-failed,task-queue,task-reports}
 
 # Register custom queue
-python -m task_queue.cli register \
-    --task-source-dir /home/admin/workspaces/datachat/tasks/custom/task-documents \
+python -m task_queue.cli sources add \
+    /home/admin/workspaces/datachat/tasks/custom/task-documents \
+    --id custom \
     --project-workspace /home/admin/workspaces/datachat \
-    --source-id custom
+    --description "Custom queue"
 
 # Verify
-python -m task_queue.cli list-sources
+python -m task_queue.cli sources list
 ```
 
 ### Example 3: Remove and Re-register
 
 ```bash
-# Unregister existing queue
-python -m task_queue.cli unregister --source-id ad-hoc
+# Remove existing queue
+python -m task_queue.cli sources rm --source-id ad-hoc
 
 # Re-register with different path
-python -m task_queue.cli register \
-    --task-source-dir /new/path/task-documents \
-    --project-workspace /home/admin/workspaces/datachat \
-    --source-id ad-hoc
+python -m task_queue.cli sources add \
+    /new/path/task-documents \
+    --id ad-hoc \
+    --project-workspace /home/admin/workspaces/datachat
 ```
 
 ---
@@ -238,9 +246,9 @@ python -m task_queue.cli init --skip-existing
 # Option 2: Use --force to completely re-initialize
 python -m task_queue.cli init --force
 
-# Option 3: Use register/unregister for specific changes
-python -m task_queue.cli unregister --source-id ad-hoc
-python -m task_queue.cli register --source-id ad-hoc ...
+# Option 3: Use sources rm/add for specific changes
+python -m task_queue.cli sources rm --source-id ad-hoc
+python -m task_queue.cli sources add /path/to/task-documents --id ad-hoc --project-workspace /home/admin/workspaces/datachat
 ```
 
 ### Registration Fails
@@ -250,11 +258,11 @@ python -m task_queue.cli register --source-id ad-hoc ...
 **Solution:**
 ```bash
 # List existing sources
-python -m task_queue.cli list-sources
+python -m task_queue.cli sources list
 
-# Unregister first, then re-register
-python -m task_queue.cli unregister --source-id my-queue
-python -m task_queue.cli register --source-id my-queue ...
+# Remove first, then re-add
+python -m task_queue.cli sources rm --source-id my-queue
+python -m task_queue.cli sources add /path/to/task-documents --id my-queue --project-workspace /home/admin/workspaces/datachat
 ```
 
 ### Module Not Found
@@ -279,7 +287,7 @@ export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
 - [ ] Directory structure created for ad-hoc and planned queues
 - [ ] ad-hoc Task Source Directory registered
 - [ ] planned Task Source Directory registered
-- [ ] Registration verified with `list-sources`
+- [ ] Registration verified with `sources list`
 - [ ] Status check shows both sources
 - [ ] task-queue daemon is running (if applicable)
 
@@ -297,8 +305,8 @@ export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
 ## Notes
 
 - **Init is recommended:** Use `task-queue init` for most setups
-- **Register for custom:** Use `register` for custom queue configurations
-- **Unregister to remove:** Use `unregister` to remove queues from monitoring
+- **sources add for custom:** Use `sources add` for custom queue configurations
+- **sources rm to remove:** Use `sources rm` to remove queues from monitoring
 - **Project workspace:** Always use `/home/admin/workspaces/datachat` for this project
 - **Parallel execution:** Both queues process independently via separate worker threads
 - **Idempotent:** Commands can be safely re-run
