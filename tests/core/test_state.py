@@ -118,22 +118,17 @@ class TestInputState:
         """Test creating InputState with required fields."""
         state: InputState = {
             "input_file_path": "test.sav",
-            "original_metadata": None,
         }
 
         assert state["input_file_path"] == "test.sav"
-        assert state["original_metadata"] is None
 
     def test_input_state_with_metadata(self):
-        """Test InputState with populated metadata."""
-        metadata = {"file_name": "test.sav", "n_rows": 100}
+        """Test InputState with only input_file_path."""
         state: InputState = {
             "input_file_path": "test.sav",
-            "original_metadata": metadata,
         }
 
-        assert state["original_metadata"] == metadata
-        assert state["original_metadata"]["file_name"] == "test.sav"
+        assert state["input_file_path"] == "test.sav"
 
 
 # =============================================================================
@@ -146,12 +141,14 @@ class TestExtractionState:
     def test_extraction_state_defaults(self):
         """Test ExtractionState with all None values."""
         state: ExtractionState = {
+            "original_metadata": None,
             "raw_data": None,
             "variable_centered_metadata": None,
             "filtered_metadata": None,
             "filtered_out_variables": None,
         }
 
+        assert state["original_metadata"] is None
         assert state["raw_data"] is None
         assert state["variable_centered_metadata"] is None
         assert state["filtered_metadata"] is None
@@ -162,13 +159,17 @@ class TestExtractionState:
         import pandas as pd
 
         df = pd.DataFrame({"col1": [1, 2, 3]})
+        metadata = {"file_name": "test.sav", "n_rows": 100}
         state: ExtractionState = {
+            "original_metadata": metadata,
             "raw_data": df,
             "variable_centered_metadata": None,
             "filtered_metadata": None,
             "filtered_out_variables": None,
         }
 
+        assert state["original_metadata"] is not None
+        assert state["original_metadata"]["n_rows"] == 100
         assert state["raw_data"] is not None
         assert len(state["raw_data"]) == 3
 
@@ -494,8 +495,8 @@ class TestWorkflowState:
         expected_fields = [
             # InputState
             "input_file_path",
-            "original_metadata",
             # ExtractionState
+            "original_metadata",
             "raw_data",
             "variable_centered_metadata",
             "filtered_metadata",
@@ -549,8 +550,8 @@ class TestWorkflowState:
         state: WorkflowState = {
             # InputState
             "input_file_path": "test.sav",
-            "original_metadata": None,
             # ExtractionState
+            "original_metadata": None,
             "raw_data": None,
             "variable_centered_metadata": None,
             "filtered_metadata": None,
@@ -750,17 +751,12 @@ class TestInputStateFieldDefinitions:
         # Get annotations from InputState
         annotations = InputState.__annotations__
 
-        expected_fields = ["input_file_path", "original_metadata"]
+        expected_fields = ["input_file_path"]
 
         assert set(annotations.keys()) == set(expected_fields)
 
         # Check input_file_path is str
         assert annotations["input_file_path"] == str
-
-        # Check original_metadata is Optional[Dict[str, Any]]
-        # In Python 3.10+, Optional[X] is X | None
-        original_metadata_type = annotations["original_metadata"]
-        assert original_metadata_type is not None
 
     def test_input_state_total_false(self):
         """Test InputState has total=False (optional fields)."""
@@ -775,6 +771,7 @@ class TestExtractionStateFieldDefinitions:
         annotations = ExtractionState.__annotations__
 
         expected_fields = [
+            "original_metadata",
             "raw_data",
             "variable_centered_metadata",
             "filtered_metadata",
@@ -855,8 +852,8 @@ class TestWorkflowStateFieldDefinitions:
         annotations = WorkflowState.__annotations__
 
         # Check fields from each sub-state are present
-        expected_input_fields = ["input_file_path", "original_metadata"]
-        expected_extraction_fields = ["raw_data", "variable_centered_metadata",
+        expected_input_fields = ["input_file_path"]
+        expected_extraction_fields = ["original_metadata", "raw_data", "variable_centered_metadata",
                                      "filtered_metadata", "filtered_out_variables"]
         expected_recoding_fields = ["recoding_rules", "recoding_approved",
                                    "new_data_file"]

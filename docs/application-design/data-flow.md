@@ -252,7 +252,7 @@ The workflow maintains a single evolving state object (`WorkflowState`) organize
 
 | Sub-State | Steps | Key Fields |
 |-----------|-------|------------|
-| `InputState` | 0 | `input_file_path`, `config` |
+| `InputState` | 0 | `input_file_path` |
 | `ExtractionState` | 1-3 | `raw_data`, `filtered_metadata` |
 | `RecodingState` | 4-8 | `recoding_rules`, `new_metadata` |
 | `IndicatorState` | 9-11 | `indicators`, `indicators_approved` |

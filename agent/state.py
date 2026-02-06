@@ -88,11 +88,8 @@ class InputState(TypedDict, total=False):
 
     Fields:
         input_file_path: Path to input .sav file
-        original_metadata: Raw metadata from pyreadstat (moved from ExtractionState
-                          per task requirements to simplify initialization)
     """
     input_file_path: str
-    original_metadata: Optional[Dict[str, Any]]
 
 
 class ExtractionState(TypedDict, total=False):
@@ -105,12 +102,14 @@ class ExtractionState(TypedDict, total=False):
     - Step 3: filtered_metadata, filtered_out_variables
 
     Fields:
+        original_metadata: Raw metadata from pyreadstat extracted in Step 1
         raw_data: DEPRECATED - Not stored in state to avoid LangGraph serialization issues.
                     Data is reloaded from input_file_path when needed.
         variable_centered_metadata: Metadata restructured by variable (Step 2)
         filtered_metadata: Metadata after filtering (variables requiring recoding)
         filtered_out_variables: Variables removed with reasons
     """
+    original_metadata: Optional[Dict[str, Any]]  # Raw metadata from pyreadstat (Step 1)
     raw_data: Optional[Any]  # pandas DataFrame - DEPRECATED, not populated
     variable_centered_metadata: Optional[Dict[str, Any]]  # Variable-centered metadata structure
     filtered_metadata: Optional[List[Dict[str, Any]]]
@@ -356,11 +355,11 @@ def create_initial_state(input_file_path: str, config: Optional[Dict[str, Any]] 
         # ========================================
         input_file_path=input_file_path
         if hasattr(WorkflowState, '__annotations__') and 'input_file_path' in WorkflowState.__annotations__ else input_file_path,  # type: ignore
-        original_metadata=None,
 
         # ========================================
         # ExtractionState - All None
         # ========================================
+        original_metadata=None,
         raw_data=None,
         variable_centered_metadata=None,
         filtered_metadata=None,

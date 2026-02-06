@@ -10,7 +10,7 @@ Coordinate task execution using the task-queue module with watchdog auto-loading
 ## Overview
 
 This skill bridges the gap between task specifications and execution. It uses the `task-queue` CLI to:
-1. **Register** Task Source Directories for watchdog monitoring (one-time setup)
+1. **Register** Task Source Directories for watchdog monitoring (if not already registered)
 2. **Monitor** execution status via the daemon
 3. **Display** results from completed tasks
 
@@ -27,7 +27,7 @@ This skill bridges the gap between task specifications and execution. It uses th
 │               Task Queue Skill                              │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │ 1. Verify daemon running                            │  │
-│  │ 2. Register source for watchdog monitoring           │  │
+│  │ 2. Check if registered; register if not             │  │
 │  │ 3. Monitor execution status                          │  │
 │  │ 4. Display results from archive                     │  │
 │  └──────────────────────────────────────────────────────┘  │
@@ -82,7 +82,7 @@ The task-queue module provides these commands:
 
 ### Step 1: Verify Daemon Running
 
-**Before registering a source, check if the daemon is running:**
+**Before checking status, verify the daemon is running:**
 
 ```bash
 task-queue status
@@ -103,7 +103,13 @@ Would you like me to start the daemon now?
 
 ### Step 2: Register Task Source Directory (One-Time Setup)
 
-**Register the directory for watchdog monitoring:**
+**First, check if the source is already registered:**
+
+```bash
+task-queue list-sources
+```
+
+**If the source is NOT listed (or shows "none"), register it:**
 
 ```bash
 # Register Task Source Directory
@@ -201,7 +207,11 @@ The task-queue uses **per-source worker threads** with these rules:
 task-queue status
 # Output: Running
 
-# 2. Register Task Source Directory (one-time setup)
+# 2. Check if source is registered
+task-queue list-sources
+# Output: (none) -- not registered, proceed to register
+
+# 3. Register Task Source Directory (one-time setup)
 task-queue register --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
 # Output:
 # ✅ Registered Task Source Directory 'main'
@@ -209,6 +219,10 @@ task-queue register --task-source-dir tasks/task-documents --project-workspace /
 #    Workspace: /home/admin/workspaces/datachat
 # 📋 Found N task documents in directory
 #    Daemon will process them automatically
+
+# 4. Check queue status
+task-queue status
+# Output: Shows pending/running/completed tasks
 ```
 
 **Inform user:**
@@ -302,8 +316,9 @@ journalctl --user -u task-queue -n 100
 3. **Sequential Within Source** - Prevents file conflict race conditions
 4. **Parallel Across Sources** - Different sources can execute simultaneously
 5. **Background Processing** - Daemon runs independently with watchdog
-6. **Register Once** - Use `register` command once per source, watchdog handles the rest
-7. **Auto-Archive** - Completed specs moved to `tasks/task-archive/`
+6. **Check Before Register** - Always check `list-sources` before registering to avoid duplicates
+7. **Register Once** - Use `register` command once per source, watchdog handles the rest
+8. **Auto-Archive** - Completed specs moved to `tasks/task-archive/`
 
 ## Related Skills
 

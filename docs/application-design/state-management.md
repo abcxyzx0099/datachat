@@ -85,7 +85,7 @@ graph TD
 
 | Sub-State | Steps | Field Count | Purpose |
 |-----------|-------|-------------|---------|
-| `InputState` | 0 | 2 | Initial input configuration |
+| `InputState` | 0 | 1 | Initial input configuration |
 | `ExtractionState` | 1-3 | 5 | Data extraction and filtering |
 | `RecodingState` | 4-8 | 10 | New dataset generation |
 | `IndicatorState` | 9-11 | 8 | Indicator generation |
@@ -181,7 +181,7 @@ graph TD
 
 | Step | Sub-State | Key Fields Added | Optional Fields Still None |
 |------|-----------|------------------|----------------------------|
-| 0 | `InputState` | `input_file_path`, `config` | All other fields |
+| 0 | `InputState` | `input_file_path` | All other fields |
 | 1 | `ExtractionState` | `raw_data`, `original_metadata` | `variable_centered_metadata`, `filtered_metadata` |
 | 2 | `ExtractionState` | `variable_centered_metadata` | `filtered_metadata` |
 | 3 | `ExtractionState` | `filtered_metadata`, `filtered_out_variables` | All extraction fields complete |

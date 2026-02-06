@@ -108,13 +108,11 @@ graph TD
 class InputState(TypedDict):
     """Initial input configuration - populated at workflow start"""
     input_file_path: str         # Path to input .sav file
-    config: Dict[str, Any]        # Configuration parameters
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `input_file_path` | `str` | Absolute path to SPSS survey data file |
-| `config` | `Dict[str, Any]` | Runtime configuration (see [Configuration Schema](#6-configuration-schema)) |
 
 ### 2.3 ExtractionState
 
@@ -543,7 +541,7 @@ The `.sav` file format is the standard SPSS/PASW statistics data file format.
 
 ```mermaid
 graph TD
-    STEP0["Step 0<br/>InputState<br/>input_file_path<br/>config"]
+    STEP0["Step 0<br/>InputState<br/>input_file_path"]
     STEP1["Step 1<br/>ExtractionState<br/>raw_data<br/>original_metadata"]
     STEP2["Step 2<br/>variable_centered_metadata"]
     STEP3["Step 3<br/>filtered_metadata<br/>filtered_out_variables"]
