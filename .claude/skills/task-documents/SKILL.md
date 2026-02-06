@@ -1,6 +1,6 @@
 ---
 name: task-documents
-description: "Generates task document specifications from planning documents or conversation context. Creates task specs in tasks/task-staging/ directory first, then atomically moves to tasks/task-documents/ (Task Source Directory) where watchdog auto-loads them for the task-queue module to process. This ensures files are fully written before watchdog detection."
+description: "Generates task document specifications from planning documents or conversation context. Creates task specs using staging pattern: write to task-staging/ first, then atomically move to task-documents/. Ad-hoc tasks go to tasks/ad-hoc/, planned tasks go to tasks/planned/. Each queue processes independently via watchdog."
 ---
 
 # Task Documents Generation
@@ -21,19 +21,31 @@ The specifications are consumed by the `task-queue` module, which loads them via
 
 ---
 
+## Two Queue System
+
+The task system supports two independent queues:
+
+| Queue | Target Directory | Source | Use When |
+|-------|------------------|--------|----------|
+| **ad-hoc** | `tasks/ad-hoc/task-documents/` | Conversation context | Quick, spontaneous tasks from chat |
+| **planned** | `tasks/planned/task-documents/` | Planning documents | Organized, sequential tasks from planning |
+
+**Both queues process independently in parallel.**
+
+---
+
 ## When to Use
 
-| Scenario | Use when |
-|----------|----------|
-| **From Planning** | You have a `task-planning` document and want to generate multiple task specs |
-| **From Conversation** | A task emerges during chat that needs to be delegated |
-| **Bulk Generation** | Converting an entire planning document into task specs |
+| Scenario | Queue | Use when |
+|----------|-------|----------|
+| **Scenario 1: Ad-hoc** | ad-hoc | A task emerges during chat that needs to be delegated |
+| **Scenario 2: Planned** | planned | You have a `task-planning` document and want to generate multiple task specs |
 
 ## Input Sources
 
 **Primary Sources:**
-1. **Planning documents** - `tasks/task-planning/{descriptive-name}.md`
-2. **Conversation context** - Discussion between user and AI
+1. **Planning documents** - `tasks/task-planning/{descriptive-name}.md` → planned queue
+2. **Conversation context** - Discussion between user and AI → ad-hoc queue
 
 **Auxiliary Sources:**
 - Design/Project Documentation (`docs/application-design/` directory)
@@ -43,17 +55,29 @@ The specifications are consumed by the `task-queue` module, which loads them via
 
 Task specifications use a **staging pattern** to ensure atomic writes:
 
+### Ad-hoc Queue (Conversation-based)
+
 ```
-tasks/task-staging/                    # Write complete file here first
+tasks/ad-hoc/task-staging/              # Write complete file here first
 └── task-YYYYMMDD-HHMMSS-{description}.md
 
-tasks/task-documents/                  # Then atomically move here (watchdog monitors)
+tasks/ad-hoc/task-documents/            # Then atomically move here (watchdog monitors)
 └── task-YYYYMMDD-HHMMSS-{description}.md
 ```
 
-**Why Staging?** The watchdog monitors `task-documents/`. Writing to `task-staging/` first ensures the file is fully written before the watchdog detects and processes it. This prevents race conditions where incomplete files are processed.
+### Planned Queue (Planning-based)
 
-**Note:** `task-documents/` is the Task Source Directory monitored by the watchdog. New files are auto-loaded into the task-queue after the atomic move from staging.
+```
+tasks/planned/task-staging/             # Write complete file here first
+└── task-YYYYMMDD-HHMMSS-{description}.md
+
+tasks/planned/task-documents/           # Then atomically move here (watchdog monitors)
+└── task-YYYYMMDD-HHMMSS-{description}.md
+```
+
+**Why Staging?** The watchdog monitors each queue's `task-documents/`. Writing to `task-staging/` first ensures the file is fully written before the watchdog detects and processes it. This prevents race conditions where incomplete files are processed.
+
+**Note:** Each `task-documents/` is a Task Source Directory monitored by the watchdog. New files are auto-loaded into the task-queue after the atomic move from staging.
 
 ---
 
@@ -158,7 +182,11 @@ coverage report --include='[modified-files]'
 
 ## Workflow
 
-### Scenario 1: From Conversation (Default)
+### Scenario 1: Ad-hoc Task (From Conversation)
+
+**Use when:** A task emerges during chat that needs to be delegated
+
+**Target Queue:** `tasks/ad-hoc/`
 
 **Step 1: Investigate & Understand**
 - Review conversation context
@@ -175,7 +203,7 @@ timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 **Step 3: Write Task Document to Staging**
 ```python
 Write(
-    file_path="tasks/task-staging/task-{timestamp}-{description}.md",
+    file_path="tasks/ad-hoc/task-staging/task-{timestamp}-{description}.md",
     content=task_spec_content
 )
 ```
@@ -185,20 +213,24 @@ Write(
 # Atomic move ensures watchdog detects complete file
 import os
 os.rename(
-    "tasks/task-staging/task-{timestamp}-{description}.md",
-    "tasks/task-documents/task-{timestamp}-{description}.md"
+    "tasks/ad-hoc/task-staging/task-{timestamp}-{description}.md",
+    "tasks/ad-hoc/task-documents/task-{timestamp}-{description}.md"
 )
 ```
 
 **Step 5: Inform User**
 ```
-Task document created: tasks/task-documents/task-{timestamp}-{description}.md
+Ad-hoc task created: tasks/ad-hoc/task-documents/task-{timestamp}-{description}.md
 
-The watchdog will auto-load this task. View queue status:
-  task-queue status
+The ad-hoc queue watchdog will auto-load this task. View queue status:
+  python -m task_queue.cli status
 ```
 
-### Scenario 2: From Planning Document (Explicit Request)
+### Scenario 2: Planned Tasks (From Planning Document)
+
+**Use when:** You have a `task-planning` document and want to generate multiple task specs
+
+**Target Queue:** `tasks/planned/`
 
 **Trigger phrases:**
 - "Generate task specs from the planning document"
@@ -228,14 +260,14 @@ Extract all tasks from the planning document, noting:
 # PHASE 1: Write all files to staging first (no watchdog detection)
 staging_files = []
 for i, task in enumerate(tasks, start=1):
-    staging_path = f"tasks/task-staging/task-{timestamp}-{i:02d}-{description}.md"
+    staging_path = f"tasks/planned/task-staging/task-{timestamp}-{i:02d}-{description}.md"
     Write(file_path=staging_path, content=task_content)
     staging_files.append(staging_path)
 ```
 
 Resulting files in staging:
 ```
-tasks/task-staging/
+tasks/planned/task-staging/
 ├── task-20260202-120000-01-first-task.md
 ├── task-20260202-120001-02-second-task.md
 └── task-20260202-120002-03-third-task.md
@@ -243,12 +275,12 @@ tasks/task-staging/
 
 **Step 5: Show User What Was Generated**
 ```
-Generated N task document(s) in staging:
+Generated N task document(s) in planned staging:
   - task-20260202-120000-01-first-task.md
   - task-20260202-120001-02-second-task.md
   - task-20260202-120002-03-third-task.md
 
-Ready to move to task-documents/ (will trigger watchdog execution).
+Ready to move to planned/task-documents/ (will trigger watchdog execution).
 ```
 
 **Step 6: Atomically Move All Files (Triggers Watchdog)**
@@ -256,16 +288,16 @@ Ready to move to task-documents/ (will trigger watchdog execution).
 # PHASE 2: Move all files at once (atomic batch operation)
 for staging_path in staging_files:
     filename = os.path.basename(staging_path)
-    final_path = f"tasks/task-documents/{filename}"
+    final_path = f"tasks/planned/task-documents/{filename}"
     os.rename(staging_path, final_path)
 ```
 
 **Step 7: Inform User**
 ```
-Moved N task document(s) to tasks/task-documents/
+Moved N task document(s) to tasks/planned/task-documents/
 
-The watchdog will auto-load these tasks. View queue status:
-  task-queue status
+The planned queue watchdog will auto-load these tasks. View queue status:
+  python -m task_queue.cli status
 ```
 
 **Why Write All First?**
@@ -287,6 +319,7 @@ Before creating a task document:
 - [ ] Success criteria exist (including tests)
 - [ ] Timestamp generated correctly
 - [ ] File follows naming convention
+- [ ] Correct queue selected (ad-hoc vs planned)
 
 ---
 
@@ -296,22 +329,25 @@ Before creating a task document:
 
 2. **Batch Generation for Multiple Tasks** - When generating multiple tasks: write ALL to staging first, review, then move ALL at once. This allows review before execution starts and prevents partial execution on errors.
 
-3. **Watchdog Integration** - Task specifications are moved to `task-documents/` as complete `.md` files; the watchdog auto-loads them when the atomic move completes.
+3. **Queue Selection** - Ad-hoc tasks from conversation go to `tasks/ad-hoc/`. Planned tasks from planning documents go to `tasks/planned/`. Each queue processes independently.
 
-4. **Testing is Mandatory** - Every code task must include testing requirements. Only documentation/configuration tasks may use "No Tests."
+4. **Watchdog Integration** - Task specifications are moved to `task-documents/` as complete `.md` files; the watchdog auto-loads them when the atomic move completes.
 
-5. **80% Coverage Minimum** - All code changes must achieve at least 80% test coverage for modified/new files.
+5. **Testing is Mandatory** - Every code task must include testing requirements. Only documentation/configuration tasks may use "No Tests."
 
-6. **Clear Success Criteria** - Success criteria must include test pass rate and coverage thresholds.
+6. **80% Coverage Minimum** - All code changes must achieve at least 80% test coverage for modified/new files.
 
-7. **Worker Autonomy** - Worker agents do their own investigation. Provide clear investigation instructions.
+7. **Clear Success Criteria** - Success criteria must include test pass rate and coverage thresholds.
 
-8. **Specific Requirements** - Requirements must be actionable, not vague. Avoid "improve code" - specify what must be done.
+8. **Worker Autonomy** - Worker agents do their own investigation. Provide clear investigation instructions.
+
+9. **Specific Requirements** - Requirements must be actionable, not vague. Avoid "improve code" - specify what must be done.
 
 ---
 
 ## Related Skills
 
+- **task-init**: Initializes the task system with ad-hoc and planned queues
 - **task-planning**: Generates planning documents for bulk generation
 - **task-queue**: Loads and executes task documents
 - **task-worker**: Executes tasks with worker-auditor workflow

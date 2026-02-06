@@ -1,11 +1,13 @@
 ---
 name: task-cleanup
-description: "Cleans up the tasks directory by removing all materials (files) while preserving the directory structure. Leaves all subdirectories empty. Use when: you need to reset the tasks directory; you want to clear completed tasks and specifications; you need a clean slate for new task planning."
+description: "Cleans up the tasks directory by removing all materials (files) while preserving the directory structure. Leaves all subdirectories empty. Cleans both ad-hoc and planned queues. Use when: you need to reset the tasks directory; you want to clear completed tasks and specifications; you need a clean slate for new task planning."
 ---
 
 # Task Cleanup
 
 Cleans up the `tasks/` directory by removing all files while preserving the directory structure.
+
+**Note:** This cleans both ad-hoc and planned task queues.
 
 ---
 
@@ -13,21 +15,24 @@ Cleans up the `tasks/` directory by removing all files while preserving the dire
 
 ```
 tasks/
-├── task-planning/               # Will be emptied
-│   └── {descriptive-name}.md
-├── task-staging/                # Will be emptied (staging area for atomic writes)
-│   └── task-YYYYMMDD-HHMMSS-{description}.md
-├── task-documents/              # Will be emptied (Task Source Directory)
-│   └── task-YYYYMMDD-HHMMSS-{description}.md
-├── task-queue/                  # Will be emptied (flat structure)
-│   └── task-YYYYMMDD-HHMMSS-{description}.json
-├── task-archive/                # Will be emptied
-│   └── task-YYYYMMDD-HHMMSS-{description}.md
-└── task-reports/                # Will be emptied
-    └── task-{timestamp}-{description}/
-        ├── workflow-result.json
-        ├── audit-report-iteration-*.md
-        └── implementation-summary.md
+├── ad-hoc/                              # Ad-hoc task queue
+│   ├── task-staging/                    # Will be emptied
+│   ├── task-documents/                  # Will be emptied (Task Source Directory)
+│   ├── task-archive/                    # Will be emptied
+│   ├── task-failed/                    # Will be emptied
+│   ├── task-queue/                     # Will be emptied (flat structure)
+│   └── task-reports/                   # Will be emptied
+│
+├── planned/                             # Planned task queue
+│   ├── task-staging/                    # Will be emptied
+│   ├── task-documents/                  # Will be emptied (Task Source Directory)
+│   ├── task-archive/                    # Will be emptied
+│   ├── task-failed/                    # Will be emptied
+│   ├── task-queue/                     # Will be emptied (flat structure)
+│   └── task-reports/                   # Will be emptied
+│
+└── task-planning/                       # Will be emptied
+    └── {descriptive-name}.md
 ```
 
 **Note:** `docs/methodology/task-system-guide.md` is documentation and is NOT affected by cleanup.
@@ -38,12 +43,19 @@ tasks/
 
 | Directory | Purpose |
 |-----------|---------|
-| `tasks/task-archive/` | Archived task specifications |
-| `tasks/task-queue/` | Result JSON files (flat structure) |
-| `tasks/task-reports/` | Worker execution reports (detailed) |
+| `tasks/ad-hoc/task-staging/` | Ad-hoc staging area |
+| `tasks/ad-hoc/task-documents/` | Ad-hoc task specifications |
+| `tasks/ad-hoc/task-archive/` | Ad-hoc archived tasks |
+| `tasks/ad-hoc/task-failed/` | Ad-hoc failed tasks |
+| `tasks/ad-hoc/task-queue/` | Ad-hoc result JSON files |
+| `tasks/ad-hoc/task-reports/` | Ad-hoc worker reports |
+| `tasks/planned/task-staging/` | Planned staging area |
+| `tasks/planned/task-documents/` | Planned task specifications |
+| `tasks/planned/task-archive/` | Planned archived tasks |
+| `tasks/planned/task-failed/` | Planned failed tasks |
+| `tasks/planned/task-queue/` | Planned result JSON files |
+| `tasks/planned/task-reports/` | Planned worker reports |
 | `tasks/task-planning/` | Planning documents |
-| `tasks/task-staging/` | Staging area for atomic writes |
-| `tasks/task-documents/` | Task specifications (Task Source Directory) |
 
 ---
 
@@ -73,51 +85,99 @@ git push
 find tasks/ -type f
 
 # Count files in each subdirectory
-for dir in tasks/task-planning tasks/task-staging tasks/task-documents tasks/task-queue tasks/task-archive tasks/task-reports; do
+echo "=== Ad-hoc Queue ==="
+for dir in tasks/ad-hoc/task-staging tasks/ad-hoc/task-documents tasks/ad-hoc/task-queue tasks/ad-hoc/task-archive tasks/ad-hoc/task-failed tasks/ad-hoc/task-reports; do
     echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
 done
+
+echo "=== Planned Queue ==="
+for dir in tasks/planned/task-staging tasks/planned/task-documents tasks/planned/task-queue tasks/planned/task-archive tasks/planned/task-failed tasks/planned/task-reports; do
+    echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
+done
+
+echo "=== Planning ==="
+echo "tasks/task-planning/: $(ls -1 tasks/task-planning/ 2>/dev/null | wc -l) files"
 ```
 
 **Confirm with user before proceeding.**
 
 ---
 
-## Step 3: Clean Up Subdirectories
+## Step 3: Clean Up Ad-hoc Queue
+
+```bash
+# Remove ad-hoc staging files
+rm -f tasks/ad-hoc/task-staging/task-*.md 2>/dev/null
+
+# Remove ad-hoc task specifications (Task Source Directory)
+rm -f tasks/ad-hoc/task-documents/task-*.md 2>/dev/null
+
+# Remove ad-hoc result JSON files (flat structure)
+rm -f tasks/ad-hoc/task-queue/task-*.json 2>/dev/null
+
+# Remove ad-hoc archived task specifications
+rm -f tasks/ad-hoc/task-archive/task-*.md 2>/dev/null
+
+# Remove ad-hoc failed task specifications
+rm -f tasks/ad-hoc/task-failed/task-*.md 2>/dev/null
+
+# Remove ad-hoc worker reports (detailed subdirectories)
+rm -rf tasks/ad-hoc/task-reports/task-* 2>/dev/null
+```
+
+## Step 4: Clean Up Planned Queue
+
+```bash
+# Remove planned staging files
+rm -f tasks/planned/task-staging/task-*.md 2>/dev/null
+
+# Remove planned task specifications (Task Source Directory)
+rm -f tasks/planned/task-documents/task-*.md 2>/dev/null
+
+# Remove planned result JSON files (flat structure)
+rm -f tasks/planned/task-queue/task-*.json 2>/dev/null
+
+# Remove planned archived task specifications
+rm -f tasks/planned/task-archive/task-*.md 2>/dev/null
+
+# Remove planned failed task specifications
+rm -f tasks/planned/task-failed/task-*.md 2>/dev/null
+
+# Remove planned worker reports (detailed subdirectories)
+rm -rf tasks/planned/task-reports/task-* 2>/dev/null
+```
+
+## Step 5: Clean Up Planning Documents
 
 ```bash
 # Remove planning documents
 rm -f tasks/task-planning/*.md 2>/dev/null
-
-# Remove staged files (staging area)
-rm -f tasks/task-staging/task-*.md 2>/dev/null
-
-# Remove task specifications (Task Source Directory)
-rm -f tasks/task-documents/task-*.md 2>/dev/null
-
-# Remove result JSON files (flat structure)
-rm -f tasks/task-queue/task-*.json 2>/dev/null
-
-# Remove archived task specifications
-rm -f tasks/task-archive/task-*.md 2>/dev/null
-
-# Remove worker reports (detailed subdirectories)
-rm -rf tasks/task-reports/task-* 2>/dev/null
 ```
 
-**Alternative (single command):**
+**Alternative (single command for all):**
 ```bash
 find tasks/ -mindepth 2 -type f -delete
 ```
 
 ---
 
-## Step 4: Verify Cleanup
+## Step 6: Verify Cleanup
 
 ```bash
-for dir in tasks/task-planning tasks/task-staging tasks/task-documents tasks/task-queue tasks/task-archive tasks/task-reports; do
+echo "=== Ad-hoc Queue ==="
+for dir in tasks/ad-hoc/task-staging tasks/ad-hoc/task-documents tasks/ad-hoc/task-queue tasks/ad-hoc/task-archive tasks/ad-hoc/task-failed tasks/ad-hoc/task-reports; do
     count=$(ls -1 "$dir" 2>/dev/null | wc -l)
     echo "$dir: $count files"
 done
+
+echo "=== Planned Queue ==="
+for dir in tasks/planned/task-staging tasks/planned/task-documents tasks/planned/task-queue tasks/planned/task-archive tasks/planned/task-failed tasks/planned/task-reports; do
+    count=$(ls -1 "$dir" 2>/dev/null | wc -l)
+    echo "$dir: $count files"
+done
+
+echo "=== Planning ==="
+echo "tasks/task-planning/: $(ls -1 tasks/task-planning/ 2>/dev/null | wc -l) files"
 ```
 
 **Expected:** All directories show 0 files.
@@ -132,12 +192,13 @@ done
 | `git switch main` | Switch to main branch |
 | `git add -A && git commit && git push` | Safety checkpoint |
 | `find tasks/ -mindepth 2 -type f` | List files to remove |
+| `rm -f tasks/ad-hoc/task-staging/task-*.md` | Remove ad-hoc staged files |
+| `rm -f tasks/ad-hoc/task-documents/task-*.md` | Remove ad-hoc task specs |
+| `rm -f tasks/ad-hoc/task-queue/task-*.json` | Remove ad-hoc result files |
+| `rm -f tasks/planned/task-staging/task-*.md` | Remove planned staged files |
+| `rm -f tasks/planned/task-documents/task-*.md` | Remove planned task specs |
+| `rm -f tasks/planned/task-queue/task-*.json` | Remove planned result files |
 | `rm -f tasks/task-planning/*.md` | Remove planning documents |
-| `rm -f tasks/task-staging/task-*.md` | Remove staged files |
-| `rm -f tasks/task-documents/task-*.md` | Remove task specifications |
-| `rm -f tasks/task-queue/task-*.json` | Remove result JSON files |
-| `rm -f tasks/task-archive/task-*.md` | Remove archived tasks |
-| `rm -rf tasks/task-reports/task-*` | Remove worker reports |
 
 ---
 
@@ -145,9 +206,11 @@ done
 
 - [ ] Verified on `main` branch
 - [ ] Safety checkpoint created (committed and pushed)
-- [ ] Tasks directory exists
+- [ ] Tasks directory exists with both ad-hoc and planned subdirectories
 - [ ] User confirmed cleanup
-- [ ] All files removed from subdirectories
+- [ ] Ad-hoc queue files removed
+- [ ] Planned queue files removed
+- [ ] Planning documents removed
 - [ ] All subdirectories still exist
 - [ ] Verification shows 0 files in each subdirectory
 
@@ -161,11 +224,13 @@ done
 4. **Never remove** subdirectories themselves
 5. **Documentation is preserved** - `docs/methodology/task-system-guide.md` is NOT affected
 6. **Consider archiving** first if tasks might be needed later
+7. **Both queues are cleaned** - This cleans ad-hoc AND planned queues
 
 ---
 
 ## Related Skills
 
+- **task-init**: Initialize task system with ad-hoc and planned queues
 - **task-planning**: Generate new task planning documents
 - **task-documents**: Create new task specifications
 - **task-queue**: Execute task specifications
