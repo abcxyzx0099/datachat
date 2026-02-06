@@ -11,9 +11,10 @@ Complete guide to the asynchronous task execution system (task-queue) with event
 5. [Task Document Format](#task-document-format)
 6. [Skills Reference](#skills-reference)
 7. [Execution Model](#execution-model)
-8. [CLI Commands](#cli-commands)
-9. [Service Management](#service-management)
-10. [Troubleshooting](#troubleshooting)
+8. [Result Tracking](#result-tracking)
+9. [CLI Commands](#cli-commands)
+10. [Service Management](#service-management)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -34,8 +35,10 @@ task-queue register --task-source-dir tasks/task-documents --project-workspace /
 # 4. Check results
 task-queue status
 
-# 5. View completed tasks
+# 5. View completed tasks and result files
 ls tasks/task-archive/
+ls tasks/task-queue/
+cat tasks/task-queue/task-{id}.json
 ```
 
 ### Common Commands
@@ -71,6 +74,7 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 - **Executes** tasks using parallel worker threads (one per Task Source Directory)
 - **Processes** tasks sequentially within each source (no conflicts)
 - **Tracks** state via directory structure (no state file)
+- **Saves** JSON result files with execution metadata, cost, and usage
 - **Archives** completed tasks automatically
 - **Moves** failed tasks to failed directory
 
@@ -176,6 +180,34 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 │   │ tasks/task-failed/     ← Failed tasks (auto-moved)               │   │
 │   └─────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 7: JSON Result File Creation                                        │
+│                                                                          │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │ tasks/task-queue/task-{id}.json                                 │   │
+│   │                                                                 │   │
+│   │ {                                                              │   │
+│   │   "success": true,                                             │   │
+│   │   "task_id": "task-20260206-105319",                           │   │
+│   │   "started_at": "2026-02-06T10:56:17.747530",                   │   │
+│   │   "completed_at": "2026-02-06T10:56:45.316864",                 │   │
+│   │   "duration_ms": 8829,                                         │   │
+│   │   "duration_api_ms": 7785,                                     │   │
+│   │   "total_cost_usd": 0.176559,                                  │   │
+│   │   "usage": {                                                   │   │
+│   │     "input_tokens": 25836,                                     │   │
+│   │     "output_tokens": 267,                                      │   │
+│   │     "cache_read_input_tokens": 81408                           │   │
+│   │   },                                                           │   │
+│   │   "session_id": "4e23bdf6-95b2-4856-ad69-5187d539b87a",         │   │
+│   │   "num_turns": 4,                                              │   │
+│   │   "output": "...",                                             │   │
+│   │   "error": ""                                                  │   │
+│   │ }                                                              │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -198,6 +230,8 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 │   │   └── task-20260205-093000-completed-task.md
 │   ├── task-failed/               # Failed specs (auto-moved)
 │   │   └── task-20260205-080000-failed-task.md
+│   ├── task-queue/                # JSON result files with SDK metadata
+│   │   └── task-{id}.json         # Execution result: duration, cost, usage, output
 │   └── task-reports/               # Worker execution reports (created by task-worker skill)
 │       └── task-{timestamp}-{description}/
 │           ├── workflow-result.json
@@ -445,6 +479,88 @@ tasks/task-documents/:
 
 ---
 
+## Result Tracking
+
+### JSON Result Files
+
+After each task execution, a JSON result file is automatically created at:
+
+```
+tasks/task-queue/{task_id}.json
+```
+
+### Result File Structure
+
+```json
+{
+  "success": true,
+  "output": "Task execution output from Claude...",
+  "error": "",
+  "task_id": "task-20260206-105319",
+  "duration_ms": 8829,
+  "duration_api_ms": 7785,
+  "total_cost_usd": 0.176559,
+  "usage": {
+    "input_tokens": 25836,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 81408,
+    "output_tokens": 267,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard"
+  },
+  "session_id": "4e23bdf6-95b2-4856-ad69-5187d539b87a",
+  "num_turns": 4,
+  "started_at": "2026-02-06T10:56:17.747530",
+  "completed_at": "2026-02-06T10:56:45.316864"
+}
+```
+
+### Field Descriptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether task completed successfully |
+| `output` | string | Full text output from Claude Agent SDK |
+| `error` | string | Error message if task failed |
+| `task_id` | string | Task identifier |
+| `duration_ms` | integer | Total execution time in milliseconds |
+| `duration_api_ms` | integer | API call duration only (milliseconds) |
+| `total_cost_usd` | float | Cost in USD for this execution |
+| `usage` | object | Token usage statistics |
+| `session_id` | string | Session identifier for tracing |
+| `num_turns` | integer | Number of conversation turns |
+| `started_at` | string | ISO 8601 start timestamp |
+| `completed_at` | string | ISO 8601 completion timestamp |
+
+### Viewing Results
+
+```bash
+# List all result files
+ls tasks/task-queue/
+
+# View specific result
+cat tasks/task-queue/task-{id}.json
+
+# View with pretty formatting
+cat tasks/task-queue/task-{id}.json | jq .
+
+# Check recent results
+ls -lt tasks/task-queue/ | head -10
+```
+
+### Use Cases
+
+- **Cost Tracking**: Monitor `total_cost_usd` across tasks
+- **Performance Analysis**: Review `duration_ms` and `duration_api_ms`
+- **Usage Analytics**: Track token consumption via `usage` object
+- **Session Tracing**: Use `session_id` to correlate related operations
+- **Debugging**: Review `output` and `error` fields for failed tasks
+
+---
+
 ## CLI Commands
 
 The `task-queue` CLI provides these commands:
@@ -499,6 +615,10 @@ ls tasks/task-failed/
 
 # View task reports
 ls tasks/task-reports/task-{timestamp}-{description}/
+
+# View JSON result files with SDK metadata
+ls tasks/task-queue/
+cat tasks/task-queue/task-{id}.json
 ```
 
 ---
@@ -655,6 +775,7 @@ ls tasks/task-failed/
 8. **Project Context** - Each task runs with correct `cwd` (Project Workspace)
 9. **Graceful Shutdown** - All workers stop cleanly on SIGTERM
 10. **Auto-Cleanup** - Stale running markers automatically detected and removed via process ID checking
+11. **Result Tracking** - JSON result files capture execution metadata, cost, and usage
 
 ---
 
@@ -678,7 +799,7 @@ python -m task_queue.cli <command>
 - **daemon.py**: Background daemon with parallel worker threads
 - **task_runner.py**: Core task execution logic
 - **watchdog.py**: Event-driven file system monitoring
-- **executor.py**: Executes tasks via Claude Agent SDK
+- **executor.py**: Executes tasks via Claude Agent SDK, saves JSON result files
 - **scanner.py**: Scans for task document files
 - **cli.py**: CLI commands
 - **models.py**: Pydantic data models (v2.0)
