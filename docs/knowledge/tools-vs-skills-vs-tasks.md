@@ -58,7 +58,7 @@ Skill uses Read, Write, Edit tools to complete task
 Markdown document files containing task specifications.
 
 - Format: `task-YYYYMMDD-HHMMSS-description.md`
-- Location: `{project_workspace}/tasks/task-documents/`
+- Location: `{project_workspace}/tasks/ad-hoc/pending/` or `{project_workspace}/tasks/planned/pending/`
 - Read and executed by the `/task-worker` skill
 
 **NOT a tool** - just a data file.

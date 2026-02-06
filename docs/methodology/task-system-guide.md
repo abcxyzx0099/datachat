@@ -1,6 +1,6 @@
 # Task System Guide
 
-Complete guide to the asynchronous task execution system (task-queue) with event-driven watchdog monitoring and parallel worker execution.
+Complete guide to the asynchronous task execution system (results) with event-driven watchdog monitoring and parallel worker execution.
 
 ## Table of Contents
 
@@ -39,9 +39,9 @@ python -m task_queue.cli init
 ### Create and Execute a Task
 
 ```bash
-# 1. Use task-documents skill to create a task specification
-#    - Ad-hoc tasks: goes to tasks/ad-hoc/task-documents/
-#    - Planned tasks: goes to tasks/planned/task-documents/
+# 1. Use pending skill to create a task specification
+#    - Ad-hoc tasks: goes to tasks/ad-hoc/pending/
+#    - Planned tasks: goes to tasks/planned/pending/
 
 # 2. Task executes in background using Claude Agent SDK
 #    (Watchdog monitors directories, daemon processes tasks automatically)
@@ -50,9 +50,9 @@ python -m task_queue.cli init
 python -m task_queue.cli status
 
 # 4. View completed tasks and result files
-ls tasks/ad-hoc/task-archive/       # or tasks/planned/task-archive/
-ls tasks/ad-hoc/task-queue/         # or tasks/planned/task-queue/
-cat tasks/ad-hoc/task-queue/task-{id}.json
+ls tasks/ad-hoc/completed/       # or tasks/planned/completed/
+ls tasks/ad-hoc/results/         # or tasks/planned/results/
+cat tasks/ad-hoc/results/task-{id}.json
 ```
 
 ### Common Commands
@@ -101,7 +101,7 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 
 ### System Capabilities
 
-- **Generates** task specifications via `task-documents` skill (separate queues)
+- **Generates** task specifications via `pending` skill (separate queues)
 - **Monitors** Task Source Directories via watchdog (event-driven, no polling)
 - **Executes** tasks using parallel worker threads (one per Task Source Directory)
 - **Processes** tasks sequentially within each source (no conflicts)
@@ -133,22 +133,22 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ Step 1: Task Planning (Optional - for planned queue)                    │
 │                                                                          │
-│   task-planning skill → tasks/task-planning/{descriptive-name}.md       │
+│   planned/planning skill → tasks/planned/planning/{descriptive-name}.md       │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ Step 2: Task Specification Generation                                   │
 │                                                                          │
-│   task-documents skill                                                  │
+│   pending skill                                                  │
 │                                                                          │
 │   Ad-hoc path (from conversation):                                     │
-│     → tasks/ad-hoc/task-staging/... (write first)                       │
-│     → tasks/ad-hoc/task-documents/... (atomic move)                     │
+│     → tasks/ad-hoc/staging/... (write first)                       │
+│     → tasks/ad-hoc/pending/... (atomic move)                     │
 │                                                                          │
 │   Planned path (from planning):                                         │
-│     → tasks/planned/task-staging/... (write first)                       │
-│     → tasks/planned/task-documents/... (atomic move)                     │
+│     → tasks/planned/staging/... (write first)                       │
+│     → tasks/planned/pending/... (atomic move)                     │
 │                                                                          │
 │   Naming: task-YYYYMMDD-HHMMSS-{kebab-description}.md                   │
 │   Example: task-20260205-100000-fix-auth-timeout.md                     │
@@ -168,13 +168,13 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 │                                                                          │
 │   This creates directories and registers both queues (ad-hoc, planned). │
 │                                                                          │
-│   Note: Watchdog monitors each queue's task-documents/ directory.       │
+│   Note: Watchdog monitors each queue's pending/ directory.       │
 │   Tasks are auto-loaded when files appear (no manual loading needed).   │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Step 4: task-queue Daemon with Parallel Workers                         │
+│ Step 4: results Daemon with Parallel Workers                         │
 │                                                                          │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
 │   │              Watchdog (Event-Driven Monitoring)                  │   │
@@ -217,8 +217,8 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 │   ┌─────────────────────────────────────────────────────────────────┐   │
 │   │ Directory-Based State (No state.json file)                      │   │
 │   │                                                                 │   │
-│   │ tasks/ad-hoc/task-documents/   ← Pending ad-hoc tasks             │   │
-│   │ tasks/planned/task-documents/  ← Pending planned tasks            │   │
+│   │ tasks/ad-hoc/pending/   ← Pending ad-hoc tasks             │   │
+│   │ tasks/planned/pending/  ← Pending planned tasks            │   │
 │   │   ├── task-001.md                                               │   │
 │   │   ├── .task-001.lock     ← Lock file with metadata           │   │
 │   │   │   { "task_id": "...", "worker": "...",               │   │
@@ -226,10 +226,10 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 │   │   │       "started_at": "..." }                         │   │
 │   │   └── task-002.md                                               │   │
 │   │                                                                 │   │
-│   │ tasks/ad-hoc/task-archive/     ← Completed ad-hoc tasks           │   │
-│   │ tasks/planned/task-archive/    ← Completed planned tasks          │   │
-│   │ tasks/ad-hoc/task-failed/     ← Failed ad-hoc tasks              │   │
-│   │ tasks/planned/task-failed/    ← Failed planned tasks             │   │
+│   │ tasks/ad-hoc/completed/     ← Completed ad-hoc tasks           │   │
+│   │ tasks/planned/completed/    ← Completed planned tasks          │   │
+│   │ tasks/ad-hoc/failed/     ← Failed ad-hoc tasks              │   │
+│   │ tasks/planned/failed/    ← Failed planned tasks             │   │
 │   └─────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -238,8 +238,8 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 │ Step 7: JSON Result File Creation                                        │
 │                                                                          │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
-│   │ tasks/ad-hoc/task-queue/task-{id}.json                          │   │
-│   │ tasks/planned/task-queue/task-{id}.json                         │   │
+│   │ tasks/ad-hoc/results/task-{id}.json                          │   │
+│   │ tasks/planned/results/task-{id}.json                         │   │
 │   │                                                                 │   │
 │   │ {                                                              │   │
 │   │   "success": true,                                             │   │
@@ -273,44 +273,44 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 {project-workspace}/
 ├── tasks/
 │   ├── ad-hoc/                            # Ad-hoc task queue
-│   │   ├── task-staging/                  # Staging area (atomic writes)
-│   │   ├── task-documents/                # Task Source Directory (watchdog monitors)
+│   │   ├── staging/                  # Staging area (atomic writes)
+│   │   ├── pending/                # Task Source Directory (watchdog monitors)
 │   │   │   ├── task-20260205-100000-fix-bug.md
 │   │   │   ├── .task-20260205-100000-fix-bug.lock  # Lock file with metadata
 │   │   │   └── task-20260205-100500-add-feature.md
-│   │   ├── task-archive/                  # Completed specs (auto-moved)
+│   │   ├── completed/                  # Completed specs (auto-moved)
 │   │   │   ├── task-20260205-090000-previous-task.md
 │   │   │   └── task-20260205-093000-completed-task.md
-│   │   ├── task-failed/                  # Failed specs (auto-moved)
+│   │   ├── failed/                  # Failed specs (auto-moved)
 │   │   │   └── task-20260205-080000-failed-task.md
-│   │   ├── task-queue/                   # JSON result files with SDK metadata
+│   │   ├── results/                   # JSON result files with SDK metadata
 │   │   │   └── task-{id}.json            # Execution result: duration, cost, usage
-│   │   └── task-reports/                 # Worker execution reports
+│   │   └── reports/                 # Worker execution reports
 │   │       └── task-{timestamp}-{description}/
 │   │           ├── workflow-result.json
 │   │           ├── audit-report-iteration-1.md
 │   │           └── implementation-summary.md
 │   │
 │   ├── planned/                           # Planned task queue
-│   │   ├── task-staging/                  # Staging area (atomic writes)
-│   │   ├── task-documents/                # Task Source Directory (watchdog monitors)
+│   │   ├── staging/                  # Staging area (atomic writes)
+│   │   ├── pending/                # Task Source Directory (watchdog monitors)
 │   │   │   ├── task-20260205-110000-01-feature.md
 │   │   │   ├── task-20260205-110001-02-refactor.md
 │   │   │   └── task-20260205-110002-03-tests.md
-│   │   ├── task-archive/                  # Completed specs (auto-moved)
-│   │   ├── task-failed/                  # Failed specs (auto-moved)
-│   │   ├── task-queue/                   # JSON result files with SDK metadata
-│   │   └── task-reports/                 # Worker execution reports
+│   │   ├── completed/                  # Completed specs (auto-moved)
+│   │   ├── failed/                  # Failed specs (auto-moved)
+│   │   ├── results/                   # JSON result files with SDK metadata
+│   │   └── reports/                 # Worker execution reports
 │   │
-│   └── task-planning/                     # Task planning documents
+│   └── planned/planning/                     # Task planning documents
 │       └── {descriptive-name}.md
 │
 └── .claude/
     └── skills/
         ├── task-init/                     # Initialize task system
-        ├── task-planning/
-        ├── task-documents/
-        ├── task-queue/
+        ├── planned/planning/
+        ├── pending/
+        ├── results/
         ├── task-worker/
         └── task-cleanup/
 ```
@@ -318,7 +318,7 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 ### Config Directory Structure (under `~/.config/`)
 
 ```
-~/.config/task-queue/
+~/.config/results/
 ├── config.json                     # Queue configuration (v2.1)
 └── config.json.lock               # Lock file for config access
 ```
@@ -386,12 +386,12 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 
 **Actions:**
 - Creates directory structure for both queues
-- Registers Task Source Directories with task-queue
+- Registers Task Source Directories with results
 - Verifies setup
 
 **Use when:** First-time setup or re-configuration
 
-### 2. task-planning
+### 2. planned/planning
 
 **Purpose:** Generate organized task planning documents from documentation
 
@@ -400,14 +400,14 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 - User request/requirements
 
 **Output:**
-- `tasks/task-planning/{descriptive-name}.md`
+- `tasks/planned/planning/{descriptive-name}.md`
 
 **Organization Types:**
 - **FLAT_LIST** (0-10 complexity score): Simple, linear work
 - **IMPLEMENTATION_PHASE** (11-25): Sequential phases
 - **FEATURE_MODULE** (26+): Independent modules
 
-### 3. task-documents
+### 3. pending
 
 **Purpose:** Generate task specification documents from planning or conversation
 
@@ -419,14 +419,14 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 | **Planned** | Planning document | Multiple task specifications | planned |
 
 **Output:**
-- Ad-hoc: `tasks/ad-hoc/task-documents/task-{timestamp}-{description}.md`
-- Planned: `tasks/planned/task-documents/task-{timestamp}-{description}.md`
+- Ad-hoc: `tasks/ad-hoc/pending/task-{timestamp}-{description}.md`
+- Planned: `tasks/planned/pending/task-{timestamp}-{description}.md`
 
 **Key Features:**
-- Staging pattern (write to task-staging/ first, then atomic move)
+- Staging pattern (write to staging/ first, then atomic move)
 - Watchdog auto-integration (daemon detects new files)
 
-### 4. task-queue
+### 4. results
 
 **Purpose:** Coordinate task execution with watchdog and CLI commands
 
@@ -468,7 +468,7 @@ python -m task_queue.cli run --cycles 1
 3. Automatic iteration based on feedback (max 3x)
 4. Quality gate: stops when threshold met
 
-**Called by:** task-queue module (via Claude Agent SDK)
+**Called by:** results module (via Claude Agent SDK)
 
 ### 6. task-cleanup
 
@@ -484,7 +484,7 @@ python -m task_queue.cli run --cycles 1
 **Official Directories Cleaned:**
 - `tasks/ad-hoc/*` - All ad-hoc subdirectories
 - `tasks/planned/*` - All planned subdirectories
-- `tasks/task-planning/` - Planning documents
+- `tasks/planned/planning/` - Planning documents
 
 **Preserved:**
 - All subdirectories (empty, ready for new tasks)
@@ -495,7 +495,7 @@ python -m task_queue.cli run --cycles 1
 
 ### Directory-Based State (v2.1)
 
-The task-queue uses **directory-based state** with these rules:
+The results uses **directory-based state** with these rules:
 
 | Rule | Description |
 |------|-------------|
@@ -530,13 +530,13 @@ Both run in PARALLEL (different sources)
 ┌─────────────────────────────────────────────────────────────────┐
 │ Task Lifecycle                                                       │
 │                                                                     │
-│  task-documents/          Running             Archive/Failed       │
+│  pending/          Running             Archive/Failed       │
 │  ┌─────────────┐          ┌─────────┐          ┌─────────────┐    │
 │  │ task-001.md │ ─create──▶│.lock    │──done───▶│task-001.md │    │
 │  │ (pending)  │          │+metadata│          │(completed) │    │
 │  └─────────────┘          └─────────┘          └─────────────┘    │
 │                                                                     │
-│  On failure → task-failed/task-001.md                              │
+│  On failure → failed/task-001.md                              │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -556,8 +556,8 @@ Both run in PARALLEL (different sources)
 After each task execution, a JSON result file is automatically created at:
 
 ```
-tasks/ad-hoc/task-queue/{task_id}.json
-tasks/planned/task-queue/{task_id}.json
+tasks/ad-hoc/results/{task_id}.json
+tasks/planned/results/{task_id}.json
 ```
 
 ### Result File Structure
@@ -610,24 +610,24 @@ tasks/planned/task-queue/{task_id}.json
 
 ```bash
 # List all result files
-ls tasks/ad-hoc/task-queue/
-ls tasks/planned/task-queue/
+ls tasks/ad-hoc/results/
+ls tasks/planned/results/
 
 # View specific result
-cat tasks/ad-hoc/task-queue/task-{id}.json
+cat tasks/ad-hoc/results/task-{id}.json
 
 # View with pretty formatting
-cat tasks/ad-hoc/task-queue/task-{id}.json | jq .
+cat tasks/ad-hoc/results/task-{id}.json | jq .
 
 # Check recent results
-ls -lt tasks/ad-hoc/task-queue/ | head -10
+ls -lt tasks/ad-hoc/results/ | head -10
 ```
 
 ---
 
 ## CLI Commands
 
-The `task-queue` CLI provides grouped commands for managing tasks:
+The `results` CLI provides grouped commands for managing tasks:
 
 ### System Commands
 
@@ -710,29 +710,29 @@ python -m task_queue.cli --config /path/to/config.json <command>
 
 ## Service Management
 
-The task-queue daemon runs as a systemd user service with watchdog monitoring.
+The results daemon runs as a systemd user service with watchdog monitoring.
 
 ```bash
 # Start service
-systemctl --user start task-queue.service
+systemctl --user start results.service
 
 # Stop service
-systemctl --user stop task-queue.service
+systemctl --user stop results.service
 
 # Restart service
-systemctl --user restart task-queue.service
+systemctl --user restart results.service
 
 # Check status
-systemctl --user status task-queue.service
+systemctl --user status results.service
 
 # Enable at login
-systemctl --user enable task-queue.service
+systemctl --user enable results.service
 
 # View live logs
-journalctl --user -u task-queue.service -f
+journalctl --user -u results.service -f
 
 # View last 100 log lines
-journalctl --user -u task-queue.service -n 100
+journalctl --user -u results.service -n 100
 ```
 
 ---
@@ -741,63 +741,63 @@ journalctl --user -u task-queue.service -n 100
 
 ### Service won't start
 
-**Symptom:** `systemctl --user status task-queue.service` shows "failed" or "inactive"
+**Symptom:** `systemctl --user status results.service` shows "failed" or "inactive"
 
 **Solutions:**
 
 1. **Check the logs:**
    ```bash
-   journalctl --user -u task-queue.service -n 50
+   journalctl --user -u results.service -n 50
    ```
 
 2. **Verify directory structure:**
    ```bash
-   ls -la tasks/ad-hoc/task-documents/
-   ls -la tasks/planned/task-documents/
-   ls -la tasks/ad-hoc/task-archive/
-   ls -la tasks/planned/task-archive/
+   ls -la tasks/ad-hoc/pending/
+   ls -la tasks/planned/pending/
+   ls -la tasks/ad-hoc/completed/
+   ls -la tasks/planned/completed/
    ```
 
 3. **Verify Python environment:**
    ```bash
    source /home/admin/workspaces/datachat/.venv/bin/activate
-   export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
+   export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
    python -m task_queue.cli status
    ```
 
 4. **Check config file:**
    ```bash
-   cat ~/.config/task-queue/config.json
+   cat ~/.config/results/config.json
    ```
 
 ### Tasks not being processed
 
-**Symptom:** `task-queue status` shows pending tasks but they don't execute
+**Symptom:** `results status` shows pending tasks but they don't execute
 
 **Solutions:**
 
 1. **Verify task files exist:**
    ```bash
-   ls tasks/ad-hoc/task-documents/task-*.md
-   ls tasks/planned/task-documents/task-*.md
+   ls tasks/ad-hoc/pending/task-*.md
+   ls tasks/planned/pending/task-*.md
    ```
 
 2. **Check naming pattern:** Task files must match `task-YYYYMMDD-HHMMSS-*.md`
 
 3. **Check service is running:**
    ```bash
-   systemctl --user status task-queue.service
+   systemctl --user status results.service
    ```
 
 4. **Check for lock files (running tasks):**
    ```bash
-   ls tasks/ad-hoc/task-documents/.task-*.lock
-   ls tasks/planned/task-documents/.task-*.lock
+   ls tasks/ad-hoc/pending/.task-*.lock
+   ls tasks/planned/pending/.task-*.lock
    ```
 
    **View lock file contents:**
    ```bash
-   cat tasks/ad-hoc/task-documents/.task-{id}.lock
+   cat tasks/ad-hoc/pending/.task-{id}.lock
    # Shows: {"task_id": "...", "worker": "...", "thread_id": "...", "pid": 12345, "started_at": "..."}
    ```
 
@@ -809,15 +809,15 @@ journalctl --user -u task-queue.service -n 100
 
 1. **View failed task:**
    ```bash
-   cat tasks/ad-hoc/task-failed/task-{id}.md
-   cat tasks/planned/task-failed/task-{id}.md
+   cat tasks/ad-hoc/failed/task-{id}.md
+   cat tasks/planned/failed/task-{id}.md
    ```
 
 2. **Check detailed worker report:**
    ```bash
-   ls tasks/ad-hoc/task-reports/task-{id}/
-   ls tasks/planned/task-reports/task-{id}/
-   cat tasks/ad-hoc/task-reports/task-{id}/audit-report-*.md
+   ls tasks/ad-hoc/reports/task-{id}/
+   ls tasks/planned/reports/task-{id}/
+   cat tasks/ad-hoc/reports/task-{id}/audit-report-*.md
    ```
 
 3. **Verify project context:** Task should execute with correct working directory (Project Workspace)
@@ -830,7 +830,7 @@ journalctl --user -u task-queue.service -n 100
 
 1. **Check watchdog is enabled in config:**
    ```bash
-   cat ~/.config/task-queue/config.json | grep watch_enabled
+   cat ~/.config/results/config.json | grep watch_enabled
    ```
 
 2. **Verify Task Source Directory is configured:**
@@ -840,7 +840,7 @@ journalctl --user -u task-queue.service -n 100
 
 3. **Check daemon logs for watchdog errors:**
    ```bash
-   journalctl --user -u task-queue.service -n 50 | grep -i watchdog
+   journalctl --user -u results.service -n 50 | grep -i watchdog
    ```
 
 ---
@@ -863,9 +863,9 @@ journalctl --user -u task-queue.service -n 100
 
 ## Related Modules
 
-### task-queue Module
+### results Module
 
-**Location:** `/home/admin/workspaces/task-queue/` (separate workspace)
+**Location:** `/home/admin/workspaces/results/` (separate workspace)
 
 **Version:** 2.0 (Directory-Based State with Parallel Workers)
 
@@ -873,7 +873,7 @@ journalctl --user -u task-queue.service -n 100
 ```bash
 # Module runs as Python module from datachat venv
 source /home/admin/workspaces/datachat/.venv/bin/activate
-export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
+export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 python -m task_queue.cli <command>
 ```
 
@@ -888,4 +888,4 @@ python -m task_queue.cli <command>
 - **config.py**: Configuration management
 - **file_utils.py**: Atomic file operations and file locking
 
-**Service:** `~/.config/systemd/user/task-queue.service`
+**Service:** `~/.config/systemd/user/results.service`

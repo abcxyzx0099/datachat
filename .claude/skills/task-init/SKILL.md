@@ -1,6 +1,6 @@
 ---
 name: task-init
-description: "Initializes the task system by creating the directory structure and registering Task Source Directories with the task-queue module. One-time setup that configures ad-hoc and planned task queues for parallel execution."
+description: "Initializes the task system by creating the directory structure and registering Task Source Directories with the results module. One-time setup that configures ad-hoc and planned task queues for parallel execution."
 ---
 
 # Task System Initialization
@@ -31,11 +31,11 @@ The task system supports two independent queues that execute in parallel:
 
 | Scenario | Command |
 |----------|---------|
-| **First-time setup** | `task-queue init` (recommended) |
-| **Re-configuration** | `task-queue init --force` or `sources add`/`sources rm` |
-| **Add custom queue** | `task-queue sources add` |
-| **Remove queue** | `task-queue sources rm` |
-| **Verification** | `task-queue sources list` |
+| **First-time setup** | `results init` (recommended) |
+| **Re-configuration** | `results init --force` or `sources add`/`sources rm` |
+| **Add custom queue** | `results sources add` |
+| **Remove queue** | `results sources rm` |
+| **Verification** | `results sources list` |
 
 ---
 
@@ -44,20 +44,21 @@ The task system supports two independent queues that execute in parallel:
 ```
 tasks/
 ├── ad-hoc/                              # Ad-hoc task queue
-│   ├── task-staging/                    # Staging area (atomic writes)
-│   ├── task-documents/                  # Task Source Directory (watchdog monitors)
-│   ├── task-archive/                    # Completed task specs
-│   ├── task-failed/                     # Failed task specs
-│   ├── task-queue/                      # JSON result files
-│   └── task-reports/                    # Worker execution reports
+│   ├── staging/                    # Staging area (atomic writes)
+│   ├── pending/                  # Task Source Directory (watchdog monitors)
+│   ├── completed/                 # Completed task specs
+│   ├── failed/                    # Failed task specs
+│   ├── results/                   # JSON result files
+│   └── reports/                   # Worker execution reports
 │
 └── planned/                             # Planned task queue
-    ├── task-staging/                    # Staging area (atomic writes)
-    ├── task-documents/                  # Task Source Directory (watchdog monitors)
-    ├── task-archive/                    # Completed task specs
-    ├── task-failed/                     # Failed task specs
-    ├── task-queue/                      # JSON result files
-    └── task-reports/                    # Worker execution reports
+    ├── staging/                    # Staging area (atomic writes)
+    ├── pending/                  # Task Source Directory (watchdog monitors)
+    ├── completed/                 # Completed task specs
+    ├── failed/                    # Failed task specs
+    ├── results/                   # JSON result files
+    ├── reports/                   # Worker execution reports
+    └── planning/                  # Planning documents (task-planning output)
 ```
 
 ---
@@ -72,7 +73,7 @@ tasks/
 # From project directory
 cd /home/admin/workspaces/datachat
 source .venv/bin/activate
-export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
+export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 # Initialize (creates directories, registers both queues)
 python -m task_queue.cli init
@@ -99,23 +100,23 @@ python -m task_queue.cli init --restart-daemon  # Restart daemon after init
 ```bash
 # Activate environment
 source /home/admin/workspaces/datachat/.venv/bin/activate
-export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
+export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 # Register a queue
-python -m task_queue.cli sources add /path/to/task-documents \
+python -m task_queue.cli sources add /path/to/pending \
     --id my-queue \
     --project-workspace /home/admin/workspaces/datachat \
     --description "My custom queue"
 
 # Register ad-hoc queue (manual setup)
 python -m task_queue.cli sources add \
-    /home/admin/workspaces/datachat/tasks/ad-hoc/task-documents \
+    /home/admin/workspaces/datachat/tasks/ad-hoc/pending \
     --id ad-hoc \
     --project-workspace /home/admin/workspaces/datachat
 
 # Register planned queue (manual setup)
 python -m task_queue.cli sources add \
-    /home/admin/workspaces/datachat/tasks/planned/task-documents \
+    /home/admin/workspaces/datachat/tasks/planned/pending \
     --id planned \
     --project-workspace /home/admin/workspaces/datachat
 ```
@@ -163,12 +164,12 @@ python -m task_queue.cli status --detailed
 python -m task_queue.cli run --cycles 1
 
 # Start daemon
-systemctl --user start task-queue.service
+systemctl --user start results.service
 
 # View live logs
 python -m task_queue.cli logs --follow
 # Or with journalctl
-journalctl --user -u task-queue.service -f
+journalctl --user -u results.service -f
 ```
 
 ---
@@ -180,7 +181,7 @@ journalctl --user -u task-queue.service -f
 ```bash
 cd /home/admin/workspaces/datachat
 source .venv/bin/activate
-export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
+export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 # One command to set up everything
 python -m task_queue.cli init
@@ -193,11 +194,11 @@ python -m task_queue.cli sources list
 
 ```bash
 # Create custom queue directories
-mkdir -p tasks/custom/{task-staging,task-documents,task-archive,task-failed,task-queue,task-reports}
+mkdir -p tasks/custom/{staging,pending,completed,failed,results,reports}
 
 # Register custom queue
 python -m task_queue.cli sources add \
-    /home/admin/workspaces/datachat/tasks/custom/task-documents \
+    /home/admin/workspaces/datachat/tasks/custom/pending \
     --id custom \
     --project-workspace /home/admin/workspaces/datachat \
     --description "Custom queue"
@@ -214,7 +215,7 @@ python -m task_queue.cli sources rm --source-id ad-hoc
 
 # Re-register with different path
 python -m task_queue.cli sources add \
-    /new/path/task-documents \
+    /new/path/pending \
     --id ad-hoc \
     --project-workspace /home/admin/workspaces/datachat
 ```
@@ -223,12 +224,12 @@ python -m task_queue.cli sources add \
 
 ## Usage After Initialization
 
-Once initialized, tasks are generated using the `task-documents` skill:
+Once initialized, tasks are generated using the `pending` skill:
 
 | Scenario | Skill Usage | Target Directory |
 |----------|-------------|------------------|
-| **Ad-hoc task** | `task-documents` from conversation | `tasks/ad-hoc/task-documents/` |
-| **Planned task** | `task-documents` from planning doc | `tasks/planned/task-documents/` |
+| **Ad-hoc task** | `pending` from conversation | `tasks/ad-hoc/pending/` |
+| **Planned task** | `pending` from planning doc | `tasks/planned/pending/` |
 
 ---
 
@@ -248,7 +249,7 @@ python -m task_queue.cli init --force
 
 # Option 3: Use sources rm/add for specific changes
 python -m task_queue.cli sources rm --source-id ad-hoc
-python -m task_queue.cli sources add /path/to/task-documents --id ad-hoc --project-workspace /home/admin/workspaces/datachat
+python -m task_queue.cli sources add /path/to/pending --id ad-hoc --project-workspace /home/admin/workspaces/datachat
 ```
 
 ### Registration Fails
@@ -262,7 +263,7 @@ python -m task_queue.cli sources list
 
 # Remove first, then re-add
 python -m task_queue.cli sources rm --source-id my-queue
-python -m task_queue.cli sources add /path/to/task-documents --id my-queue --project-workspace /home/admin/workspaces/datachat
+python -m task_queue.cli sources add /path/to/pending --id my-queue --project-workspace /home/admin/workspaces/datachat
 ```
 
 ### Module Not Found
@@ -271,7 +272,7 @@ python -m task_queue.cli sources add /path/to/task-documents --id my-queue --pro
 
 **Solution:**
 ```bash
-export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
+export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 ```
 
 ### Directories Already Exist
@@ -289,22 +290,22 @@ export PYTHONPATH=/home/admin/workspaces/task-queue:$PYTHONPATH
 - [ ] planned Task Source Directory registered
 - [ ] Registration verified with `sources list`
 - [ ] Status check shows both sources
-- [ ] task-queue daemon is running (if applicable)
+- [ ] results daemon is running (if applicable)
 
 ---
 
 ## Related Skills
 
 - **task-planning**: Generates planning documents for organized task lists
-- **task-documents**: Generates task specifications to ad-hoc or planned directories
-- **task-queue**: Manages task execution and monitoring
+- **pending**: Generates task specifications to ad-hoc or planned directories
+- **results**: Manages task execution and monitoring
 - **task-cleanup**: Cleans up task directories while preserving structure
 
 ---
 
 ## Notes
 
-- **Init is recommended:** Use `task-queue init` for most setups
+- **Init is recommended:** Use `results init` for most setups
 - **sources add for custom:** Use `sources add` for custom queue configurations
 - **sources rm to remove:** Use `sources rm` to remove queues from monitoring
 - **Project workspace:** Always use `/home/admin/workspaces/datachat` for this project

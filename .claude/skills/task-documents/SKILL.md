@@ -1,6 +1,6 @@
 ---
-name: task-documents
-description: "Generates task document specifications from planning documents or conversation context. Creates task specs using staging pattern: write to task-staging/ first, then atomically move to task-documents/. Ad-hoc tasks go to tasks/ad-hoc/, planned tasks go to tasks/planned/. Each queue processes independently via watchdog."
+name: pending
+description: "Generates task document specifications from planning documents or conversation context. Creates task specs using staging pattern: write to staging/ first, then atomically move to pending/. Ad-hoc tasks go to tasks/ad-hoc/, planned tasks go to tasks/planned/. Each queue processes independently via watchdog."
 ---
 
 # Task Documents Generation
@@ -27,8 +27,8 @@ The task system supports two independent queues:
 
 | Queue | Target Directory | Source | Use When |
 |-------|------------------|--------|----------|
-| **ad-hoc** | `tasks/ad-hoc/task-documents/` | Conversation context | Quick, spontaneous tasks from chat |
-| **planned** | `tasks/planned/task-documents/` | Planning documents | Organized, sequential tasks from planning |
+| **ad-hoc** | `tasks/ad-hoc/pending/` | Conversation context | Quick, spontaneous tasks from chat |
+| **planned** | `tasks/planned/pending/` | Planning documents | Organized, sequential tasks from planning |
 
 **Both queues process independently in parallel.**
 
@@ -44,7 +44,7 @@ The task system supports two independent queues:
 ## Input Sources
 
 **Primary Sources:**
-1. **Planning documents** - `tasks/task-planning/{descriptive-name}.md` → planned queue
+1. **Planning documents** - `tasks/planned/planning/{descriptive-name}.md` → planned queue
 2. **Conversation context** - Discussion between user and AI → ad-hoc queue
 
 **Auxiliary Sources:**
@@ -58,26 +58,26 @@ Task specifications use a **staging pattern** to ensure atomic writes:
 ### Ad-hoc Queue (Conversation-based)
 
 ```
-tasks/ad-hoc/task-staging/              # Write complete file here first
+tasks/ad-hoc/staging/              # Write complete file here first
 └── task-YYYYMMDD-HHMMSS-{description}.md
 
-tasks/ad-hoc/task-documents/            # Then atomically move here (watchdog monitors)
+tasks/ad-hoc/pending/            # Then atomically move here (watchdog monitors)
 └── task-YYYYMMDD-HHMMSS-{description}.md
 ```
 
 ### Planned Queue (Planning-based)
 
 ```
-tasks/planned/task-staging/             # Write complete file here first
+tasks/planned/staging/             # Write complete file here first
 └── task-YYYYMMDD-HHMMSS-{description}.md
 
-tasks/planned/task-documents/           # Then atomically move here (watchdog monitors)
+tasks/planned/pending/           # Then atomically move here (watchdog monitors)
 └── task-YYYYMMDD-HHMMSS-{description}.md
 ```
 
-**Why Staging?** The watchdog monitors each queue's `task-documents/`. Writing to `task-staging/` first ensures the file is fully written before the watchdog detects and processes it. This prevents race conditions where incomplete files are processed.
+**Why Staging?** The watchdog monitors each queue's `pending/`. Writing to `staging/` first ensures the file is fully written before the watchdog detects and processes it. This prevents race conditions where incomplete files are processed.
 
-**Note:** Each `task-documents/` is a Task Source Directory monitored by the watchdog. New files are auto-loaded into the task-queue after the atomic move from staging.
+**Note:** Each `pending/` is a Task Source Directory monitored by the watchdog. New files are auto-loaded into the task-queue after the atomic move from staging.
 
 ---
 
@@ -203,7 +203,7 @@ timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 **Step 3: Write Task Document to Staging**
 ```python
 Write(
-    file_path="tasks/ad-hoc/task-staging/task-{timestamp}-{description}.md",
+    file_path="tasks/ad-hoc/staging/task-{timestamp}-{description}.md",
     content=task_spec_content
 )
 ```
@@ -213,14 +213,14 @@ Write(
 # Atomic move ensures watchdog detects complete file
 import os
 os.rename(
-    "tasks/ad-hoc/task-staging/task-{timestamp}-{description}.md",
-    "tasks/ad-hoc/task-documents/task-{timestamp}-{description}.md"
+    "tasks/ad-hoc/staging/task-{timestamp}-{description}.md",
+    "tasks/ad-hoc/pending/task-{timestamp}-{description}.md"
 )
 ```
 
 **Step 5: Inform User**
 ```
-Ad-hoc task created: tasks/ad-hoc/task-documents/task-{timestamp}-{description}.md
+Ad-hoc task created: tasks/ad-hoc/pending/task-{timestamp}-{description}.md
 
 The ad-hoc queue watchdog will auto-load this task. View queue status:
   python -m task_queue.cli status
@@ -239,7 +239,7 @@ The ad-hoc queue watchdog will auto-load this task. View queue status:
 
 **Step 1: Read Planning Document**
 ```python
-Read(file_path="tasks/task-planning/{descriptive-name}.md")
+Read(file_path="tasks/planned/planning/{descriptive-name}.md")
 ```
 
 **Step 2: Parse Tasks**
@@ -260,14 +260,14 @@ Extract all tasks from the planning document, noting:
 # PHASE 1: Write all files to staging first (no watchdog detection)
 staging_files = []
 for i, task in enumerate(tasks, start=1):
-    staging_path = f"tasks/planned/task-staging/task-{timestamp}-{i:02d}-{description}.md"
+    staging_path = f"tasks/planned/staging/task-{timestamp}-{i:02d}-{description}.md"
     Write(file_path=staging_path, content=task_content)
     staging_files.append(staging_path)
 ```
 
 Resulting files in staging:
 ```
-tasks/planned/task-staging/
+tasks/planned/staging/
 ├── task-20260202-120000-01-first-task.md
 ├── task-20260202-120001-02-second-task.md
 └── task-20260202-120002-03-third-task.md
@@ -280,7 +280,7 @@ Generated N task document(s) in planned staging:
   - task-20260202-120001-02-second-task.md
   - task-20260202-120002-03-third-task.md
 
-Ready to move to planned/task-documents/ (will trigger watchdog execution).
+Ready to move to planned/pending/ (will trigger watchdog execution).
 ```
 
 **Step 6: Atomically Move All Files (Triggers Watchdog)**
@@ -288,13 +288,13 @@ Ready to move to planned/task-documents/ (will trigger watchdog execution).
 # PHASE 2: Move all files at once (atomic batch operation)
 for staging_path in staging_files:
     filename = os.path.basename(staging_path)
-    final_path = f"tasks/planned/task-documents/{filename}"
+    final_path = f"tasks/planned/pending/{filename}"
     os.rename(staging_path, final_path)
 ```
 
 **Step 7: Inform User**
 ```
-Moved N task document(s) to tasks/planned/task-documents/
+Moved N task document(s) to tasks/planned/pending/
 
 The planned queue watchdog will auto-load these tasks. View queue status:
   python -m task_queue.cli status
@@ -325,13 +325,13 @@ Before creating a task document:
 
 ## Key Principles
 
-1. **Atomic Write Pattern** - Write to `task-staging/` first, then atomically move to `task-documents/`. This prevents the watchdog from detecting incomplete files.
+1. **Atomic Write Pattern** - Write to `staging/` first, then atomically move to `pending/`. This prevents the watchdog from detecting incomplete files.
 
 2. **Batch Generation for Multiple Tasks** - When generating multiple tasks: write ALL to staging first, review, then move ALL at once. This allows review before execution starts and prevents partial execution on errors.
 
 3. **Queue Selection** - Ad-hoc tasks from conversation go to `tasks/ad-hoc/`. Planned tasks from planning documents go to `tasks/planned/`. Each queue processes independently.
 
-4. **Watchdog Integration** - Task specifications are moved to `task-documents/` as complete `.md` files; the watchdog auto-loads them when the atomic move completes.
+4. **Watchdog Integration** - Task specifications are moved to `pending/` as complete `.md` files; the watchdog auto-loads them when the atomic move completes.
 
 5. **Testing is Mandatory** - Every code task must include testing requirements. Only documentation/configuration tasks may use "No Tests."
 

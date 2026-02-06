@@ -1,13 +1,13 @@
 ---
 name: task-planning
-description: "Generate organized task lists from documentation and implementation using intelligent assessment. Prompts user to handle existing plans (Archive/Remove/Keep). Two scope options: TDD-Driven Development, Holistic Testing. Output goes to tasks/task-planning/."
+description: "Generate organized task lists from documentation and implementation using intelligent assessment. Prompts user to handle existing plans (Archive/Remove/Keep). Two scope options: TDD-Driven Development, Holistic Testing. Output goes to tasks/planned/planning/."
 ---
 
 # Task Planning
 
 Generate organized task planning documents from project documentation and implementation.
 
-**Existing Plan Handling**: Before generating new plans, if existing documents are found in `tasks/task-planning/`, the user is prompted to choose: Archive, Remove All, or Keep as Is.
+**Existing Plan Handling**: Before generating new plans, if existing documents are found in `tasks/planned/planning/`, the user is prompted to choose: Archive, Remove All, or Keep as Is.
 
 ## Overview
 
@@ -17,7 +17,7 @@ Generate organized task planning documents from project documentation and implem
 4. **Intelligently Assess** - AI evaluates project nature, adapts to what exists
 5. **Choose Organization** - Select structure (FLAT_LIST, IMPLEMENTATION_PHASE, FEATURE_MODULE)
 6. **Generate Tasks** - Create tasks using TaskCreate tool
-7. **Save Output** - Write to `tasks/task-planning/{descriptive-name}.md`
+7. **Save Output** - Write to `tasks/planned/planning/{descriptive-name}.md`
 
 ## Architecture
 
@@ -46,7 +46,7 @@ flowchart LR
     Phase --> Generate
     Module --> Generate
 
-    Generate --> Save[Save to tasks/task-planning/]
+    Generate --> Save[Save to tasks/planned/planning/]
     Save --> End([End])
 ```
 
@@ -72,11 +72,11 @@ else:
 
 ## Phase -1: Handle Existing Plans (User Confirmation)
 
-**Before any user interaction**, check if `tasks/task-planning/` contains existing documents and ask the user how to handle them.
+**Before any user interaction**, check if `tasks/planned/planning/` contains existing documents and ask the user how to handle them.
 
 ```bash
 # Check for existing plans
-ls -la tasks/task-planning/*.md 2>/dev/null | wc -l
+ls -la tasks/planned/planning/*.md 2>/dev/null | wc -l
 ```
 
 ### User Confirmation
@@ -116,10 +116,10 @@ AskUserQuestion(
 mkdir -p history
 ARCHIVE_NAME="history/Archive-TaskPlanning-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$ARCHIVE_NAME"
-mv tasks/task-planning/*.md "$ARCHIVE_NAME/" 2>/dev/null
+mv tasks/planned/planning/*.md "$ARCHIVE_NAME/" 2>/dev/null
 
 # If user selected "Remove All":
-rm tasks/task-planning/*.md 2>/dev/null
+rm tasks/planned/planning/*.md 2>/dev/null
 
 # If user selected "Keep as Is":
 # Do nothing - new plan will be created alongside existing plans
@@ -287,7 +287,7 @@ TaskCreate(
 
 ## Output Format
 
-Save to `tasks/task-planning/{descriptive-name}.md`:
+Save to `tasks/planned/planning/{descriptive-name}.md`:
 
 ```markdown
 # Task List: {Project Name}

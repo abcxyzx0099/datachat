@@ -16,22 +16,22 @@ Cleans up the `tasks/` directory by removing all files while preserving the dire
 ```
 tasks/
 ├── ad-hoc/                              # Ad-hoc task queue
-│   ├── task-staging/                    # Will be emptied
-│   ├── task-documents/                  # Will be emptied (Task Source Directory)
-│   ├── task-archive/                    # Will be emptied
-│   ├── task-failed/                    # Will be emptied
-│   ├── task-queue/                     # Will be emptied (flat structure)
-│   └── task-reports/                   # Will be emptied
+│   ├── staging/                    # Will be emptied
+│   ├── pending/                  # Will be emptied (Task Source Directory)
+│   ├── completed/                    # Will be emptied
+│   ├── failed/                    # Will be emptied
+│   ├── results/                     # Will be emptied (flat structure)
+│   └── reports/                   # Will be emptied
 │
 ├── planned/                             # Planned task queue
-│   ├── task-staging/                    # Will be emptied
-│   ├── task-documents/                  # Will be emptied (Task Source Directory)
-│   ├── task-archive/                    # Will be emptied
-│   ├── task-failed/                    # Will be emptied
-│   ├── task-queue/                     # Will be emptied (flat structure)
-│   └── task-reports/                   # Will be emptied
+│   ├── staging/                    # Will be emptied
+│   ├── pending/                  # Will be emptied (Task Source Directory)
+│   ├── completed/                    # Will be emptied
+│   ├── failed/                    # Will be emptied
+│   ├── results/                     # Will be emptied (flat structure)
+│   └── reports/                   # Will be emptied
 │
-└── task-planning/                       # Will be emptied
+└── planned/planning/                       # Will be emptied
     └── {descriptive-name}.md
 ```
 
@@ -43,19 +43,19 @@ tasks/
 
 | Directory | Purpose |
 |-----------|---------|
-| `tasks/ad-hoc/task-staging/` | Ad-hoc staging area |
-| `tasks/ad-hoc/task-documents/` | Ad-hoc task specifications |
-| `tasks/ad-hoc/task-archive/` | Ad-hoc archived tasks |
-| `tasks/ad-hoc/task-failed/` | Ad-hoc failed tasks |
-| `tasks/ad-hoc/task-queue/` | Ad-hoc result JSON files |
-| `tasks/ad-hoc/task-reports/` | Ad-hoc worker reports |
-| `tasks/planned/task-staging/` | Planned staging area |
-| `tasks/planned/task-documents/` | Planned task specifications |
-| `tasks/planned/task-archive/` | Planned archived tasks |
-| `tasks/planned/task-failed/` | Planned failed tasks |
-| `tasks/planned/task-queue/` | Planned result JSON files |
-| `tasks/planned/task-reports/` | Planned worker reports |
-| `tasks/task-planning/` | Planning documents |
+| `tasks/ad-hoc/staging/` | Ad-hoc staging area |
+| `tasks/ad-hoc/pending/` | Ad-hoc task specifications |
+| `tasks/ad-hoc/completed/` | Ad-hoc archived tasks |
+| `tasks/ad-hoc/failed/` | Ad-hoc failed tasks |
+| `tasks/ad-hoc/results/` | Ad-hoc result JSON files |
+| `tasks/ad-hoc/reports/` | Ad-hoc worker reports |
+| `tasks/planned/staging/` | Planned staging area |
+| `tasks/planned/pending/` | Planned task specifications |
+| `tasks/planned/completed/` | Planned archived tasks |
+| `tasks/planned/failed/` | Planned failed tasks |
+| `tasks/planned/results/` | Planned result JSON files |
+| `tasks/planned/reports/` | Planned worker reports |
+| `tasks/planned/planning/` | Planning documents |
 
 ---
 
@@ -86,17 +86,17 @@ find tasks/ -type f
 
 # Count files in each subdirectory
 echo "=== Ad-hoc Queue ==="
-for dir in tasks/ad-hoc/task-staging tasks/ad-hoc/task-documents tasks/ad-hoc/task-queue tasks/ad-hoc/task-archive tasks/ad-hoc/task-failed tasks/ad-hoc/task-reports; do
+for dir in tasks/ad-hoc/staging tasks/ad-hoc/pending tasks/ad-hoc/results tasks/ad-hoc/completed tasks/ad-hoc/failed tasks/ad-hoc/reports; do
     echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
 done
 
 echo "=== Planned Queue ==="
-for dir in tasks/planned/task-staging tasks/planned/task-documents tasks/planned/task-queue tasks/planned/task-archive tasks/planned/task-failed tasks/planned/task-reports; do
+for dir in tasks/planned/staging tasks/planned/pending tasks/planned/results tasks/planned/completed tasks/planned/failed tasks/planned/reports; do
     echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
 done
 
 echo "=== Planning ==="
-echo "tasks/task-planning/: $(ls -1 tasks/task-planning/ 2>/dev/null | wc -l) files"
+echo "tasks/planned/planning/: $(ls -1 tasks/planned/planning/ 2>/dev/null | wc -l) files"
 ```
 
 **Confirm with user before proceeding.**
@@ -107,51 +107,51 @@ echo "tasks/task-planning/: $(ls -1 tasks/task-planning/ 2>/dev/null | wc -l) fi
 
 ```bash
 # Remove ad-hoc staging files
-rm -f tasks/ad-hoc/task-staging/task-*.md 2>/dev/null
+rm -f tasks/ad-hoc/staging/task-*.md 2>/dev/null
 
 # Remove ad-hoc task specifications (Task Source Directory)
-rm -f tasks/ad-hoc/task-documents/task-*.md 2>/dev/null
+rm -f tasks/ad-hoc/pending/task-*.md 2>/dev/null
 
 # Remove ad-hoc result JSON files (flat structure)
-rm -f tasks/ad-hoc/task-queue/task-*.json 2>/dev/null
+rm -f tasks/ad-hoc/results/task-*.json 2>/dev/null
 
 # Remove ad-hoc archived task specifications
-rm -f tasks/ad-hoc/task-archive/task-*.md 2>/dev/null
+rm -f tasks/ad-hoc/completed/task-*.md 2>/dev/null
 
 # Remove ad-hoc failed task specifications
-rm -f tasks/ad-hoc/task-failed/task-*.md 2>/dev/null
+rm -f tasks/ad-hoc/failed/task-*.md 2>/dev/null
 
 # Remove ad-hoc worker reports (detailed subdirectories)
-rm -rf tasks/ad-hoc/task-reports/task-* 2>/dev/null
+rm -rf tasks/ad-hoc/reports/task-* 2>/dev/null
 ```
 
 ## Step 4: Clean Up Planned Queue
 
 ```bash
 # Remove planned staging files
-rm -f tasks/planned/task-staging/task-*.md 2>/dev/null
+rm -f tasks/planned/staging/task-*.md 2>/dev/null
 
 # Remove planned task specifications (Task Source Directory)
-rm -f tasks/planned/task-documents/task-*.md 2>/dev/null
+rm -f tasks/planned/pending/task-*.md 2>/dev/null
 
 # Remove planned result JSON files (flat structure)
-rm -f tasks/planned/task-queue/task-*.json 2>/dev/null
+rm -f tasks/planned/results/task-*.json 2>/dev/null
 
 # Remove planned archived task specifications
-rm -f tasks/planned/task-archive/task-*.md 2>/dev/null
+rm -f tasks/planned/completed/task-*.md 2>/dev/null
 
 # Remove planned failed task specifications
-rm -f tasks/planned/task-failed/task-*.md 2>/dev/null
+rm -f tasks/planned/failed/task-*.md 2>/dev/null
 
 # Remove planned worker reports (detailed subdirectories)
-rm -rf tasks/planned/task-reports/task-* 2>/dev/null
+rm -rf tasks/planned/reports/task-* 2>/dev/null
 ```
 
 ## Step 5: Clean Up Planning Documents
 
 ```bash
 # Remove planning documents
-rm -f tasks/task-planning/*.md 2>/dev/null
+rm -f tasks/planned/planning/*.md 2>/dev/null
 ```
 
 **Alternative (single command for all):**
@@ -165,19 +165,19 @@ find tasks/ -mindepth 2 -type f -delete
 
 ```bash
 echo "=== Ad-hoc Queue ==="
-for dir in tasks/ad-hoc/task-staging tasks/ad-hoc/task-documents tasks/ad-hoc/task-queue tasks/ad-hoc/task-archive tasks/ad-hoc/task-failed tasks/ad-hoc/task-reports; do
+for dir in tasks/ad-hoc/staging tasks/ad-hoc/pending tasks/ad-hoc/results tasks/ad-hoc/completed tasks/ad-hoc/failed tasks/ad-hoc/reports; do
     count=$(ls -1 "$dir" 2>/dev/null | wc -l)
     echo "$dir: $count files"
 done
 
 echo "=== Planned Queue ==="
-for dir in tasks/planned/task-staging tasks/planned/task-documents tasks/planned/task-queue tasks/planned/task-archive tasks/planned/task-failed tasks/planned/task-reports; do
+for dir in tasks/planned/staging tasks/planned/pending tasks/planned/results tasks/planned/completed tasks/planned/failed tasks/planned/reports; do
     count=$(ls -1 "$dir" 2>/dev/null | wc -l)
     echo "$dir: $count files"
 done
 
 echo "=== Planning ==="
-echo "tasks/task-planning/: $(ls -1 tasks/task-planning/ 2>/dev/null | wc -l) files"
+echo "tasks/planned/planning/: $(ls -1 tasks/planned/planning/ 2>/dev/null | wc -l) files"
 ```
 
 **Expected:** All directories show 0 files.
@@ -192,13 +192,13 @@ echo "tasks/task-planning/: $(ls -1 tasks/task-planning/ 2>/dev/null | wc -l) fi
 | `git switch main` | Switch to main branch |
 | `git add -A && git commit && git push` | Safety checkpoint |
 | `find tasks/ -mindepth 2 -type f` | List files to remove |
-| `rm -f tasks/ad-hoc/task-staging/task-*.md` | Remove ad-hoc staged files |
-| `rm -f tasks/ad-hoc/task-documents/task-*.md` | Remove ad-hoc task specs |
-| `rm -f tasks/ad-hoc/task-queue/task-*.json` | Remove ad-hoc result files |
-| `rm -f tasks/planned/task-staging/task-*.md` | Remove planned staged files |
-| `rm -f tasks/planned/task-documents/task-*.md` | Remove planned task specs |
-| `rm -f tasks/planned/task-queue/task-*.json` | Remove planned result files |
-| `rm -f tasks/task-planning/*.md` | Remove planning documents |
+| `rm -f tasks/ad-hoc/staging/task-*.md` | Remove ad-hoc staged files |
+| `rm -f tasks/ad-hoc/pending/task-*.md` | Remove ad-hoc task specs |
+| `rm -f tasks/ad-hoc/results/task-*.json` | Remove ad-hoc result files |
+| `rm -f tasks/planned/staging/task-*.md` | Remove planned staged files |
+| `rm -f tasks/planned/pending/task-*.md` | Remove planned task specs |
+| `rm -f tasks/planned/results/task-*.json` | Remove planned result files |
+| `rm -f tasks/planned/planning/*.md` | Remove planning documents |
 
 ---
 
@@ -231,7 +231,7 @@ echo "tasks/task-planning/: $(ls -1 tasks/task-planning/ 2>/dev/null | wc -l) fi
 ## Related Skills
 
 - **task-init**: Initialize task system with ad-hoc and planned queues
-- **task-planning**: Generate new task planning documents
-- **task-documents**: Create new task specifications
-- **task-queue**: Execute task specifications
+- **planned/planning**: Generate new task planning documents
+- **pending**: Create new task specifications
+- **results**: Execute task specifications
 - **material-archiver**: Archive completed materials before cleanup

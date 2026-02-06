@@ -181,10 +181,21 @@ The `tasks/` directory contains task specifications and planning documents for t
 
 ```
 tasks/
-├── task-documents/          # Generated task specification documents
-│   └── task-{timestamp}-{summary}.md
-├── task-planning/                # Task planning documents
-└── task-archive/                 # Completed/archived tasks
+├── ad-hoc/                              # Ad-hoc task queue
+│   ├── staging/                    # Staging area (atomic writes)
+│   ├── pending/                  # Task specifications (watchdog monitors)
+│   ├── completed/                # Completed task specs
+│   ├── failed/                   # Failed task specs
+│   ├── results/                  # JSON result files
+│   └── reports/                  # Worker execution reports
+└── planned/                             # Planned task queue
+    ├── staging/                    # Staging area (atomic writes)
+    ├── pending/                  # Task specifications (watchdog monitors)
+    ├── completed/                # Completed task specs
+    ├── failed/                   # Failed task specs
+    ├── results/                  # JSON result files
+    ├── reports/                  # Worker execution reports
+    └── planning/                 # Planning documents
 ```
 
 ### 3.7 implementation/ Directory
