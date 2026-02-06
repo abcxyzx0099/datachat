@@ -1,6 +1,6 @@
 ---
 name: task-init
-description: "Initializes the task system by creating the directory structure and registering Task Source Directories with the results module. One-time setup that configures ad-hoc and planned task queues for parallel execution."
+description: "Initializes the task system by creating the directory structure and adding Task Source Directories with the results module. One-time setup that configures ad-hoc and planned task queues for parallel execution."
 ---
 
 # Task System Initialization
@@ -9,14 +9,14 @@ Initializes the task system with separate queues for ad-hoc and planned tasks.
 
 ## Overview
 
-This skill performs one-time setup of the task system using the init command or manual source registration:
+This skill performs one-time setup of the task system using the init command or manual source management:
 
 | Command | Purpose | Usage |
 |---------|---------|-------|
-| **init** | Quick setup - creates directories and registers both queues | First-time setup |
-| **sources add** | Advanced - register a single Task Source Directory | Custom configurations |
+| **init** | Quick setup - creates directories and adds both queues | First-time setup |
+| **sources add** | Advanced - add a single Task Source Directory | Custom configurations |
 | **sources rm** | Remove a Task Source Directory from monitoring | Reconfiguration |
-| **sources list** | List registered Task Source Directories | Verification |
+| **sources list** | List added Task Source Directories | Verification |
 
 The task system supports two independent queues that execute in parallel:
 
@@ -75,19 +75,19 @@ cd /home/admin/workspaces/datachat
 source .venv/bin/activate
 export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
-# Initialize (creates directories, registers both queues)
+# Initialize (creates directories, adds both queues)
 python -m task_queue.cli init
 
 # Options
 python -m task_queue.cli init --force           # Re-initialize completely
-python -m task_queue.cli init --skip-existing   # Skip already registered queues
+python -m task_queue.cli init --skip-existing   # Skip already added queues
 python -m task_queue.cli init --restart-daemon  # Restart daemon after init
 ```
 
 **What it does:**
 - Uses current directory as Project Workspace
 - Creates all directory structures for both queues
-- Registers `ad-hoc` and `planned` Task Source Directories
+- Adds `ad-hoc` and `planned` Task Source Directories
 - Saves configuration
 - Shows verification summary
 
@@ -95,26 +95,26 @@ python -m task_queue.cli init --restart-daemon  # Restart daemon after init
 
 ### 2. sources add - Advanced Configuration
 
-**Use for custom queue configurations.** Register a single Task Source Directory.
+**Use for custom queue configurations.** Add a single Task Source Directory.
 
 ```bash
 # Activate environment
 source /home/admin/workspaces/datachat/.venv/bin/activate
 export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
-# Register a queue
+# Add a queue
 python -m task_queue.cli sources add /path/to/pending \
     --id my-queue \
     --project-workspace /home/admin/workspaces/datachat \
     --description "My custom queue"
 
-# Register ad-hoc queue (manual setup)
+# Add ad-hoc queue (manual setup)
 python -m task_queue.cli sources add \
     /home/admin/workspaces/datachat/tasks/ad-hoc/pending \
     --id ad-hoc \
     --project-workspace /home/admin/workspaces/datachat
 
-# Register planned queue (manual setup)
+# Add planned queue (manual setup)
 python -m task_queue.cli sources add \
     /home/admin/workspaces/datachat/tasks/planned/pending \
     --id planned \
@@ -151,7 +151,7 @@ python -m task_queue.cli sources rm --source-id planned
 ## Other Useful Commands
 
 ```bash
-# List registered Task Source Directories
+# List added Task Source Directories
 python -m task_queue.cli sources list
 
 # Check system status
@@ -196,7 +196,7 @@ python -m task_queue.cli sources list
 # Create custom queue directories
 mkdir -p tasks/custom/{staging,pending,completed,failed,results,reports}
 
-# Register custom queue
+# Add custom queue
 python -m task_queue.cli sources add \
     /home/admin/workspaces/datachat/tasks/custom/pending \
     --id custom \
@@ -207,29 +207,16 @@ python -m task_queue.cli sources add \
 python -m task_queue.cli sources list
 ```
 
-### Example 3: Remove and Re-register
-
-```bash
-# Remove existing queue
-python -m task_queue.cli sources rm --source-id ad-hoc
-
-# Re-register with different path
-python -m task_queue.cli sources add \
-    /new/path/pending \
-    --id ad-hoc \
-    --project-workspace /home/admin/workspaces/datachat
-```
-
 ---
 
 ## Usage After Initialization
 
-Once initialized, tasks are generated using the `pending` skill:
+Once initialized, tasks are generated using the `task-documents` skill:
 
 | Scenario | Skill Usage | Target Directory |
 |----------|-------------|------------------|
-| **Ad-hoc task** | `pending` from conversation | `tasks/ad-hoc/pending/` |
-| **Planned task** | `pending` from planning doc | `tasks/planned/pending/` |
+| **Ad-hoc task** | `task-documents` from conversation | `tasks/ad-hoc/pending/` |
+| **Planned task** | `task-documents` from planning doc | `tasks/planned/pending/` |
 
 ---
 
@@ -246,24 +233,6 @@ python -m task_queue.cli init --skip-existing
 
 # Option 2: Use --force to completely re-initialize
 python -m task_queue.cli init --force
-
-# Option 3: Use sources rm/add for specific changes
-python -m task_queue.cli sources rm --source-id ad-hoc
-python -m task_queue.cli sources add /path/to/pending --id ad-hoc --project-workspace /home/admin/workspaces/datachat
-```
-
-### Registration Fails
-
-**Symptom:** "Task source directory already registered"
-
-**Solution:**
-```bash
-# List existing sources
-python -m task_queue.cli sources list
-
-# Remove first, then re-add
-python -m task_queue.cli sources rm --source-id my-queue
-python -m task_queue.cli sources add /path/to/pending --id my-queue --project-workspace /home/admin/workspaces/datachat
 ```
 
 ### Module Not Found
@@ -279,16 +248,16 @@ export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 **Symptom:** Directories present before running init
 
-**Solution:** This is normal. Existing directories will be used. Use `--force` to re-register.
+**Solution:** This is normal. Existing directories will be used. Use `--force` to re-initialize completely.
 
 ---
 
 ## Completion Checklist
 
 - [ ] Directory structure created for ad-hoc and planned queues
-- [ ] ad-hoc Task Source Directory registered
-- [ ] planned Task Source Directory registered
-- [ ] Registration verified with `sources list`
+- [ ] ad-hoc Task Source Directory added
+- [ ] planned Task Source Directory added
+- [ ] Source addition verified with `sources list`
 - [ ] Status check shows both sources
 - [ ] results daemon is running (if applicable)
 
@@ -297,8 +266,9 @@ export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 ## Related Skills
 
 - **task-planning**: Generates planning documents for organized task lists
-- **pending**: Generates task specifications to ad-hoc or planned directories
-- **results**: Manages task execution and monitoring
+- **task-documents**: Generates task specifications to ad-hoc or planned directories
+- **task-queue**: Coordinates task execution and monitors sources
+- **task-executor**: Executes tasks using two-agent workflow
 - **task-cleanup**: Cleans up task directories while preserving structure
 
 ---
@@ -306,7 +276,7 @@ export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 ## Notes
 
 - **Init is recommended:** Use `results init` for most setups
-- **sources add for custom:** Use `sources add` for custom queue configurations
+- **sources add for custom:** Use `sources add` to add Task Source Directories
 - **sources rm to remove:** Use `sources rm` to remove queues from monitoring
 - **Project workspace:** Always use `/home/admin/workspaces/datachat` for this project
 - **Parallel execution:** Both queues process independently via separate worker threads

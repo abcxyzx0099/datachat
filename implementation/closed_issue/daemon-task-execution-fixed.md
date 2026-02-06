@@ -12,7 +12,7 @@ The task-queue daemon was not executing tasks properly. Tasks were archived with
 
 ## Root Cause
 
-The `SyncTaskExecutor` in `executor.py` was calling the SDK with a custom `system_prompt` that interfered with `/task-worker` skill invocation. The AI treated `/task-worker` as text to understand rather than as a command to execute.
+The `SyncTaskExecutor` in `executor.py` was calling the SDK with a custom `system_prompt` that interfered with `/task-executor` skill invocation. The AI treated `/task-executor` as text to understand rather than as a command to execute.
 
 ## Solution
 
@@ -40,4 +40,4 @@ cat /tmp/verify-fix-output.txt
 ls tasks/task-archive/task-20260206-073400-verify-fix.md
 ```
 
-✅ Tasks now execute via watchdog detection → worker script → `/task-worker` skill → output created → archived
+✅ Tasks now execute via watchdog detection → worker script → `/task-executor` skill → output created → archived

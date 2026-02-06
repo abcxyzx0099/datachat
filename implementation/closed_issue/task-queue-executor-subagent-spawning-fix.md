@@ -8,7 +8,7 @@
 
 ## Issue
 
-The task-queue executor was not spawning sub-agents (Implementation Agent, Auditor Agent) as specified in the task-worker skill workflow. Tasks were being executed directly by a single agent instead.
+The task-queue executor was not spawning sub-agents (Implementation Agent, Auditor Agent) as specified in the task-executor skill workflow. Tasks were being executed directly by a single agent instead.
 
 ## Investigation
 
@@ -17,15 +17,15 @@ Created multiple test scripts to isolate the root cause:
 | Test | Prompt | Result |
 |------|--------|--------|
 | Test 1 | Explicit "You MUST spawn sub-agents" | ✅ Sub-agents spawned (but events not captured) |
-| Test 2 | `/task-worker\n\nExecute task...` | ❌ Direct execution |
-| Test 3 | "You are task worker..." | ❌ Direct execution |
+| Test 2 | `/task-executor\n\nExecute task...` | ❌ Direct execution |
+| Test 3 | "You are task executor..." | ❌ Direct execution |
 | Test 4 | "READ skill doc, then execute" | ✅ **Sub-agents spawned, workflow followed** |
 
 ## Root Cause
 
 The original executor prompt:
 ```python
-prompt_text = f"""/task-worker
+prompt_text = f"""/task-executor
 
 Execute task at: {relative_task_path}
 """
@@ -38,7 +38,7 @@ This simple invocation was not sufficient to force the agent to spawn sub-agents
 Updated the executor prompt to explicitly require reading the skill documentation:
 
 ```python
-prompt_text = f"""Read the task-worker skill documentation at: .claude/skills/task-worker/SKILL.md
+prompt_text = f"""Read the task-executor skill documentation at: .claude/skills/task-executor/SKILL.md
 
 Follow the skill's workflow EXACTLY to execute the task at: {relative_task_path}
 

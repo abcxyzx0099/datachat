@@ -17,7 +17,7 @@ When a task was queued and executed by the daemon:
 - ✅ Authentication succeeded
 - ✅ Daemon picked up the task
 - ✅ Executor was called
-- ❌ `/task-worker` skill was not invoked
+- ❌ `/task-executor` skill was not invoked
 - ❌ AI responded with generic message instead of executing
 - ❌ No files were created
 - ❌ Task archived with "Status: Pending"
@@ -65,9 +65,9 @@ finally:
     loop.close()  # ← Caused "cancel scope" error
 ```
 
-### Why These Extras Broke /task-worker
+### Why These Extras Broke /task-executor
 
-The extras (`stderr`, `extra_args`, `system_prompt`, custom loop) interfered with the `/task-worker` skill invocation. The exact mechanism is unclear, but removing all extras restored normal skill execution.
+The extras (`stderr`, `extra_args`, `system_prompt`, custom loop) interfered with the `/task-executor` skill invocation. The exact mechanism is unclear, but removing all extras restored normal skill execution.
 
 ---
 
@@ -132,7 +132,7 @@ DAEMON + WATCHDOG TEST
 Created: task-20260206-102457-daemon-test.md
 Watchdog: Auto-detected file creation
 Worker:   Picked up task
-SDK:      Invoked /task-worker skill
+SDK:      Invoked /task-executor skill
 Result:   ✅ SUCCESS
 
 Output:   /tmp/daemon-watchdog-works.txt
@@ -146,7 +146,7 @@ Execution Time: 30.3 seconds
 - ✅ Parallel worker threads (per source)
 - ✅ Running marker creation (.task-*.running)
 - ✅ Task execution via fixed executor
-- ✅ /task-worker skill invocation
+- ✅ /task-executor skill invocation
 - ✅ Output file creation
 - ✅ Task archiving (moved to task-archive/)
 - ✅ Running marker cleanup

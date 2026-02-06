@@ -1,14 +1,14 @@
-# Issue: Task Worker Skill Not Using Sub-Agents When Invoked Via SDK
+# Issue: Task Executor Skill Not Using Sub-Agents When Invoked Via SDK
 
 ## Status
 CLOSED
 
 ## Problem Description
 
-When the `task-worker` skill was invoked via the Claude Agent SDK's `query()` function, the coordinator agent would **not spawn sub-agents** (Implementation Agent and Auditor Agent) as defined in the skill. Instead, it would choose to do the implementation work directly using Write/Edit tools, bypassing the two-agent workflow.
+When the `task-executor` skill was invoked via the Claude Agent SDK's `query()` function, the coordinator agent would **not spawn sub-agents** (Implementation Agent and Auditor Agent) as defined in the skill. Instead, it would choose to do the implementation work directly using Write/Edit tools, bypassing the two-agent workflow.
 
 ### Expected Behavior
-The task-worker skill should:
+The task-executor skill should:
 1. Read the task specification document
 2. Spawn an **Implementation Agent** via `Task(subagent_type="general-purpose")`
 3. Spawn an **Auditor Agent** via `Task(subagent_type="general-purpose")`
@@ -76,7 +76,7 @@ CRITICAL RULES:
 3. NEVER use Write, Edit, NotebookEdit, or any implementation tool directly
 4. DO NOT think "this is simple, I'll do it myself" - ALWAYS use Task tool
 
-Your workflow for the task-worker skill:
+Your workflow for the task-executor skill:
 1. Read the task specification document
 2. Spawn Implementation Agent: Use Task tool with subagent_type="general-purpose"
    - description: "Execute the task"
@@ -132,7 +132,7 @@ The coordinator output clearly shows:
 ### Skill Document Cleanup
 Since the `system_prompt` now enforces the behavior, redundant enforcement language was removed from:
 
-**File**: `.claude/skills/task-worker/SKILL.md`
+**File**: `.claude/skills/task-executor/SKILL.md`
 
 **Removed**:
 - "CRITICAL EXECUTION REQUIREMENT: MANDATORY TWO-AGENT WORKFLOW" section
@@ -156,7 +156,7 @@ Since the `system_prompt` now enforces the behavior, redundant enforcement langu
 ## Files Modified
 
 1. `/home/admin/workspaces/task-queue/task_queue/executor.py` - Added `system_prompt` to `ClaudeAgentOptions`
-2. `/home/admin/workspaces/datachat/.claude/skills/task-worker/SKILL.md` - Removed redundant enforcement language
+2. `/home/admin/workspaces/datachat/.claude/skills/task-executor/SKILL.md` - Removed redundant enforcement language
 
 ## References
 

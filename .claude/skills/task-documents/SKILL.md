@@ -17,7 +17,7 @@ This skill creates task document specifications that serve as the single source 
 - **Success criteria** to verify completion
 - **Worker investigation instructions** for autonomous execution
 
-The specifications are consumed by the `task-queue` module, which loads them via CLI and executes them using the `task-worker` skill.
+The specifications are consumed by the `task-queue` module, which loads them via CLI and executes them using the `task-executor` skill.
 
 ---
 
@@ -350,7 +350,7 @@ Before creating a task document:
 - **task-init**: Initializes the task system with ad-hoc and planned queues
 - **task-planning**: Generates planning documents for bulk generation
 - **task-queue**: Loads and executes task documents
-- **task-worker**: Executes tasks with worker-auditor workflow
+- **task-executor**: Executes tasks with worker-auditor workflow
 
 ---
 

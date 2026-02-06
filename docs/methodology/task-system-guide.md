@@ -199,9 +199,9 @@ The Task System is an asynchronous, event-driven task execution architecture wit
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Step 5: Task Worker Execution                                            │
+│ Step 5: Task Executor Execution                                          │
 │                                                                          │
-│   Worker Agent executes /task-worker skill:                             │
+│   Worker Agent executes /task-executor skill:                             │
 │   ┌──────────────────┐    ┌──────────────────┐    ┌─────────────────┐  │
 │   │ Implementation   │───→│    Auditor       │───→│   Quality Gate  │  │
 │   │    Agent         │    │    Agent         │    │                 │  │
@@ -311,7 +311,7 @@ The Task System is an asynchronous, event-driven task execution architecture wit
         ├── planned/planning/
         ├── pending/
         ├── results/
-        ├── task-worker/
+        ├── task-executor/
         └── task-cleanup/
 ```
 
@@ -458,7 +458,7 @@ python -m task_queue.cli status
 python -m task_queue.cli run --cycles 1
 ```
 
-### 5. task-worker
+### 5. task-executor
 
 **Purpose:** Execute tasks with worker-auditor workflow
 

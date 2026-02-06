@@ -127,7 +127,7 @@ Response: Hello from Claude SDK!
 ## Related Issues
 
 - `daemon-task-authentication-failure.md` - Previous authentication issue (resolved)
-- `task-worker-skill-subagent-enforcement-via-system-prompt.md` - System prompt configuration
+- `task-executor-skill-subagent-enforcement-via-system-prompt.md` - System prompt configuration
 
 ## Verification Command
 
