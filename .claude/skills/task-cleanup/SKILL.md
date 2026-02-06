@@ -15,6 +15,8 @@ Cleans up the `tasks/` directory by removing all files while preserving the dire
 tasks/
 ├── task-planning/               # Will be emptied
 │   └── {descriptive-name}.md
+├── task-staging/                # Will be emptied (staging area for atomic writes)
+│   └── task-YYYYMMDD-HHMMSS-{description}.md
 ├── task-documents/              # Will be emptied (Task Source Directory)
 │   └── task-YYYYMMDD-HHMMSS-{description}.md
 ├── task-queue/                  # Will be emptied (flat structure)
@@ -40,6 +42,7 @@ tasks/
 | `tasks/task-queue/` | Result JSON files (flat structure) |
 | `tasks/task-reports/` | Worker execution reports (detailed) |
 | `tasks/task-planning/` | Planning documents |
+| `tasks/task-staging/` | Staging area for atomic writes |
 | `tasks/task-documents/` | Task specifications (Task Source Directory) |
 
 ---
@@ -70,7 +73,7 @@ git push
 find tasks/ -type f
 
 # Count files in each subdirectory
-for dir in tasks/task-planning tasks/task-documents tasks/task-queue tasks/task-archive tasks/task-reports; do
+for dir in tasks/task-planning tasks/task-staging tasks/task-documents tasks/task-queue tasks/task-archive tasks/task-reports; do
     echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
 done
 ```
@@ -84,6 +87,9 @@ done
 ```bash
 # Remove planning documents
 rm -f tasks/task-planning/*.md 2>/dev/null
+
+# Remove staged files (staging area)
+rm -f tasks/task-staging/task-*.md 2>/dev/null
 
 # Remove task specifications (Task Source Directory)
 rm -f tasks/task-documents/task-*.md 2>/dev/null
@@ -108,7 +114,7 @@ find tasks/ -mindepth 2 -type f -delete
 ## Step 4: Verify Cleanup
 
 ```bash
-for dir in tasks/task-planning tasks/task-documents tasks/task-queue tasks/task-archive tasks/task-reports; do
+for dir in tasks/task-planning tasks/task-staging tasks/task-documents tasks/task-queue tasks/task-archive tasks/task-reports; do
     count=$(ls -1 "$dir" 2>/dev/null | wc -l)
     echo "$dir: $count files"
 done
@@ -127,6 +133,7 @@ done
 | `git add -A && git commit && git push` | Safety checkpoint |
 | `find tasks/ -mindepth 2 -type f` | List files to remove |
 | `rm -f tasks/task-planning/*.md` | Remove planning documents |
+| `rm -f tasks/task-staging/task-*.md` | Remove staged files |
 | `rm -f tasks/task-documents/task-*.md` | Remove task specifications |
 | `rm -f tasks/task-queue/task-*.json` | Remove result JSON files |
 | `rm -f tasks/task-archive/task-*.md` | Remove archived tasks |

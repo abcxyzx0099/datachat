@@ -1,6 +1,6 @@
 ---
 name: task-documents
-description: "Generates task document specifications from planning documents or conversation context. Creates task specs in tasks/task-documents/ directory (Task Source Directory) where watchdog auto-loads them for the task-queue module to process."
+description: "Generates task document specifications from planning documents or conversation context. Creates task specs in tasks/task-staging/ directory first, then atomically moves to tasks/task-documents/ (Task Source Directory) where watchdog auto-loads them for the task-queue module to process. This ensures files are fully written before watchdog detection."
 ---
 
 # Task Documents Generation
@@ -41,14 +41,19 @@ The specifications are consumed by the `task-queue` module, which loads them via
 
 ## Output Location
 
-Task specifications are created in the **Task Source Directory**:
+Task specifications use a **staging pattern** to ensure atomic writes:
 
 ```
-tasks/task-documents/
+tasks/task-staging/                    # Write complete file here first
+└── task-YYYYMMDD-HHMMSS-{description}.md
+
+tasks/task-documents/                  # Then atomically move here (watchdog monitors)
 └── task-YYYYMMDD-HHMMSS-{description}.md
 ```
 
-**Note:** This directory is monitored by the watchdog. New files are auto-loaded into the task-queue.
+**Why Staging?** The watchdog monitors `task-documents/`. Writing to `task-staging/` first ensures the file is fully written before the watchdog detects and processes it. This prevents race conditions where incomplete files are processed.
+
+**Note:** `task-documents/` is the Task Source Directory monitored by the watchdog. New files are auto-loaded into the task-queue after the atomic move from staging.
 
 ---
 
@@ -167,20 +172,30 @@ from datetime import datetime
 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 ```
 
-**Step 3: Write Task Document**
+**Step 3: Write Task Document to Staging**
 ```python
 Write(
-    file_path="tasks/task-documents/task-{timestamp}-{description}.md",
+    file_path="tasks/task-staging/task-{timestamp}-{description}.md",
     content=task_spec_content
 )
 ```
 
-**Step 4: Inform User**
+**Step 4: Atomically Move to Task Documents**
+```python
+# Atomic move ensures watchdog detects complete file
+import os
+os.rename(
+    "tasks/task-staging/task-{timestamp}-{description}.md",
+    "tasks/task-documents/task-{timestamp}-{description}.md"
+)
+```
+
+**Step 5: Inform User**
 ```
 Task document created: tasks/task-documents/task-{timestamp}-{description}.md
 
-The watchdog will auto-load this task. Or manually load with:
-  task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
+The watchdog will auto-load this task. View queue status:
+  task-queue status
 ```
 
 ### Scenario 2: From Planning Document (Explicit Request)
@@ -208,24 +223,55 @@ Extract all tasks from the planning document, noting:
 | 1 task | No numbering |
 | 2+ tasks | Simple sequential: 01, 02, 03... |
 
-**Step 4: Generate All Task Documents**
-Create each file with sequential numbering:
-```
-task-20260202-120000-01-first-task.md
-task-20260202-120001-02-second-task.md
-task-20260202-120002-03-third-task.md
+**Step 4: Generate All Task Documents to Staging (Write All First)**
+```python
+# PHASE 1: Write all files to staging first (no watchdog detection)
+staging_files = []
+for i, task in enumerate(tasks, start=1):
+    staging_path = f"tasks/task-staging/task-{timestamp}-{i:02d}-{description}.md"
+    Write(file_path=staging_path, content=task_content)
+    staging_files.append(staging_path)
 ```
 
-**Step 5: Inform User**
+Resulting files in staging:
 ```
-Created N task document(s) in tasks/task-documents/
-
-The watchdog will auto-load these tasks. Or manually load with:
-  task-queue load --task-source-dir tasks/task-documents --project-workspace /home/admin/workspaces/datachat --source-id main
-
-View queue status:
-  task-queue queue
+tasks/task-staging/
+├── task-20260202-120000-01-first-task.md
+├── task-20260202-120001-02-second-task.md
+└── task-20260202-120002-03-third-task.md
 ```
+
+**Step 5: Show User What Was Generated**
+```
+Generated N task document(s) in staging:
+  - task-20260202-120000-01-first-task.md
+  - task-20260202-120001-02-second-task.md
+  - task-20260202-120002-03-third-task.md
+
+Ready to move to task-documents/ (will trigger watchdog execution).
+```
+
+**Step 6: Atomically Move All Files (Triggers Watchdog)**
+```python
+# PHASE 2: Move all files at once (atomic batch operation)
+for staging_path in staging_files:
+    filename = os.path.basename(staging_path)
+    final_path = f"tasks/task-documents/{filename}"
+    os.rename(staging_path, final_path)
+```
+
+**Step 7: Inform User**
+```
+Moved N task document(s) to tasks/task-documents/
+
+The watchdog will auto-load these tasks. View queue status:
+  task-queue status
+```
+
+**Why Write All First?**
+- Review all generated tasks before execution starts
+- If generation fails, no partial work is executed
+- Cleaner batch operation with predictable timing
 
 ## Quality Checklist
 
@@ -246,19 +292,21 @@ Before creating a task document:
 
 ## Key Principles
 
-1. **Watchdog Integration** - Task specifications are written directly as `.md` files; the watchdog auto-loads them when created/modified.
+1. **Atomic Write Pattern** - Write to `task-staging/` first, then atomically move to `task-documents/`. This prevents the watchdog from detecting incomplete files.
 
-2. **Testing is Mandatory** - Every code task must include testing requirements. Only documentation/configuration tasks may use "No Tests."
+2. **Batch Generation for Multiple Tasks** - When generating multiple tasks: write ALL to staging first, review, then move ALL at once. This allows review before execution starts and prevents partial execution on errors.
 
-3. **80% Coverage Minimum** - All code changes must achieve at least 80% test coverage for modified/new files.
+3. **Watchdog Integration** - Task specifications are moved to `task-documents/` as complete `.md` files; the watchdog auto-loads them when the atomic move completes.
 
-4. **Clear Success Criteria** - Success criteria must include test pass rate and coverage thresholds.
+4. **Testing is Mandatory** - Every code task must include testing requirements. Only documentation/configuration tasks may use "No Tests."
 
-5. **Worker Autonomy** - Worker agents do their own investigation. Provide clear investigation instructions.
+5. **80% Coverage Minimum** - All code changes must achieve at least 80% test coverage for modified/new files.
 
-6. **Specific Requirements** - Requirements must be actionable, not vague. Avoid "improve code" - specify what must be done.
+6. **Clear Success Criteria** - Success criteria must include test pass rate and coverage thresholds.
 
-7. **Direct File Creation** - Write task documents directly as `.md` files. No `.md.tmp` intermediate files.
+7. **Worker Autonomy** - Worker agents do their own investigation. Provide clear investigation instructions.
+
+8. **Specific Requirements** - Requirements must be actionable, not vague. Avoid "improve code" - specify what must be done.
 
 ---
 

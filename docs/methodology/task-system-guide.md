@@ -107,11 +107,15 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ Step 2: Task Specification Generation                                   │
 │                                                                          │
-│   task-documents skill                                   │
-│   → tasks/task-documents/task-{timestamp}-{description}.md        │
+│   task-documents skill                                  │
+│   → tasks/task-staging/task-{timestamp}-{description}.md (write first)  │
+│   → tasks/task-documents/task-{timestamp}-{description}.md (atomic move)│
 │                                                                          │
 │   Naming: task-YYYYMMDD-HHMMSS-{kebab-description}.md                   │
 │   Example: task-20260205-100000-fix-auth-timeout.md                     │
+│                                                                          │
+│   Staging pattern: Write complete file, then atomic move triggers       │
+│   watchdog detection. This prevents processing incomplete files.        │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -221,6 +225,8 @@ The Task System is an asynchronous, event-driven task execution architecture tha
 ├── tasks/
 │   ├── task-planning/              # Task planning documents
 │   │   └── {descriptive-name}.md
+│   ├── task-staging/              # Staging area for atomic writes (write first, then move)
+│   │   └── task-20260205-100000-fix-auth-timeout.md (temporary)
 │   ├── task-documents/             # Input: Task specifications (Task Source Directory)
 │   │   ├── task-20260205-100000-fix-auth-timeout.md
 │   │   ├── .task-20260205-100000-fix-auth-timeout.running  # Marker for running tasks
