@@ -42,7 +42,7 @@ This skill bridges the gap between task specifications and execution. It uses th
 │  │ Per-Source Workers: One thread per source    │  │
 │  │ Sequential execution within each source       │  │
 │  │ Lock Files: Track running tasks with metadata │  │
-│  │ Executor: Calls /task-executor skill           │  │
+│  │ Executor: Calls /task-execution skill           │  │
 │  └──────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
                            │
@@ -427,7 +427,7 @@ journalctl --user -u results -n 100
 
 - **task-init**: Initializes task system with init/sources add/sources rm commands
 - **pending**: Creates task specifications
-- **task-executor**: Executes tasks with worker-auditor workflow
+- **task-execution**: Executes tasks with worker-auditor workflow
 - **task-planning**: Generates planning documents
 
 ## Troubleshooting

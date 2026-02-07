@@ -268,7 +268,7 @@ export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 - **task-planning**: Generates planning documents for organized task lists
 - **task-documents**: Generates task specifications to ad-hoc or planned directories
 - **task-queue**: Coordinates task execution and monitors sources
-- **task-executor**: Executes tasks using two-agent workflow
+- **task-execution**: Executes tasks using two-agent workflow
 - **task-cleanup**: Cleans up task directories while preserving structure
 
 ---

@@ -1,9 +1,9 @@
 ---
-name: task-executor
+name: task-execution
 description: "Two-agent workflow coordinator with automatic iteration. Reads a task document, spawns Implementation Agent to execute it, spawns Auditor Agent to review quality, iterates based on feedback (max 3), commits approved work. Called by task-queue module."
 ---
 
-# Task Executor
+# Task Execution
 
 Execute a task document using Implementation and Auditor agents with automatic iteration.
 
@@ -94,7 +94,7 @@ git push
 
 ```bash
 # Copy template from skill directory and rename with task ID
-cp .claude/skills/task-executor/references/task-report-template.md tasks/{queue}/reports/{task-id}.md
+cp .claude/skills/task-execution/references/task-report-template.md tasks/{queue}/reports/{task-id}.md
 ```
 
 **Populate the template:**
@@ -227,7 +227,7 @@ git push
 
 The task report structure is defined in the template file:
 ```
-.claude/skills/task-executor/references/task-report-template.md
+.claude/skills/task-execution/references/task-report-template.md
 ```
 
 **Template structure:**
