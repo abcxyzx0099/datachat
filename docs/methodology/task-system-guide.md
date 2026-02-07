@@ -1,6 +1,6 @@
 # Task System Guide
 
-Complete guide to the asynchronous task execution system (results) with event-driven watchdog monitoring and parallel worker execution.
+Complete guide to the asynchronous task execution system (task-monitor) with event-driven watchdog monitoring and parallel worker execution.
 
 ## Table of Contents
 
@@ -28,7 +28,7 @@ Complete guide to the asynchronous task execution system (results) with event-dr
 cd /home/admin/workspaces/datachat
 
 # 2. Run init command (creates directories and registers both queues)
-python -m task_queue.cli init
+python -m task_monitor.cli init
 
 # This creates:
 # - tasks/ad-hoc/ and tasks/planned/ directories
@@ -47,7 +47,7 @@ python -m task_queue.cli init
 #    (Watchdog monitors directories, daemon processes tasks automatically)
 
 # 3. Check results
-python -m task_queue.cli status
+python -m task_monitor.cli status
 
 # 4. View completed tasks and result files
 ls tasks/ad-hoc/completed/       # or tasks/planned/completed/
@@ -59,31 +59,31 @@ cat tasks/ad-hoc/results/task-{id}.json
 
 ```bash
 # Initialize task system
-python -m task_queue.cli init
+python -m task_monitor.cli init
 
 # Check status (overview)
-python -m task_queue.cli status
+python -m task_monitor.cli status
 
 # Check status (detailed with running tasks)
-python -m task_queue.cli status --detailed
+python -m task_monitor.cli status --detailed
 
 # List Task Source Directories
-python -m task_queue.cli sources list
+python -m task_monitor.cli sources list
 
 # Show worker status
-python -m task_queue.cli workers status
+python -m task_monitor.cli workers status
 
 # Show task document path
-python -m task_queue.cli tasks show task-20260207-120000
+python -m task_monitor.cli tasks show task-20260207-120000
 
 # Show task result logs
-python -m task_queue.cli tasks logs task-20260207-120000
+python -m task_monitor.cli tasks logs task-20260207-120000
 
 # View daemon logs
-python -m task_queue.cli logs --follow
+python -m task_monitor.cli logs --follow
 
 # Run interactively (for testing)
-python -m task_queue.cli run --cycles 1
+python -m task_monitor.cli run --cycles 1
 ```
 
 ---
@@ -164,7 +164,7 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 │   Run task-init skill OR use init command:                              │
 │                                                                          │
 │   # From project directory                                              │
-│   python -m task_queue.cli init                                         │
+│   python -m task_monitor.cli init                                         │
 │                                                                          │
 │   This creates directories and registers both queues (ad-hoc, planned). │
 │                                                                          │
@@ -440,22 +440,22 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 **Key Commands:**
 ```bash
 # Initialize task system (creates directories and registers queues)
-python -m task_queue.cli init
+python -m task_monitor.cli init
 
 # Add a Task Source Directory
-python -m task_queue.cli sources add /path/to/tasks --id my-queue --project-workspace /path/to/workspace
+python -m task_monitor.cli sources add /path/to/tasks --id my-queue --project-workspace /path/to/workspace
 
 # List sources
-python -m task_queue.cli sources list
+python -m task_monitor.cli sources list
 
 # Remove source
-python -m task_queue.cli sources rm --source-id <id>
+python -m task_monitor.cli sources rm --source-id <id>
 
 # Check status
-python -m task_queue.cli status
+python -m task_monitor.cli status
 
 # Run interactively
-python -m task_queue.cli run --cycles 1
+python -m task_monitor.cli run --cycles 1
 ```
 
 ### 5. task-execution
@@ -633,77 +633,77 @@ The `results` CLI provides grouped commands for managing tasks:
 
 ```bash
 # Initialize task system from current directory
-python -m task_queue.cli init
+python -m task_monitor.cli init
 
 # Show system status (overview)
-python -m task_queue.cli status
+python -m task_monitor.cli status
 
 # Show detailed status (with running tasks and lists)
-python -m task_queue.cli status --detailed
+python -m task_monitor.cli status --detailed
 ```
 
 ### Sources Commands
 
 ```bash
 # List Task Source Directories
-python -m task_queue.cli sources list
+python -m task_monitor.cli sources list
 
 # Add a Task Source Directory
-python -m task_queue.cli sources add /path/to/tasks --id my-queue \
+python -m task_monitor.cli sources add /path/to/tasks --id my-queue \
     --project-workspace /home/admin/workspaces/datachat
 
 # Remove a Task Source Directory
-python -m task_queue.cli sources rm --source-id my-queue
+python -m task_monitor.cli sources rm --source-id my-queue
 ```
 
 ### Tasks Commands
 
 ```bash
 # Show task document path
-python -m task_queue.cli tasks show task-20260207-120000
+python -m task_monitor.cli tasks show task-20260207-120000
 
 # Show task result logs path
-python -m task_queue.cli tasks logs task-20260207-120000
+python -m task_monitor.cli tasks logs task-20260207-120000
 
 # Cancel a running task
-python -m task_queue.cli tasks cancel task-20260207-120000
+python -m task_monitor.cli tasks cancel task-20260207-120000
 ```
 
 ### Workers Commands
 
 ```bash
 # Show detailed worker status (with running tasks)
-python -m task_queue.cli workers status
+python -m task_monitor.cli workers status
 
 # List workers summary
-python -m task_queue.cli workers list
+python -m task_monitor.cli workers list
 ```
 
 ### Logs Command
 
 ```bash
 # Show daemon logs (exit with Ctrl+C)
-python -m task_queue.cli logs
+python -m task_monitor.cli logs
 
 # Follow logs live
-python -m task_queue.cli logs --follow
+python -m task_monitor.cli logs --follow
 
 # Show last 50 lines
-python -m task_queue.cli logs --lines 50
+python -m task_monitor.cli logs --lines 50
 ```
 
 ### Testing Command
 
 ```bash
 # Run interactively (for testing)
-python -m task_queue.cli run --cycles 5
+python -m task_monitor.cli run --cycles 5
 ```
 
 ### Global Option
 
 ```bash
 # Specify custom config file
-python -m task_queue.cli --config /path/to/config.json <command>
+python -m task_monitor.cli --config /path/to/config.json <command>
 ```
 
 ---
@@ -762,7 +762,7 @@ journalctl --user -u results.service -n 100
    ```bash
    source /home/admin/workspaces/datachat/.venv/bin/activate
    export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
-   python -m task_queue.cli status
+   python -m task_monitor.cli status
    ```
 
 4. **Check config file:**
@@ -835,7 +835,7 @@ journalctl --user -u results.service -n 100
 
 2. **Verify Task Source Directory is configured:**
    ```bash
-   python -m task_queue.cli sources list
+   python -m task_monitor.cli sources list
    ```
 
 3. **Check daemon logs for watchdog errors:**
@@ -874,7 +874,7 @@ journalctl --user -u results.service -n 100
 # Module runs as Python module from datachat venv
 source /home/admin/workspaces/datachat/.venv/bin/activate
 export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
-python -m task_queue.cli <command>
+python -m task_monitor.cli <command>
 ```
 
 **Components:**

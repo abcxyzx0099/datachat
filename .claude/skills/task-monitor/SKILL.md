@@ -1,15 +1,15 @@
 ---
-name: results
-description: "Coordinates task execution using the results module with watchdog auto-loading and per-source queue architecture. Registers Task Source Directories for monitoring and checks execution progress. Use when: you have task specifications ready; you need to register a source directory; you want to monitor task status and results."
+name: task-monitor
+description: "Coordinates task execution using the task-monitor module with watchdog auto-loading and per-source queue architecture. Registers Task Source Directories for monitoring and checks execution progress. Use when: you have task specifications ready; you need to register a source directory; you want to monitor task status and results."
 ---
 
-# Task Queue
+# Task Monitor
 
-Coordinate task execution using the results module with watchdog auto-loading and per-source queue architecture.
+Coordinate task execution using the task-monitor module with watchdog auto-loading and per-source queue architecture.
 
 ## Overview
 
-This skill bridges the gap between task specifications and execution. It uses the `results` CLI to:
+This skill bridges the gap between task specifications and execution. It uses the `task-monitor` CLI to:
 1. **Initialize** the task system (one-time setup)
 2. **Register** Task Source Directories for watchdog monitoring
 3. **Monitor** execution status via the daemon
@@ -19,13 +19,13 @@ This skill bridges the gap between task specifications and execution. It uses th
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    User / AI Agent                          │
-│                  (invokes /results)                      │
+│                    User / AI Agent                  │
+│                  (invokes /task-monitor)            │
 └─────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────┐
-│               Task Queue Skill                        │
+│               Task Monitor Skill                    │
 │  ┌──────────────────────────────────────────────┐  │
 │  │ 1. Verify daemon running                    │  │
 │  │ 2. Check sources; init if needed            │  │
@@ -36,34 +36,34 @@ This skill bridges the gap between task specifications and execution. It uses th
                            │
                            ▼
 ┌─────────────────────────────────────────────────────┐
-│       results Module (CLI: python -m task_queue.cli) │
+│      task-monitor Module (CLI: task-monitor)        │
 │  ┌──────────────────────────────────────────────┐  │
-│  │ Watchdog: Event-driven file system monitoring  │  │
-│  │ Per-Source Workers: One thread per source    │  │
-│  │ Sequential execution within each source       │  │
-│  │ Lock Files: Track running tasks with metadata │  │
-│  │ Executor: Calls /task-execution skill           │  │
+│  │ Watchdog: Event-driven file system monitoring  │
+│  │ Per-Source Workers: One thread per source    │
+│  │ Sequential execution within each source       │
+│  │ Lock Files: Track running tasks with metadata │
+│  │ Executor: Calls /task-execution skill        │  │
 │  └──────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────┐
-│                   Task Executor Skill                       │
-│           (worker-auditor workflow, auto-iteration)         │
+│              Task Execution Skill                   │
+│         (worker-auditor workflow, auto-iteration)   │
 └─────────────────────────────────────────────────────┘
 ```
 
 ## When to Use
 
 Call this skill when:
-- Task specifications have been created (by `pending`)
+- Task specifications have been created (by `task-documents`)
 - You need to initialize or register Task Source Directories
 - You want to check daemon status
 - You need to monitor task execution progress
 
 ## CLI Commands Reference (v2.1)
 
-The results module provides grouped commands:
+The task-monitor module provides grouped commands:
 
 ### System Commands
 
@@ -141,7 +141,7 @@ When a task is running, a lock file is created:
 **First, check if already initialized:**
 
 ```bash
-python -m task_queue.cli sources list
+task-monitor sources list
 ```
 
 **If empty or missing sources, initialize:**
@@ -149,7 +149,7 @@ python -m task_queue.cli sources list
 ```bash
 # From your project directory
 cd /home/admin/workspaces/datachat
-python -m task_queue.cli init
+task-monitor init
 ```
 
 This creates:
@@ -165,26 +165,26 @@ This creates:
 **Before checking status, verify the daemon is running:**
 
 ```bash
-python -m task_queue.cli status
+task-monitor status
 ```
 
 **If NOT running:**
 
 ```bash
-systemctl --user start results
+systemctl --user start task-monitor
 ```
 
 ### Step 3: Monitor Queue Status
 
 ```bash
 # Overview mode
-python -m task_queue.cli status
+task-monitor status
 
 # Detailed mode (shows running tasks)
-python -m task_queue.cli status --detailed
+task-monitor status --detailed
 
 # Show worker details
-python -m task_queue.cli workers status
+task-monitor workers status
 ```
 
 **Expected output (overview):**
@@ -213,13 +213,13 @@ Task Source Directories: 2
 
 ```bash
 # Check status
-python -m task_queue.cli status --detailed
+task-monitor status --detailed
 
 # Show running task details
-python -m task_queue.cli workers status
+task-monitor workers status
 
 # View live logs
-python -m task_queue.cli logs --follow
+task-monitor logs --follow
 ```
 
 **DO NOT continuously poll during execution.** Only check when the user asks.
@@ -247,12 +247,19 @@ tasks/
 │           └── implementation-summary.md
 │
 └── planned/                          # Planned task queue
-    └── (same structure)
+    ├── staging/               # Staging area (atomic writes)
+    ├── pending/             # Input: Task specifications (Task Source Directory)
+    ├── completed/                # Completed specs (auto-moved)
+    ├── failed/                 # Failed specs (auto-moved)
+    ├── planning/               # Planning documents
+    ├── results/                  # Result JSON files
+    │   └── task-{id}.json
+    └── reports/                # Worker execution reports
 ```
 
 ## Per-Source Architecture (v2.1)
 
-The results uses **per-source worker threads** with these rules:
+The task-monitor uses **per-source worker threads** with these rules:
 
 | Rule | Description |
 |------|-------------|
@@ -271,15 +278,15 @@ The results uses **per-source worker threads** with these rules:
 
 ```bash
 # 1. Check daemon status
-python -m task_queue.cli status
+task-monitor status
 # Output: Running or instructions to start
 
 # 2. Check if sources are registered
-python -m task_queue.cli sources list
+task-monitor sources list
 # If empty or missing, proceed to init
 
 # 3. Initialize system (one-time setup)
-python -m task_queue.cli init
+task-monitor init
 # Output:
 # ✅ Initialization complete!
 #   Project Workspace: /home/admin/workspaces/datachat
@@ -292,7 +299,7 @@ python -m task_queue.cli init
 #      Path: /home/admin/workspaces/datachat/tasks/planned/pending
 
 # 4. Check queue status
-python -m task_queue.cli status --detailed
+task-monitor status --detailed
 # Output: Shows pending/running/completed tasks
 ```
 
@@ -316,10 +323,10 @@ sequentially per source. Different sources execute in parallel.
 
 ```bash
 # Check status with running tasks
-python -m task_queue.cli status --detailed
+task-monitor status --detailed
 
 # If task completed, check result
-python -m task_queue.cli tasks logs task-20260207-120000
+task-monitor tasks logs task-20260207-120000
 
 # View full result
 cat tasks/ad-hoc/results/task-20260207-120000.json
@@ -333,10 +340,10 @@ cat tasks/ad-hoc/results/task-20260207-120000.json
 
 ```bash
 # Check what's running
-python -m task_queue.cli workers status
+task-monitor workers status
 
 # Cancel the task
-python -m task_queue.cli tasks cancel task-20260207-120000
+task-monitor tasks cancel task-20260207-120000
 # Output:
 # 🛑 Cancelling task: task-20260207-120000
 #    Worker: ad-hoc
@@ -351,11 +358,11 @@ python -m task_queue.cli tasks cancel task-20260207-120000
 
 ```bash
 # List completed tasks
-python -m task_queue.cli status --detailed
+task-monitor status --detailed
 ls tasks/ad-hoc/completed/
 
 # View completed task document
-python -m task_queue.cli tasks show task-20260207-120000
+task-monitor tasks show task-20260207-120000
 cat tasks/ad-hoc/completed/task-20260207-120000.md
 ```
 
@@ -363,13 +370,13 @@ cat tasks/ad-hoc/completed/task-20260207-120000.md
 
 ```bash
 # Check status for failed count
-python -m task_queue.cli status
+task-monitor status
 
 # View failed task
 cat tasks/ad-hoc/failed/task-{id}.md
 
 # Check result file
-python -m task_queue.cli tasks logs task-{id}
+task-monitor tasks logs task-{id}
 cat tasks/ad-hoc/results/task-{id}.json
 ```
 
@@ -390,25 +397,25 @@ cat tasks/ad-hoc/reports/task-{id}/audit-report-iteration-1.md
 
 ```bash
 # Start daemon
-systemctl --user start results
+systemctl --user start task-monitor
 
 # Stop daemon
-systemctl --user stop results
+systemctl --user stop task-monitor
 
 # Restart daemon
-systemctl --user restart results
+systemctl --user restart task-monitor
 
 # Enable at login
-systemctl --user enable results
+systemctl --user enable task-monitor
 
 # View live logs
-python -m task_queue.cli logs --follow
+task-monitor logs --follow
 
 # View last 100 log lines
-python -m task_queue.cli logs --lines 100
+task-monitor logs --lines 100
 
 # Or with journalctl
-journalctl --user -u results -n 100
+journalctl --user -u task-monitor -n 100
 ```
 
 ## Key Principles (v2.1)
@@ -426,7 +433,7 @@ journalctl --user -u results -n 100
 ## Related Skills
 
 - **task-init**: Initializes task system with init/sources add/sources rm commands
-- **pending**: Creates task specifications
+- **task-documents**: Creates task specifications
 - **task-execution**: Executes tasks with worker-auditor workflow
 - **task-planning**: Generates planning documents
 
@@ -435,35 +442,35 @@ journalctl --user -u results -n 100
 ### Daemon not running
 
 ```bash
-python -m task_queue.cli status
+task-monitor status
 # Output: Stopped or error message
 
 # Start it
-systemctl --user start results
+systemctl --user start task-monitor
 ```
 
 ### Tasks not being processed
 
 ```bash
 # Check if sources are registered
-python -m task_queue.cli sources list
+task-monitor sources list
 
 # Check if task files exist
 ls tasks/ad-hoc/pending/task-*.md
 ls tasks/planned/pending/task-*.md
 
 # Check if daemon is running
-systemctl --user status results.service
+systemctl --user status task-monitor.service
 ```
 
 ### Watchdog not detecting files
 
 ```bash
 # Verify Task Source Directory is configured
-python -m task_queue.cli sources list
+task-monitor sources list
 
 # Check daemon logs for watchdog errors
-python -m task_queue.cli logs --lines 50
+task-monitor logs --lines 50
 ```
 
 ### Task stuck with lock file
@@ -487,7 +494,7 @@ rm tasks/ad-hoc/pending/.task-XXX.lock
 
 ```bash
 # Check failed task
-python -m task_queue.cli tasks logs task-{id}
+task-monitor tasks logs task-{id}
 cat tasks/ad-hoc/failed/task-{id}.md
 
 # Check detailed worker report

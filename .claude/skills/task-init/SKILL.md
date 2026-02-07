@@ -1,6 +1,6 @@
 ---
 name: task-init
-description: "Initializes the task system by creating the directory structure and adding Task Source Directories with the results module. One-time setup that configures ad-hoc and planned task queues for parallel execution."
+description: "Initializes the task system by creating the directory structure and adding Task Source Directories with the task-monitor module. One-time setup that configures ad-hoc and planned task queues for parallel execution."
 ---
 
 # Task System Initialization
@@ -31,11 +31,11 @@ The task system supports two independent queues that execute in parallel:
 
 | Scenario | Command |
 |----------|---------|
-| **First-time setup** | `results init` (recommended) |
-| **Re-configuration** | `results init --force` or `sources add`/`sources rm` |
-| **Add custom queue** | `results sources add` |
-| **Remove queue** | `results sources rm` |
-| **Verification** | `results sources list` |
+| **First-time setup** | `task-monitor init` (recommended) |
+| **Re-configuration** | `task-monitor init --force` or `sources add`/`sources rm` |
+| **Add custom queue** | `task-monitor sources add` |
+| **Remove queue** | `task-monitor sources rm` |
+| **Verification** | `task-monitor sources list` |
 
 ---
 
@@ -73,15 +73,14 @@ tasks/
 # From project directory
 cd /home/admin/workspaces/datachat
 source .venv/bin/activate
-export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 # Initialize (creates directories, adds both queues)
-python -m task_queue.cli init
+task-monitor init
 
 # Options
-python -m task_queue.cli init --force           # Re-initialize completely
-python -m task_queue.cli init --skip-existing   # Skip already added queues
-python -m task_queue.cli init --restart-daemon  # Restart daemon after init
+task-monitor init --force           # Re-initialize completely
+task-monitor init --skip-existing   # Skip already added queues
+task-monitor init --restart-daemon  # Restart daemon after init
 ```
 
 **What it does:**
@@ -100,22 +99,21 @@ python -m task_queue.cli init --restart-daemon  # Restart daemon after init
 ```bash
 # Activate environment
 source /home/admin/workspaces/datachat/.venv/bin/activate
-export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 # Add a queue
-python -m task_queue.cli sources add /path/to/pending \
+task-monitor sources add /path/to/pending \
     --id my-queue \
     --project-workspace /home/admin/workspaces/datachat \
     --description "My custom queue"
 
 # Add ad-hoc queue (manual setup)
-python -m task_queue.cli sources add \
+task-monitor sources add \
     /home/admin/workspaces/datachat/tasks/ad-hoc/pending \
     --id ad-hoc \
     --project-workspace /home/admin/workspaces/datachat
 
 # Add planned queue (manual setup)
-python -m task_queue.cli sources add \
+task-monitor sources add \
     /home/admin/workspaces/datachat/tasks/planned/pending \
     --id planned \
     --project-workspace /home/admin/workspaces/datachat
@@ -137,13 +135,13 @@ python -m task_queue.cli sources add \
 
 ```bash
 # Remove a queue
-python -m task_queue.cli sources rm --source-id my-queue
+task-monitor sources rm --source-id my-queue
 
 # Remove ad-hoc queue
-python -m task_queue.cli sources rm --source-id ad-hoc
+task-monitor sources rm --source-id ad-hoc
 
 # Remove planned queue
-python -m task_queue.cli sources rm --source-id planned
+task-monitor sources rm --source-id planned
 ```
 
 ---
@@ -152,24 +150,24 @@ python -m task_queue.cli sources rm --source-id planned
 
 ```bash
 # List added Task Source Directories
-python -m task_queue.cli sources list
+task-monitor sources list
 
 # Check system status
-python -m task_queue.cli status
+task-monitor status
 
 # Show detailed status (with running tasks)
-python -m task_queue.cli status --detailed
+task-monitor status --detailed
 
 # Run interactively (for testing)
-python -m task_queue.cli run --cycles 1
+task-monitor run --cycles 1
 
 # Start daemon
-systemctl --user start results.service
+systemctl --user start task-monitor.service
 
 # View live logs
-python -m task_queue.cli logs --follow
+task-monitor logs --follow
 # Or with journalctl
-journalctl --user -u results.service -f
+journalctl --user -u task-monitor.service -f
 ```
 
 ---
@@ -181,13 +179,12 @@ journalctl --user -u results.service -f
 ```bash
 cd /home/admin/workspaces/datachat
 source .venv/bin/activate
-export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 # One command to set up everything
-python -m task_queue.cli init
+task-monitor init
 
 # Verify
-python -m task_queue.cli sources list
+task-monitor sources list
 ```
 
 ### Example 2: Custom Queue Setup
@@ -197,14 +194,14 @@ python -m task_queue.cli sources list
 mkdir -p tasks/custom/{staging,pending,completed,failed,results,reports}
 
 # Add custom queue
-python -m task_queue.cli sources add \
+task-monitor sources add \
     /home/admin/workspaces/datachat/tasks/custom/pending \
     --id custom \
     --project-workspace /home/admin/workspaces/datachat \
     --description "Custom queue"
 
 # Verify
-python -m task_queue.cli sources list
+task-monitor sources list
 ```
 
 ---
@@ -229,19 +226,21 @@ Once initialized, tasks are generated using the `task-documents` skill:
 **Solutions:**
 ```bash
 # Option 1: Use --skip-existing to add missing queues only
-python -m task_queue.cli init --skip-existing
+task-monitor init --skip-existing
 
 # Option 2: Use --force to completely re-initialize
-python -m task_queue.cli init --force
+task-monitor init --force
 ```
 
-### Module Not Found
+### Command Not Found
 
-**Symptom:** `ModuleNotFoundError: No module named 'task_queue'`
+**Symptom:** `task-monitor: command not found`
 
 **Solution:**
 ```bash
-export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
+# The wrapper script uses the PYTHONPATH to find task-monitor module
+# The task-monitor command should be available from ~/.local/bin/task-monitor
+# which sets PYTHONPATH automatically
 ```
 
 ### Directories Already Exist
@@ -259,7 +258,7 @@ export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 - [ ] planned Task Source Directory added
 - [ ] Source addition verified with `sources list`
 - [ ] Status check shows both sources
-- [ ] results daemon is running (if applicable)
+- [ ] task-monitor daemon is running (if applicable)
 
 ---
 
@@ -267,7 +266,7 @@ export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 - **task-planning**: Generates planning documents for organized task lists
 - **task-documents**: Generates task specifications to ad-hoc or planned directories
-- **task-queue**: Coordinates task execution and monitors sources
+- **task-monitor**: Coordinates task execution and monitors sources
 - **task-execution**: Executes tasks using two-agent workflow
 - **task-cleanup**: Cleans up task directories while preserving structure
 
@@ -275,9 +274,9 @@ export PYTHONPATH=/home/admin/workspaces/results:$PYTHONPATH
 
 ## Notes
 
-- **Init is recommended:** Use `results init` for most setups
-- **sources add for custom:** Use `sources add` to add Task Source Directories
-- **sources rm to remove:** Use `sources rm` to remove queues from monitoring
+- **Init is recommended:** Use `task-monitor init` for most setups
+- **sources add for custom:** Use `task-monitor sources add` to add Task Source Directories
+- **sources rm to remove:** Use `task-monitor sources rm` to remove queues from monitoring
 - **Project workspace:** Always use `/home/admin/workspaces/datachat` for this project
 - **Parallel execution:** Both queues process independently via separate worker threads
 - **Idempotent:** Commands can be safely re-run

@@ -5,7 +5,7 @@ description: "Generates task document specifications from planning documents or 
 
 # Task Documents Generation
 
-Generate structured task document specifications for the task-queue module.
+Generate structured task document specifications for the task-monitor module.
 
 ## Overview
 
@@ -17,7 +17,7 @@ This skill creates task document specifications that serve as the single source 
 - **Success criteria** to verify completion
 - **Implementation Agent investigation instructions** for autonomous execution
 
-The specifications are consumed by the `task-queue` module, which loads them via CLI and executes them using the `task-execution` skill.
+The specifications are consumed by the `task-monitor` module, which loads them via CLI and executes them using the `task-execution` skill.
 
 ---
 
@@ -77,7 +77,7 @@ tasks/planned/pending/           # Then atomically move here (watchdog monitors)
 
 **Why Staging?** The watchdog monitors each queue's `pending/`. Writing to `staging/` first ensures the file is fully written before the watchdog detects and processes it. This prevents race conditions where incomplete files are processed.
 
-**Note:** Each `pending/` is a Task Source Directory monitored by the watchdog. New files are auto-loaded into the task-queue after the atomic move from staging.
+**Note:** Each `pending/` is a Task Source Directory monitored by the watchdog. New files are auto-loaded into the task-monitor after the atomic move from staging.
 
 ---
 
@@ -223,7 +223,7 @@ os.rename(
 Ad-hoc task created: tasks/ad-hoc/pending/task-{timestamp}-{description}.md
 
 The ad-hoc queue watchdog will auto-load this task. View queue status:
-  python -m task_queue.cli status
+  python -m task_monitor.cli status
 ```
 
 ### Scenario 2: Planned Tasks (From Planning Document)
@@ -297,7 +297,7 @@ for staging_path in staging_files:
 Moved N task document(s) to tasks/planned/pending/
 
 The planned queue watchdog will auto-load these tasks. View queue status:
-  python -m task_queue.cli status
+  python -m task_monitor.cli status
 ```
 
 **Why Write All First?**

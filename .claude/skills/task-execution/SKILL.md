@@ -1,6 +1,6 @@
 ---
 name: task-execution
-description: "Two-agent workflow coordinator with automatic iteration. Reads a task document, spawns Implementation Agent to execute it, spawns Auditor Agent to review quality, iterates based on feedback (max 3), commits approved work. Called by task-queue module."
+description: "Two-agent workflow coordinator with automatic iteration. Reads a task document, spawns Implementation Agent to execute it, spawns Auditor Agent to review quality, iterates based on feedback (max 3), commits approved work. Called by task-monitor module."
 ---
 
 # Task Execution
