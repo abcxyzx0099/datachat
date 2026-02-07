@@ -468,7 +468,7 @@ task-monitor run --cycles 1
 3. Automatic iteration based on feedback (max 3x)
 4. Quality gate: stops when threshold met
 
-**Called by:** results module (via Claude Agent SDK)
+**Called by:** task-monitor module (via Claude Agent SDK)
 
 ### 6. task-cleanup
 

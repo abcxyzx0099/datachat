@@ -349,7 +349,7 @@ Before creating a task document:
 
 - **task-init**: Initializes the task system with ad-hoc and planned queues
 - **task-planning**: Generates planning documents for bulk generation
-- **task-queue**: Loads and executes task documents
+- **task-monitor**: Loads and executes task documents
 - **task-execution**: Executes tasks with worker-auditor workflow
 
 ---
