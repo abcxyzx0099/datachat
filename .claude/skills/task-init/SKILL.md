@@ -43,17 +43,17 @@ The task system supports two independent queues that execute in parallel:
 
 ```
 tasks/
-├── ad-hoc/                              # Ad-hoc task queue
+├── ad-hoc/                              # Ad-hoc task queue (Task Source Directory)
 │   ├── staging/                    # Staging area (atomic writes)
-│   ├── pending/                  # Task Source Directory (watchdog monitors)
+│   ├── pending/                  # Watchdog monitors this subdirectory
 │   ├── completed/                 # Completed task specs
 │   ├── failed/                    # Failed task specs
 │   ├── results/                   # JSON result files
 │   └── reports/                   # Worker execution reports
 │
-└── planned/                             # Planned task queue
+└── planned/                             # Planned task queue (Task Source Directory)
     ├── staging/                    # Staging area (atomic writes)
-    ├── pending/                  # Task Source Directory (watchdog monitors)
+    ├── pending/                  # Watchdog monitors this subdirectory
     ├── completed/                 # Completed task specs
     ├── failed/                    # Failed task specs
     ├── results/                   # JSON result files
@@ -94,27 +94,27 @@ task-monitor init --restart-daemon  # Restart daemon after init
 
 ### 2. sources add - Advanced Configuration
 
-**Use for custom queue configurations.** Add a single Task Source Directory.
+**Use for custom queue configurations.** Add a single Task Source Directory (parent directory).
 
 ```bash
 # Activate environment
 source /home/admin/workspaces/datachat/.venv/bin/activate
 
-# Add a queue
-task-monitor sources add /path/to/pending \
+# Add a custom queue
+task-monitor sources add /path/to/queue \
     --id my-queue \
     --project-workspace /home/admin/workspaces/datachat \
     --description "My custom queue"
 
 # Add ad-hoc queue (manual setup)
 task-monitor sources add \
-    /home/admin/workspaces/datachat/tasks/ad-hoc/pending \
+    /home/admin/workspaces/datachat/tasks/ad-hoc \
     --id ad-hoc \
     --project-workspace /home/admin/workspaces/datachat
 
 # Add planned queue (manual setup)
 task-monitor sources add \
-    /home/admin/workspaces/datachat/tasks/planned/pending \
+    /home/admin/workspaces/datachat/tasks/planned \
     --id planned \
     --project-workspace /home/admin/workspaces/datachat
 ```
@@ -122,7 +122,7 @@ task-monitor sources add \
 **Required Arguments:**
 | Argument | Description |
 |----------|-------------|
-| Positional | Path to Task Source Directory (contains task-*.md files) |
+| Positional | Path to Task Source Directory (parent queue directory with pending/ subdirectory) |
 | `--id` | Unique identifier for this queue |
 | `--project-workspace` | Path to project root directory |
 | `--description` | Description of this queue (optional) |

@@ -293,10 +293,10 @@ task-monitor init
 #   Registered Queues: 2
 #
 #   📁 ad-hoc
-#      Path: /home/admin/workspaces/datachat/tasks/ad-hoc/pending
+#      Path: /home/admin/workspaces/datachat/tasks/ad-hoc
 #
 #   📁 planned
-#      Path: /home/admin/workspaces/datachat/tasks/planned/pending
+#      Path: /home/admin/workspaces/datachat/tasks/planned
 
 # 4. Check queue status
 task-monitor status --detailed
@@ -308,8 +308,8 @@ task-monitor status --detailed
 ✅ Task system initialized successfully.
 
 Task Source Directories are now registered for watchdog monitoring:
-- Ad-hoc: tasks/ad-hoc/pending/
-- Planned: tasks/planned/pending/
+- Ad-hoc: tasks/ad-hoc/ (watchdog monitors pending/ subdirectory)
+- Planned: tasks/planned/ (watchdog monitors pending/ subdirectory)
 
 Tasks will be auto-loaded when files appear. The daemon processes tasks
 sequentially per source. Different sources execute in parallel.
