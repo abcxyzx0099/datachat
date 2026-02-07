@@ -1,19 +1,20 @@
 ---
 name: task-init
-description: "Initializes the task system by creating the directory structure and adding Task Source Directories with the task-monitor module. One-time setup that configures ad-hoc and planned task queues for parallel execution."
+description: "Initializes the task system by creating the directory structure, adding Task Source Directories, installing the task-monitor CLI, and ensuring the task-monitor service is configured and running. One-time setup that configures ad-hoc and planned task queues for parallel execution."
 ---
 
 # Task System Initialization
 
-Initializes the task system with separate queues for ad-hoc and planned tasks.
+Initializes the task system with separate queues for ad-hoc and planned tasks, installs the CLI, configures the service, and verifies everything is running.
 
 ## Overview
 
-This skill performs one-time setup of the task system using the init command or manual source management:
+This skill performs one-time setup of the task system using the init command or manual source management, and verifies the systemd service is operational:
 
 | Command | Purpose | Usage |
 |---------|---------|-------|
-| **init** | Quick setup - creates directories and adds both queues | First-time setup |
+| **init** | Quick setup - creates directories, adds both queues, ensures service running | First-time setup |
+| **service-setup** | Verifies/configures systemd service and starts daemon | Service management |
 | **sources add** | Advanced - add a single Task Source Directory | Custom configurations |
 | **sources rm** | Remove a Task Source Directory from monitoring | Reconfiguration |
 | **sources list** | List added Task Source Directories | Verification |
@@ -63,6 +64,17 @@ tasks/
 
 ---
 
+## Reference Documents
+
+Detailed setup instructions are in separate reference documents:
+
+| Document | Purpose |
+|----------|---------|
+| **[CLI Setup](reference/cli-setup.md)** | Install and configure the `task-monitor` CLI command |
+| **[Service Setup](reference/service-setup.md)** | Configure and manage the task-monitor systemd service |
+
+---
+
 ## Command Reference
 
 ### 1. init - Quick Setup
@@ -72,7 +84,6 @@ tasks/
 ```bash
 # From project directory
 cd /home/admin/workspaces/datachat
-source .venv/bin/activate
 
 # Initialize (creates directories, adds both queues)
 task-monitor init
@@ -80,7 +91,6 @@ task-monitor init
 # Options
 task-monitor init --force           # Re-initialize completely
 task-monitor init --skip-existing   # Skip already added queues
-task-monitor init --restart-daemon  # Restart daemon after init
 ```
 
 **What it does:**
@@ -92,7 +102,42 @@ task-monitor init --restart-daemon  # Restart daemon after init
 
 ---
 
-### 2. sources add - Advanced Configuration
+### 2. CLI Installation
+
+**Install the `task-monitor` CLI command.** See [CLI Setup](reference/cli-setup.md) for detailed instructions.
+
+```bash
+# Quick install (editable mode)
+cd /home/admin/workspaces/task-monitor
+.venv/bin/pip install -e . --break-system-packages
+
+# Verify installation
+.venv/bin/task-monitor status
+
+# Or install globally with pipx (production)
+pipx install /home/admin/workspaces/task-monitor
+```
+
+---
+
+### 3. Service Setup
+
+**Configure and start the task-monitor systemd service.** See [Service Setup](reference/service-setup.md) for detailed instructions.
+
+```bash
+# Quick status check
+systemctl --user status task-monitor.service
+
+# Start if not running
+systemctl --user start task-monitor.service
+
+# Enable auto-start at login
+systemctl --user enable task-monitor.service
+```
+
+---
+
+### 4. sources add - Advanced Configuration
 
 **Use for custom queue configurations.** Add a single Task Source Directory (parent directory).
 
@@ -129,7 +174,7 @@ task-monitor sources add \
 
 ---
 
-### 3. sources rm - Remove Queue
+### 5. sources rm - Remove Queue
 
 **Use to remove a queue from monitoring.**
 
@@ -174,18 +219,36 @@ journalctl --user -u task-monitor.service -f
 
 ## Quick Start Examples
 
-### Example 1: New Project (Recommended)
+### Example 1: Complete First-Time Setup
 
 ```bash
 cd /home/admin/workspaces/datachat
-source .venv/bin/activate
 
-# One command to set up everything
-task-monitor init
+# 1. Install CLI
+cd /home/admin/workspaces/task-monitor
+.venv/bin/pip install -e . --break-system-packages
 
-# Verify
-task-monitor sources list
+# 2. Initialize task system (creates directories, adds queues)
+cd /home/admin/workspaces/datachat
+.venv/bin/task-monitor init
+
+# 3. Verify service is running
+systemctl --user status task-monitor.service
+
+# 4. Start service if needed
+systemctl --user start task-monitor.service
+
+# 5. Enable auto-start at login
+systemctl --user enable task-monitor.service
+
+# 6. Verify everything
+.venv/bin/task-monitor status
+.venv/bin/task-monitor sources list
 ```
+
+**For detailed setup instructions, see:**
+- [CLI Setup](reference/cli-setup.md)
+- [Service Setup](reference/service-setup.md)
 
 ### Example 2: Custom Queue Setup
 
@@ -195,7 +258,7 @@ mkdir -p tasks/custom/{staging,pending,completed,failed,results,reports}
 
 # Add custom queue
 task-monitor sources add \
-    /home/admin/workspaces/datachat/tasks/custom/pending \
+    /home/admin/workspaces/datachat/tasks/custom \
     --id custom \
     --project-workspace /home/admin/workspaces/datachat \
     --description "Custom queue"
@@ -218,6 +281,22 @@ Once initialized, tasks are generated using the `task-documents` skill:
 ---
 
 ## Troubleshooting
+
+### CLI Not Working
+
+**See:** [CLI Setup](reference/cli-setup.md#troubleshooting)
+
+### Service Not Running
+
+**See:** [Service Setup](reference/service-setup.md#troubleshooting)
+
+### Service File Missing
+
+**See:** [Service Setup](reference/service-setup.md#service-file-missing)
+
+### Service Crashes Repeatedly
+
+**See:** [Service Setup](reference/service-setup.md#service-crashes-repeatedly)
 
 ### Init Detects Existing Setup
 
@@ -258,7 +337,10 @@ task-monitor init --force
 - [ ] planned Task Source Directory added
 - [ ] Source addition verified with `sources list`
 - [ ] Status check shows both sources
-- [ ] task-monitor daemon is running (if applicable)
+- [ ] **task-monitor.service file exists** (`~/.config/systemd/user/task-monitor.service`)
+- [ ] **Service is enabled** for auto-start at login
+- [ ] **Service is running** (active)
+- [ ] **Service logs show clean startup** (no errors)
 
 ---
 

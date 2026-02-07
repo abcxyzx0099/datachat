@@ -119,16 +119,16 @@ class InputState(TypedDict):
 ```python
 class ExtractionState(TypedDict):
     """Data extraction and preparation - Steps 1-3"""
-    raw_data: Optional[object]                    # pandas DataFrame from .sav file
     original_metadata: Optional[Dict[str, Any]]   # Raw metadata from pyreadstat
     variable_centered_metadata: Optional[List[Dict[str, Any]]]  # Metadata grouped by variable
     filtered_metadata: Optional[List[Dict[str, Any]]]          # Metadata after filtering
     filtered_out_variables: Optional[List[Dict[str, Any]]]     # Variables removed + reasons
 ```
 
+**Note**: The `raw_data` field is deprecated and not stored in state. LangGraph uses msgpack serialization which doesn't handle pandas DataFrames efficiently. Storing DataFrames would cause large checkpoint files and performance issues. Instead, the data is reloaded from `input_file_path` when needed by subsequent processing steps.
+
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
-| `raw_data` | `DataFrame` | Step 1 | Survey response data |
 | `original_metadata` | `Dict` | Step 1 | Raw SPSS variable metadata |
 | `variable_centered_metadata` | `List[Dict]` | Step 2 | Metadata restructured by variable |
 | `filtered_metadata` | `List[Dict]` | Step 3 | Variables requiring recoding |
@@ -542,7 +542,7 @@ The `.sav` file format is the standard SPSS/PASW statistics data file format.
 ```mermaid
 graph TD
     STEP0["Step 0<br/>InputState<br/>input_file_path"]
-    STEP1["Step 1<br/>ExtractionState<br/>raw_data<br/>original_metadata"]
+    STEP1["Step 1<br/>ExtractionState<br/>original_metadata"]
     STEP2["Step 2<br/>variable_centered_metadata"]
     STEP3["Step 3<br/>filtered_metadata<br/>filtered_out_variables"]
     STEP4["Step 4<br/>RecodingState<br/>recoding_rules"]
@@ -591,7 +591,7 @@ graph TD
 
 | Stage | Input | Key Transformation | Output |
 |-------|-------|-------------------|--------|
-| **1** | `.sav` file | Extract data and metadata | `raw_data`, `original_metadata` |
+| **1** | `.sav` file | Extract data and metadata | `original_metadata` |
 | **2** | Original metadata | Group by variable | `variable_centered_metadata` |
 | **3** | Variable metadata | Filter out不需要的变量 | `filtered_metadata` |
 | **4** | Filtered metadata | LLM generates recoding rules | `recoding_rules` |
