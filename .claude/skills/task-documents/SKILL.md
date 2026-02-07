@@ -223,7 +223,7 @@ os.rename(
 Ad-hoc task created: tasks/ad-hoc/pending/task-{timestamp}-{description}.md
 
 The ad-hoc queue watchdog will auto-load this task. View queue status:
-  python -m task_monitor.cli status
+  task-monitor status
 ```
 
 ### Scenario 2: Planned Tasks (From Planning Document)
@@ -297,7 +297,7 @@ for staging_path in staging_files:
 Moved N task document(s) to tasks/planned/pending/
 
 The planned queue watchdog will auto-load these tasks. View queue status:
-  python -m task_monitor.cli status
+  task-monitor status
 ```
 
 **Why Write All First?**
