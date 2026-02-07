@@ -201,7 +201,7 @@ The Task System is an asynchronous, event-driven task execution architecture wit
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ Step 5: Task Executor Execution                                          │
 │                                                                          │
-│   Worker Agent executes /task-executor skill:                             │
+│   Task worker executes /task-executor skill:                             │
 │   ┌──────────────────┐    ┌──────────────────┐    ┌─────────────────┐  │
 │   │ Implementation   │───→│    Auditor       │───→│   Quality Gate  │  │
 │   │    Agent         │    │    Agent         │    │                 │  │

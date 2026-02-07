@@ -15,7 +15,7 @@ This skill creates task document specifications that serve as the single source 
 - **Specific requirements** that must be implemented
 - **Testing requirements** with coverage targets and test scenarios
 - **Success criteria** to verify completion
-- **Worker investigation instructions** for autonomous execution
+- **Implementation Agent investigation instructions** for autonomous execution
 
 The specifications are consumed by the `task-queue` module, which loads them via CLI and executes them using the `task-executor` skill.
 
@@ -138,13 +138,13 @@ coverage report --include='[modified-files]'
 ```
 
 ## Deliverables
-[What the Worker Agent should produce]
+[What the Implementation Agent should produce]
 1. [Implementation code]
 2. [Test files]
 3. [Documentation if applicable]
 
 ## Constraints
-[Limitations the Worker must respect]
+[Limitations the Implementation Agent must respect]
 1. [Constraint 1 - e.g., framework, language, compatibility]
 2. [Constraint 2 - e.g., performance, security]
 
@@ -156,8 +156,8 @@ coverage report --include='[modified-files]'
 4. [No regressions in existing tests]
 5. [Code follows existing patterns]
 
-## Worker Investigation Instructions
-[CRITICAL] Explicit instructions for the Worker Agent's own investigation:
+## Implementation Agent Investigation Instructions
+[CRITICAL] Explicit instructions for the Implementation Agent's own investigation:
 - You MUST do your own deep investigation before implementing
 - Find ALL files affected: [suggest grep/find commands if applicable]
 - Understand current patterns before making changes
@@ -339,7 +339,7 @@ Before creating a task document:
 
 7. **Clear Success Criteria** - Success criteria must include test pass rate and coverage thresholds.
 
-8. **Worker Autonomy** - Worker agents do their own investigation. Provide clear investigation instructions.
+8. **Implementation Agent Autonomy** - Implementation agents do their own investigation. Provide clear investigation instructions.
 
 9. **Specific Requirements** - Requirements must be actionable, not vague. Avoid "improve code" - specify what must be done.
 
@@ -436,7 +436,7 @@ coverage report --include='agent/auth.py'
 6. Coverage >= 80% for agent/auth.py
 7. No regressions in existing tests
 
-## Worker Investigation Instructions
+## Implementation Agent Investigation Instructions
 - You MUST investigate the current API structure in agent/
 - Find ALL endpoints that need protection: grep -r "@app.route" agent/
 - Understand current authentication (if any): check agent/auth/

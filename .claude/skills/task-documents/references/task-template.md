@@ -43,7 +43,7 @@ This template defines the standard structure for task specification documents.
 1. [Criterion 1]
 2. [Criterion 2]
 
-## Worker Investigation Instructions
+## Implementation Agent Investigation Instructions
 [CRITICAL] Explicit instructions for the Implementation Agent's own investigation:
 - You MUST do your own deep investigation before implementing
 - Find ALL files affected: [suggest grep/find commands if applicable]
@@ -120,7 +120,7 @@ Users report being logged out even when active. Session timeout is set to 24 hou
 2. Active sessions refresh properly
 3. No existing functionality broken
 
-## Worker Investigation Instructions
+## Implementation Agent Investigation Instructions
 [CRITICAL] You MUST do your own deep investigation:
 - Find ALL session-related configuration: grep -r "timeout\|expir" --include="*.py" --include="*.ts"
 - Check frontend and backend timeout settings
