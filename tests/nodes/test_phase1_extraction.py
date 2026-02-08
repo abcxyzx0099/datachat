@@ -156,7 +156,7 @@ class TestExtractSpssNode:
             # Note: raw_data is NOT stored to avoid LangGraph serialization issues
             assert result["original_metadata"] is not None
             assert result["original_metadata"]["n_rows"] == 50
-            assert len(result["errors"]) == 0
+            assert len(result.get("errors", [])) == 0
 
     def test_extract_spss_node_file_not_found(self, sample_state):
         """Test SPSS extraction when file is not found."""
@@ -166,8 +166,8 @@ class TestExtractSpssNode:
             result = extract_spss_node(sample_state)
 
             assert result["current_step"] == STEP_1_EXTRACT_SPSS
-            assert len(result["errors"]) == 1
-            assert "not found" in result["errors"][0].lower()
+            assert len(result.get("errors", [])) == 1
+            assert "not found" in result.get("errors", [])[0].lower()
 
     def test_extract_spss_node_no_input_path(self):
         """Test SPSS extraction with no input_file_path."""
@@ -177,8 +177,8 @@ class TestExtractSpssNode:
 
         result = extract_spss_node(state)
 
-        assert len(result["errors"]) == 1
-        assert "input_file_path" in result["errors"][0]
+        assert len(result.get("errors", [])) == 1
+        assert "input_file_path" in result.get("errors", [])[0]
 
 
 class TestTransformMetadataNode:
@@ -208,7 +208,7 @@ class TestTransformMetadataNode:
             assert result["variable_centered_metadata"] is not None
             assert result["variable_centered_metadata"]["n_variables"] == 6
             assert result["variable_centered_metadata"]["n_numeric"] == 6
-            assert len(result["errors"]) == 0
+            assert len(result.get("errors", [])) == 0
 
     def test_transform_metadata_node_no_metadata(self, sample_state):
         """Test metadata transformation with no original_metadata."""
@@ -220,8 +220,8 @@ class TestTransformMetadataNode:
         result = transform_metadata_node(state)
 
         assert result["current_step"] == STEP_2_TRANSFORM_METADATA
-        assert len(result["errors"]) == 1
-        assert "original_metadata" in result["errors"][0]
+        assert len(result.get("errors", [])) == 1
+        assert "original_metadata" in result.get("errors", [])[0]
 
     def test_transform_metadata_node_empty_metadata(self, sample_state):
         """Test metadata transformation with empty metadata."""
@@ -246,7 +246,7 @@ class TestTransformMetadataNode:
             assert result["current_step"] == STEP_2_TRANSFORM_METADATA
             assert result["variable_centered_metadata"] is not None
             assert result["variable_centered_metadata"]["n_variables"] == 0
-            assert len(result["warnings"]) >= 1
+            assert len(result.get("warnings", [])) >= 1
 
 
 class TestFilterMetadataNode:
@@ -285,7 +285,7 @@ class TestFilterMetadataNode:
         result = filter_metadata_node(state)
 
         assert result["current_step"] == STEP_3_FILTER_METADATA
-        assert len(result["errors"]) == 1
+        assert len(result.get("errors", [])) == 1
 
 
 # =============================================================================

@@ -177,7 +177,7 @@ class TestReviewRecodingRulesNode:
         result = review_recoding_rules_node(state)
 
         assert result["current_step"] == STEP_6_REVIEW_RECODING_RULES
-        assert len(result["errors"]) == 1
+        assert len(result.get("errors", [])) == 1
 
 
 class TestGeneratePsppRecodingSyntaxNode:
@@ -215,7 +215,7 @@ class TestGeneratePsppRecodingSyntaxNode:
         assert result["pspp_recoding_syntax"] is not None
         assert result["recoding_syntax_file"] is not None
         assert "RECODE" in result["pspp_recoding_syntax"]
-        assert len(result["errors"]) == 0
+        assert len(result.get("errors", [])) == 0
 
     def test_generate_pspp_recoding_syntax_node_state_immutability(self, populated_state):
         """Test that input state is not mutated."""
@@ -246,8 +246,8 @@ class TestGeneratePsppRecodingSyntaxNode:
         result = generate_pspp_recoding_syntax_node(state)
 
         assert result["current_step"] == STEP_7_GENERATE_PSPP_RECODING_SYNTAX
-        assert len(result["errors"]) == 1
-        assert "recoding_rules" in result["errors"][0]
+        assert len(result.get("errors", [])) == 1
+        assert "recoding_rules" in result.get("errors", [])[0]
 
     def test_generate_pspp_recoding_syntax_node_empty_rules(self, populated_state):
         """Test syntax generation with empty rules list."""
@@ -261,8 +261,8 @@ class TestGeneratePsppRecodingSyntaxNode:
         result = generate_pspp_recoding_syntax_node(state)
 
         assert result["current_step"] == STEP_7_GENERATE_PSPP_RECODING_SYNTAX
-        assert len(result["warnings"]) >= 1
-        assert "empty" in result["warnings"][0].lower()
+        assert len(result.get("warnings", [])) >= 1
+        assert "empty" in result.get("warnings", [])[0].lower()
 
 
 class TestExecutePsppRecodingNode:
@@ -331,7 +331,7 @@ class TestExecutePsppRecodingNode:
             result = execute_pspp_recoding_node(state)
 
             assert result["current_step"] == STEP_8_EXECUTE_PSPP_RECODING
-            assert len(result["errors"]) == 1
+            assert len(result.get("errors", [])) == 1
 
     def test_execute_pspp_recoding_node_no_syntax_file(self, populated_state):
         """Test execution without syntax file."""
@@ -343,7 +343,7 @@ class TestExecutePsppRecodingNode:
         result = execute_pspp_recoding_node(state)
 
         assert result["current_step"] == STEP_8_EXECUTE_PSPP_RECODING
-        assert len(result["errors"]) == 1
+        assert len(result.get("errors", [])) == 1
 
 
 # =============================================================================

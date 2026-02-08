@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 @trace_node("Step 1: Extract SPSS Data")
-def extract_spss_node(state: WorkflowState) -> WorkflowState:
+def extract_spss_node(state: WorkflowState) -> dict:
     """
     Step 1: Extract raw data and metadata from SPSS .sav file.
 
@@ -70,9 +70,8 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No input_file_path provided in state"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_1_EXTRACT_SPSS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     logger.info(f"Step 1: Extracting SPSS file: {input_file_path}")
@@ -124,7 +123,6 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         # checkpoint serialization errors. Step 2 will reload from the input file.
         # Return new state (DO NOT modify in-place)
         return {
-            **state,
             "current_step": STEP_1_EXTRACT_SPSS,
             "original_metadata": original_metadata,
             "warnings": warnings,
@@ -134,36 +132,32 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"SPSS file not found: {input_file_path}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_1_EXTRACT_SPSS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     except ValueError as e:
         error_msg = f"Invalid SPSS file format: {input_file_path} - {str(e)}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_1_EXTRACT_SPSS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     except PermissionError as e:
         error_msg = f"Permission denied reading SPSS file: {input_file_path}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_1_EXTRACT_SPSS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     except Exception as e:
         error_msg = f"Unexpected error extracting SPSS file: {input_file_path} - {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_1_EXTRACT_SPSS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
@@ -245,7 +239,7 @@ def _determine_type(series: pd.Series) -> str:
 
 
 @trace_node("Step 2: Transform Metadata")
-def transform_metadata_node(state: WorkflowState) -> WorkflowState:
+def transform_metadata_node(state: WorkflowState) -> dict:
     """
     Step 2: Transform metadata to variable-centered format.
 
@@ -307,18 +301,16 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No input_file_path found in state - Step 1 must complete first"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_2_TRANSFORM_METADATA,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if original_metadata is None:
         error_msg = "No original_metadata found in state - Step 1 must complete first"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_2_TRANSFORM_METADATA,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Reload data from file (needed to compute dtypes and value counts)
@@ -329,17 +321,15 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"SPSS file not found: {input_file_path}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_2_TRANSFORM_METADATA,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
     except Exception as e:
         error_msg = f"Error reading SPSS file: {input_file_path} - {str(e)}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_2_TRANSFORM_METADATA,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Copy warnings list to avoid in-place modification
@@ -362,7 +352,6 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
 
         logger.info("Created empty metadata structure for empty DataFrame")
         return {
-            **state,
             "current_step": STEP_2_TRANSFORM_METADATA,
             "variable_centered_metadata": empty_metadata,
             "warnings": warnings,
@@ -459,7 +448,6 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
 
     # Return new state (DO NOT modify in-place)
     return {
-        **state,
         "current_step": STEP_2_TRANSFORM_METADATA,
         "variable_centered_metadata": variable_centered_metadata,
         "warnings": warnings,
@@ -467,7 +455,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
 
 
 @trace_node("Step 3: Filter Metadata")
-def filter_metadata_node(state: WorkflowState) -> WorkflowState:
+def filter_metadata_node(state: WorkflowState) -> dict:
     """
     Step 3: Filter metadata to variables requiring recoding.
 
@@ -515,9 +503,8 @@ def filter_metadata_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No variable_centered_metadata found in state - Step 2 must complete first"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_3_FILTER_METADATA,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Get configuration for filtering threshold
@@ -539,7 +526,6 @@ def filter_metadata_node(state: WorkflowState) -> WorkflowState:
 
         # Return empty filtered metadata
         return {
-            **state,
             "current_step": STEP_3_FILTER_METADATA,
             "filtered_metadata": [],
             "filtered_out_variables": [],
@@ -619,7 +605,6 @@ def filter_metadata_node(state: WorkflowState) -> WorkflowState:
 
     # Return new state (DO NOT modify in-place)
     return {
-        **state,
         "current_step": STEP_3_FILTER_METADATA,
         "filtered_metadata": filtered_metadata,
         "filtered_out_variables": filtered_out_variables,

@@ -20,8 +20,58 @@ All sub-states use total=False for optional fields, allowing incremental
 population as the workflow progresses.
 """
 
-from typing import TypedDict, Optional, Dict, List, Any, Literal
+from typing import TypedDict, Optional, Dict, List, Any, Literal, Annotated
 import pandas as pd
+
+
+# =============================================================================
+# State Reducers
+# =============================================================================
+
+def error_reducer(existing: List[str], new: List[str]) -> List[str]:
+    """
+    Reducer for accumulating errors without duplicates.
+
+    This reducer is used by LangGraph to automatically merge error lists
+    when nodes return new errors. It prevents duplicate error messages from
+    accumulating in the state.
+
+    Args:
+        existing: Current list of errors in state
+        new: New errors to add (from node return value)
+
+    Returns:
+        Combined list with duplicates removed
+
+    Example:
+        >>> error_reducer(["error1"], ["error1", "error2"])
+        ['error1', 'error2']
+    """
+    # Add new errors that aren't already in existing
+    return existing + [e for e in new if e not in existing]
+
+
+def warning_reducer(existing: List[str], new: List[str]) -> List[str]:
+    """
+    Reducer for accumulating warnings without duplicates.
+
+    This reducer is used by LangGraph to automatically merge warning lists
+    when nodes return new warnings. It prevents duplicate warning messages from
+    accumulating in the state.
+
+    Args:
+        existing: Current list of warnings in state
+        new: New warnings to add (from node return value)
+
+    Returns:
+        Combined list with duplicates removed
+
+    Example:
+        >>> warning_reducer(["warn1"], ["warn1", "warn2"])
+        ['warn1', 'warn2']
+    """
+    # Add new warnings that aren't already in existing
+    return existing + [w for w in new if w not in existing]
 
 
 # =============================================================================
@@ -358,11 +408,14 @@ class TrackingState(TypedDict, total=False):
     - Step-by-step execution log
 
     Fields:
-        errors: Error messages accumulated during workflow
-        warnings: Warning messages accumulated during workflow
+        errors: Error messages accumulated during workflow (with reducer)
+        warnings: Warning messages accumulated during workflow (with reducer)
+
+    Note: errors and warnings use Annotated with reducers to automatically
+    accumulate new values without duplicates when nodes return updates.
     """
-    errors: List[str]
-    warnings: List[str]
+    errors: Annotated[List[str], error_reducer]
+    warnings: Annotated[List[str], warning_reducer]
 
 
 # =============================================================================

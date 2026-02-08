@@ -751,10 +751,10 @@ class TestPowerPointGeneration:
         # Check state is updated
         assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
         assert "powerpoint_file" in result
-        assert result["powerpoint_file"] is not None
+        assert result.get("powerpoint_file") is not None
 
         # Check file exists
-        pptx_path = Path(result["powerpoint_file"])
+        pptx_path = Path(result.get("powerpoint_file"))
         assert pptx_path.exists()
         assert pptx_path.suffix == ".pptx"
 
@@ -777,8 +777,8 @@ class TestPowerPointGeneration:
         result = generate_powerpoint_node(state)
 
         assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
-        assert len(result["errors"]) == 1
-        assert "filtered_tables" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "filtered_tables" in result.get("errors", [])[0].lower()
 
     @pytest.mark.slow
     def test_generate_powerpoint_with_empty_tables(
@@ -802,8 +802,8 @@ class TestPowerPointGeneration:
 
         assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
         # Should still create file even with no tables (title + summary slides)
-        assert result["powerpoint_file"] is not None
-        assert Path(result["powerpoint_file"]).exists()
+        assert result.get("powerpoint_file") is not None
+        assert Path(result.get("powerpoint_file")).exists()
 
     @pytest.mark.slow
     def test_powerpoint_title_slide_content(
@@ -820,7 +820,7 @@ class TestPowerPointGeneration:
         # which needs python-pptx to be installed and can be complex to test
         # This test verifies the file exists and is valid format
 
-        pptx_path = Path(result["powerpoint_file"])
+        pptx_path = Path(result.get("powerpoint_file"))
         assert pptx_path.exists()
         assert pptx_path.suffix == ".pptx"
 
@@ -834,7 +834,7 @@ class TestPowerPointGeneration:
 
         # Should have 4 table slides + title slide + summary slide = 6 slides
         # Verify file exists
-        pptx_path = Path(result["powerpoint_file"])
+        pptx_path = Path(result.get("powerpoint_file"))
         assert pptx_path.exists()
 
     @pytest.mark.slow
@@ -861,8 +861,8 @@ class TestPowerPointGeneration:
 
         # Should still create file, using variable names as labels
         assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
-        assert result["powerpoint_file"] is not None
-        assert Path(result["powerpoint_file"]).exists()
+        assert result.get("powerpoint_file") is not None
+        assert Path(result.get("powerpoint_file")).exists()
 
     @pytest.mark.slow
     def test_powerpoint_preserves_errors_from_state(
@@ -874,8 +874,8 @@ class TestPowerPointGeneration:
 
         result = generate_powerpoint_node(populated_powerpoint_state)
 
-        assert len(result["errors"]) == 1
-        assert result["errors"][0] == "Previous error"
+        assert len(result.get("errors", [])) == 1
+        assert result.get("errors", [])[0] == "Previous error"
 
     @pytest.mark.slow
     def test_powerpoint_chart_types_selected(
@@ -892,8 +892,8 @@ class TestPowerPointGeneration:
         result = generate_powerpoint_node(populated_powerpoint_state)
 
         # Verify PowerPoint was created
-        assert result["powerpoint_file"] is not None
-        pptx_path = Path(result["powerpoint_file"])
+        assert result.get("powerpoint_file") is not None
+        pptx_path = Path(result.get("powerpoint_file"))
         assert pptx_path.exists()
 
 
@@ -941,8 +941,8 @@ class TestHTMLDashboardGeneration:
         result = generate_html_dashboard_node(state)
 
         assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
-        assert len(result["errors"]) == 1
-        assert "cross_table_file" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "cross_table_file" in result.get("errors", [])[0].lower()
 
     def test_generate_html_dashboard_missing_file_errors(
         self,
@@ -961,8 +961,8 @@ class TestHTMLDashboardGeneration:
         result = generate_html_dashboard_node(state)
 
         assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
-        assert len(result["errors"]) == 1
-        assert "not found" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "not found" in result.get("errors", [])[0].lower()
 
     def test_generate_html_dashboard_without_statistical_summary_errors(
         self,
@@ -986,8 +986,8 @@ class TestHTMLDashboardGeneration:
         result = generate_html_dashboard_node(state)
 
         assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
-        assert len(result["errors"]) == 1
-        assert "statistical_summary" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "statistical_summary" in result.get("errors", [])[0].lower()
 
     def test_html_dashboard_contains_required_elements(
         self,
@@ -1193,8 +1193,8 @@ class TestOutputGenerationEdgeCases:
         result = generate_powerpoint_node(state)
 
         # Should still create file with title and summary slides
-        assert result["powerpoint_file"] is not None
-        assert Path(result["powerpoint_file"]).exists()
+        assert result.get("powerpoint_file") is not None
+        assert Path(result.get("powerpoint_file")).exists()
 
     def test_html_dashboard_with_empty_cross_tables(
         self,
@@ -1275,8 +1275,8 @@ class TestOutputGenerationEdgeCases:
         result = generate_powerpoint_node(state)
 
         # Should still create file, limiting chart to 10 rows, 6 series
-        assert result["powerpoint_file"] is not None
-        assert Path(result["powerpoint_file"]).exists()
+        assert result.get("powerpoint_file") is not None
+        assert Path(result.get("powerpoint_file")).exists()
 
     def test_html_dashboard_with_missing_statistics(
         self,
@@ -1333,7 +1333,7 @@ class TestFileOutputValidation:
         """Test that PowerPoint file has correct permissions."""
         result = generate_powerpoint_node(populated_powerpoint_state)
 
-        pptx_path = Path(result["powerpoint_file"])
+        pptx_path = Path(result.get("powerpoint_file"))
 
         # File should be readable
         assert os.access(pptx_path, os.R_OK)
@@ -1367,7 +1367,7 @@ class TestFileOutputValidation:
         """Test that PowerPoint file is created in correct location."""
         result = generate_powerpoint_node(populated_powerpoint_state)
 
-        pptx_path = Path(result["powerpoint_file"])
+        pptx_path = Path(result.get("powerpoint_file"))
 
         # File should be in the output directory
         assert pptx_path.parent == temp_output_dir

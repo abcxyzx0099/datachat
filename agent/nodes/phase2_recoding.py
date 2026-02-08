@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 @trace_node("Step 4: Generate Recoding Rules")
-def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
+def generate_recoding_rules_node(state: WorkflowState) -> dict:
     """
     Step 4: Generate recoding rules using LLM.
 
@@ -86,9 +86,8 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No filtered_metadata available in state. Cannot generate recoding rules."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_4_GENERATE_RECODING_RULES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     logger.info(
@@ -144,11 +143,10 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
 
             # Store error as feedback for retry
             return {
-                **state,
                 "current_step": STEP_4_GENERATE_RECODING_RULES,
                 "iteration_count": iteration_count + 1,
                 "recoding_feedback": error_msg,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Validate recoding rules structure
@@ -158,11 +156,10 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
             logger.error(error_msg)
 
             return {
-                **state,
                 "current_step": STEP_4_GENERATE_RECODING_RULES,
                 "iteration_count": iteration_count + 1,
                 "recoding_feedback": error_msg,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Get rule count
@@ -184,7 +181,6 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
 
         # Clear previous feedback on successful generation
         new_state = {
-            **state,
             "current_step": STEP_4_GENERATE_RECODING_RULES,
             "recoding_rules": recoding_rules,
             "recoding_feedback": None,  # Clear feedback on success
@@ -201,9 +197,8 @@ def generate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error generating recoding rules: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_4_GENERATE_RECODING_RULES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
@@ -629,7 +624,7 @@ def _generate_recoding_review_markdown(
 # =============================================================================
 
 @trace_node("Step 5: Validate Recoding Rules")
-def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
+def validate_recoding_rules_node(state: WorkflowState) -> dict:
     """
     Step 5: Validate recoding rules structure and references.
 
@@ -674,18 +669,16 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No recoding_rules available in state for validation"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_5_VALIDATE_RECODING_RULES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if not variable_centered_metadata:
         error_msg = "No variable_centered_metadata available in state for validation"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_5_VALIDATE_RECODING_RULES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -719,18 +712,17 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
 
         # Prepare updated state
         new_state = {
-            **state,
             "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_validation_result": validation_result,
         }
 
         # Append errors to tracking state
         if validation_result['errors']:
-            new_state["errors"] = state.get("errors", []) + validation_result['errors']
+            new_state["errors"] = validation_result['errors']
 
         # Append warnings to tracking state
         if validation_result['warnings']:
-            new_state["warnings"] = state.get("warnings", []) + validation_result['warnings']
+            new_state["warnings"] = validation_result['warnings']
 
         return new_state
 
@@ -738,14 +730,13 @@ def validate_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error during recoding rules validation: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_5_VALIDATE_RECODING_RULES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
 @trace_node("Step 6: Review Recoding Rules")
-def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
+def review_recoding_rules_node(state: WorkflowState) -> dict:
     """
     Step 6: Human review and approval of recoding rules.
 
@@ -798,9 +789,8 @@ def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No recoding_rules available in state for review"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_6_REVIEW_RECODING_RULES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
             "requires_human_review": not auto_approve,
             "recoding_approved": auto_approve,
         }
@@ -852,7 +842,6 @@ def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         # If auto_approve is True, recoding_approved is set to True
         # If auto_approve is False, requires_human_review is set to True
         return {
-            **state,
             "current_step": STEP_6_REVIEW_RECODING_RULES,
             "requires_human_review": not auto_approve,
             "recoding_approved": auto_approve,
@@ -862,14 +851,13 @@ def review_recoding_rules_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Error during recoding rules review: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_6_REVIEW_RECODING_RULES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
             "requires_human_review": True,
         }
 
 
-def generate_pspp_recoding_syntax_node(state: WorkflowState) -> WorkflowState:
+def generate_pspp_recoding_syntax_node(state: WorkflowState) -> dict:
     """
     Step 7: Generate PSPP recoding syntax from approved rules.
 
@@ -916,9 +904,8 @@ def generate_pspp_recoding_syntax_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No recoding_rules available in state for syntax generation"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_7_GENERATE_PSPP_RECODING_SYNTAX,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -929,9 +916,8 @@ def generate_pspp_recoding_syntax_node(state: WorkflowState) -> WorkflowState:
             warning_msg = "No recoding rules to convert to PSPP syntax (empty rules list)"
             logger.warning(warning_msg)
             return {
-                **state,
                 "current_step": STEP_7_GENERATE_PSPP_RECODING_SYNTAX,
-                "warnings": state.get("warnings", []) + [warning_msg],
+                "warnings": [warning_msg],
             }
 
         logger.info(f"Generating PSPP syntax for {len(rules_list)} recoding rules")
@@ -992,7 +978,6 @@ def generate_pspp_recoding_syntax_node(state: WorkflowState) -> WorkflowState:
             warnings.append(warning_msg)
 
         return {
-            **state,
             "current_step": STEP_7_GENERATE_PSPP_RECODING_SYNTAX,
             "pspp_recoding_syntax": pspp_syntax,
             "recoding_syntax_file": str(syntax_file_path),  # Store path for Step 8
@@ -1003,9 +988,8 @@ def generate_pspp_recoding_syntax_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error generating PSPP syntax: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_7_GENERATE_PSPP_RECODING_SYNTAX,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
@@ -1349,7 +1333,7 @@ def _generate_value_labels(
     return lines
 
 
-def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
+def execute_pspp_recoding_node(state: WorkflowState) -> dict:
     """
     Step 8: Execute PSPP recoding and create new_data.sav.
 
@@ -1403,18 +1387,16 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No input_file_path available in state. Cannot execute PSPP recoding."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_8_EXECUTE_PSPP_RECODING,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if not syntax_file_path:
         error_msg = "No recoding_syntax_file available in state. Run Step 7 first."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_8_EXECUTE_PSPP_RECODING,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Verify syntax file exists
@@ -1422,9 +1404,8 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"PSPP syntax file not found: {syntax_file_path}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_8_EXECUTE_PSPP_RECODING,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Verify input file exists
@@ -1432,9 +1413,8 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Input .sav file not found: {input_file_path}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_8_EXECUTE_PSPP_RECODING,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Prepare output file path
@@ -1469,9 +1449,8 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
             logger.error(f"PSPP stdout: {result.get('output', 'N/A')}")
 
             return {
-                **state,
                 "current_step": STEP_8_EXECUTE_PSPP_RECODING,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Log PSPP output
@@ -1490,9 +1469,8 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
             )
             logger.error(error_msg)
             return {
-                **state,
                 "current_step": STEP_8_EXECUTE_PSPP_RECODING,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         logger.info(f"New data file created: {new_data_file}")
@@ -1521,7 +1499,6 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
 
         # Update state
         new_state = {
-            **state,
             "current_step": STEP_8_EXECUTE_PSPP_RECODING,
             "new_data_file": new_data_file,
             "new_metadata": new_metadata,
@@ -1535,9 +1512,8 @@ def execute_pspp_recoding_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error executing PSPP recoding: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_8_EXECUTE_PSPP_RECODING,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 

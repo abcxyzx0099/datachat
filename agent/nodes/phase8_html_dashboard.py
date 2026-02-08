@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 @trace_node("Step 22: Generate HTML Dashboard")
-def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
+def generate_html_dashboard_node(state: WorkflowState) -> dict:
     """
     Step 22: Generate interactive HTML dashboard with all analysis results.
 
@@ -105,18 +105,16 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No cross_table_file available in state. Step 16 must complete first."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if not statistical_summary:
         error_msg = "No statistical_summary available in state. Step 18 must complete first."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -126,9 +124,8 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
             error_msg = f"Cross-table file not found: {cross_table_file}"
             logger.error(error_msg)
             return {
-                **state,
                 "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         with open(cross_table_file, 'r', encoding='utf-8') as f:
@@ -166,7 +163,6 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
         )
 
         return {
-            **state,
             "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
             "html_dashboard_file": str(dashboard_path),
         }
@@ -175,9 +171,8 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error generating HTML dashboard: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 

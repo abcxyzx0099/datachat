@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 @trace_node("Step 9: Generate Indicators")
-def generate_indicators_node(state: WorkflowState) -> WorkflowState:
+def generate_indicators_node(state: WorkflowState) -> dict:
     """
     Step 9: Generate indicators using LLM.
 
@@ -82,9 +82,8 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No new_metadata available in state. Cannot generate indicators."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_9_GENERATE_INDICATORS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     logger.info("Step 9: Generating indicators")
@@ -142,11 +141,10 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
 
             # Store error as feedback for retry
             return {
-                **state,
                 "current_step": STEP_9_GENERATE_INDICATORS,
                 "iteration_count": iteration_count + 1,
                 "indicator_feedback": error_msg,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Validate indicators structure
@@ -156,11 +154,10 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
             logger.error(error_msg)
 
             return {
-                **state,
                 "current_step": STEP_9_GENERATE_INDICATORS,
                 "iteration_count": iteration_count + 1,
                 "indicator_feedback": error_msg,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Get indicator count
@@ -185,7 +182,6 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
 
         # Clear previous feedback on successful generation
         new_state = {
-            **state,
             "current_step": STEP_9_GENERATE_INDICATORS,
             "indicators": indicators,
             "indicator_feedback": None,  # Clear feedback on success
@@ -202,9 +198,8 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error generating indicators: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_9_GENERATE_INDICATORS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
@@ -493,7 +488,7 @@ def _build_metadata_list(new_metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
 # =============================================================================
 
 @trace_node("Step 10: Validate Indicators")
-def validate_indicators_node(state: WorkflowState) -> WorkflowState:
+def validate_indicators_node(state: WorkflowState) -> dict:
     """
     Step 10: Validate indicators structure and references.
 
@@ -537,18 +532,16 @@ def validate_indicators_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No indicators available in state for validation"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_10_VALIDATE_INDICATORS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if not new_metadata:
         error_msg = "No new_metadata available in state for validation"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_10_VALIDATE_INDICATORS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -580,18 +573,17 @@ def validate_indicators_node(state: WorkflowState) -> WorkflowState:
 
         # Prepare updated state
         new_state = {
-            **state,
             "current_step": STEP_10_VALIDATE_INDICATORS,
             "indicator_validation_result": validation_result,
         }
 
         # Append errors to tracking state
         if validation_result['errors']:
-            new_state["errors"] = state.get("errors", []) + validation_result['errors']
+            new_state["errors"] = validation_result['errors']
 
         # Append warnings to tracking state
         if validation_result['warnings']:
-            new_state["warnings"] = state.get("warnings", []) + validation_result['warnings']
+            new_state["warnings"] = validation_result['warnings']
 
         return new_state
 
@@ -599,14 +591,13 @@ def validate_indicators_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error during indicators validation: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_10_VALIDATE_INDICATORS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
 @trace_node("Step 11: Review Indicators")
-def review_indicators_node(state: WorkflowState) -> WorkflowState:
+def review_indicators_node(state: WorkflowState) -> dict:
     """
     Step 11: Human review and approval of indicators.
 
@@ -659,9 +650,8 @@ def review_indicators_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No indicators available in state for review"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_11_REVIEW_INDICATORS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
             "requires_human_review": not auto_approve,
             "indicators_approved": auto_approve,
         }
@@ -711,7 +701,6 @@ def review_indicators_node(state: WorkflowState) -> WorkflowState:
 
         # Return state with approval status
         return {
-            **state,
             "current_step": STEP_11_REVIEW_INDICATORS,
             "requires_human_review": not auto_approve,
             "indicators_approved": auto_approve,
@@ -721,9 +710,8 @@ def review_indicators_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Error during indicators review: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_11_REVIEW_INDICATORS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
             "requires_human_review": not auto_approve,
             "indicators_approved": auto_approve,
         }

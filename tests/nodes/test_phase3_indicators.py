@@ -87,8 +87,8 @@ class TestGenerateIndicatorsNode:
         result = generate_indicators_node(state)
 
         assert result["current_step"] == STEP_9_GENERATE_INDICATORS
-        assert len(result["errors"]) == 1
-        assert "new_metadata" in result["errors"][0]
+        assert len(result.get("errors", [])) == 1
+        assert "new_metadata" in result.get("errors", [])[0]
 
     def test_generate_indicators_node_empty_metadata(self, sample_state, mock_llm_client):
         """Test indicator generation with empty metadata (no variables)."""
@@ -114,8 +114,8 @@ class TestGenerateIndicatorsNode:
             assert result["current_step"] == STEP_9_GENERATE_INDICATORS
             assert result["indicators"] is not None
             assert len(result["indicators"]["indicators"]) == 0
-            assert len(result["warnings"]) >= 1
-            assert "no indicators" in result["warnings"][0].lower()
+            assert len(result.get("warnings", [])) >= 1
+            assert "no indicators" in result.get("warnings", [])[0].lower()
 
     def test_generate_indicators_node_invalid_json(self, sample_state, new_metadata, mock_llm_client):
         """Test indicator generation with invalid JSON response."""
@@ -133,8 +133,8 @@ class TestGenerateIndicatorsNode:
             result = generate_indicators_node(state)
 
             assert result["current_step"] == STEP_9_GENERATE_INDICATORS
-            assert len(result["errors"]) == 1
-            assert "parse" in result["errors"][0].lower() or "json" in result["errors"][0].lower()
+            assert len(result.get("errors", [])) == 1
+            assert "parse" in result.get("errors", [])[0].lower() or "json" in result.get("errors", [])[0].lower()
             assert result["iteration_count"] == 1
 
     def test_generate_indicators_node_invalid_structure(self, sample_state, new_metadata, mock_llm_client):
@@ -154,8 +154,8 @@ class TestGenerateIndicatorsNode:
             result = generate_indicators_node(state)
 
             assert result["current_step"] == STEP_9_GENERATE_INDICATORS
-            assert len(result["errors"]) == 1
-            assert "invalid" in result["errors"][0].lower() or "missing" in result["errors"][0].lower()
+            assert len(result.get("errors", [])) == 1
+            assert "invalid" in result.get("errors", [])[0].lower() or "missing" in result.get("errors", [])[0].lower()
             assert result["iteration_count"] == 1
 
     def test_generate_indicators_node_with_validation_feedback(self, sample_state, new_metadata, mock_llm_client):
@@ -576,8 +576,8 @@ class TestValidateIndicatorsNode:
         result = validate_indicators_node(state)
 
         assert result["current_step"] == STEP_10_VALIDATE_INDICATORS
-        assert len(result["errors"]) == 1
-        assert "indicators" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "indicators" in result.get("errors", [])[0].lower()
 
     def test_validate_indicators_node_no_metadata(self, sample_state):
         """Test validation with no new_metadata."""
@@ -590,8 +590,8 @@ class TestValidateIndicatorsNode:
         result = validate_indicators_node(state)
 
         assert result["current_step"] == STEP_10_VALIDATE_INDICATORS
-        assert len(result["errors"]) == 1
-        assert "metadata" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "metadata" in result.get("errors", [])[0].lower()
 
 
 class TestReviewIndicatorsNode:
@@ -640,8 +640,8 @@ class TestReviewIndicatorsNode:
         result = review_indicators_node(state)
 
         assert result["current_step"] == STEP_11_REVIEW_INDICATORS
-        assert len(result["errors"]) == 1
-        assert "indicators" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "indicators" in result.get("errors", [])[0].lower()
         assert result["requires_human_review"] is True
 
     def test_review_indicators_node_with_previous_feedback(self, sample_state, tmp_path):

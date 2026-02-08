@@ -71,7 +71,6 @@ from agent.state import (
     STEP_ORDER,
     WorkflowState,
 )
-)
 from agent.config import DEFAULT_CONFIG
 
 
@@ -1162,8 +1161,8 @@ class TestStateEvolution:
         assert "warnings" in result, "State should have warnings list"
 
         # Verify they are lists (even if empty)
-        assert isinstance(result["errors"], list), "Errors should be a list"
-        assert isinstance(result["warnings"], list), "Warnings should be a list"
+        assert isinstance(result.get("errors", []), list), "Errors should be a list"
+        assert isinstance(result.get("warnings", []), list), "Warnings should be a list"
 
 
 # =============================================================================

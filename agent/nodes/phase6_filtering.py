@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # Step 19: Generate Filter List
 # =============================================================================
 
-def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
+def generate_filter_list_node(state: WorkflowState) -> dict:
     """
     Step 19: Generate filter list based on statistical significance criteria.
 
@@ -79,9 +79,8 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No statistical_summary found in state - Step 18 must complete first"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_19_GENERATE_FILTER_LIST,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Get filtering thresholds from config
@@ -122,7 +121,6 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
             }
 
             return {
-                **state,
                 "current_step": STEP_19_GENERATE_FILTER_LIST,
                 "filter_list": filter_list,
                 "warnings": warnings,
@@ -260,7 +258,6 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
 
         # Return new state
         return {
-            **state,
             "current_step": STEP_19_GENERATE_FILTER_LIST,
             "filter_list": filter_list,
             "warnings": warnings,
@@ -270,9 +267,8 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error generating filter list: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_19_GENERATE_FILTER_LIST,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
@@ -552,7 +548,7 @@ def validate_filtering_results(
 # Step 20: Apply Filter to Tables
 # =============================================================================
 
-def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
+def apply_filter_to_tables_node(state: WorkflowState) -> dict:
     """
     Step 20: Apply filter to cross-table data, keeping only significant tables.
 
@@ -608,18 +604,16 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No filter_list found in state - Step 19 must complete first"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if not statistical_summary:
         error_msg = "No statistical_summary found in state - Step 18 must complete first"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -664,7 +658,6 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
             )
 
             return {
-                **state,
                 "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
                 "filtered_tables": filtered_tables,
                 "significant_tables_json_path": str(json_path),
@@ -810,7 +803,6 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
         # Return new state with validation summary
         # ======================================================================
         return {
-            **state,
             "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "filtered_tables": filtered_tables,
             "significant_tables_json_path": str(json_path),
@@ -827,7 +819,6 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error applying filter to tables: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }

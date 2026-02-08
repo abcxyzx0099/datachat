@@ -107,8 +107,8 @@ class TestGenerateTableSpecificationsNode:
         result = generate_table_specifications_node(state)
 
         assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
-        assert len(result["errors"]) == 1
-        assert "new_metadata" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "new_metadata" in result.get("errors", [])[0].lower()
 
     def test_generate_table_specifications_node_validation_retry(self, indicator_state, mock_llm_client, tmp_path):
         """Test table specs generation with validation feedback retry."""
@@ -191,8 +191,8 @@ class TestGenerateTableSpecificationsNode:
             result = generate_table_specifications_node(state)
 
             assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
-            assert len(result["errors"]) >= 1
-            assert "json" in result["errors"][0].lower()
+            assert len(result.get("errors", [])) >= 1
+            assert "json" in result.get("errors", [])[0].lower()
 
     def test_generate_table_specifications_node_structure_validation_error(self, indicator_state, mock_llm_client):
         """Test handling of invalid table specifications structure."""
@@ -216,7 +216,7 @@ class TestGenerateTableSpecificationsNode:
             result = generate_table_specifications_node(state)
 
             assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
-            assert len(result["errors"]) >= 1
+            assert len(result.get("errors", [])) >= 1
 
     def test_generate_table_specifications_node_zero_tables_warning(self, indicator_state, mock_llm_client, tmp_path):
         """Test warning when no tables are generated."""
@@ -242,8 +242,8 @@ class TestGenerateTableSpecificationsNode:
             result = generate_table_specifications_node(state)
 
             assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
-            assert len(result["warnings"]) >= 1
-            assert "no table" in result["warnings"][0].lower()
+            assert len(result.get("warnings", [])) >= 1
+            assert "no table" in result.get("warnings", [])[0].lower()
 
     def test_generate_table_specifications_node_exception_handling(self, indicator_state, tmp_path):
         """Test exception handling during table specs generation."""
@@ -267,8 +267,8 @@ class TestGenerateTableSpecificationsNode:
             result = generate_table_specifications_node(state)
 
             assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
-            assert len(result["errors"]) >= 1
-            assert "unexpected error" in result["errors"][-1].lower()
+            assert len(result.get("errors", [])) >= 1
+            assert "unexpected error" in result.get("errors", [])[-1].lower()
 
 
 class TestParseLLMResponse:
@@ -427,7 +427,7 @@ class TestValidateTableSpecsNode:
         result = validate_table_specs_node(state)
 
         assert result["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
-        assert result["table_validation_result"] is not None
+        assert result.get("table_validation_result") is not None
 
     def test_validate_table_specs_node_missing_specs(self, indicator_state):
         """Test validation fails when table_specs is missing."""
@@ -439,8 +439,8 @@ class TestValidateTableSpecsNode:
         result = validate_table_specs_node(state)
 
         assert result["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
-        assert len(result["errors"]) == 1
-        assert "table_specifications" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "table_specifications" in result.get("errors", [])[0].lower()
 
     def test_validate_table_specs_node_missing_metadata(self, indicator_state, valid_table_specs):
         """Test validation fails when new_metadata is missing."""
@@ -453,8 +453,8 @@ class TestValidateTableSpecsNode:
         result = validate_table_specs_node(state)
 
         assert result["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
-        assert len(result["errors"]) == 1
-        assert "new_metadata" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "new_metadata" in result.get("errors", [])[0].lower()
 
     def test_validate_table_specs_node_exception_handling(self, indicator_state):
         """Test exception handling during validation."""
@@ -471,7 +471,7 @@ class TestValidateTableSpecsNode:
             result = validate_table_specs_node(state)
 
             assert result["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
-            assert len(result["errors"]) >= 1
+            assert len(result.get("errors", [])) >= 1
 
 
 class TestReviewTableSpecificationsNode:
@@ -507,7 +507,7 @@ class TestReviewTableSpecificationsNode:
         result = review_table_specifications_node(state)
 
         assert result["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS
-        assert len(result["errors"]) >= 1
+        assert len(result.get("errors", [])) >= 1
 
     def test_review_table_specs_exception_handling(self, indicator_state, valid_table_specs, tmp_path):
         """Test exception handling during review."""
@@ -560,7 +560,7 @@ class TestGeneratePsppTableSyntaxNode:
         result = generate_pspp_table_syntax_node(state)
 
         assert result["current_step"] == STEP_15_GENERATE_PSPP_TABLE_SYNTAX
-        assert len(result["errors"]) == 1
+        assert len(result.get("errors", [])) == 1
 
     def test_generate_pspp_table_syntax_node_empty_tables(self, indicator_state, new_metadata):
         """Test syntax generation with empty tables list."""
@@ -574,7 +574,7 @@ class TestGeneratePsppTableSyntaxNode:
         result = generate_pspp_table_syntax_node(state)
 
         assert result["current_step"] == STEP_15_GENERATE_PSPP_TABLE_SYNTAX
-        assert len(result["warnings"]) >= 1
+        assert len(result.get("warnings", [])) >= 1
 
     def test_generate_pspp_table_syntax_node_multiple_tables(self, indicator_state, new_metadata, tmp_path):
         """Test syntax generation with multiple tables."""
@@ -676,7 +676,7 @@ class TestExecutePsppTablesNode:
         result = execute_pspp_tables_node(state)
 
         assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
-        assert len(result["errors"]) == 1
+        assert len(result.get("errors", [])) == 1
 
     def test_execute_pspp_tables_node_missing_syntax_file(self, indicator_state, tmp_path):
         """Test PSPP execution fails when syntax file is missing."""
@@ -693,7 +693,7 @@ class TestExecutePsppTablesNode:
         result = execute_pspp_tables_node(state)
 
         assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
-        assert len(result["errors"]) == 1
+        assert len(result.get("errors", [])) == 1
 
     def test_execute_pspp_tables_node_syntax_file_not_exists(self, indicator_state, tmp_path):
         """Test PSPP execution fails when syntax file doesn't exist."""
@@ -710,7 +710,7 @@ class TestExecutePsppTablesNode:
         result = execute_pspp_tables_node(state)
 
         assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
-        assert len(result["errors"]) == 1
+        assert len(result.get("errors", [])) == 1
 
     def test_execute_pspp_tables_node_input_file_not_exists(self, indicator_state, tmp_path):
         """Test PSPP execution fails when input file doesn't exist."""
@@ -727,7 +727,7 @@ class TestExecutePsppTablesNode:
         result = execute_pspp_tables_node(state)
 
         assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
-        assert len(result["errors"]) == 1
+        assert len(result.get("errors", [])) == 1
 
     def test_execute_pspp_tables_node_failure(self, indicator_state, tmp_path):
         """Test PSPP tables execution failure."""
@@ -756,7 +756,7 @@ class TestExecutePsppTablesNode:
             result = execute_pspp_tables_node(state)
 
             assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
-            assert len(result["errors"]) == 1
+            assert len(result.get("errors", [])) == 1
 
     def test_execute_pspp_tables_node_output_not_created(self, indicator_state, tmp_path):
         """Test PSPP execution when output file is not created."""
@@ -785,7 +785,7 @@ class TestExecutePsppTablesNode:
             result = execute_pspp_tables_node(state)
 
             assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
-            assert len(result["errors"]) >= 1
+            assert len(result.get("errors", [])) >= 1
 
     def test_execute_pspp_tables_node_exception_handling(self, indicator_state, tmp_path):
         """Test exception handling during PSPP execution."""
@@ -808,7 +808,7 @@ class TestExecutePsppTablesNode:
             result = execute_pspp_tables_node(state)
 
             assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
-            assert len(result["errors"]) >= 1
+            assert len(result.get("errors", [])) >= 1
 
 
 class TestConvertCsvToJson:
@@ -865,16 +865,22 @@ class TestThreeNodePatternTables:
         mock_llm_client.invoke.return_value = mock_response
 
         with patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client):
-            state = generate_table_specifications_node(state)
+            state_after_step12 = generate_table_specifications_node(state)
+            # Merge state manually - in production LangGraph would do this
+            state = {**state, **state_after_step12}
 
         # Step 13: Validate
-        state = validate_table_specs_node(state)
+        # Note: With new LangGraph pattern, manually merge state for testing
+        state_after_step13 = validate_table_specs_node(state)
+        state = {**state, **state_after_step13}
 
         # Step 14: Review
         with patch('langgraph.types.interrupt'):
-            state = review_table_specifications_node(state)
+            state_after_step14 = review_table_specifications_node(state)
+            state = {**state, **state_after_step14}
 
-        assert state["table_validation_result"] is not None
+        # Use .get() for safe access - node may not return table_validation_result on error
+        assert state.get("table_validation_result") is not None, "table_validation_result should be present"
         assert state["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS
 
 

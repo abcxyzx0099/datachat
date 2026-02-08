@@ -398,7 +398,7 @@ def get_chart_type_description(chart_type: str) -> Dict[str, Any]:
 # =============================================================================
 
 @trace_node("Step 21: Generate PowerPoint")
-def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
+def generate_powerpoint_node(state: WorkflowState) -> dict:
     """
     Step 21: Generate PowerPoint presentation with charts from significant tables.
 
@@ -480,9 +480,8 @@ def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No filtered_tables available in state. Cannot generate PowerPoint."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_21_GENERATE_POWERPOINT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -580,7 +579,6 @@ def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
         # Return new state
         # ======================================================================
         return {
-            **state,
             "current_step": STEP_21_GENERATE_POWERPOINT,
             "powerpoint_file": str(powerpoint_path),
         }
@@ -589,17 +587,15 @@ def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Required library not found: {e}. Please install: pip install python-pptx"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_21_GENERATE_POWERPOINT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
     except Exception as e:
         error_msg = f"Unexpected error generating PowerPoint: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_21_GENERATE_POWERPOINT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 

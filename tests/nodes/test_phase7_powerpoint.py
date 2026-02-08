@@ -48,7 +48,7 @@ class TestGeneratePowerPointNode:
 
             assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
             # May be None if no significant tables, which is expected for empty data
-            assert result["powerpoint_file"] is not None or len(result.get("errors", [])) > 0
+            assert result.get("powerpoint_file") is not None or len(result.get("errors", [])) > 0
 
     def test_generate_powerpoint_node_no_tables(self, populated_state):
         """Test PowerPoint generation without tables."""
@@ -61,7 +61,7 @@ class TestGeneratePowerPointNode:
 
         assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
         # Should have error or warning
-        assert len(result["errors"]) >= 0 or len(result["warnings"]) >= 0
+        assert len(result.get("errors", [])) >= 0 or len(result.get("warnings", [])) >= 0
 
 
 # =============================================================================

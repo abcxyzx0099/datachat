@@ -1607,8 +1607,8 @@ class TestStateSerialization:
 
         assert result["input_file_path"] == "test.sav"
         assert result["current_step"] == STEP_5_VALIDATE_RECODING_RULES
-        assert result["errors"] == ["error1"]
-        assert result["warnings"] == ["warning1"]
+        assert result.get("errors", []) == ["error1"]
+        assert result.get("warnings", []) == ["warning1"]
 
     def test_state_to_dict_converts_validation_result(self):
         """Test state_to_dict converts ValidationResult to dict."""

@@ -15,6 +15,7 @@ The DataChat Agent Team is a multi-agent development system configured for build
 | Role | Agent | Icon | BMAD Phase | Primary Skill |
 |------|-------|------|------------|---------------|
 | **Team Lead** | Main Session | 👑 | All Phases | Coordination |
+| **Analyst** | Mary | 🔍 | Phase 1 (Analysis) | `analyst-agent` |
 | **PM** | Product Manager | 📋 | Phase 2 (Planning) | `pm-agent` |
 | **Architect** | Winston | 🏗️ | Phase 3 (Solutioning) | `architect-agent` |
 | **DEV** | Amelia | 💻 | Phase 4 (Implementation) | `dev-agent` |
@@ -36,6 +37,55 @@ The DataChat Agent Team is a multi-agent development system configured for build
 - Direct other agents via skill invocations
 - Review and synthesize agent outputs
 - Coordinate parallel work streams
+
+---
+
+### Analyst Agent (🔍)
+
+**Skill**: `analyst-agent`
+
+**Persona**: Mary - Business analyst and research specialist with expertise in market research, technical investigation, and competitive analysis.
+
+**Core Principles**:
+- Evidence-based: All conclusions backed by research and documentation
+- Thorough investigation: Leave no stone unturned
+- Clear documentation: Findings must be accessible and actionable
+- Context matters: Always consider broader business and technical context
+- Objective analysis: Present facts without bias
+
+**Responsibilities**:
+- Conduct research and investigation
+- Audit implementations against standards/best practices
+- Create product briefs for new projects
+- Document existing systems and codebases
+- Competitive analysis and comparison
+
+**Key Commands**:
+| Trigger | Action |
+|---------|--------|
+| `RESEARCH` or `research` | Conduct research |
+| `AUDIT` or `audit` | Technical audit |
+| `BRIEF` or `product-brief` | Create product brief |
+| `DOCUMENT` or `document-project` | Document existing system |
+| `BRAINSTORM` | Brainstorm ideas |
+
+**Outputs**:
+- Research Report (investigation findings)
+- Technical Audit (compliance assessment)
+- Product Brief (foundation document)
+- Project Documentation (system documentation)
+
+**Coordinates With**:
+- PM: Provide research findings for requirements
+- Architect: Present audit results for design decisions
+- DEV: Document current implementation before changes
+- QA: Identify areas requiring quality investigation
+
+**BMAD Workflows**:
+- `*brainstorm-project` - Guided ideation
+- `*research` - Market and technical investigation
+- `*product-brief` - Foundational document
+- `*document-project` - Document existing codebases
 
 ---
 
@@ -242,18 +292,34 @@ The DataChat Agent Team is a multi-agent development system configured for build
 
 ### Phase 1: Analysis
 
-**Primary Agent**: Team Lead + Innovator (if available)
+**Primary Agent**: Analyst Agent 🔍
 
 **Activities**:
 - Brainstorming and ideation
 - Research and investigation
+- Technical audits and compliance checks
 - Product brief creation
+- Documentation of existing systems
 
-**Output**: Understanding of the problem space
+**Output**: Research findings, audit reports, product briefs
 
 **Commands**:
-- Team Lead: Direct brainstorming session
-- Use `innovation-agent` if available (BMAD CIS module)
+```bash
+/analyst-agent
+```
+Then: `RESEARCH`, `AUDIT`, `BRIEF`, `DOCUMENT`, or `BRAINSTORM`
+
+**Deliverables**:
+- Research reports with findings and recommendations
+- Technical audits comparing implementation to standards
+- Product briefs for new initiatives
+- System documentation
+
+**Use When**:
+- Starting a new project or feature
+- Investigating technical approaches
+- Auditing code against best practices
+- Documenting existing implementations
 
 ---
 
@@ -356,17 +422,19 @@ Then: `RUN`, `REPORT`, or `BUG`
    │
 2. Team Lead Assessment
    │
-3. PM Agent → Requirements & PRD
+3. Analyst Agent 🔍 → Research & Investigation (Phase 1)
    │
-4. Architect Agent → System Design & ADRs
+4. PM Agent 📋 → Requirements & PRD (Phase 2)
    │
-5. QA Agent → Test Strategy
+5. Architect Agent 🏗️ → System Design & ADRs (Phase 3)
    │
-6. DEV Agent → Implementation
+6. QA Agent 🧪 → Test Strategy (Phase 3)
    │
-7. QA Agent → Validation
+7. DEV Agent 💻 → Implementation (Phase 4)
    │
-8. Team Lead → Synthesis & Approval
+8. QA Agent 🧪 → Validation (Phase 4)
+   │
+9. Team Lead → Synthesis & Approval
 ```
 
 ### Direct Communication
@@ -479,13 +547,15 @@ QA Agent → DEV Agent: "Bug found in component Z"
 /home/admin/workspaces/datachat/.claude/skills/
 ├── agent-team-setup/    # Team setup and configuration
 │   └── SKILL.md
-├── pm-agent/            # Product Manager
+├── analyst-agent/       # Business Analyst (Phase 1)
 │   └── SKILL.md
-├── architect-agent/     # System Architect
+├── pm-agent/            # Product Manager (Phase 2)
 │   └── SKILL.md
-├── dev-agent/           # Developer
+├── architect-agent/     # System Architect (Phase 3)
 │   └── SKILL.md
-└── qa-agent/            # Quality Assurance
+├── dev-agent/           # Developer (Phase 4)
+│   └── SKILL.md
+└── qa-agent/            # Quality Assurance (Phase 3-4)
     └── SKILL.md
 ```
 
@@ -493,14 +563,23 @@ QA Agent → DEV Agent: "Bug found in component Z"
 
 ## Quick Reference Commands
 
-### Starting a Feature
+### Starting a Feature (Complete BMAD Workflow)
 
 ```bash
-/pm-agent        # Define requirements
-/architect-agent # Design architecture
-/qa-agent        # Define test strategy
-/dev-agent       # Implement
-/qa-agent        # Validate
+/analyst-agent    # Research and analysis (Phase 1)
+/pm-agent         # Define requirements (Phase 2)
+/architect-agent  # Design architecture (Phase 3)
+/qa-agent         # Define test strategy (Phase 3)
+/dev-agent        # Implement (Phase 4)
+/qa-agent         # Validate (Phase 4)
+```
+
+### Quick Tasks
+
+```bash
+/analyst-agent    # Audit code, research topic
+/dev-agent        # Code review
+/qa-agent         # Test coverage analysis
 ```
 
 ### Code Quality
@@ -527,7 +606,7 @@ QA Agent → DEV Agent: "Bug found in component Z"
 |--------|---------------|
 | **Framework** | BMAD Method philosophy (borrowed) |
 | **Implementation** | Claude Code native agent teams |
-| **Team Size** | Medium (4 specialized agents + Team Lead) |
+| **Team Size** | Medium (5 specialized agents + Team Lead) |
 | **Primary Project** | DataChat (SPSS Analyzer) |
 | **Phases** | 4 (Analysis, Planning, Solutioning, Implementation) |
 | **Documentation** | `/docs/application-design/` |

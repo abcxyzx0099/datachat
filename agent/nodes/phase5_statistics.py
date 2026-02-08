@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Step 17: Generate Python Statistics Script
 # =============================================================================
 
-def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowState:
+def generate_python_statistics_script_node(state: WorkflowState) -> dict:
     """
     Step 17: Generate Python script to compute Chi-square tests and Cramer's V.
 
@@ -82,18 +82,16 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
         error_msg = "No new_data_file available in state. Cannot generate statistics script."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if not table_specifications:
         error_msg = "No table_specifications available in state. Cannot generate statistics script."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -103,9 +101,8 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
             warning_msg = "No tables found in table_specifications. Statistics script will have no tables to process."
             logger.warning(warning_msg)
             return {
-                **state,
                 "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
-                "warnings": state.get("warnings", []) + [warning_msg],
+                "warnings": [warning_msg],
             }
 
         logger.info(f"Generating statistics script for {len(tables)} tables")
@@ -131,7 +128,6 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
         logger.info(f"Script size: {len(script_content)} characters")
 
         return {
-            **state,
             "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
             "statistics_script": str(script_path),
         }
@@ -140,9 +136,8 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
         error_msg = f"Unexpected error generating statistics script: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
@@ -496,7 +491,7 @@ def _generate_statistics_script_content(
 # Step 18: Execute Python Statistics Script
 # =============================================================================
 
-def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState:
+def execute_python_statistics_script_node(state: WorkflowState) -> dict:
     """
     Step 18: Execute generated Python statistics script and load results.
 
@@ -554,9 +549,8 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         error_msg = "No statistics_script available in state. Run Step 17 first."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Verify script file exists
@@ -564,9 +558,8 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         error_msg = f"Statistics script not found: {script_path}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Prepare output path
@@ -601,9 +594,8 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
                 logger.error(f"Script stdout: {result.stdout}")
 
             return {
-                **state,
                 "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Log script output
@@ -621,9 +613,8 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
             )
             logger.error(error_msg)
             return {
-                **state,
                 "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Load statistical summary
@@ -685,7 +676,6 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
 
         # Update state
         new_state = {
-            **state,
             "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "statistical_summary": statistical_summary,
             "warnings": warnings,
@@ -698,34 +688,30 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         error_msg = f"Statistics script execution timed out after 300 seconds"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     except json.JSONDecodeError as e:
         error_msg = f"Failed to parse statistical_summary.json: {str(e)}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     except FileNotFoundError as e:
         error_msg = f"Results file not found: {str(e)}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     except Exception as e:
         error_msg = f"Unexpected error executing statistics script: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }

@@ -53,8 +53,10 @@ from agent.state import (
     STEP_6_REVIEW_RECODING_RULES,
     STEP_10_VALIDATE_INDICATORS,
     STEP_ORDER,
+    NUMERIC_TO_STEP_NAME,
     WorkflowState,
     create_initial_state,
+    ValidationResult,
 )
 from agent.config import DEFAULT_CONFIG
 from agent.edges import (
@@ -68,6 +70,28 @@ from agent.edges import (
     INDICATOR_EDGE_MAPPING,
     TABLE_SPECS_EDGE_MAPPING,
 )
+
+
+# =============================================================================
+# Helper Functions
+# =============================================================================
+
+def get_step_number(current_step) -> int:
+    """
+    Get the step number from current_step, regardless of whether it's a string or integer.
+
+    Args:
+        current_step: Either a string (like "step_1_extract_spss") or integer (like 1)
+
+    Returns:
+        The step number as an integer
+    """
+    if isinstance(current_step, int):
+        return current_step
+    elif isinstance(current_step, str):
+        return STEP_ORDER.get(current_step, 0)
+    else:
+        return 0
 
 
 # =============================================================================
@@ -792,7 +816,7 @@ class TestCheckpointCreation:
         assert state_snapshot is not None, "State snapshot should exist"
         # State should have current_step set
         if hasattr(state_snapshot, 'values'):
-            assert STEP_ORDER.get(state_snapshot.values.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_1_EXTRACT_SPSS], \
+            assert get_step_number(state_snapshot.values.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_1_EXTRACT_SPSS], \
                 "Checkpoint state should have progressed"
 
     def test_multiple_checkpoints_for_thread(
@@ -993,7 +1017,7 @@ class TestStatePersistence:
 
         # Run a few steps
         for event in graph.stream(sample_state, config, mode="values"):
-            if STEP_ORDER.get(event.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_5_VALIDATE_RECODING_RULES]:
+            if get_step_number(event.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_5_VALIDATE_RECODING_RULES]:
                 break
 
         # Get checkpoint history
@@ -1046,7 +1070,7 @@ class TestResumeFromCheckpoint:
 
         # Run workflow partially
         for event in graph.stream(sample_state, config, mode="values"):
-            if STEP_ORDER.get(event.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_5_VALIDATE_RECODING_RULES]:
+            if get_step_number(event.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_5_VALIDATE_RECODING_RULES]:
                 break
 
         # Get state before resume
@@ -1098,12 +1122,12 @@ class TestResumeFromCheckpoint:
 
         # Run thread 1 to step 3
         for event in graph.stream(sample_state, config_1, mode="values"):
-            if STEP_ORDER.get(event.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_3_FILTER_METADATA]:
+            if get_step_number(event.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_3_FILTER_METADATA]:
                 break
 
         # Run thread 2 to step 5
         for event in graph.stream(sample_state, config_2, mode="values"):
-            if STEP_ORDER.get(event.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_5_VALIDATE_RECODING_RULES]:
+            if get_step_number(event.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_5_VALIDATE_RECODING_RULES]:
                 break
 
         # Verify both threads can resume independently
@@ -1127,7 +1151,7 @@ class TestResumeFromCheckpoint:
 
         # Run partially
         for event in graph.stream(sample_state, config, mode="values"):
-            if STEP_ORDER.get(event.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_10_VALIDATE_INDICATORS]:
+            if get_step_number(event.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_10_VALIDATE_INDICATORS]:
                 break
 
         # Verify checkpoint exists
@@ -1175,7 +1199,7 @@ class TestGraphExecution:
         assert result is not None, "Graph invocation should return result"
         # Note: With mocked dependencies, may not reach step 22
         # Verify at least some progress was made
-        assert STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_1_EXTRACT_SPSS], \
+        assert get_step_number(result.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_1_EXTRACT_SPSS], \
             "Should execute at least first step"
 
     def test_state_evolves_correctly(
@@ -1225,7 +1249,7 @@ class TestGraphExecution:
 
             # Verify state has errors field
             assert "errors" in result, "State should have errors field"
-            assert isinstance(result["errors"], list), "Errors should be a list"
+            assert isinstance(result.get("errors", []), list), "Errors should be a list"
 
     def test_warnings_are_captured_in_state(
         self,
@@ -1244,7 +1268,7 @@ class TestGraphExecution:
 
         # Verify state has warnings field
         assert "warnings" in result, "State should have warnings field"
-        assert isinstance(result["warnings"], list), "Warnings should be a list"
+        assert isinstance(result.get("warnings", []), list), "Warnings should be a list"
 
     def test_execution_stream_produces_events(
         self,
@@ -1319,7 +1343,7 @@ class TestGraphHelpers:
 
         # Run workflow to create checkpoints
         for event in graph.stream(sample_state, config, mode="values"):
-            if STEP_ORDER.get(event.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_3_FILTER_METADATA]:
+            if get_step_number(event.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_3_FILTER_METADATA]:
                 break
 
         # List checkpoints
@@ -1388,13 +1412,13 @@ class TestGraphHelpers:
         # Run for thread 1
         config_1 = {"configurable": {"thread_id": thread_1}}
         for event in graph.stream(sample_state, config_1, mode="values"):
-            if STEP_ORDER.get(event.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_2_TRANSFORM_METADATA]:
+            if get_step_number(event.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_2_TRANSFORM_METADATA]:
                 break
 
         # Run for thread 2
         config_2 = {"configurable": {"thread_id": thread_2}}
         for event in graph.stream(sample_state, config_2, mode="values"):
-            if STEP_ORDER.get(event.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_2_TRANSFORM_METADATA]:
+            if get_step_number(event.get("current_step", STEP_0_INITIAL)) >= STEP_ORDER[STEP_2_TRANSFORM_METADATA]:
                 break
 
         # List all checkpoints (no thread_id filter)

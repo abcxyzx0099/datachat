@@ -464,8 +464,8 @@ class TestGenerateFilterListNode:
         assert result["current_step"] == STEP_19_GENERATE_FILTER_LIST
         assert result["filter_list"]["summary"]["total_tables"] == 0
         assert result["filter_list"]["summary"]["included"] == 0
-        assert len(result["warnings"]) >= 1
-        assert "no tables found" in result["warnings"][0].lower()
+        assert len(result.get("warnings", [])) >= 1
+        assert "no tables found" in result.get("warnings", [])[0].lower()
 
     def test_no_significant_tables(
         self,
@@ -488,8 +488,8 @@ class TestGenerateFilterListNode:
         assert result["filter_list"]["summary"]["excluded"] == 2
 
         # Should have warning about no tables passing
-        assert len(result["warnings"]) >= 1
-        assert "no tables passed" in result["warnings"][0].lower()
+        assert len(result.get("warnings", [])) >= 1
+        assert "no tables passed" in result.get("warnings", [])[0].lower()
 
     def test_all_tables_significant(
         self,
@@ -556,8 +556,8 @@ class TestGenerateFilterListNode:
         result = generate_filter_list_node(state)
 
         assert result["current_step"] == STEP_19_GENERATE_FILTER_LIST
-        assert len(result["errors"]) == 1
-        assert "statistical_summary" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "statistical_summary" in result.get("errors", [])[0].lower()
 
     def test_state_immutability(
         self,
@@ -575,13 +575,13 @@ class TestGenerateFilterListNode:
             "warnings": ["existing warning"],
         }
 
-        original_warnings = list(state["warnings"])
+        original_warnings = list(state.get("warnings", []))
         original_summary = state["statistical_summary"].copy()
 
         result = generate_filter_list_node(state)
 
         # Input state should be unchanged
-        assert state["warnings"] == original_warnings
+        assert state.get("warnings", []) == original_warnings
         assert state["statistical_summary"] == original_summary
         assert "filter_list" not in state
 
@@ -649,7 +649,7 @@ class TestGenerateFilterListNode:
         assert inclusion_rate < 20.0
 
         # Should have warning about low inclusion rate
-        warning_messages = [w.lower() for w in result["warnings"]]
+        warning_messages = [w.lower() for w in result.get("warnings", [])]
         low_inclusion_warning = any("low inclusion rate" in w for w in warning_messages)
         assert low_inclusion_warning
 
@@ -889,8 +889,8 @@ class TestApplyFilterToTablesNode:
 
         assert result["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
         assert result["filtered_tables"]["summary"]["filtered_count"] == 0
-        assert len(result["warnings"]) >= 1
-        assert "no filters found" in result["warnings"][0].lower()
+        assert len(result.get("warnings", [])) >= 1
+        assert "no filters found" in result.get("warnings", [])[0].lower()
 
     def test_no_significant_tables_after_filtering(
         self,
@@ -928,7 +928,7 @@ class TestApplyFilterToTablesNode:
         assert result["filtered_tables"]["summary"]["filtered_count"] == 0
 
         # Should have warning about no significant tables
-        warnings_text = " ".join([w.lower() for w in result["warnings"]])
+        warnings_text = " ".join([w.lower() for w in result.get("warnings", [])])
         assert "no significant tables" in warnings_text
 
     def test_missing_filter_list(
@@ -947,8 +947,8 @@ class TestApplyFilterToTablesNode:
         result = apply_filter_to_tables_node(state)
 
         assert result["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
-        assert len(result["errors"]) == 1
-        assert "filter_list" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "filter_list" in result.get("errors", [])[0].lower()
 
     def test_missing_statistical_summary(
         self,
@@ -966,8 +966,8 @@ class TestApplyFilterToTablesNode:
         result = apply_filter_to_tables_node(state)
 
         assert result["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
-        assert len(result["errors"]) == 1
-        assert "statistical_summary" in result["errors"][0].lower()
+        assert len(result.get("errors", [])) == 1
+        assert "statistical_summary" in result.get("errors", [])[0].lower()
 
     def test_state_immutability(
         self,
@@ -989,14 +989,14 @@ class TestApplyFilterToTablesNode:
             "warnings": ["existing warning"],
         }
 
-        original_errors = list(state["errors"])
-        original_warnings = list(state["warnings"])
+        original_errors = list(state.get("errors", []))
+        original_warnings = list(state.get("warnings", []))
 
         result = apply_filter_to_tables_node(state)
 
         # Input state should be unchanged
-        assert state["errors"] == original_errors
-        assert state["warnings"] == original_warnings
+        assert state.get("errors", []) == original_errors
+        assert state.get("warnings", []) == original_warnings
         assert "filtered_tables" not in state
 
         # Result should have filtered_tables
@@ -1124,7 +1124,10 @@ class TestFilteringIntegration:
         assert "filter_list" in state_after_step19
 
         # Step 20: Apply filter
-        state_after_step20 = apply_filter_to_tables_node(state_after_step19)
+        # Note: With new LangGraph pattern, we manually merge state for testing
+        # In production, LangGraph would automatically merge these
+        state_for_step20 = {**state, **state_after_step19}
+        state_after_step20 = apply_filter_to_tables_node(state_for_step20)
         assert state_after_step20["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
         assert "filtered_tables" in state_after_step20
 
@@ -1160,18 +1163,24 @@ class TestFilteringIntegration:
         }
 
         # Step 19
-        state = generate_filter_list_node(state)
+        # Note: With new LangGraph pattern, manually merge state for testing
+        state_after_step19 = generate_filter_list_node(state)
 
         # Warnings should be accumulated
-        assert "initial warning" in state["warnings"]
-        assert len(state["warnings"]) >= 1
+        # Merge state to simulate LangGraph's automatic state merging
+        state = {**state, **state_after_step19}
+        assert "initial warning" in state.get("warnings", [])
+        assert len(state.get("warnings", [])) >= 1
 
         # Errors should be unchanged (no new errors in step 19)
-        assert state["errors"] == initial_errors
+        # Note: With reducer pattern, if node doesn't return errors, original are preserved
+        # But in this direct test, we need to check the merged state
+        assert "initial error" in state.get("errors", [])
 
         # Step 20
-        state = apply_filter_to_tables_node(state)
+        state_after_step20 = apply_filter_to_tables_node(state)
+        state = {**state, **state_after_step20}
 
         # Initial warnings/errors should still be present
-        assert "initial warning" in state["warnings"]
-        assert "initial error" in state["errors"]
+        assert "initial warning" in state.get("warnings", [])
+        assert "initial error" in state.get("errors", [])

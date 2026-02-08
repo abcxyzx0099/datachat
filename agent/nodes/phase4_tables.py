@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 @trace_node("Step 12: Generate Table Specifications")
-def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
+def generate_table_specifications_node(state: WorkflowState) -> dict:
     """
     Step 12: Generate cross-tabulation table specifications using LLM.
 
@@ -87,9 +87,8 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No new_metadata available in state. Cannot generate table specifications."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     logger.info("Step 12: Generating table specifications")
@@ -151,11 +150,10 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
 
             # Store error as feedback for retry
             return {
-                **state,
                 "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
                 "iteration_count": iteration_count + 1,
                 "table_specs_feedback": error_msg,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Validate table specifications structure
@@ -165,11 +163,10 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
             logger.error(error_msg)
 
             return {
-                **state,
                 "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
                 "iteration_count": iteration_count + 1,
                 "table_specs_feedback": error_msg,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Get table count
@@ -195,7 +192,6 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
 
         # Clear previous feedback on successful generation
         new_state = {
-            **state,
             "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
             "table_specifications": table_specs,
             "table_specs_feedback": None,  # Clear feedback on success
@@ -212,9 +208,8 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error generating table specifications: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
@@ -510,7 +505,7 @@ def _build_metadata_list(new_metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
 # =============================================================================
 
 @trace_node("Step 13: Validate Table Specifications")
-def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
+def validate_table_specs_node(state: WorkflowState) -> dict:
     """
     Step 13: Validate table specifications structure and references.
 
@@ -554,18 +549,16 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No table_specifications available in state for validation"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if not new_metadata:
         error_msg = "No new_metadata available in state for validation"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -597,18 +590,17 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
 
         # Prepare updated state
         new_state = {
-            **state,
             "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
             "table_validation_result": validation_result,
         }
 
         # Append errors to tracking state
         if validation_result['errors']:
-            new_state["errors"] = state.get("errors", []) + validation_result['errors']
+            new_state["errors"] = validation_result['errors']
 
         # Append warnings to tracking state
         if validation_result['warnings']:
-            new_state["warnings"] = state.get("warnings", []) + validation_result['warnings']
+            new_state["warnings"] = validation_result['warnings']
 
         return new_state
 
@@ -616,14 +608,13 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error during table specifications validation: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
 @trace_node("Step 14: Review Table Specifications")
-def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
+def review_table_specifications_node(state: WorkflowState) -> dict:
     """
     Step 14: Human review and approval of table specifications.
 
@@ -676,9 +667,8 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No table_specifications available in state for review"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
             "requires_human_review": not auto_approve,
             "table_specs_approved": auto_approve,
         }
@@ -728,7 +718,6 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
 
         # Return state with approval status
         return {
-            **state,
             "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
             "requires_human_review": not auto_approve,
             "table_specs_approved": auto_approve,
@@ -738,9 +727,8 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Error during table specifications review: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
             "requires_human_review": not auto_approve,
             "table_specs_approved": auto_approve,
         }
@@ -883,7 +871,7 @@ def _generate_table_specs_review_markdown(
 # Step 15: Generate PSPP CTABLES Syntax
 # =============================================================================
 
-def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
+def generate_pspp_table_syntax_node(state: WorkflowState) -> dict:
     """
     Step 15: Generate PSPP CTABLES syntax from approved table specifications.
 
@@ -925,9 +913,8 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No table_specifications available in state for syntax generation"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     try:
@@ -938,9 +925,8 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
             warning_msg = "No table specifications to convert to PSPP syntax (empty tables list)"
             logger.warning(warning_msg)
             return {
-                **state,
                 "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
-                "warnings": state.get("warnings", []) + [warning_msg],
+                "warnings": [warning_msg],
             }
 
         logger.info(f"Generating PSPP CTABLES syntax for {len(tables_list)} cross-tabulation tables")
@@ -1004,7 +990,6 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
             warnings.append(warning_msg)
 
         return {
-            **state,
             "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
             "pspp_tables_syntax": pspp_syntax,
             "table_syntax_file": str(syntax_file_path),  # Store path for Step 16
@@ -1015,9 +1000,8 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error generating PSPP CTABLES syntax: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
@@ -1133,7 +1117,7 @@ def _generate_ctable_command(table: Dict[str, Any], variable_labels: Dict[str, s
 # Step 16: Execute PSPP CTABLES
 # =============================================================================
 
-def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
+def execute_pspp_tables_node(state: WorkflowState) -> dict:
     """
     Step 16: Execute PSPP CTABLES syntax and create cross-table output.
 
@@ -1184,18 +1168,16 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         error_msg = "No new_data_file available in state. Cannot execute PSPP CTABLES."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_16_EXECUTE_PSPP_TABLES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     if not syntax_file_path:
         error_msg = "No table_syntax_file available in state. Run Step 15 first."
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_16_EXECUTE_PSPP_TABLES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Verify syntax file exists
@@ -1203,9 +1185,8 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"PSPP syntax file not found: {syntax_file_path}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_16_EXECUTE_PSPP_TABLES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Verify input file exists
@@ -1213,9 +1194,8 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"new_data.sav file not found: {new_data_file}"
         logger.error(error_msg)
         return {
-            **state,
             "current_step": STEP_16_EXECUTE_PSPP_TABLES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
     # Prepare output file paths
@@ -1252,9 +1232,8 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
             logger.error(f"PSPP stdout: {result.get('output', 'N/A')}")
 
             return {
-                **state,
                 "current_step": STEP_16_EXECUTE_PSPP_TABLES,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         # Log PSPP output
@@ -1273,9 +1252,8 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
             )
             logger.error(error_msg)
             return {
-                **state,
                 "current_step": STEP_16_EXECUTE_PSPP_TABLES,
-                "errors": state.get("errors", []) + [error_msg],
+                "errors": [error_msg],
             }
 
         logger.info(f"Cross-table CSV created: {cross_table_csv}")
@@ -1311,7 +1289,6 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
 
         # Update state
         new_state = {
-            **state,
             "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "cross_table_file": cross_table_json,  # Primary output is JSON
             "warnings": warnings,
@@ -1328,9 +1305,8 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         error_msg = f"Unexpected error executing PSPP CTABLES: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return {
-            **state,
             "current_step": STEP_16_EXECUTE_PSPP_TABLES,
-            "errors": state.get("errors", []) + [error_msg],
+            "errors": [error_msg],
         }
 
 
