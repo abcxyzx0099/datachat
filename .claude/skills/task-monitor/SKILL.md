@@ -73,13 +73,15 @@ The task-monitor module provides grouped commands:
 | `status` | Show system status (overview) |
 | `status --detailed` | Show detailed status with running tasks and task lists |
 
-### Sources Commands
+### Queues Commands
 
 | Command | Purpose |
 |---------|---------|
-| `sources list` | List registered Task Source Directories |
-| `sources add <path> --id <id>` | Add a Task Source Directory |
-| `sources rm --source-id <id>` | Remove a Task Source Directory |
+| `queues list` | List registered Task Source Directories |
+| `queues add <path> --id <id>` | Add a Task Source Directory |
+| `queues rm <id>` | Remove a Task Source Directory |
+
+**Note:** Task Source Directories are also called "queues" in the CLI.
 
 ### Tasks Commands
 
@@ -103,6 +105,13 @@ The task-monitor module provides grouped commands:
 | `logs` | Show daemon logs (exit with Ctrl+C) |
 | `logs --follow` | Follow logs live |
 | `logs --lines <n>` | Show last N lines |
+
+### Run Command (Interactive Testing)
+
+| Command | Purpose |
+|---------|---------|
+| `run` | Run one cycle interactively (testing mode) |
+| `run --cycles <n>` | Run N cycles interactively |
 
 ## Task ID Format & Usage
 
@@ -208,10 +217,10 @@ When a task is running, a lock file is created:
 **First, check if already initialized:**
 
 ```bash
-task-monitor sources list
+task-monitor queues list
 ```
 
-**If empty or missing sources, initialize:**
+**If empty or missing queues, initialize:**
 
 ```bash
 # From your project directory
@@ -226,6 +235,16 @@ This creates:
 **After initialization:**
 - Tasks are auto-loaded when files appear in `tasks/ad-hoc/pending/` or `tasks/planned/pending/`
 - No manual loading required
+
+**Manual queue registration (if needed):**
+
+```bash
+# Add a queue manually
+task-monitor queues add /path/to/tasks --id my-queue --description "My custom queue"
+
+# Remove a queue
+task-monitor queues rm my-queue
+```
 
 ### Step 2: Verify Daemon Running
 
@@ -348,8 +367,8 @@ The task-monitor uses **per-source worker threads** with these rules:
 task-monitor status
 # Output: Running or instructions to start
 
-# 2. Check if sources are registered
-task-monitor sources list
+# 2. Check if queues are registered
+task-monitor queues list
 # If empty or missing, proceed to init
 
 # 3. Initialize system (one-time setup)
@@ -374,12 +393,12 @@ task-monitor status --detailed
 ```
 ✅ Task system initialized successfully.
 
-Task Source Directories are now registered for watchdog monitoring:
+Task queues are now registered for watchdog monitoring:
 - Ad-hoc: tasks/ad-hoc/ (watchdog monitors pending/ subdirectory)
 - Planned: tasks/planned/ (watchdog monitors pending/ subdirectory)
 
 Tasks will be auto-loaded when files appear. The daemon processes tasks
-sequentially per source. Different sources execute in parallel.
+sequentially per queue. Different queues execute in parallel.
 ```
 
 ### Scenario: Check Progress
@@ -499,7 +518,7 @@ journalctl --user -u task-monitor -n 100
 
 ## Related Skills
 
-- **task-init**: Initializes task system with init/sources add/sources rm commands
+- **task-init**: Initializes task system with init/queues add/queues rm commands
 - **task-documents**: Creates task specifications
 - **task-execution**: Executes tasks with worker-auditor workflow
 - **task-planning**: Generates planning documents
@@ -519,8 +538,8 @@ systemctl --user start task-monitor
 ### Tasks not being processed
 
 ```bash
-# Check if sources are registered
-task-monitor sources list
+# Check if queues are registered
+task-monitor queues list
 
 # Check if task files exist
 ls tasks/ad-hoc/pending/task-*.md
@@ -534,10 +553,22 @@ systemctl --user status task-monitor.service
 
 ```bash
 # Verify Task Source Directory is configured
-task-monitor sources list
+task-monitor queues list
 
 # Check daemon logs for watchdog errors
 task-monitor logs --lines 50
+```
+
+### Interactive testing (run command)
+
+```bash
+# Run one cycle for testing
+task-monitor run
+
+# Run multiple cycles
+task-monitor run --cycles 5
+
+# Useful for debugging without daemon interference
 ```
 
 ### Task stuck with lock file
