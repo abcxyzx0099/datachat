@@ -169,9 +169,17 @@ Verify relationships between components:
 
 ### Step 6: Present Results
 
-**ISSUES-ONLY OUTPUT**: Report only verified inconsistencies. No "verified" or "consistent" items.
+**ISSUES-ONLY OUTPUT**: Report ONLY verified inconsistencies. Do NOT include:
 
-**REQUIRED**: Include a section listing ALL documents that were checked, showing minimum coverage.
+- "Documents Checked" table showing all documents reviewed
+- Items marked as "Consistent" or "Verified"
+- Summary of what matched correctly
+- Any positive confirmation of consistency
+
+**DO include**:
+- Summary counts (Documents reviewed, Code files scanned, Issues found)
+- Only the issues/inconsistities found
+- Items requiring investigation
 
 **Report Format**:
 
@@ -182,17 +190,25 @@ Verify relationships between components:
 **Code files scanned**: [count] files (agent/, utils/, tests/, scripts/, web/)
 **Issues found**: [count]
 
-### Documents Checked
+---
 
-| Document | Claims Extracted | Verified | Status |
-|----------|------------------|----------|--------|
-| project-structure.md | [number] | [number] | Consistent / Issues found |
-| system-architecture.md | [number] | [number] | Consistent / Issues found |
-| [... repeat for all documents] | [...] | [...] | [...] |
+### Issue 1: [Short title]
 
-### Issues Found
+Documentation says [X], but implementation has [Y].
 
-[... list only inconsistencies ...]
+**Recommendation**
+[Action to resolve]
+
+---
+
+### Issue 2: [Short title]
+[... more issues ...]
+
+---
+
+### Requires Investigation
+
+- [Item that could not be conclusively verified]
 ```
 
 **Use the template**: `reference/user-output-template.md`
@@ -343,6 +359,7 @@ Use this checklist to ensure comprehensive coverage of each document type.
 6. **Neutral reporting** - State what each side says, don't judge correctness
 7. **ALL documents must be checked** - Do NOT focus only on data-schema.md or easily-verifiable documents
 8. **Minimum claims per document** - Extract and verify at least 3 claims from each document type
+9. **ISSUES-ONLY OUTPUT** - Report ONLY inconsistencies. Do NOT show tables listing all documents with "Consistent" status. If a document has no issues, don't mention it in the output
 
 ## Common Pitfalls to Avoid
 

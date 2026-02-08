@@ -75,7 +75,7 @@ Task Source Directories: 2
 | Command | Purpose |
 |---------|---------|
 | `tasks show <task-id>` | Show task document path |
-| `tasks result <task-id>` | Show task result (JSON) |
+| `tasks result <task-id>` | Show task result |
 | `tasks cancel <task-id>` | Cancel a running task |
 
 **Usage:**

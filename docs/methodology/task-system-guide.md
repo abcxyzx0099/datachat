@@ -76,8 +76,8 @@ task-monitor workers status
 # Show task document path
 task-monitor tasks show task-20260207-120000
 
-# Show task result logs
-task-monitor tasks logs task-20260207-120000
+# Show task result
+task-monitor tasks result task-20260207-120000
 
 # View daemon logs
 task-monitor logs --follow
@@ -662,8 +662,8 @@ task-monitor sources rm --source-id my-queue
 # Show task document path
 task-monitor tasks show task-20260207-120000
 
-# Show task result logs path
-task-monitor tasks logs task-20260207-120000
+# Show task result
+task-monitor tasks result task-20260207-120000
 
 # Cancel a running task
 task-monitor tasks cancel task-20260207-120000

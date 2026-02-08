@@ -33,10 +33,6 @@
       "env": {
       }
     },
-    "agno-docs": {
-      "type": "http",
-      "url": "https://docs.agno.com/mcp"
-    },
     "copilotkit-doc": {
       "command": "npx",
       "args": [

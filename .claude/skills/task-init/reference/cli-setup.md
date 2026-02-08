@@ -132,7 +132,7 @@ task-monitor --version 2>/dev/null || echo "Version not implemented"
 | Command | Purpose |
 |---------|---------|
 | `tasks show <task-id>` | Show task document path |
-| `tasks logs <task-id>` | Show result JSON path |
+| `tasks result <task-id>` | Show result JSON path |
 | `tasks cancel <task-id>` | Cancel a running task |
 
 ### Workers Commands
