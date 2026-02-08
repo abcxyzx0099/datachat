@@ -170,32 +170,32 @@ This project uses **Claude Code Agent Teams** for BMAD methodology (5 teammates 
 | **dev** | 4 (Implementation) | Implementation, code review, testing |
 | **qa** | 3-4 | Testing strategy, quality validation |
 
+### Two Parts of Agent Teams
+
+| Part | What It Means | Status |
+|------|---------------|--------|
+| **1. Team Configuration** | Team template saved on disk (`~/.claude/teams/bmad/config.json`) | ✅ Already created |
+| **2. Team Creation** | Spawning actual teammates in a live Claude session | ❓ Request conversationally |
+
 ### Usage
 
-1. **Enable tmux**: Start a tmux session for parallel teammate views
+1. **Start Claude** (tmux optional - for parallel teammate views):
    ```bash
-   tmux new -s datachat
-   ```
-
-2. **Start Claude**: Run Claude Code within tmux
-   ```bash
+   tmux new -s datachat  # Optional
    claude
    ```
 
-3. **Create agent team**: Request team creation conversationally
+2. **Create the team** (spawns teammates using the config):
    ```
-   "Create an agent team with 5 teammates for BMAD development"
+   "Create a team using the bmad configuration"
    ```
 
-4. **Navigate teammates**: Use `Shift+Down` to cycle through teammate panels in tmux
+3. **Work with teammates** - assign tasks, ask questions, coordinate work
 
 ### Team Configuration
 
-**Team config**: `~/.claude/teams/bmad/config.json` (global team definition)
-
-**Feature Flag**: Agent Teams are enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in `~/.claude/settings.json`
-
-**Note**: According to official Agent Teams documentation, teammate roles and descriptions are defined in `config.json`. No separate instruction files are required.
+- **Config**: `~/.claude/teams/bmad/config.json` (defines team structure)
+- **Feature Flag**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in `~/.claude/settings.json`
 
 ### BMAD Workflow Phases
 
