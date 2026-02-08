@@ -191,10 +191,11 @@ This project uses **Claude Code Agent Teams** for BMAD methodology (5 teammates 
 
 ### Team Configuration
 
-- **Team config**: `~/.claude/teams/bmad/config.json` (global team definition)
-- **Teammate identity guides**: `docs/agent-team/*.md` (role documentation for reference)
+**Team config**: `~/.claude/teams/bmad/config.json` (global team definition)
 
 **Feature Flag**: Agent Teams are enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in `~/.claude/settings.json`
+
+**Note**: According to official Agent Teams documentation, teammate roles and descriptions are defined in `config.json`. No separate instruction files are required.
 
 ### BMAD Workflow Phases
 
