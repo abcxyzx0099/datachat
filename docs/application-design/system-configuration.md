@@ -421,63 +421,50 @@ config = {
 
 ### 6.1 langgraph.json Structure
 
-Located at `config/langgraph.json`:
+Located at project root:
 
 ```json
 {
   "graphs": {
-    "survey_analysis": {
-      "nodes": {
-        "extract_spss": "agent.nodes.phase1_extraction:extract_spss_node",
-        "transform_metadata": "agent.nodes.phase1_extraction:transform_metadata_node",
-        "filter_metadata": "agent.nodes.phase1_extraction:filter_metadata_node",
-        "generate_recoding_rules": "agent.nodes.phase2_recoding:generate_recoding_rules_node",
-        "validate_recoding_rules": "agent.nodes.phase2_recoding:validate_recoding_rules_node",
-        "review_recoding_rules": "agent.nodes.phase2_recoding:review_recoding_rules_node",
-        "generate_pspp_recoding_syntax": "agent.nodes.phase2_recoding:generate_pspp_recoding_syntax_node",
-        "execute_pspp_recoding": "agent.nodes.phase2_recoding:execute_pspp_recoding_node",
-        "generate_indicators": "agent.nodes.phase3_indicators:generate_indicators_node",
-        "validate_indicators": "agent.nodes.phase3_indicators:validate_indicators_node",
-        "review_indicators": "agent.nodes.phase3_indicators:review_indicators_node",
-        "generate_table_specifications": "agent.nodes.phase4_tables:generate_table_specifications_node",
-        "validate_table_specifications": "agent.nodes.phase4_tables:validate_table_specifications_node",
-        "review_table_specifications": "agent.nodes.phase4_tables:review_table_specifications_node",
-        "generate_pspp_table_syntax": "agent.nodes.phase4_tables:generate_pspp_table_syntax_node",
-        "execute_pspp_tables": "agent.nodes.phase4_tables:execute_pspp_tables_node",
-        "generate_python_statistics_script": "agent.nodes.phase5_statistics:generate_python_statistics_script_node",
-        "execute_python_statistics_script": "agent.nodes.phase5_statistics:execute_python_statistics_script_node",
-        "generate_filter_list": "agent.nodes.phase6_filtering:generate_filter_list_node",
-        "apply_filter_to_tables": "agent.nodes.phase6_filtering:apply_filter_to_tables_node",
-        "generate_powerpoint": "agent.nodes.phase7_powerpoint:generate_powerpoint_node",
-        "generate_html_dashboard": "agent.nodes.phase8_html_dashboard:generate_html_dashboard_node"
-      },
-      "edges": {
-        "extract_spss": "transform_metadata",
-        "transform_metadata": "filter_metadata",
-        "filter_metadata": "generate_recoding_rules"
-      },
-      "conditional_edges": {
-        "validate_recoding_rules": "agent.edges:should_retry_recoding",
-        "review_recoding_rules": "agent.edges:should_approve_recoding",
-        "validate_indicators": "agent.edges:should_retry_indicators",
-        "review_indicators": "agent.edges:should_approve_indicators",
-        "validate_table_specifications": "agent.edges:should_retry_table_specs",
-        "review_table_specifications": "agent.edges:should_approve_table_specs"
-      }
-    }
+    "survey_analysis": "agent/graph.py:graph_for_studio"
+  },
+  "env": ".env",
+  "dependencies": [
+    "."
+  ],
+  "checkpoint": {
+    "path": "./checkpoints.db"
   }
 }
 ```
 
-### 6.2 Node Path Format
+**Key Points**:
+- **Graph definitions** use string references to graph factory functions: `"name": "module/path:function_name"`
+- **Node structure** (`nodes`, `edges`, `conditional_edges`) is defined in Python code, not in JSON
+- **Checkpoint storage** is configured with the `checkpoint` section for state persistence
+- **Environment file** (`.env`) is specified for loading configuration variables
+- **Dependencies** list directories containing Python modules to import
+
+### 6.2 Graph Reference Format
+
+The `graphs` section uses string references to graph factory functions:
 
 ```
-agent.nodes.{phase_file}:{node_function}
+"graph_name": "module/path:function_name"
 ```
 
-Examples:
-- `agent.nodes.phase1_extraction:extract_spss_node`
-- `agent.nodes.phase2_recoding:generate_recoding_rules_node`
+**Components**:
+- `graph_name`: Identifier used by LangGraph Studio and CLI
+- `module/path`: Python module path (relative to project root)
+- `function_name`: Factory function that returns the compiled StateGraph
+
+**Example**:
+- `"survey_analysis": "agent/graph.py:graph_for_studio"`
+  - Graph name: `survey_analysis`
+  - Module: `agent/graph.py`
+  - Factory function: `graph_for_studio()`
+
+**Important**: The actual graph structure (nodes, edges, conditional routing) is defined programmatically in the Python function (`graph_for_studio()` in this case), not in the JSON file.
 
 ---
 
