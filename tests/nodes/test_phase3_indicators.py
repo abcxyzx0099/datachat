@@ -34,7 +34,12 @@ Test Coverage:
 import pytest
 from unittest.mock import patch, Mock
 
-from agent.state import ValidationResult, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
+from agent.state import (
+    ValidationResult,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_8_EXECUTE_PSPP_RECODING, STEP_9_GENERATE_INDICATORS, STEP_10_VALIDATE_INDICATORS, STEP_11_REVIEW_INDICATORS
+)
 from agent.nodes.phase3_indicators import (
     generate_indicators_node,
     validate_indicators_node,
@@ -67,7 +72,7 @@ class TestGenerateIndicatorsNode:
         with patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client):
             result = generate_indicators_node(state)
 
-            assert result["current_step"] == 9
+            assert result["current_step"] == STEP_9_GENERATE_INDICATORS
             assert result["indicators"] is not None
             assert len(result["indicators"]["indicators"]) == 1
             assert result["indicators"]["indicators"][0]["name"] == "Customer_Satisfaction"
@@ -81,7 +86,7 @@ class TestGenerateIndicatorsNode:
 
         result = generate_indicators_node(state)
 
-        assert result["current_step"] == 9
+        assert result["current_step"] == STEP_9_GENERATE_INDICATORS
         assert len(result["errors"]) == 1
         assert "new_metadata" in result["errors"][0]
 
@@ -106,7 +111,7 @@ class TestGenerateIndicatorsNode:
         with patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client):
             result = generate_indicators_node(state)
 
-            assert result["current_step"] == 9
+            assert result["current_step"] == STEP_9_GENERATE_INDICATORS
             assert result["indicators"] is not None
             assert len(result["indicators"]["indicators"]) == 0
             assert len(result["warnings"]) >= 1
@@ -127,7 +132,7 @@ class TestGenerateIndicatorsNode:
         with patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client):
             result = generate_indicators_node(state)
 
-            assert result["current_step"] == 9
+            assert result["current_step"] == STEP_9_GENERATE_INDICATORS
             assert len(result["errors"]) == 1
             assert "parse" in result["errors"][0].lower() or "json" in result["errors"][0].lower()
             assert result["iteration_count"] == 1
@@ -148,7 +153,7 @@ class TestGenerateIndicatorsNode:
         with patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client):
             result = generate_indicators_node(state)
 
-            assert result["current_step"] == 9
+            assert result["current_step"] == STEP_9_GENERATE_INDICATORS
             assert len(result["errors"]) == 1
             assert "invalid" in result["errors"][0].lower() or "missing" in result["errors"][0].lower()
             assert result["iteration_count"] == 1
@@ -175,7 +180,7 @@ class TestGenerateIndicatorsNode:
         with patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client):
             result = generate_indicators_node(state)
 
-            assert result["current_step"] == 9
+            assert result["current_step"] == STEP_9_GENERATE_INDICATORS
             assert result["iteration_count"] == 2
             assert result["indicators"] is not None
 
@@ -196,7 +201,7 @@ class TestGenerateIndicatorsNode:
         with patch('agent.nodes.phase3_indicators.get_llm_client', return_value=mock_llm_client):
             result = generate_indicators_node(state)
 
-            assert result["current_step"] == 9
+            assert result["current_step"] == STEP_9_GENERATE_INDICATORS
             assert result["iteration_count"] == 2
             assert result["indicator_feedback"] is None  # Cleared on success
 
@@ -558,7 +563,7 @@ class TestValidateIndicatorsNode:
 
         result = validate_indicators_node(state)
 
-        assert result["current_step"] == 10
+        assert result["current_step"] == STEP_10_VALIDATE_INDICATORS
         assert result["indicator_validation_result"] is not None
 
     def test_validate_indicators_node_no_indicators(self, sample_state):
@@ -570,7 +575,7 @@ class TestValidateIndicatorsNode:
 
         result = validate_indicators_node(state)
 
-        assert result["current_step"] == 10
+        assert result["current_step"] == STEP_10_VALIDATE_INDICATORS
         assert len(result["errors"]) == 1
         assert "indicators" in result["errors"][0].lower()
 
@@ -584,7 +589,7 @@ class TestValidateIndicatorsNode:
 
         result = validate_indicators_node(state)
 
-        assert result["current_step"] == 10
+        assert result["current_step"] == STEP_10_VALIDATE_INDICATORS
         assert len(result["errors"]) == 1
         assert "metadata" in result["errors"][0].lower()
 
@@ -621,7 +626,7 @@ class TestReviewIndicatorsNode:
         with patch('langgraph.types.interrupt'):
             result = review_indicators_node(state)
 
-            assert result["current_step"] == 11
+            assert result["current_step"] == STEP_11_REVIEW_INDICATORS
             assert result["requires_human_review"] is True
 
     def test_review_indicators_node_no_indicators(self, sample_state):
@@ -634,7 +639,7 @@ class TestReviewIndicatorsNode:
 
         result = review_indicators_node(state)
 
-        assert result["current_step"] == 11
+        assert result["current_step"] == STEP_11_REVIEW_INDICATORS
         assert len(result["errors"]) == 1
         assert "indicators" in result["errors"][0].lower()
         assert result["requires_human_review"] is True
@@ -668,7 +673,7 @@ class TestReviewIndicatorsNode:
         with patch('langgraph.types.interrupt'):
             result = review_indicators_node(state)
 
-            assert result["current_step"] == 11
+            assert result["current_step"] == STEP_11_REVIEW_INDICATORS
             assert result["requires_human_review"] is True
 
     def test_review_indicators_node_creates_review_document(self, sample_state, tmp_path):

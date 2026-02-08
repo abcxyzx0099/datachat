@@ -26,7 +26,12 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
-from agent.state import WorkflowState, create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
+from agent.state import (
+    WorkflowState, create_initial_state,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_16_EXECUTE_PSPP_TABLES, STEP_17_GENERATE_STATISTICS_SCRIPT, STEP_18_EXECUTE_STATISTICS_SCRIPT
+)
 from agent.nodes.phase5_statistics import (
     generate_python_statistics_script_node,
     execute_python_statistics_script_node,
@@ -176,7 +181,7 @@ class TestGeneratePythonStatisticsScriptNode:
         result = generate_python_statistics_script_node(populated_state)
 
         # Verify state update
-        assert result["current_step"] == 17
+        assert result["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
         assert result["statistics_script"] is not None
         assert "stats_script.py" in result["statistics_script"]
         assert len(result["errors"]) == 0
@@ -247,7 +252,7 @@ class TestGeneratePythonStatisticsScriptNode:
         """Test error handling when new_data_file is missing."""
         result = generate_python_statistics_script_node(sample_state)
 
-        assert result["current_step"] == 17
+        assert result["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
         assert len(result["errors"]) == 1
         assert "new_data_file" in result["errors"][0]
 
@@ -261,7 +266,7 @@ class TestGeneratePythonStatisticsScriptNode:
 
         result = generate_python_statistics_script_node(state)
 
-        assert result["current_step"] == 17
+        assert result["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
         assert len(result["errors"]) == 1
         assert "table_specifications" in result["errors"][0]
 
@@ -272,7 +277,7 @@ class TestGeneratePythonStatisticsScriptNode:
 
         result = generate_python_statistics_script_node(populated_state)
 
-        assert result["current_step"] == 17
+        assert result["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
         assert len(result["warnings"]) == 1
         assert "No tables found" in result["warnings"][0]
 
@@ -298,7 +303,7 @@ class TestGeneratePythonStatisticsScriptNode:
         with patch('builtins.open', side_effect=IOError("Disk full")):
             result = generate_python_statistics_script_node(populated_state)
 
-            assert result["current_step"] == 17
+            assert result["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
             assert len(result["errors"]) == 1
             assert "Unexpected error" in result["errors"][0] or "Disk full" in result["errors"][0]
 
@@ -312,7 +317,7 @@ class TestGeneratePythonStatisticsScriptNode:
         # Input state should be unchanged
         assert populated_state.get("warnings") == original_warnings
         assert "statistics_script" not in populated_state
-        assert populated_state["current_step"] == 16  # Should not change
+        assert populated_state["current_step"] == STEP_16_EXECUTE_PSPP_TABLES  # Should not change
 
     def test_generate_statistics_script_preserves_errors(self, populated_state, tmp_path):
         """Test that existing errors are preserved."""
@@ -584,7 +589,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert result["statistical_summary"] is not None
             assert result["statistical_summary"]["total_tables"] == 3
             assert result["statistical_summary"]["significant_tables"] == 1
@@ -594,7 +599,7 @@ class TestExecutePythonStatisticsScriptNode:
         """Test error handling when statistics_script is missing."""
         result = execute_python_statistics_script_node(sample_state)
 
-        assert result["current_step"] == 18
+        assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
         assert len(result["errors"]) == 1
         assert "statistics_script" in result["errors"][0]
 
@@ -607,7 +612,7 @@ class TestExecutePythonStatisticsScriptNode:
 
         result = execute_python_statistics_script_node(state)
 
-        assert result["current_step"] == 18
+        assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
         assert len(result["errors"]) == 1
         assert "not found" in result["errors"][0].lower()
 
@@ -631,7 +636,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert len(result["errors"]) == 1
             assert "failed" in result["errors"][0].lower()
 
@@ -653,7 +658,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert len(result["errors"]) == 1
             assert "timeout" in result["errors"][0].lower() or "timed out" in result["errors"][0].lower()
 
@@ -681,7 +686,7 @@ class TestExecutePythonStatisticsScriptNode:
             with patch('os.path.exists', side_effect=exists_side_effect):
                 result = execute_python_statistics_script_node(state)
 
-                assert result["current_step"] == 18
+                assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
                 assert len(result["errors"]) == 1
                 assert "not created" in result["errors"][0].lower()
 
@@ -709,7 +714,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert len(result["errors"]) == 1
             assert "parse" in result["errors"][0].lower() or "json" in result["errors"][0].lower()
 
@@ -733,7 +738,7 @@ class TestExecutePythonStatisticsScriptNode:
 
                 result = execute_python_statistics_script_node(state)
 
-                assert result["current_step"] == 18
+                assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
                 assert len(result["errors"]) == 1
                 assert "timeout" in result["errors"][0].lower()
 
@@ -761,7 +766,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert any("No tables were processed" in w for w in result["warnings"])
 
     def test_execute_statistics_script_invalid_tables_warning(self, populated_state, statistical_summary_json, tmp_path):
@@ -784,7 +789,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert any("invalid tables" in w.lower() or "marked as invalid" in w.lower() for w in result["warnings"])
 
     def test_execute_statistics_script_no_significant_tables_warning(self, populated_state, statistical_summary_json, tmp_path):
@@ -812,7 +817,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert any("no significant" in w.lower() for w in result["warnings"])
 
     def test_execute_statistics_script_state_immutability(self, populated_state, tmp_path):
@@ -878,7 +883,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert len(result["errors"]) == 1
             assert "parse" in result["errors"][0].lower() or "json" in result["errors"][0].lower()
 
@@ -903,7 +908,7 @@ class TestExecutePythonStatisticsScriptNode:
                 with patch('builtins.open', side_effect=FileNotFoundError("Cannot open file")):
                     result = execute_python_statistics_script_node(state)
 
-                    assert result["current_step"] == 18
+                    assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
                     assert len(result["errors"]) == 1
                     assert "not found" in result["errors"][0].lower()
 
@@ -927,7 +932,7 @@ class TestExecutePythonStatisticsScriptNode:
             with patch('os.path.exists', side_effect=exists_side_effect):
                 result = execute_python_statistics_script_node(state)
 
-                assert result["current_step"] == 18
+                assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
                 assert len(result["errors"]) == 1
                 assert "not created" in result["errors"][0].lower() or "not found" in result["errors"][0].lower()
 
@@ -948,7 +953,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert len(result["errors"]) == 1
             assert "unexpected" in result["errors"][0].lower() or "runtime" in result["errors"][0].lower()
 
@@ -1060,7 +1065,7 @@ class TestExecutePythonStatisticsScriptNode:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert result["statistical_summary"] is not None
         """Test that existing errors are preserved."""
         script_file = tmp_path / "stats_script.py"
@@ -1156,7 +1161,7 @@ class TestStatisticsNodesIntegration:
         # Step 17: Generate script
         state_after_step17 = generate_python_statistics_script_node(populated_state)
 
-        assert state_after_step17["current_step"] == 17
+        assert state_after_step17["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
         assert state_after_step17["statistics_script"] is not None
         assert os.path.exists(state_after_step17["statistics_script"])
 
@@ -1192,7 +1197,7 @@ class TestStatisticsNodesIntegration:
 
             state_after_step18 = execute_python_statistics_script_node(state_after_step17)
 
-            assert state_after_step18["current_step"] == 18
+            assert state_after_step18["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert state_after_step18["statistical_summary"] is not None
             assert state_after_step18["statistical_summary"]["total_tables"] == 2
 
@@ -1205,7 +1210,7 @@ class TestStatisticsNodesIntegration:
         # Step 17: Should generate warning
         state_after_step17 = generate_python_statistics_script_node(populated_state)
 
-        assert state_after_step17["current_step"] == 17
+        assert state_after_step17["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
         assert len(state_after_step17["warnings"]) > 0
         assert "No tables found" in state_after_step17["warnings"][0]
 
@@ -1250,7 +1255,7 @@ class TestStatisticsNodesEdgeCases:
 
         result = generate_python_statistics_script_node(populated_state)
 
-        assert result["current_step"] == 17
+        assert result["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
         assert result["statistics_script"] is not None
 
         # Script should handle Unicode in variable names
@@ -1290,7 +1295,7 @@ class TestStatisticsNodesEdgeCases:
 
             result = execute_python_statistics_script_node(state)
 
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert result["statistical_summary"] is not None
 
     def test_script_generation_with_many_tables(self, populated_state, tmp_path):
@@ -1307,7 +1312,7 @@ class TestStatisticsNodesEdgeCases:
 
         result = generate_python_statistics_script_node(populated_state)
 
-        assert result["current_step"] == 17
+        assert result["current_step"] == STEP_17_GENERATE_STATISTICS_SCRIPT
         assert result["statistics_script"] is not None
 
         # Script should contain variable specifications for tables
@@ -1344,7 +1349,7 @@ class TestStatisticsNodesEdgeCases:
             result = execute_python_statistics_script_node(state)
 
             # Should succeed even with stderr
-            assert result["current_step"] == 18
+            assert result["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
             assert len(result["errors"]) == 0
 
     def test_script_content_very_long_path(self, sample_table_specifications, tmp_path):

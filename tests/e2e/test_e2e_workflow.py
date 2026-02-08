@@ -45,7 +45,31 @@ from agent.graph import (
     run_analysis,
 )
 from agent.state import (
-    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
+    STEP_0_INITIAL,
+    STEP_1_EXTRACT_SPSS,
+    STEP_2_TRANSFORM_METADATA,
+    STEP_3_FILTER_METADATA,
+    STEP_4_GENERATE_RECODING_RULES,
+    STEP_5_VALIDATE_RECODING_RULES,
+    STEP_6_REVIEW_RECODING_RULES,
+    STEP_7_GENERATE_PSPP_RECODING_SYNTAX,
+    STEP_8_EXECUTE_PSPP_RECODING,
+    STEP_9_GENERATE_INDICATORS,
+    STEP_10_VALIDATE_INDICATORS,
+    STEP_11_REVIEW_INDICATORS,
+    STEP_12_GENERATE_TABLE_SPECIFICATIONS,
+    STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
+    STEP_14_REVIEW_TABLE_SPECIFICATIONS,
+    STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
+    STEP_16_EXECUTE_PSPP_TABLES,
+    STEP_17_GENERATE_STATISTICS_SCRIPT,
+    STEP_18_EXECUTE_STATISTICS_SCRIPT,
+    STEP_19_GENERATE_FILTER_LIST,
+    STEP_20_APPLY_FILTER_TO_TABLES,
+    STEP_21_GENERATE_POWERPOINT,
+    STEP_22_GENERATE_HTML_DASHBOARD,
+    STEP_ORDER,
+    WorkflowState,
 )
 )
 from agent.config import DEFAULT_CONFIG
@@ -431,8 +455,10 @@ class TestCompleteWorkflowExecution:
 
         # Verify final state
         assert result is not None, "Workflow should complete successfully"
-        assert result.get("current_step", 0) >= 21, \
-            f"Should reach at least step 21, got step {result.get('current_step')}"
+        current_step = result.get("current_step", STEP_0_INITIAL)
+        current_step_order = STEP_ORDER.get(current_step, 0)
+        assert current_step_order >= STEP_ORDER[STEP_21_GENERATE_POWERPOINT], \
+            f"Should reach at least step 21, got step {current_step}"
 
         # Verify state fields are populated
         # InputState
@@ -512,11 +538,11 @@ class TestCompleteWorkflowExecution:
 
         for event in graph.stream(initial_state, config, mode="values"):
             current_step = event.get("current_step", 0)
-            if current_step > 0 and current_step not in steps_executed:
+            if current_step != STEP_0_INITIAL and current_step not in steps_executed:
                 steps_executed.append(current_step)
 
             # Stop after we've collected enough steps
-            if current_step >= 21:
+            if STEP_ORDER.get(current_step, STEP_0_INITIAL) >= STEP_ORDER[STEP_21_GENERATE_POWERPOINT]:
                 break
 
         # Verify steps are in ascending order
@@ -565,7 +591,7 @@ class TestCompleteWorkflowExecution:
         assert result is not None, "Workflow should execute with sample file"
         assert result.get("input_file_path") == sample_sav_file, \
             "Input file path should match"
-        assert result.get("current_step", 0) > 0, \
+        assert result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL, \
             "Should execute at least one step"
 
     def test_workflow_produces_valid_outputs(
@@ -663,17 +689,17 @@ class TestPhaseByPhaseVerification:
         result = graph.invoke(initial_state, config)
 
         # Verify Phase 1 outputs
-        assert result.get("current_step", 0) >= 1, "Should execute Step 1"
+        assert result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL, "Should execute Step 1"
         assert result.get("raw_data") is not None, "Raw data should be extracted"
         assert result.get("original_metadata") is not None, "Original metadata should be extracted"
 
         # If Step 2 completed
-        if result.get("current_step", 0) >= 2:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_2_TRANSFORM_METADATA]:
             assert result.get("variable_centered_metadata") is not None, \
                 "Variable-centered metadata should be created"
 
         # If Step 3 completed
-        if result.get("current_step", 0) >= 3:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_3_FILTER_METADATA]:
             assert result.get("filtered_metadata") is not None, \
                 "Filtered metadata should be created"
             assert isinstance(result.get("filtered_out_variables"), list), \
@@ -715,16 +741,16 @@ class TestPhaseByPhaseVerification:
         result = graph.invoke(initial_state, config)
 
         # Verify Phase 2 outputs (if reached)
-        if result.get("current_step", 0) >= 4:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_4_GENERATE_RECODING_RULES]:
             # recoding_rules may be None if LLM call failed
             assert "recoding_rules" in result, "Recoding rules field should exist"
 
-        if result.get("current_step", 0) >= 5:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_5_VALIDATE_RECODING_RULES]:
             assert result.get("recoding_validation_result") is not None or \
                    result.get("errors"), \
                 "Recoding validation should be performed or have errors"
 
-        if result.get("current_step", 0) >= 6:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_6_REVIEW_RECODING_RULES]:
             assert isinstance(result.get("recoding_approved"), bool), \
                 "Recoding approval should be a boolean"
 
@@ -768,14 +794,14 @@ class TestPhaseByPhaseVerification:
             result = graph.invoke(initial_state, config)
 
             # Verify Phase 3 outputs
-            if result.get("current_step", 0) >= 9:
+            if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_9_GENERATE_INDICATORS]:
                 assert result.get("indicators") is not None, "Indicators should be generated"
 
-            if result.get("current_step", 0) >= 10:
+            if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL0:
                 assert result.get("indicator_validation_result") is not None, \
                     "Indicators validation should be performed"
 
-            if result.get("current_step", 0) >= 11:
+            if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL1:
                 assert result.get("indicators_approved") == True, "Indicators should be approved"
 
     def test_phase_4_cross_table_generation(
@@ -828,15 +854,15 @@ class TestPhaseByPhaseVerification:
             result = graph.invoke(initial_state, config)
 
             # Verify Phase 4 outputs
-            if result.get("current_step", 0) >= 12:
+            if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL2:
                 assert result.get("table_specifications") is not None, \
                     "Table specifications should be generated"
 
-            if result.get("current_step", 0) >= 13:
+            if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL3:
                 assert result.get("table_validation_result") is not None, \
                     "Table validation should be performed"
 
-            if result.get("current_step", 0) >= 14:
+            if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL4:
                 assert result.get("table_specs_approved") == True, \
                     "Table specs should be approved"
 
@@ -878,7 +904,7 @@ class TestPhaseByPhaseVerification:
             result = graph.invoke(initial_state, config)
 
             # Verify Phase 5 outputs
-            if result.get("current_step", 0) >= 17:
+            if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL7:
                 assert result.get("statistics_script") is not None or \
                        result.get("statistical_summary") is not None, \
                     "Statistics analysis should be performed"
@@ -912,7 +938,7 @@ class TestPhaseByPhaseVerification:
             result = graph.invoke(initial_state, config)
 
             # Verify Phase 6 outputs
-            if result.get("current_step", 0) >= 19:
+            if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL9:
                 assert result.get("filter_list") is not None or \
                        result.get("filtered_tables") is not None, \
                     "Filtering should be performed"
@@ -949,7 +975,7 @@ class TestPhaseByPhaseVerification:
             result = graph.invoke(initial_state, config)
 
             # Verify Phase 7 outputs
-            if result.get("current_step", 0) >= 21:
+            if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_21_GENERATE_POWERPOINT]:
                 assert result.get("powerpoint_file") is not None, \
                     "PowerPoint file path should be set"
 
@@ -985,7 +1011,7 @@ class TestPhaseByPhaseVerification:
             result = graph.invoke(initial_state, config)
 
             # Verify Phase 8 outputs
-            if result.get("current_step", 0) >= 22:
+            if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_22_GENERATE_HTML_DASHBOARD]:
                 assert result.get("html_dashboard_file") is not None, \
                     "HTML dashboard file path should be set"
 
@@ -1046,7 +1072,7 @@ class TestStateEvolution:
                 "state": event
             })
 
-            if current_step >= 21:
+            if STEP_ORDER.get(current_step, STEP_0_INITIAL) >= STEP_ORDER[STEP_21_GENERATE_POWERPOINT]:
                 break
 
         # Verify initial state (Step 0)
@@ -1271,7 +1297,7 @@ class TestOutputFileVerification:
         result = graph.invoke(initial_state, config)
 
         # If workflow reached Step 21, verify PowerPoint path
-        if result.get("current_step", 0) >= 21:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_21_GENERATE_POWERPOINT]:
             powerpoint_path = result.get("powerpoint_file")
             assert powerpoint_path is not None, "PowerPoint path should be set"
             assert isinstance(powerpoint_path, str), "PowerPoint path should be string"
@@ -1300,7 +1326,7 @@ class TestOutputFileVerification:
         result = graph.invoke(initial_state, config)
 
         # If workflow reached Step 22, verify HTML path
-        if result.get("current_step", 0) >= 22:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_22_GENERATE_HTML_DASHBOARD]:
             html_path = result.get("html_dashboard_file")
             assert html_path is not None, "HTML dashboard path should be set"
             assert isinstance(html_path, str), "HTML path should be string"
@@ -1340,7 +1366,7 @@ class TestOutputFileVerification:
             result = graph.invoke(initial_state, config)
 
             # If workflow reached Step 18, verify statistical summary
-            if result.get("current_step", 0) >= 18:
+            if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL8:
                 summary = result.get("statistical_summary")
                 assert summary is not None or result.get("statistics_script") is not None, \
                     "Statistical summary or script should be created"
@@ -1462,7 +1488,7 @@ class TestMockVsRealExecution:
 
         # Verify execution succeeded without real dependencies
         assert result is not None, "Mock-based workflow should execute"
-        assert result.get("current_step", 0) > 0, "Should execute at least one step"
+        assert result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL, "Should execute at least one step"
 
     def test_real_dependencies_e2e_integration(
         self,
@@ -1544,11 +1570,11 @@ class TestVerificationChecklist:
         result = graph.invoke(initial_state, config)
 
         # 1. Complete workflow executes
-        if result is not None and result.get("current_step", 0) >= 1:
+        if result is not None and result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL:
             checklist["workflow_executes"] = True
 
         # 2. All 22 steps verified (state has current_step)
-        if result.get("current_step", 0) >= 1:
+        if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL:
             checklist["steps_verified"] = True
 
         # 3. Output files generated

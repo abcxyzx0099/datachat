@@ -58,7 +58,12 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pandas as pd
 
-from agent.state import WorkflowState, create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
+from agent.state import (
+    WorkflowState, create_initial_state,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_20_APPLY_FILTER_TO_TABLES, STEP_21_GENERATE_POWERPOINT, STEP_22_GENERATE_HTML_DASHBOARD
+)
 from agent.config import DEFAULT_CONFIG
 from agent.nodes.phase7_powerpoint import (
     generate_powerpoint_node,
@@ -744,7 +749,7 @@ class TestPowerPointGeneration:
         result = generate_powerpoint_node(populated_powerpoint_state)
 
         # Check state is updated
-        assert result["current_step"] == 21
+        assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
         assert "powerpoint_file" in result
         assert result["powerpoint_file"] is not None
 
@@ -771,7 +776,7 @@ class TestPowerPointGeneration:
 
         result = generate_powerpoint_node(state)
 
-        assert result["current_step"] == 21
+        assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
         assert len(result["errors"]) == 1
         assert "filtered_tables" in result["errors"][0].lower()
 
@@ -795,7 +800,7 @@ class TestPowerPointGeneration:
 
         result = generate_powerpoint_node(state)
 
-        assert result["current_step"] == 21
+        assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
         # Should still create file even with no tables (title + summary slides)
         assert result["powerpoint_file"] is not None
         assert Path(result["powerpoint_file"]).exists()
@@ -855,7 +860,7 @@ class TestPowerPointGeneration:
         result = generate_powerpoint_node(state)
 
         # Should still create file, using variable names as labels
-        assert result["current_step"] == 21
+        assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
         assert result["powerpoint_file"] is not None
         assert Path(result["powerpoint_file"]).exists()
 
@@ -908,7 +913,7 @@ class TestHTMLDashboardGeneration:
         result = generate_html_dashboard_node(populated_html_state)
 
         # Check state is updated
-        assert result["current_step"] == 22
+        assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
         assert "html_dashboard_file" in result
         assert result["html_dashboard_file"] is not None
 
@@ -935,7 +940,7 @@ class TestHTMLDashboardGeneration:
 
         result = generate_html_dashboard_node(state)
 
-        assert result["current_step"] == 22
+        assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
         assert len(result["errors"]) == 1
         assert "cross_table_file" in result["errors"][0].lower()
 
@@ -955,7 +960,7 @@ class TestHTMLDashboardGeneration:
 
         result = generate_html_dashboard_node(state)
 
-        assert result["current_step"] == 22
+        assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
         assert len(result["errors"]) == 1
         assert "not found" in result["errors"][0].lower()
 
@@ -980,7 +985,7 @@ class TestHTMLDashboardGeneration:
 
         result = generate_html_dashboard_node(state)
 
-        assert result["current_step"] == 22
+        assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
         assert len(result["errors"]) == 1
         assert "statistical_summary" in result["errors"][0].lower()
 

@@ -8,6 +8,8 @@ import pytest
 import pandas as pd
 from typing import Dict, Any
 
+from agent.state import STEP_0_INITIAL, STEP_8_EXECUTE_PSPP_RECODING
+
 
 # =============================================================================
 # Basic Fixture Usage Examples
@@ -35,7 +37,7 @@ def test_metadata_structure(sample_metadata: Dict[str, Any]):
 
 def test_initial_state(sample_state):
     """Example: Using sample_state fixture."""
-    assert sample_state["current_step"] == 0
+    assert sample_state["current_step"] == STEP_0_INITIAL
     assert "input_file_path" in sample_state
 
 
@@ -57,7 +59,7 @@ def test_data_with_metadata(sample_dataframe: pd.DataFrame, sample_metadata: Dic
 def test_workflow_phase_state(recoding_state):
     """Example: Using workflow state after recoding phase."""
     # Should be at step 8
-    assert recoding_state["current_step"] == 8
+    assert recoding_state["current_step"] == STEP_8_EXECUTE_PSPP_RECODING
 
     # Should have recoding completed
     assert recoding_state["recoding_approved"] is True

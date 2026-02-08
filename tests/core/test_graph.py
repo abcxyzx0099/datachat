@@ -32,6 +32,7 @@ from agent.state import (
     STEP_4_GENERATE_RECODING_RULES,
     STEP_5_VALIDATE_RECODING_RULES,
     STEP_6_REVIEW_RECODING_RULES,
+    STEP_22_GENERATE_HTML_DASHBOARD,
 )
 from agent.config import DEFAULT_CONFIG
 
@@ -288,7 +289,7 @@ class TestEndToEndWorkflow:
 
         # Verify final state
         assert result is not None, "Graph invocation should return result"
-        assert result["current_step"] == 22, f"Should reach step 22, got {result['current_step']}"
+        assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD, f"Should reach step 22, got {result['current_step']}"
 
         # Verify output files are set
         assert result.get("powerpoint_file") is not None, "Should have PowerPoint file path"

@@ -88,7 +88,13 @@ from agent.nodes.phase4_tables import (
     _convert_csv_to_json,
 )
 from agent.utils.pspp_wrapper import execute_pspp_syntax
-from agent.state import WorkflowState, create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
+from agent.state import (
+    WorkflowState, create_initial_state,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_7_GENERATE_PSPP_RECODING_SYNTAX, STEP_8_EXECUTE_PSPP_RECODING,
+    STEP_15_GENERATE_PSPP_TABLE_SYNTAX, STEP_16_EXECUTE_PSPP_TABLES
+)
 from agent.config import DEFAULT_CONFIG
 
 
@@ -166,7 +172,7 @@ class TestRecodingWorkflow:
         # Step 7: Generate PSPP syntax
         step7_result = generate_pspp_recoding_syntax_node(recoding_state)
 
-        assert step7_result["current_step"] == 7
+        assert step7_result["current_step"] == STEP_7_GENERATE_PSPP_RECODING_SYNTAX
         assert "recoding_syntax_file" in step7_result
         assert "pspp_recoding_syntax" in step7_result
         assert os.path.exists(step7_result["recoding_syntax_file"])
@@ -223,7 +229,7 @@ class TestRecodingWorkflow:
 
                         step8_result = execute_pspp_recoding_node(step8_state)
 
-                        assert step8_result["current_step"] == 8
+                        assert step8_result["current_step"] == STEP_8_EXECUTE_PSPP_RECODING
                         assert "new_data_file" in step8_result
                         assert "new_metadata" in step8_result
                         assert step8_result["new_metadata"] is not None
@@ -422,7 +428,7 @@ class TestCrossTableWorkflow:
         # Step 15: Generate PSPP CTABLES syntax
         step15_result = generate_pspp_table_syntax_node(ctables_state)
 
-        assert step15_result["current_step"] == 15
+        assert step15_result["current_step"] == STEP_15_GENERATE_PSPP_TABLE_SYNTAX
         assert "table_syntax_file" in step15_result
         assert "pspp_tables_syntax" in step15_result
         assert os.path.exists(step15_result["table_syntax_file"])
@@ -472,7 +478,7 @@ class TestCrossTableWorkflow:
 
                             step16_result = execute_pspp_tables_node(step16_state)
 
-                            assert step16_result["current_step"] == 16
+                            assert step16_result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
                             assert "cross_table_file" in step16_result
             finally:
                 if os.path.exists(csv_path):

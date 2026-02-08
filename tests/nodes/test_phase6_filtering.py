@@ -33,7 +33,12 @@ from agent.nodes.phase6_filtering import (
     _should_include_table,
     validate_filtering_results,
 )
-from agent.state import WorkflowState, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
+from agent.state import (
+    WorkflowState,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_18_EXECUTE_STATISTICS_SCRIPT, STEP_19_GENERATE_FILTER_LIST, STEP_20_APPLY_FILTER_TO_TABLES
+)
 
 
 # =============================================================================
@@ -398,7 +403,7 @@ class TestGenerateFilterListNode:
         result = generate_filter_list_node(state)
 
         # Check state transition
-        assert result["current_step"] == 19
+        assert result["current_step"] == STEP_19_GENERATE_FILTER_LIST
 
         # Check filter list structure
         assert "filter_list" in result
@@ -456,7 +461,7 @@ class TestGenerateFilterListNode:
 
         result = generate_filter_list_node(state)
 
-        assert result["current_step"] == 19
+        assert result["current_step"] == STEP_19_GENERATE_FILTER_LIST
         assert result["filter_list"]["summary"]["total_tables"] == 0
         assert result["filter_list"]["summary"]["included"] == 0
         assert len(result["warnings"]) >= 1
@@ -478,7 +483,7 @@ class TestGenerateFilterListNode:
 
         result = generate_filter_list_node(state)
 
-        assert result["current_step"] == 19
+        assert result["current_step"] == STEP_19_GENERATE_FILTER_LIST
         assert result["filter_list"]["summary"]["included"] == 0
         assert result["filter_list"]["summary"]["excluded"] == 2
 
@@ -502,7 +507,7 @@ class TestGenerateFilterListNode:
 
         result = generate_filter_list_node(state)
 
-        assert result["current_step"] == 19
+        assert result["current_step"] == STEP_19_GENERATE_FILTER_LIST
         assert result["filter_list"]["summary"]["included"] == 2
         assert result["filter_list"]["summary"]["excluded"] == 0
         assert result["filter_list"]["summary"]["inclusion_rate"] == 100.0
@@ -550,7 +555,7 @@ class TestGenerateFilterListNode:
 
         result = generate_filter_list_node(state)
 
-        assert result["current_step"] == 19
+        assert result["current_step"] == STEP_19_GENERATE_FILTER_LIST
         assert len(result["errors"]) == 1
         assert "statistical_summary" in result["errors"][0].lower()
 
@@ -821,7 +826,7 @@ class TestApplyFilterToTablesNode:
         result = apply_filter_to_tables_node(state)
 
         # Check state transition
-        assert result["current_step"] == 20
+        assert result["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
 
         # Check filtered_tables structure
         assert "filtered_tables" in result
@@ -882,7 +887,7 @@ class TestApplyFilterToTablesNode:
 
         result = apply_filter_to_tables_node(state)
 
-        assert result["current_step"] == 20
+        assert result["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
         assert result["filtered_tables"]["summary"]["filtered_count"] == 0
         assert len(result["warnings"]) >= 1
         assert "no filters found" in result["warnings"][0].lower()
@@ -919,7 +924,7 @@ class TestApplyFilterToTablesNode:
 
         result = apply_filter_to_tables_node(state)
 
-        assert result["current_step"] == 20
+        assert result["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
         assert result["filtered_tables"]["summary"]["filtered_count"] == 0
 
         # Should have warning about no significant tables
@@ -941,7 +946,7 @@ class TestApplyFilterToTablesNode:
 
         result = apply_filter_to_tables_node(state)
 
-        assert result["current_step"] == 20
+        assert result["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
         assert len(result["errors"]) == 1
         assert "filter_list" in result["errors"][0].lower()
 
@@ -960,7 +965,7 @@ class TestApplyFilterToTablesNode:
 
         result = apply_filter_to_tables_node(state)
 
-        assert result["current_step"] == 20
+        assert result["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
         assert len(result["errors"]) == 1
         assert "statistical_summary" in result["errors"][0].lower()
 
@@ -1115,12 +1120,12 @@ class TestFilteringIntegration:
 
         # Step 19: Generate filter list
         state_after_step19 = generate_filter_list_node(state)
-        assert state_after_step19["current_step"] == 19
+        assert state_after_step19["current_step"] == STEP_19_GENERATE_FILTER_LIST
         assert "filter_list" in state_after_step19
 
         # Step 20: Apply filter
         state_after_step20 = apply_filter_to_tables_node(state_after_step19)
-        assert state_after_step20["current_step"] == 20
+        assert state_after_step20["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
         assert "filtered_tables" in state_after_step20
 
         # Verify end state

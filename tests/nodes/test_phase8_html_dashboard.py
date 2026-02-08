@@ -7,6 +7,7 @@ This module tests the HTML dashboard generation node.
 import pytest
 from unittest.mock import patch, Mock
 
+from agent.state import STEP_20_APPLY_FILTER_TO_TABLES, STEP_22_GENERATE_HTML_DASHBOARD
 from agent.nodes.phase8_html_dashboard import (
     generate_html_dashboard_node,
 )
@@ -46,7 +47,7 @@ class TestGenerateHtmlDashboardNode:
 
             result = generate_html_dashboard_node(state)
 
-            assert result["current_step"] == 22
+            assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
             assert result["html_dashboard_file"] is not None
 
     def test_generate_html_dashboard_node_no_data(self, populated_state):
@@ -59,5 +60,5 @@ class TestGenerateHtmlDashboardNode:
 
         result = generate_html_dashboard_node(state)
 
-        assert result["current_step"] == 22
+        assert result["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
 

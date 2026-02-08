@@ -27,8 +27,9 @@ from agent.graph import (
     get_graph,
 )
 from agent.state import (
-    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
-)
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES,
+    STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    WorkflowState,
 )
 from agent.config import DEFAULT_CONFIG
 
@@ -118,7 +119,7 @@ class TestStateInitialization:
 
         # Verify input fields
         assert state.get("input_file_path") == sample_sav_file
-        assert state.get("current_step") == 0
+        assert state.get("current_step") == STEP_0_INITIAL
 
         # Verify all state fields exist
         required_fields = [
@@ -157,7 +158,7 @@ class TestStateInitialization:
             assert state.get(field) is None, f"Field '{field}' should be None initially"
 
         # Fields that should have specific values
-        assert state.get("current_step") == 0
+        assert state.get("current_step") == STEP_0_INITIAL
         assert state.get("input_file_path") == sample_sav_file
         assert state.get("recoding_approved") == False
         assert state.get("indicators_approved") == False

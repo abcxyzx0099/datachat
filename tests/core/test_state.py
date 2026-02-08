@@ -927,7 +927,7 @@ class TestStateEvolution:
     def test_state_evolution_step_1_to_2(self):
         """Test state evolution from Step 1 to Step 2 (transform metadata)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 1
+        state["current_step"] = STEP_1_EXTRACT_SPSS
         state["raw_data"] = pd.DataFrame({"col1": [1, 2, 3]})
         state["original_metadata"] = {"file_name": "test.sav"}
 
@@ -952,7 +952,7 @@ class TestStateEvolution:
     def test_state_evolution_step_2_to_3(self):
         """Test state evolution from Step 2 to Step 3 (filter metadata)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 2
+        state["current_step"] = STEP_2_TRANSFORM_METADATA
         state["variable_centered_metadata"] = {"variables": {}}
 
         # Step 3: Add filtered_metadata and filtered_out_variables
@@ -974,7 +974,7 @@ class TestStateEvolution:
     def test_state_evolution_step_3_to_4_recoding(self):
         """Test state evolution from Step 3 to Step 4 (recoding rules)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 3
+        state["current_step"] = STEP_3_FILTER_METADATA
         state["filtered_metadata"] = [{"name": "var1"}]
 
         # Step 4: Add recoding rules
@@ -993,7 +993,7 @@ class TestStateEvolution:
     def test_state_evolution_step_4_to_5_validation(self):
         """Test state evolution from Step 4 to Step 5 (validation)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 4
+        state["current_step"] = STEP_4_GENERATE_RECODING_RULES
         state["recoding_rules"] = {"var1": {"recodings": []}}
 
         # Step 5: Add validation result
@@ -1017,7 +1017,7 @@ class TestStateEvolution:
     def test_state_evolution_step_5_to_6_approval(self):
         """Test state evolution from Step 5 to Step 6 (approval)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 5
+        state["current_step"] = STEP_5_VALIDATE_RECODING_RULES
         state["recoding_validation_result"] = ValidationResult(
             is_valid=True, errors=[], warnings=[], checks_performed=[]
         )
@@ -1036,7 +1036,7 @@ class TestStateEvolution:
     def test_state_evolution_step_6_to_8_new_dataset(self):
         """Test state evolution from Step 6 to Step 8 (new dataset)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 6
+        state["current_step"] = STEP_6_REVIEW_RECODING_RULES
         state["recoding_approved"] = True
 
         # Step 8: Add new data file and metadata
@@ -1055,7 +1055,7 @@ class TestStateEvolution:
     def test_state_evolution_step_8_to_11_indicators(self):
         """Test state evolution from Step 8 to Step 11 (indicators)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 8
+        state["current_step"] = STEP_8_EXECUTE_PSPP_RECODING
         state["new_metadata"] = {"variables": {}}
 
         # Step 9: Add indicators
@@ -1076,7 +1076,7 @@ class TestStateEvolution:
     def test_state_evolution_step_11_to_14_tables(self):
         """Test state evolution from Step 11 to Step 14 (table specifications)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 11
+        state["current_step"] = STEP_1_EXTRACT_SPSS1
         state["indicators"] = {"indicator1": {"variables": ["var1"]}}
 
         # Step 12: Add table specifications
@@ -1097,7 +1097,7 @@ class TestStateEvolution:
     def test_state_evolution_step_14_to_16_crosstabs(self):
         """Test state evolution from Step 14 to Step 16 (cross-tables)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 14
+        state["current_step"] = STEP_1_EXTRACT_SPSS4
         state["table_specs_approved"] = True
 
         # Step 16: Add cross-table file
@@ -1196,7 +1196,7 @@ class TestStateTransitions:
         """Test critical transition from extraction (Step 3) to recoding (Step 4)."""
         # Before transition: Step 3 complete
         state_before = create_initial_state("test.sav")
-        state_before["current_step"] = 3
+        state_before["current_step"] = STEP_3_FILTER_METADATA
         state_before["raw_data"] = pd.DataFrame({"col1": [1, 2, 3]})
         state_before["filtered_metadata"] = [{"name": "var1"}]
 
@@ -1216,7 +1216,7 @@ class TestStateTransitions:
     def test_transition_step_8_new_metadata_authoritative(self):
         """Test that Step 8 makes new_metadata the authoritative source."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 8
+        state["current_step"] = STEP_8_EXECUTE_PSPP_RECODING
         state["original_metadata"] = {"n_rows": 100, "variables": {}}
         state["new_metadata"] = {"n_rows": 100, "variables": {"var1": {}, "var2": {}}}
 

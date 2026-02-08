@@ -40,7 +40,12 @@ from fastapi import UploadFile
 
 # Import server module
 from agent import server
-from agent.state import WorkflowState, ValidationResult, create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
+from agent.state import (
+    WorkflowState, ValidationResult, create_initial_state,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES,
+    STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_8_EXECUTE_PSPP_RECODING, STEP_11_REVIEW_INDICATORS, STEP_14_REVIEW_TABLE_SPECIFICATIONS,
+)
 from agent.config import DEFAULT_CONFIG
 
 
@@ -103,8 +108,9 @@ def mock_state_snapshot():
 @pytest.fixture
 def sample_workflow_state() -> WorkflowState:
     """Sample workflow state for testing."""
+    from agent.state import STEP_8_EXECUTE_PSPP_RECODING
     state = create_initial_state("/test/data.sav", DEFAULT_CONFIG)
-    state["current_step"] = 8
+    state["current_step"] = STEP_8_EXECUTE_PSPP_RECODING
     state["recoding_approved"] = True
     state["indicators_approved"] = True
     state["table_specs_approved"] = True
@@ -387,7 +393,7 @@ class TestGetThreadState:
         assert data["thread_id"] == "test-thread-123"
         assert "state" in data
         assert "summary" in data
-        assert data["current_step"] == 5
+        assert data["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert data["requires_human_review"] is True
 
     def test_get_thread_state_not_found(self, client, mock_compiled_graph):
@@ -426,7 +432,7 @@ class TestSubmitFeedback:
         self, client, mock_compiled_graph, mock_state_snapshot
     ):
         """Test successfully submitting feedback for review step."""
-        mock_state_snapshot.values["current_step"] = 6  # Recoding review step
+        mock_state_snapshot.values["current_step"] = STEP_6_REVIEW_RECODING_RULES
         mock_compiled_graph.get_state.return_value = mock_state_snapshot
 
         feedback_data = {
@@ -482,7 +488,7 @@ class TestSubmitFeedback:
         self, client, mock_compiled_graph, mock_state_snapshot
     ):
         """Test submitting feedback for non-review step."""
-        mock_state_snapshot.values["current_step"] = 5  # Not a review step
+        mock_state_snapshot.values["current_step"] = STEP_5_VALIDATE_RECODING_RULES  # Not a review step
         mock_compiled_graph.get_state.return_value = mock_state_snapshot
 
         feedback_data = {"approved": True}
@@ -501,7 +507,7 @@ class TestSubmitFeedback:
         self, client, mock_compiled_graph, mock_state_snapshot
     ):
         """Test submitting feedback with iteration count."""
-        mock_state_snapshot.values["current_step"] = 11  # Indicators review step
+        mock_state_snapshot.values["current_step"] = STEP_11_REVIEW_INDICATORS  # Indicators review step
         mock_compiled_graph.get_state.return_value = mock_state_snapshot
 
         feedback_data = {
@@ -521,7 +527,7 @@ class TestSubmitFeedback:
         self, client, mock_compiled_graph, mock_state_snapshot
     ):
         """Test submitting feedback with feedback message (covers line 507-508)."""
-        mock_state_snapshot.values["current_step"] = 6  # Recoding review step
+        mock_state_snapshot.values["current_step"] = STEP_6_REVIEW_RECODING_RULES  # Recoding review step
         mock_compiled_graph.get_state.return_value = mock_state_snapshot
 
         feedback_data = {
@@ -560,7 +566,7 @@ class TestSubmitFeedback:
         self, client, mock_compiled_graph, mock_state_snapshot
     ):
         """Test submitting rejection feedback."""
-        mock_state_snapshot.values["current_step"] = 14  # Table specs review step
+        mock_state_snapshot.values["current_step"] = STEP_14_REVIEW_TABLE_SPECIFICATIONS  # Table specs review step
         mock_compiled_graph.get_state.return_value = mock_state_snapshot
 
         feedback_data = {
@@ -1000,11 +1006,11 @@ class TestPydanticModels:
             thread_id="test-123",
             state={"key": "value"},
             summary={"current_step": STEP_5_VALIDATE_RECODING_RULES},
-            current_step=5,
+            current_step=STEP_5_VALIDATE_RECODING_RULES,
             requires_human_review=True
         )
         assert model.thread_id == "test-123"
-        assert model.current_step == 5
+        assert model.current_step == STEP_5_VALIDATE_RECODING_RULES
 
     def test_health_response_model(self):
         """Test HealthResponse model validation."""

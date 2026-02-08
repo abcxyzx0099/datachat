@@ -34,7 +34,13 @@ Test Coverage:
 import pytest
 from unittest.mock import patch, Mock
 
-from agent.state import ValidationResult, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
+from agent.state import (
+    ValidationResult,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_11_REVIEW_INDICATORS, STEP_12_GENERATE_TABLE_SPECIFICATIONS, STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
+    STEP_14_REVIEW_TABLE_SPECIFICATIONS, STEP_15_GENERATE_PSPP_TABLE_SYNTAX, STEP_16_EXECUTE_PSPP_TABLES
+)
 from agent.nodes.phase4_tables import (
     generate_table_specifications_node,
     validate_table_specs_node,
@@ -87,7 +93,7 @@ class TestGenerateTableSpecificationsNode:
         with patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client):
             result = generate_table_specifications_node(state)
 
-            assert result["current_step"] == 12
+            assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
             assert result["table_specifications"] is not None
             assert len(result["table_specifications"]["tables"]) == 1
 
@@ -100,7 +106,7 @@ class TestGenerateTableSpecificationsNode:
 
         result = generate_table_specifications_node(state)
 
-        assert result["current_step"] == 12
+        assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
         assert len(result["errors"]) == 1
         assert "new_metadata" in result["errors"][0].lower()
 
@@ -135,7 +141,7 @@ class TestGenerateTableSpecificationsNode:
         with patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client):
             result = generate_table_specifications_node(state)
 
-            assert result["current_step"] == 12
+            assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
             assert result["iteration_count"] == 2
 
     def test_generate_table_specifications_node_human_feedback_retry(self, indicator_state, mock_llm_client, tmp_path):
@@ -161,7 +167,7 @@ class TestGenerateTableSpecificationsNode:
         with patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client):
             result = generate_table_specifications_node(state)
 
-            assert result["current_step"] == 12
+            assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
             assert result["iteration_count"] == 2
 
     def test_generate_table_specifications_node_json_parse_error(self, indicator_state, mock_llm_client):
@@ -184,7 +190,7 @@ class TestGenerateTableSpecificationsNode:
         with patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client):
             result = generate_table_specifications_node(state)
 
-            assert result["current_step"] == 12
+            assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
             assert len(result["errors"]) >= 1
             assert "json" in result["errors"][0].lower()
 
@@ -209,7 +215,7 @@ class TestGenerateTableSpecificationsNode:
         with patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client):
             result = generate_table_specifications_node(state)
 
-            assert result["current_step"] == 12
+            assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
             assert len(result["errors"]) >= 1
 
     def test_generate_table_specifications_node_zero_tables_warning(self, indicator_state, mock_llm_client, tmp_path):
@@ -235,7 +241,7 @@ class TestGenerateTableSpecificationsNode:
         with patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_llm_client):
             result = generate_table_specifications_node(state)
 
-            assert result["current_step"] == 12
+            assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
             assert len(result["warnings"]) >= 1
             assert "no table" in result["warnings"][0].lower()
 
@@ -260,7 +266,7 @@ class TestGenerateTableSpecificationsNode:
         with patch('agent.nodes.phase4_tables.get_llm_client', return_value=mock_client):
             result = generate_table_specifications_node(state)
 
-            assert result["current_step"] == 12
+            assert result["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
             assert len(result["errors"]) >= 1
             assert "unexpected error" in result["errors"][-1].lower()
 
@@ -420,7 +426,7 @@ class TestValidateTableSpecsNode:
 
         result = validate_table_specs_node(state)
 
-        assert result["current_step"] == 13
+        assert result["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
         assert result["table_validation_result"] is not None
 
     def test_validate_table_specs_node_missing_specs(self, indicator_state):
@@ -432,7 +438,7 @@ class TestValidateTableSpecsNode:
 
         result = validate_table_specs_node(state)
 
-        assert result["current_step"] == 13
+        assert result["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
         assert len(result["errors"]) == 1
         assert "table_specifications" in result["errors"][0].lower()
 
@@ -446,7 +452,7 @@ class TestValidateTableSpecsNode:
 
         result = validate_table_specs_node(state)
 
-        assert result["current_step"] == 13
+        assert result["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
         assert len(result["errors"]) == 1
         assert "new_metadata" in result["errors"][0].lower()
 
@@ -464,7 +470,7 @@ class TestValidateTableSpecsNode:
 
             result = validate_table_specs_node(state)
 
-            assert result["current_step"] == 13
+            assert result["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
             assert len(result["errors"]) >= 1
 
 
@@ -485,7 +491,7 @@ class TestReviewTableSpecificationsNode:
         with patch('langgraph.types.interrupt'):
             result = review_table_specifications_node(state)
 
-            assert result["current_step"] == 14
+            assert result["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS
             assert result["requires_human_review"] is True
 
     def test_review_table_specs_missing_specs(self, indicator_state, tmp_path):
@@ -500,7 +506,7 @@ class TestReviewTableSpecificationsNode:
 
         result = review_table_specifications_node(state)
 
-        assert result["current_step"] == 14
+        assert result["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS
         assert len(result["errors"]) >= 1
 
     def test_review_table_specs_exception_handling(self, indicator_state, valid_table_specs, tmp_path):
@@ -519,7 +525,7 @@ class TestReviewTableSpecificationsNode:
 
             result = review_table_specifications_node(state)
 
-            assert result["current_step"] == 14
+            assert result["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS
 
 
 class TestGeneratePsppTableSyntaxNode:
@@ -539,7 +545,7 @@ class TestGeneratePsppTableSyntaxNode:
 
         result = generate_pspp_table_syntax_node(state)
 
-        assert result["current_step"] == 15
+        assert result["current_step"] == STEP_15_GENERATE_PSPP_TABLE_SYNTAX
         assert result["pspp_tables_syntax"] is not None
         assert result["table_syntax_file"] is not None
         assert "CTABLES" in result["pspp_tables_syntax"]
@@ -553,7 +559,7 @@ class TestGeneratePsppTableSyntaxNode:
 
         result = generate_pspp_table_syntax_node(state)
 
-        assert result["current_step"] == 15
+        assert result["current_step"] == STEP_15_GENERATE_PSPP_TABLE_SYNTAX
         assert len(result["errors"]) == 1
 
     def test_generate_pspp_table_syntax_node_empty_tables(self, indicator_state, new_metadata):
@@ -567,7 +573,7 @@ class TestGeneratePsppTableSyntaxNode:
 
         result = generate_pspp_table_syntax_node(state)
 
-        assert result["current_step"] == 15
+        assert result["current_step"] == STEP_15_GENERATE_PSPP_TABLE_SYNTAX
         assert len(result["warnings"]) >= 1
 
     def test_generate_pspp_table_syntax_node_multiple_tables(self, indicator_state, new_metadata, tmp_path):
@@ -599,7 +605,7 @@ class TestGeneratePsppTableSyntaxNode:
 
         result = generate_pspp_table_syntax_node(state)
 
-        assert result["current_step"] == 15
+        assert result["current_step"] == STEP_15_GENERATE_PSPP_TABLE_SYNTAX
         assert "CTABLES" in result["pspp_tables_syntax"]
         assert result["pspp_tables_syntax"].count("CTABLES") >= 2
 
@@ -613,7 +619,7 @@ class TestGeneratePsppTableSyntaxNode:
 
         result = generate_pspp_table_syntax_node(state)
 
-        assert result["current_step"] == 15
+        assert result["current_step"] == STEP_15_GENERATE_PSPP_TABLE_SYNTAX
 
 
 class TestExecutePsppTablesNode:
@@ -652,7 +658,7 @@ class TestExecutePsppTablesNode:
 
             result = execute_pspp_tables_node(state)
 
-            assert result["current_step"] == 16
+            assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
             assert result["cross_table_file"] is not None
 
     def test_execute_pspp_tables_node_missing_data_file(self, indicator_state, tmp_path):
@@ -669,7 +675,7 @@ class TestExecutePsppTablesNode:
 
         result = execute_pspp_tables_node(state)
 
-        assert result["current_step"] == 16
+        assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
         assert len(result["errors"]) == 1
 
     def test_execute_pspp_tables_node_missing_syntax_file(self, indicator_state, tmp_path):
@@ -686,7 +692,7 @@ class TestExecutePsppTablesNode:
 
         result = execute_pspp_tables_node(state)
 
-        assert result["current_step"] == 16
+        assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
         assert len(result["errors"]) == 1
 
     def test_execute_pspp_tables_node_syntax_file_not_exists(self, indicator_state, tmp_path):
@@ -703,7 +709,7 @@ class TestExecutePsppTablesNode:
 
         result = execute_pspp_tables_node(state)
 
-        assert result["current_step"] == 16
+        assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
         assert len(result["errors"]) == 1
 
     def test_execute_pspp_tables_node_input_file_not_exists(self, indicator_state, tmp_path):
@@ -720,7 +726,7 @@ class TestExecutePsppTablesNode:
 
         result = execute_pspp_tables_node(state)
 
-        assert result["current_step"] == 16
+        assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
         assert len(result["errors"]) == 1
 
     def test_execute_pspp_tables_node_failure(self, indicator_state, tmp_path):
@@ -749,7 +755,7 @@ class TestExecutePsppTablesNode:
 
             result = execute_pspp_tables_node(state)
 
-            assert result["current_step"] == 16
+            assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
             assert len(result["errors"]) == 1
 
     def test_execute_pspp_tables_node_output_not_created(self, indicator_state, tmp_path):
@@ -778,7 +784,7 @@ class TestExecutePsppTablesNode:
 
             result = execute_pspp_tables_node(state)
 
-            assert result["current_step"] == 16
+            assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
             assert len(result["errors"]) >= 1
 
     def test_execute_pspp_tables_node_exception_handling(self, indicator_state, tmp_path):
@@ -801,7 +807,7 @@ class TestExecutePsppTablesNode:
 
             result = execute_pspp_tables_node(state)
 
-            assert result["current_step"] == 16
+            assert result["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
             assert len(result["errors"]) >= 1
 
 

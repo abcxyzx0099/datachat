@@ -448,7 +448,7 @@ class TestCompleteWorkflowE2E:
         assert result is not None, "Workflow should complete successfully"
         assert result.get("input_file_path") == sample_sav_file, \
             "Input file path should be preserved"
-        assert result.get("current_step", 0) >= 21, \
+        assert STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_21_GENERATE_POWERPOINT], \
             f"Should reach at least step 21, got step {result.get('current_step')}"
 
         # Check that critical errors are not present
@@ -541,17 +541,17 @@ class TestPhaseByPhaseE2E:
             result = graph.invoke(initial_state, config)
 
             # Verify Phase 1 outputs
-            assert result.get("current_step", 0) >= 1, "Should execute Step 1"
+            assert result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL, "Should execute Step 1"
             assert result.get("raw_data") is not None, "Raw data should be extracted"
             assert result.get("original_metadata") is not None, "Original metadata should be extracted"
 
             # If Step 2 completed
-            if result.get("current_step", 0) >= 2:
+            if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_2_TRANSFORM_METADATA]:
                 assert result.get("variable_centered_metadata") is not None, \
                     "Variable-centered metadata should be created"
 
             # If Step 3 completed
-            if result.get("current_step", 0) >= 3:
+            if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_3_FILTER_METADATA]:
                 assert result.get("filtered_metadata") is not None, \
                     "Filtered metadata should be created"
                 assert isinstance(result.get("filtered_out_variables"), list), \
@@ -711,7 +711,7 @@ class TestCompleteWorkflowWithHumanReview:
         assert result is not None, "Workflow should complete successfully"
         assert result.get("input_file_path") == sample_sav_file, \
             "Input file path should be preserved"
-        assert result.get("current_step", 0) >= 21, \
+        assert STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_21_GENERATE_POWERPOINT], \
             f"Should reach at least step 21, got step {result.get('current_step')}"
 
         # Check that critical errors are not present

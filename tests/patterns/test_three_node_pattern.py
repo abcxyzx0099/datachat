@@ -35,7 +35,11 @@ from typing import Dict, Any
 from unittest.mock import Mock, MagicMock, patch
 
 from agent.state import (
-    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS,
+    STEP_3_FILTER_METADATA, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_8_EXECUTE_PSPP_RECODING, STEP_9_GENERATE_INDICATORS, STEP_10_VALIDATE_INDICATORS, STEP_11_REVIEW_INDICATORS,
+    STEP_12_GENERATE_TABLE_SPECIFICATIONS, STEP_13_VALIDATE_TABLE_SPECIFICATIONS, STEP_14_REVIEW_TABLE_SPECIFICATIONS,
+    WorkflowState,
 )
 )
 
@@ -322,7 +326,7 @@ class TestRecodingThreeNodePattern:
 
             state_after_gen = generate_recoding_rules_node(initial_recoding_state)
 
-        assert state_after_gen["current_step"] == 4
+        assert state_after_gen["current_step"] == STEP_4_GENERATE_RECODING_RULES
         assert state_after_gen["recoding_rules"] is not None
         assert state_after_gen["recoding_feedback"] is None  # Cleared on success
         assert state_after_gen["iteration_count"] == 0
@@ -330,7 +334,7 @@ class TestRecodingThreeNodePattern:
         # Step 5: Validate
         state_after_val = validate_recoding_rules_node(state_after_gen)
 
-        assert state_after_val["current_step"] == 5
+        assert state_after_val["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert state_after_val["recoding_validation_result"] is not None
         assert state_after_val["recoding_validation_result"]['is_valid'] == True
 
@@ -338,7 +342,7 @@ class TestRecodingThreeNodePattern:
         with patch('langgraph.types.interrupt'):
             state_after_review = review_recoding_rules_node(state_after_val)
 
-        assert state_after_review["current_step"] == 6
+        assert state_after_review["current_step"] == STEP_6_REVIEW_RECODING_RULES
         assert state_after_review["requires_human_review"] == True
 
         # Simulate human approval
@@ -367,7 +371,7 @@ class TestRecodingThreeNodePattern:
         # Step 5: Validate (should fail)
         state_after_val = validate_recoding_rules_node(state_after_gen)
 
-        assert state_after_val["current_step"] == 5
+        assert state_after_val["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert state_after_val["recoding_validation_result"] is not None
         assert state_after_val["recoding_validation_result"]['is_valid'] == False
         assert len(state_after_val["recoding_validation_result"]['errors']) > 0
@@ -458,7 +462,7 @@ class TestRecodingThreeNodePattern:
 
         # Check state evolution
         assert "recoding_validation_result" in state_after
-        assert state_after["current_step"] == 5
+        assert state_after["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert state_after["recoding_rules"] == valid_recoding_rules  # Preserved
 
 
@@ -486,7 +490,7 @@ class TestIndicatorsThreeNodePattern:
 
             state_after_gen = generate_indicators_node(initial_indicators_state)
 
-        assert state_after_gen["current_step"] == 9
+        assert state_after_gen["current_step"] == STEP_9_GENERATE_INDICATORS
         assert state_after_gen["indicators"] is not None
         assert state_after_gen["indicator_feedback"] is None
 
@@ -500,14 +504,14 @@ class TestIndicatorsThreeNodePattern:
             )
             state_after_val = validate_indicators_node(state_after_gen)
 
-        assert state_after_val["current_step"] == 10
+        assert state_after_val["current_step"] == STEP_10_VALIDATE_INDICATORS
         assert state_after_val["indicator_validation_result"]['is_valid'] == True
 
         # Step 11: Review
         with patch('langgraph.types.interrupt'):
             state_after_review = review_indicators_node(state_after_val)
 
-        assert state_after_review["current_step"] == 11
+        assert state_after_review["current_step"] == STEP_11_REVIEW_INDICATORS
         assert state_after_review["requires_human_review"] == True
 
         # Simulate approval
@@ -630,7 +634,7 @@ class TestTableSpecsThreeNodePattern:
 
             state_after_gen = generate_table_specifications_node(initial_table_specs_state)
 
-        assert state_after_gen["current_step"] == 12
+        assert state_after_gen["current_step"] == STEP_12_GENERATE_TABLE_SPECIFICATIONS
         assert state_after_gen["table_specifications"] is not None
         assert state_after_gen["table_specs_feedback"] is None
 
@@ -644,14 +648,14 @@ class TestTableSpecsThreeNodePattern:
             )
             state_after_val = validate_table_specs_node(state_after_gen)
 
-        assert state_after_val["current_step"] == 13
+        assert state_after_val["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
         assert state_after_val["table_validation_result"]['is_valid'] == True
 
         # Step 14: Review
         with patch('langgraph.types.interrupt'):
             state_after_review = review_table_specifications_node(state_after_val)
 
-        assert state_after_review["current_step"] == 14
+        assert state_after_review["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS
         assert state_after_review["requires_human_review"] == True
 
         # Simulate approval
@@ -834,7 +838,7 @@ class TestStateEvolution:
 
         # Check field updates
         assert "recoding_validation_result" in state_after
-        assert state_after["current_step"] == 5
+        assert state_after["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert "errors" in state_after  # May have validation errors appended
 
     def test_indicators_state_fields_update_through_phases(self, initial_indicators_state, valid_indicators):
@@ -856,7 +860,7 @@ class TestStateEvolution:
             state_after = validate_indicators_node(state)
 
         assert "indicator_validation_result" in state_after
-        assert state_after["current_step"] == 10
+        assert state_after["current_step"] == STEP_10_VALIDATE_INDICATORS
 
     def test_table_specs_state_fields_update_through_phases(self, initial_table_specs_state, valid_table_specs):
         """Test table specs state fields update correctly."""
@@ -877,7 +881,7 @@ class TestStateEvolution:
             state_after = validate_table_specs_node(state)
 
         assert "table_validation_result" in state_after
-        assert state_after["current_step"] == 13
+        assert state_after["current_step"] == STEP_13_VALIDATE_TABLE_SPECIFICATIONS
 
 
 # =============================================================================

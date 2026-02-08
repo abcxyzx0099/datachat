@@ -460,7 +460,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
     # Return new state (DO NOT modify in-place)
     return {
         **state,
-        "current_step": 2,
+        "current_step": STEP_2_TRANSFORM_METADATA,
         "variable_centered_metadata": variable_centered_metadata,
         "warnings": warnings,
     }
@@ -620,7 +620,7 @@ def filter_metadata_node(state: WorkflowState) -> WorkflowState:
     # Return new state (DO NOT modify in-place)
     return {
         **state,
-        "current_step": 3,
+        "current_step": STEP_3_FILTER_METADATA,
         "filtered_metadata": filtered_metadata,
         "filtered_out_variables": filtered_out_variables,
         "warnings": warnings,

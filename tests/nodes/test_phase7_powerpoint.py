@@ -7,6 +7,7 @@ This module tests the PowerPoint generation node.
 import pytest
 from unittest.mock import patch, Mock
 
+from agent.state import STEP_20_APPLY_FILTER_TO_TABLES, STEP_21_GENERATE_POWERPOINT
 from agent.nodes.phase7_powerpoint import (
     generate_powerpoint_node,
 )
@@ -45,7 +46,7 @@ class TestGeneratePowerPointNode:
 
             result = generate_powerpoint_node(state)
 
-            assert result["current_step"] == 21
+            assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
             # May be None if no significant tables, which is expected for empty data
             assert result["powerpoint_file"] is not None or len(result.get("errors", [])) > 0
 
@@ -58,7 +59,7 @@ class TestGeneratePowerPointNode:
 
         result = generate_powerpoint_node(state)
 
-        assert result["current_step"] == 21
+        assert result["current_step"] == STEP_21_GENERATE_POWERPOINT
         # Should have error or warning
         assert len(result["errors"]) >= 0 or len(result["warnings"]) >= 0
 

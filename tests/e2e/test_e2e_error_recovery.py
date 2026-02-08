@@ -1081,7 +1081,7 @@ class TestValidationLoopScenarios:
         result = review_recoding_rules_node(prepared_state)
 
         # After max iterations, should still allow human to approve
-        assert result["current_step"] == 6, "Should move to review step"
+        assert result["current_step"] == STEP_6_REVIEW_RECODING_RULES, "Should move to review step"
         # Approval status depends on configuration
 
     def test_workflow_continues_after_approval_with_invalid_data(
@@ -1470,7 +1470,7 @@ class TestPartialRecoveryScenarios:
             result = graph.invoke(initial_state, config)
 
             # Verify Phase 1 completed
-            if result.get("current_step", 0) >= 3:
+            if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_3_FILTER_METADATA]:
                 # Checkpoint should have Phase 1 data
                 state_snapshot = graph.get_state(config)
                 assert state_snapshot is not None

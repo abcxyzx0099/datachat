@@ -34,7 +34,12 @@ Test Coverage:
 import pytest
 from unittest.mock import patch, Mock
 
-from agent.state import ValidationResult, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
+from agent.state import (
+    ValidationResult,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS,
+    STEP_3_FILTER_METADATA, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_7_GENERATE_PSPP_RECODING_SYNTAX, STEP_8_EXECUTE_PSPP_RECODING
+)
 from agent.nodes.phase2_recoding import (
     generate_recoding_rules_node,
     validate_recoding_rules_node,
@@ -63,7 +68,7 @@ class TestGenerateRecodingRulesNode:
         with patch('agent.nodes.phase2_recoding.get_llm_client', return_value=mock_llm_client):
             result = generate_recoding_rules_node(populated_state)
 
-            assert result["current_step"] == 4
+            assert result["current_step"] == STEP_4_GENERATE_RECODING_RULES
             assert result["recoding_rules"] is not None
             assert result["recoding_rules"]["recoding_rules"] == []
 
@@ -103,7 +108,7 @@ class TestValidateRecodingRulesNode:
 
             result = validate_recoding_rules_node(state)
 
-            assert result["current_step"] == 5
+            assert result["current_step"] == STEP_5_VALIDATE_RECODING_RULES
             assert result["recoding_validation_result"]['is_valid'] is True
 
     def test_validate_recoding_rules_node_invalid(self, populated_state):
@@ -123,7 +128,7 @@ class TestValidateRecodingRulesNode:
 
             result = validate_recoding_rules_node(state)
 
-            assert result["current_step"] == 5
+            assert result["current_step"] == STEP_5_VALIDATE_RECODING_RULES
             assert result["recoding_validation_result"]['is_valid'] is False
             assert len(result["recoding_validation_result"]['errors']) == 1
 
@@ -143,7 +148,7 @@ class TestReviewRecodingRulesNode:
         with patch('agent.nodes.phase2_recoding._generate_recoding_review_markdown'):
             result = review_recoding_rules_node(state)
 
-            assert result["current_step"] == 6
+            assert result["current_step"] == STEP_6_REVIEW_RECODING_RULES
             assert result["requires_human_review"] is True
 
     def test_review_recoding_rules_node_manual_review(self, populated_state):
@@ -158,7 +163,7 @@ class TestReviewRecodingRulesNode:
         with patch('agent.nodes.phase2_recoding._generate_recoding_review_markdown'):
             result = review_recoding_rules_node(state)
 
-            assert result["current_step"] == 6
+            assert result["current_step"] == STEP_6_REVIEW_RECODING_RULES
             assert result["requires_human_review"] is True
 
     def test_review_recoding_rules_node_no_rules(self, populated_state):
@@ -171,7 +176,7 @@ class TestReviewRecodingRulesNode:
 
         result = review_recoding_rules_node(state)
 
-        assert result["current_step"] == 6
+        assert result["current_step"] == STEP_6_REVIEW_RECODING_RULES
         assert len(result["errors"]) == 1
 
 
@@ -206,7 +211,7 @@ class TestGeneratePsppRecodingSyntaxNode:
 
         result = generate_pspp_recoding_syntax_node(state)
 
-        assert result["current_step"] == 7
+        assert result["current_step"] == STEP_7_GENERATE_PSPP_RECODING_SYNTAX
         assert result["pspp_recoding_syntax"] is not None
         assert result["recoding_syntax_file"] is not None
         assert "RECODE" in result["pspp_recoding_syntax"]
@@ -240,7 +245,7 @@ class TestGeneratePsppRecodingSyntaxNode:
 
         result = generate_pspp_recoding_syntax_node(state)
 
-        assert result["current_step"] == 7
+        assert result["current_step"] == STEP_7_GENERATE_PSPP_RECODING_SYNTAX
         assert len(result["errors"]) == 1
         assert "recoding_rules" in result["errors"][0]
 
@@ -255,7 +260,7 @@ class TestGeneratePsppRecodingSyntaxNode:
 
         result = generate_pspp_recoding_syntax_node(state)
 
-        assert result["current_step"] == 7
+        assert result["current_step"] == STEP_7_GENERATE_PSPP_RECODING_SYNTAX
         assert len(result["warnings"]) >= 1
         assert "empty" in result["warnings"][0].lower()
 
@@ -295,7 +300,7 @@ class TestExecutePsppRecodingNode:
 
             result = execute_pspp_recoding_node(state)
 
-            assert result["current_step"] == 8
+            assert result["current_step"] == STEP_8_EXECUTE_PSPP_RECODING
             assert result["new_data_file"] is not None
             assert result["new_metadata"] is not None
 
@@ -325,7 +330,7 @@ class TestExecutePsppRecodingNode:
 
             result = execute_pspp_recoding_node(state)
 
-            assert result["current_step"] == 8
+            assert result["current_step"] == STEP_8_EXECUTE_PSPP_RECODING
             assert len(result["errors"]) == 1
 
     def test_execute_pspp_recoding_node_no_syntax_file(self, populated_state):
@@ -337,7 +342,7 @@ class TestExecutePsppRecodingNode:
 
         result = execute_pspp_recoding_node(state)
 
-        assert result["current_step"] == 8
+        assert result["current_step"] == STEP_8_EXECUTE_PSPP_RECODING
         assert len(result["errors"]) == 1
 
 

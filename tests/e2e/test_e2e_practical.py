@@ -115,7 +115,7 @@ class TestPhase1ExtractionE2E:
 
         # Verify Phase 1 outputs
         assert result is not None, "Should have result from Phase 1"
-        assert result.get("current_step", 0) >= 1, "Should execute at least Step 1"
+        assert result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL, "Should execute at least Step 1"
 
         # Verify Step 1 outputs
         assert result.get("raw_data") is not None, "Raw data should be extracted"
@@ -126,7 +126,7 @@ class TestPhase1ExtractionE2E:
         assert len(raw_data.columns) > 0, "Raw data should have columns"
 
         # Verify Step 2 outputs (if reached)
-        if result.get("current_step", 0) >= 2:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_2_TRANSFORM_METADATA]:
             assert result.get("variable_centered_metadata") is not None, \
                 "Variable-centered metadata should be created"
 
@@ -135,7 +135,7 @@ class TestPhase1ExtractionE2E:
             assert "n_variables" in var_metadata, "Should have variable count"
 
         # Verify Step 3 outputs (if reached)
-        if result.get("current_step", 0) >= 3:
+        if STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_3_FILTER_METADATA]:
             assert result.get("filtered_metadata") is not None, \
                 "Filtered metadata should be created"
             assert isinstance(result.get("filtered_out_variables"), list), \
@@ -213,7 +213,7 @@ class TestPhase2RecodingE2E:
                     raise
 
         # Verify Phase 2 outputs
-        assert result.get("current_step", 0) >= 4, "Should reach Phase 2"
+        assert STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_4_GENERATE_RECODING_RULES], "Should reach Phase 2"
 
         # Verify recoding rules were generated
         recoding_rules = result.get("recoding_rules")
@@ -257,7 +257,7 @@ class TestCrossPhaseE2E:
 
         # Verify initial state
         assert initial_state["input_file_path"] == sample_sav_file
-        assert initial_state["current_step"] == 0
+        assert initial_state["current_step"] == STEP_0_INITIAL
 
         # Build graph without checkpointing
         graph = build_graph(checkpointer_path=None, config=e2e_config)
@@ -279,7 +279,7 @@ class TestCrossPhaseE2E:
             "Input file path should be preserved through workflow"
 
         # Verify Phase 1 data is in state
-        if result.get("current_step", 0) >= 1:
+        if result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL:
             assert result.get("raw_data") is not None, "Phase 1 data should be preserved"
             assert result.get("original_metadata") is not None, "Phase 1 metadata should be preserved"
 

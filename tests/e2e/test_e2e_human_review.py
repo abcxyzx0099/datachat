@@ -47,8 +47,10 @@ from dataclasses import dataclass
 
 # LangGraph and state imports
 from agent.state import (
-    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
-)
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES,
+    STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_11_REVIEW_INDICATORS, STEP_14_REVIEW_TABLE_SPECIFICATIONS,
+    WorkflowState,
 )
 from agent.config import DEFAULT_CONFIG
 
@@ -268,7 +270,7 @@ class TestRecodingHumanReview:
             state_after_review = review_recoding_rules_node(state_before_review)
 
         # Verify review state
-        assert state_after_review["current_step"] == 6, "Should be at Step 6"
+        assert state_after_review["current_step"] == STEP_6_REVIEW_RECODING_RULES, "Should be at Step 6"
         assert state_after_review["requires_human_review"] == True, "Should require human review"
 
         # Verify interrupt was called
@@ -501,7 +503,7 @@ class TestIndicatorsHumanReview:
             state_after_review = review_indicators_node(state_before_review)
 
         # Verify review state
-        assert state_after_review["current_step"] == 11, "Should be at Step 11"
+        assert state_after_review["current_step"] == STEP_11_REVIEW_INDICATORS, "Should be at Step 11"
         assert state_after_review["requires_human_review"] == True, "Should require human review"
 
         # Verify interrupt
@@ -677,7 +679,7 @@ class TestTableSpecsHumanReview:
         with patch('langgraph.types.interrupt') as mock_interrupt:
             state_after_review = review_table_specifications_node(state_before_review)
 
-        assert state_after_review["current_step"] == 14, "Should be at Step 14"
+        assert state_after_review["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS, "Should be at Step 14"
         assert state_after_review["requires_human_review"] == True
         assert mock_interrupt.called
 

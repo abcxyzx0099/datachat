@@ -76,8 +76,9 @@ from pathlib import Path
 import pandas as pd
 
 from agent.state import (
-    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
-)
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_2_TRANSFORM_METADATA, STEP_3_FILTER_METADATA,
+    STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    WorkflowState,
 )
 
 # Import nodes from each phase
@@ -151,7 +152,7 @@ class TestExtractSpssNode:
 
             result = extract_spss_node(sample_state)
 
-            assert result["current_step"] == 1
+            assert result["current_step"] == STEP_1_EXTRACT_SPSS
             # Note: raw_data is NOT stored to avoid LangGraph serialization issues
             assert result["original_metadata"] is not None
             assert result["original_metadata"]["n_rows"] == 50
@@ -164,7 +165,7 @@ class TestExtractSpssNode:
 
             result = extract_spss_node(sample_state)
 
-            assert result["current_step"] == 1
+            assert result["current_step"] == STEP_1_EXTRACT_SPSS
             assert len(result["errors"]) == 1
             assert "not found" in result["errors"][0].lower()
 
@@ -203,7 +204,7 @@ class TestTransformMetadataNode:
 
             result = transform_metadata_node(state)
 
-            assert result["current_step"] == 2
+            assert result["current_step"] == STEP_2_TRANSFORM_METADATA
             assert result["variable_centered_metadata"] is not None
             assert result["variable_centered_metadata"]["n_variables"] == 6
             assert result["variable_centered_metadata"]["n_numeric"] == 6
@@ -218,7 +219,7 @@ class TestTransformMetadataNode:
 
         result = transform_metadata_node(state)
 
-        assert result["current_step"] == 2
+        assert result["current_step"] == STEP_2_TRANSFORM_METADATA
         assert len(result["errors"]) == 1
         assert "original_metadata" in result["errors"][0]
 
@@ -242,7 +243,7 @@ class TestTransformMetadataNode:
 
             result = transform_metadata_node(state)
 
-            assert result["current_step"] == 2
+            assert result["current_step"] == STEP_2_TRANSFORM_METADATA
             assert result["variable_centered_metadata"] is not None
             assert result["variable_centered_metadata"]["n_variables"] == 0
             assert len(result["warnings"]) >= 1
@@ -261,7 +262,7 @@ class TestFilterMetadataNode:
 
         result = filter_metadata_node(state)
 
-        assert result["current_step"] == 3
+        assert result["current_step"] == STEP_3_FILTER_METADATA
         assert result["filtered_metadata"] is not None
         assert result["filtered_out_variables"] is not None
 
@@ -283,7 +284,7 @@ class TestFilterMetadataNode:
 
         result = filter_metadata_node(state)
 
-        assert result["current_step"] == 3
+        assert result["current_step"] == STEP_3_FILTER_METADATA
         assert len(result["errors"]) == 1
 
 

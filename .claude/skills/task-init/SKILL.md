@@ -9,15 +9,15 @@ Initializes the task system with separate queues for ad-hoc and planned tasks, i
 
 ## Overview
 
-This skill performs one-time setup of the task system using the init command or manual source management, and verifies the systemd service is operational:
+This skill performs one-time setup of the task system using the init command or manual queue management, and verifies the systemd service is operational:
 
 | Command | Purpose | Usage |
 |---------|---------|-------|
 | **init** | Quick setup - creates directories, adds both queues, ensures service running | First-time setup |
 | **service-setup** | Verifies/configures systemd service and starts daemon | Service management |
-| **sources add** | Advanced - add a single Task Source Directory | Custom configurations |
-| **sources rm** | Remove a Task Source Directory from monitoring | Reconfiguration |
-| **sources list** | List added Task Source Directories | Verification |
+| **queues add** | Advanced - add a single Task Source Directory (queue) | Custom configurations |
+| **queues rm** | Remove a Task Source Directory (queue) from monitoring | Reconfiguration |
+| **queues list** | List added Task Source Directories (queues) | Verification |
 
 The task system supports two independent queues that execute in parallel:
 
@@ -33,10 +33,10 @@ The task system supports two independent queues that execute in parallel:
 | Scenario | Command |
 |----------|---------|
 | **First-time setup** | `task-monitor init` (recommended) |
-| **Re-configuration** | `task-monitor init --force` or `sources add`/`sources rm` |
-| **Add custom queue** | `task-monitor sources add` |
-| **Remove queue** | `task-monitor sources rm` |
-| **Verification** | `task-monitor sources list` |
+| **Re-configuration** | `task-monitor init --force` or `queues add`/`queues rm` |
+| **Add custom queue** | `task-monitor queues add` |
+| **Remove queue** | `task-monitor queues rm` |
+| **Verification** | `task-monitor queues list` |
 
 ---
 
@@ -137,7 +137,7 @@ systemctl --user enable task-monitor.service
 
 ---
 
-### 4. sources add - Advanced Configuration
+### 4. queues add - Advanced Configuration
 
 **Use for custom queue configurations.** Add a single Task Source Directory (parent directory).
 
@@ -146,19 +146,19 @@ systemctl --user enable task-monitor.service
 source /home/admin/workspaces/datachat/.venv/bin/activate
 
 # Add a custom queue
-task-monitor sources add /path/to/queue \
+task-monitor queues add /path/to/queue \
     --id my-queue \
     --project-workspace /home/admin/workspaces/datachat \
     --description "My custom queue"
 
 # Add ad-hoc queue (manual setup)
-task-monitor sources add \
+task-monitor queues add \
     /home/admin/workspaces/datachat/tasks/ad-hoc \
     --id ad-hoc \
     --project-workspace /home/admin/workspaces/datachat
 
 # Add planned queue (manual setup)
-task-monitor sources add \
+task-monitor queues add \
     /home/admin/workspaces/datachat/tasks/planned \
     --id planned \
     --project-workspace /home/admin/workspaces/datachat
@@ -174,19 +174,19 @@ task-monitor sources add \
 
 ---
 
-### 5. sources rm - Remove Queue
+### 5. queues rm - Remove Queue
 
 **Use to remove a queue from monitoring.**
 
 ```bash
 # Remove a queue
-task-monitor sources rm --source-id my-queue
+task-monitor queues rm my-queue
 
 # Remove ad-hoc queue
-task-monitor sources rm --source-id ad-hoc
+task-monitor queues rm ad-hoc
 
 # Remove planned queue
-task-monitor sources rm --source-id planned
+task-monitor queues rm planned
 ```
 
 ---
@@ -194,8 +194,8 @@ task-monitor sources rm --source-id planned
 ## Other Useful Commands
 
 ```bash
-# List added Task Source Directories
-task-monitor sources list
+# List added Task Source Directories (queues)
+task-monitor queues list
 
 # Check system status
 task-monitor status
@@ -243,7 +243,7 @@ systemctl --user enable task-monitor.service
 
 # 6. Verify everything
 .venv/bin/task-monitor status
-.venv/bin/task-monitor sources list
+.venv/bin/task-monitor queues list
 ```
 
 **For detailed setup instructions, see:**
@@ -257,14 +257,14 @@ systemctl --user enable task-monitor.service
 mkdir -p tasks/custom/{staging,pending,completed,failed,results,reports}
 
 # Add custom queue
-task-monitor sources add \
+task-monitor queues add \
     /home/admin/workspaces/datachat/tasks/custom \
     --id custom \
     --project-workspace /home/admin/workspaces/datachat \
     --description "Custom queue"
 
 # Verify
-task-monitor sources list
+task-monitor queues list
 ```
 
 ---
@@ -335,8 +335,8 @@ task-monitor init --force
 - [ ] Directory structure created for ad-hoc and planned queues
 - [ ] ad-hoc Task Source Directory added
 - [ ] planned Task Source Directory added
-- [ ] Source addition verified with `sources list`
-- [ ] Status check shows both sources
+- [ ] Queue addition verified with `queues list`
+- [ ] Status check shows both queues
 - [ ] **task-monitor.service file exists** (`~/.config/systemd/user/task-monitor.service`)
 - [ ] **Service is enabled** for auto-start at login
 - [ ] **Service is running** (active)
@@ -357,8 +357,8 @@ task-monitor init --force
 ## Notes
 
 - **Init is recommended:** Use `task-monitor init` for most setups
-- **sources add for custom:** Use `task-monitor sources add` to add Task Source Directories
-- **sources rm to remove:** Use `task-monitor sources rm` to remove queues from monitoring
+- **queues add for custom:** Use `task-monitor queues add` to add Task Source Directories
+- **queues rm to remove:** Use `task-monitor queues rm` to remove queues from monitoring
 - **Project workspace:** Always use `/home/admin/workspaces/datachat` for this project
 - **Parallel execution:** Both queues process independently via separate worker threads
 - **Idempotent:** Commands can be safely re-run

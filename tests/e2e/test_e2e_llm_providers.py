@@ -60,8 +60,13 @@ import pandas as pd
 # LangGraph and workflow imports
 from agent.graph import build_graph
 from agent.state import (
-    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
-)
+    STEP_0_INITIAL,
+    STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES,
+    STEP_5_VALIDATE_RECODING_RULES,
+    STEP_6_REVIEW_RECODING_RULES,
+    STEP_ORDER,
+    WorkflowState,
 )
 from agent.config import DEFAULT_CONFIG, LLM_PROVIDER_CONFIGS, get_api_key
 from agent.llm.clients import (
@@ -381,7 +386,7 @@ class TestKimiProvider:
                 # Verify workflow executed
                 assert result is not None
                 # Verify some workflow progress was made (we should have recoding_rules from mock)
-                assert "recoding_rules" in result or result.get("current_step", 0) >= 1
+                assert "recoding_rules" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
     def test_kimi_prompts_sent_correctly(
         self,
@@ -557,7 +562,7 @@ class TestDeepSeekProvider:
                 result = graph.invoke(initial_state)
 
                 assert result is not None
-                assert "recoding_rules" in result or result.get("current_step", 0) >= 1
+                assert "recoding_rules" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
     def test_deepseek_feedback_handling(
         self,
@@ -660,7 +665,7 @@ class TestZhipuProvider:
                 result = graph.invoke(initial_state)
 
                 assert result is not None
-                assert "recoding_rules" in result or result.get("current_step", 0) >= 1
+                assert "recoding_rules" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
     def test_zhipu_output_generation(
         self,
@@ -702,7 +707,7 @@ class TestZhipuProvider:
                 result = graph.invoke(initial_state)
 
                 # Verify outputs are generated
-                assert result.get("recoding_rules") is not None or result.get("current_step", 0) >= 4
+                assert result.get("recoding_rules") is not None or STEP_ORDER.get(result.get("current_step", STEP_0_INITIAL), 0) >= STEP_ORDER[STEP_4_GENERATE_RECODING_RULES]
 
 
 # =============================================================================
@@ -750,7 +755,7 @@ class TestProviderSwitching:
                 initial_state = create_initial_state(sample_sav_file, kimi_config)
                 graph = build_graph(checkpointer_path=False, config=kimi_config)
                 result_kimi = graph.invoke(initial_state)
-                assert "recoding_rules" in result_kimi or result_kimi.get("current_step", 0) >= 1
+                assert "recoding_rules" in result_kimi or result_kimi.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
         # Switch to DeepSeek
         deepseek_config = DEFAULT_CONFIG.copy()
@@ -772,7 +777,7 @@ class TestProviderSwitching:
                 initial_state = create_initial_state(sample_sav_file, deepseek_config)
                 graph = build_graph(checkpointer_path=False, config=deepseek_config)
                 result_deepseek = graph.invoke(initial_state)
-                assert "recoding_rules" in result_deepseek or result_deepseek.get("current_step", 0) >= 1
+                assert "recoding_rules" in result_deepseek or result_deepseek.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
     def test_switch_from_deepseek_to_zhipu(
         self,
@@ -803,7 +808,7 @@ class TestProviderSwitching:
                 initial_state = create_initial_state(sample_sav_file, deepseek_config)
                 graph = build_graph(checkpointer_path=False, config=deepseek_config)
                 result_deepseek = graph.invoke(initial_state)
-                assert "recoding_rules" in result_deepseek or result_deepseek.get("current_step", 0) >= 1
+                assert "recoding_rules" in result_deepseek or result_deepseek.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
         # Switch to Zhipu
         zhipu_config = DEFAULT_CONFIG.copy()
@@ -825,7 +830,7 @@ class TestProviderSwitching:
                 initial_state = create_initial_state(sample_sav_file, zhipu_config)
                 graph = build_graph(checkpointer_path=False, config=zhipu_config)
                 result_zhipu = graph.invoke(initial_state)
-                assert "recoding_rules" in result_zhipu or result_zhipu.get("current_step", 0) >= 1
+                assert "recoding_rules" in result_zhipu or result_zhipu.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
     def test_configuration_changes_applied_correctly(
         self,
@@ -926,7 +931,7 @@ class TestConsistencyAcrossProviders:
 
                 # Verify valid output
                 assert result is not None, f"{provider} should produce a result"
-                assert "recoding_rules" in result or result.get("current_step", 0) >= 1
+                assert "recoding_rules" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
     def test_all_providers_handle_validation_correctly(
         self,
@@ -988,7 +993,7 @@ class TestConsistencyAcrossProviders:
                 result = graph.invoke(initial_state)
 
                 # Verify provider handled the workflow
-                assert "recoding_rules" in result or result.get("current_step", 0) >= 1
+                assert "recoding_rules" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
 
 # =============================================================================
@@ -1050,7 +1055,7 @@ class TestMockBasedProviderTests:
 
             # Verify workflow completed with mocks
             assert result is not None
-            assert "recoding_rules" in result or result.get("current_step", 0) >= 1
+            assert "recoding_rules" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
     def test_provider_switching_with_mocks(
         self,
@@ -1086,7 +1091,7 @@ class TestMockBasedProviderTests:
                 result = graph.invoke(initial_state)
 
                 # Verify each provider works with mocks
-                assert "recoding_rules" in result or result.get("current_step", 0) >= 1
+                assert "recoding_rules" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
 
 # =============================================================================
@@ -1144,7 +1149,7 @@ class TestRealLLMIntegration:
 
         # Verify real API call succeeded
         assert result is not None
-        assert "recoding_rules" in result or result.get("current_step", 0) >= 1
+        assert "recoding_rules" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
 
 
 # =============================================================================
@@ -1226,7 +1231,7 @@ class TestProviderErrorHandling:
             try:
                 result = graph.invoke(initial_state)
                 # If it completes, check for errors in state
-                assert "errors" in result or result.get("current_step", 0) >= 1
+                assert "errors" in result or result.get("current_step", STEP_0_INITIAL) != STEP_0_INITIAL
             except Exception as e:
                 # Should not be a generic crash
                 assert "API Error" in str(e)
