@@ -158,7 +158,57 @@ This project uses 3 MCP (Model Context Protocol) servers configured in `.mcp.jso
 
 ---
 
-## 8. Server Ports
+## 8. Agent Teams
+
+This project uses **Claude Code Agent Teams** for BMAD methodology (5 teammates working in parallel).
+
+| Teammate | Phase | Role |
+|----------|-------|------|
+| **analyst** | 1 (Analysis) | Research, audits, competitive analysis |
+| **pm** | 2 (Planning) | Requirements analysis, PRD creation |
+| **architect** | 3 (Solutioning) | Technical design, architecture decisions |
+| **dev** | 4 (Implementation) | Implementation, code review, testing |
+| **qa** | 3-4 | Testing strategy, quality validation |
+
+### Usage
+
+1. **Enable tmux**: Start a tmux session for parallel teammate views
+   ```bash
+   tmux new -s datachat
+   ```
+
+2. **Start Claude**: Run Claude Code within tmux
+   ```bash
+   claude
+   ```
+
+3. **Create agent team**: Request team creation conversationally
+   ```
+   "Create an agent team with 5 teammates for BMAD development"
+   ```
+
+4. **Navigate teammates**: Use `Shift+Down` to cycle through teammate panels in tmux
+
+### Team Configuration
+
+- **Team config**: `~/.claude/teams/bmad/config.json` (global team definition)
+- **Teammate identity guides**: `docs/agent-team/*.md` (role documentation for reference)
+
+**Feature Flag**: Agent Teams are enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in `~/.claude/settings.json`
+
+### BMAD Workflow Phases
+
+| Phase | Primary Teammate | Output |
+|-------|------------------|--------|
+| 1. Analysis | analyst | Research reports, audits, briefs |
+| 2. Planning | pm | PRDs, user stories, scope |
+| 3. Solutioning | architect | Architecture, ADRs, API specs |
+| 4. Implementation | dev | Code, tests, reviews |
+| Quality (3-4) | qa | Test strategy, reports, bugs |
+
+---
+
+## 9. Server Ports
 
 | Port | Service | Command | Purpose |
 |------|---------|---------|---------|
@@ -195,7 +245,7 @@ To stop all servers:
 
 ---
 
-## 9. Python Environment Usage Plan
+## 10. Python Environment Usage Plan
 
 This project uses **virtual environments only**. Direct system Python usage is **NOT supported**.
 
@@ -209,7 +259,7 @@ This project uses **virtual environments only**. Direct system Python usage is *
 
 ---
 
-## 10. Credential Management
+## 11. Credential Management
 
 **CRITICAL RULE**: AI agents must follow the credential source-of-truth pattern when working with API keys and configuration credentials.
 

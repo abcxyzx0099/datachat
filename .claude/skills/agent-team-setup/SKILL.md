@@ -58,11 +58,10 @@ Map Claude Code agent team capabilities to BMAD Method concepts:
 
 | BMAD Concept | Claude Code Equivalent |
 |--------------|------------------------|
-| Expert Agent | Specialized sub-agent with specific persona |
-| Module Agent | Agent with access to specific tools/knowledge |
+| Expert Agent | Specialized teammate with specific persona/instructions |
 | Team Lead | Main Claude Code session coordinating work |
 | Four Phases | Task breakdown with specialized roles |
-| Workflows | Skill-based task execution |
+| Workflows | Teammate collaboration patterns |
 
 ---
 
@@ -72,7 +71,7 @@ Map Claude Code agent team capabilities to BMAD Method concepts:
 
 | Phase | Purpose | Key Agent |
 |-------|---------|-----------|
-| **Analysis** | Brainstorming, research, product brief | Innovation Agent |
+| **Analysis** | Brainstorming, research, product brief | Analyst Agent |
 | **Planning** | Requirements, PRD creation | PM Agent |
 | **Solutioning** | Architecture design, technical decisions | Architect Agent |
 | **Implementation** | Build epic-by-epic, story-by-story | DEV Agent (Amelia) |
@@ -85,63 +84,103 @@ Map Claude Code agent team capabilities to BMAD Method concepts:
 | **Expert Agent** | YAML + sidecars (instructions, memories, templates, knowledge) | Complex domain expertise |
 | **Module Agent** | Part of complete module with shared resources | Large-scale project coordination |
 
-### Key BMAD Modules
-
-| Module | Description |
-|--------|-------------|
-| **BMM (BMad Method)** | Core agile framework - 34 workflows, 4 phases |
-| **BMB (BMad Builder)** | Custom agent creation and module development |
-| **CIS (Creative Intelligence Suite)** | Innovation and brainstorming workflows |
-
 ---
 
 ## Team Setup Workflow
 
-### Phase 1: Define Team Requirements
+### Phase 1: Enable Agent Teams
 
-Ask the user:
+First, enable the experimental feature flag in `~/.claude/settings.json`:
 
-1. **Project Scope**: What is the team building?
-2. **Complexity Level**: Simple feature vs enterprise platform
-3. **Domain Areas**: Technical, creative, business, research?
-4. **Team Size**: How many specialized roles needed?
-
-### Phase 2: Select Agent Roles
-
-Based on BMAD's agent roles, select appropriate specialists:
-
-| Role | BMAD Reference | Responsibilities |
-|------|----------------|------------------|
-| **PM** | BMAD PM Agent | Requirements, PRD, planning |
-| **Architect** | BMAD Architect | System design, ADRs, technical decisions |
-| **DEV** | BMAD DEV (Amelia) | Implementation, code review, testing |
-| **UX-Designer** | BMAD UX-Designer | User experience, interface design |
-| **QA-Tester** | BMAD extension | Quality assurance, test coverage |
-| **Innovator** | BMAD CIS module | Brainstorming, creative solutions |
-
-### Phase 3: Configure Agent Skills
-
-Create or configure skills for each agent role based on BMAD patterns:
-
-```
-.claude/skills/
-├── pm-agent/          # Product Management
-├── architect-agent/   # Architecture & Design
-├── dev-agent/         # Development & Code Review
-├── ux-agent/          # UX Design
-├── qa-agent/          # Quality Assurance
-└── innovation-agent/  # Creative Intelligence
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
 ```
 
-### Phase 4: Establish Team Coordination
+### Phase 2: Create Team Configuration
 
-Define team coordination rules:
+Create team configuration at `~/.claude/teams/{team-name}/config.json`:
 
-- **Team Lead**: Main session orchestrates work
-- **Task Assignment**: Delegate to specialized agents
-- **Communication**: Direct agent-to-agent coordination
-- **Result Synthesis**: Team lead combines outputs
-- **Iteration**: Feedback loops for quality
+```json
+{
+  "name": "bmad",
+  "description": "BMAD Development Team",
+  "members": [
+    {
+      "name": "analyst",
+      "role": "Business Analyst",
+      "description": "Phase 1: Research and analysis",
+      "color": "blue"
+    },
+    {
+      "name": "pm",
+      "role": "Product Manager",
+      "description": "Phase 2: Requirements and planning",
+      "color": "green"
+    },
+    {
+      "name": "architect",
+      "role": "System Architect",
+      "description": "Phase 3: Architecture and design",
+      "color": "yellow"
+    },
+    {
+      "name": "dev",
+      "role": "Developer",
+      "description": "Phase 4: Implementation",
+      "color": "cyan"
+    },
+    {
+      "name": "qa",
+      "role": "QA Engineer",
+      "description": "Phases 3-4: Quality assurance",
+      "color": "magenta"
+    }
+  ]
+}
+```
+
+### Phase 3: Create Teammate Instructions
+
+For each teammate, create instruction files at `~/.claude/teams/{team-name}/instructions/{teammate-name}.md`:
+
+```markdown
+# Analyst Agent 🔍
+
+## Persona
+I am the Business Analyst and Research Specialist...
+
+## Core Principles
+- Evidence-based analysis
+- Thorough investigation
+- Clear documentation
+
+## Key Workflows
+### 1. Research & Investigation
+[Process details...]
+```
+
+### Phase 4: Start Using Agent Teams
+
+1. **Start tmux session** (for parallel teammate views):
+   ```bash
+   tmux new -s datachat
+   ```
+
+2. **Start Claude Code**:
+   ```bash
+   claude
+   ```
+
+3. **Create agent team** conversationally:
+   ```
+   "Create an agent team with the bmad configuration"
+   ```
+
+4. **Assign tasks** to specific teammates as needed
 
 ---
 
@@ -151,8 +190,10 @@ Define team coordination rules:
 - [ ] BMAD Method framework studied
 - [ ] Team requirements defined with user
 - [ ] Agent roles selected based on BMAD patterns
-- [ ] Agent skills configured/created
-- [ ] Team coordination protocols established
+- [ ] Team configuration created in `~/.claude/teams/`
+- [ ] Teammate instruction files created
+- [ ] Feature flag enabled in settings.json
+- [ ] tmux session started for parallel views
 - [ ] Test run with sample task
 
 ---
@@ -164,12 +205,13 @@ Define team coordination rules:
 - **Teammate 1**: DEV Agent - Implementation specialist
 - **Teammate 2**: QA Agent - Testing and validation
 
-### Full Development Team
+### Full BMAD Development Team
 - **Team Lead**: Main session (orchestration)
-- **Teammate 1**: PM Agent - Requirements and planning
-- **Teammate 2**: Architect Agent - System design
-- **Teammate 3**: DEV Agent - Implementation
-- **Teammate 4**: QA Agent - Quality assurance
+- **Teammate 1**: Analyst Agent - Research and analysis (Phase 1)
+- **Teammate 2**: PM Agent - Requirements and planning (Phase 2)
+- **Teammate 3**: Architect Agent - System design (Phase 3)
+- **Teammate 4**: DEV Agent - Implementation (Phase 4)
+- **Teammate 5**: QA Agent - Quality assurance (Phases 3-4)
 
 ---
 
@@ -185,14 +227,32 @@ Define team coordination rules:
 # (Use context7 MCP with /bmad-code-org/bmad-method)
 ```
 
-### Team Launch Commands
+### Team Usage
 
-```bash
-# Launch agent team (when supported by Claude Code)
-/agent-team launch --roles pm,architect,dev,qa
+Agent teams are created conversationally within Claude Code—there is no CLI command for launching teams. Simply describe your need:
 
-# Delegate task to specific agent
-/agent-team delegate --role dev --task "Implement login feature"
+```
+"Create an agent team for implementing a new feature"
+```
+
+Claude Code will then create teammates based on your team configuration.
+
+---
+
+## File Structure Reference
+
+```
+~/.claude/
+├── settings.json              # Feature flag: CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS
+└── teams/
+    └── bmad/                  # Team name
+        ├── config.json        # Team configuration
+        └── instructions/      # Teammate instruction files
+            ├── analyst.md
+            ├── pm.md
+            ├── architect.md
+            ├── dev.md
+            └── qa.md
 ```
 
 ---
@@ -204,6 +264,8 @@ Define team coordination rules:
 - **Scale-Adaptive**: Team size adapts to project complexity (BMAD principle borrowed)
 - **Iterative**: Team workflows follow BMAD's four-phase approach (Analysis → Planning → Solutioning → Implementation)
 - **No External Dependencies**: This skill works entirely within Claude Code's capabilities
+- **Team Storage**: Agent Teams are stored globally in `~/.claude/teams/`, not per-project
+- **tmux Recommended**: Using tmux allows viewing all teammates simultaneously via split panes
 
 ---
 
