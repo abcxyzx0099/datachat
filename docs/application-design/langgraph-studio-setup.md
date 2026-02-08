@@ -97,7 +97,7 @@ Studio uses in-memory checkpointing by default. For persistent storage, SQLite i
 
 ## Graph Structure
 
-The `survey_analysis` graph contains 24 nodes organized into 8 phases:
+The `survey_analysis` graph contains 22 nodes organized into 8 phases:
 
 1. **Extraction** (3 nodes): Extract SPSS, transform metadata, filter
 2. **Recoding** (5 nodes): Generate/validate/review rules, generate/execute PSPP
