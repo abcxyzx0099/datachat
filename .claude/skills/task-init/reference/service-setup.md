@@ -37,7 +37,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/admin/workspaces/task-monitor/.venv/bin/python -m task_queue.daemon
+ExecStart=/home/admin/workspaces/task-monitor/.venv/bin/python -m task_monitor.daemon
 Restart=always
 RestartSec=10
 Environment=PYTHONUNBUFFERED=1
@@ -136,7 +136,7 @@ journalctl --user -u task-monitor.service -f
 
 | Parameter | Value | Purpose |
 |-----------|-------|---------|
-| `ExecStart` | `/home/admin/workspaces/task-monitor/.venv/bin/python -m task_queue.daemon` | Python interpreter and daemon module |
+| `ExecStart` | `/home/admin/workspaces/task-monitor/.venv/bin/python -m task_monitor.daemon` | Python interpreter and daemon module |
 | `PYTHONPATH` | `/home/admin/workspaces/task-monitor` | Path to task-monitor module |
 | `Restart` | `always` | Always restart on failure |
 | `RestartSec` | `10` | Seconds between restart attempts |
@@ -150,13 +150,13 @@ journalctl --user -u task-monitor.service -f
 
 **Check if module is installed:**
 ```bash
-/home/admin/workspaces/task-monitor/.venv/bin/python -c "import task_queue.daemon; print('OK')"
+/home/admin/workspaces/task-monitor/.venv/bin/python -c "import task_monitor.daemon; print('OK')"
 ```
 
 **Check if paths are correct:**
 ```bash
 ls -la /home/admin/workspaces/task-monitor/.venv/bin/python
-ls -la /home/admin/workspaces/task-monitor/task_queue/daemon.py
+ls -la /home/admin/workspaces/task-monitor/task_monitor/daemon.py
 ```
 
 **Check logs for errors:**

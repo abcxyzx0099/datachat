@@ -14,9 +14,9 @@ The task-monitor CLI provides commands for task system initialization, queue man
 
 **Command:** `task-monitor`
 
-**Module:** `task_queue.cli`
+**Module:** `task_monitor.cli`
 
-**Package Name:** `task-queue` (Python package)
+**Package Name:** `task-monitor` (Python package)
 
 ---
 
@@ -63,7 +63,7 @@ pipx install /home/admin/workspaces/task-monitor
 # Create wrapper script
 cat > ~/.local/bin/task-monitor <<'EOF'
 #!/bin/bash
-exec /home/admin/workspaces/task-monitor/.venv/bin/python -m task_queue.cli "$@"
+exec /home/admin/workspaces/task-monitor/.venv/bin/python -m task_monitor.cli "$@"
 EOF
 
 # Make executable
@@ -159,10 +159,10 @@ If CLI wrapper is not available, run as Python module:
 ```bash
 # Instead of: task-monitor status
 # Use:
-python -m task_queue.cli status
+python -m task_monitor.cli status
 
 # With full path:
-/home/admin/workspaces/task-monitor/.venv/bin/python -m task_queue.cli status
+/home/admin/workspaces/task-monitor/.venv/bin/python -m task_monitor.cli status
 ```
 
 ---
@@ -173,8 +173,8 @@ The CLI is registered in `pyproject.toml`:
 
 ```toml
 [project.scripts]
-task-monitor = "task_queue.cli:main"
-task-monitor-daemon = "task_queue.daemon:main"
+task-monitor = "task_monitor.cli:main"
+task-monitor-daemon = "task_monitor.daemon:main"
 ```
 
 **After changing this, reinstall the package:**
@@ -214,7 +214,7 @@ register-python-argcomplete --shell bash task-monitor
 
 1. **Use full Python module path:**
    ```bash
-   /home/admin/workspaces/task-monitor/.venv/bin/python -m task_queue.cli status
+   /home/admin/workspaces/task-monitor/.venv/bin/python -m task_monitor.cli status
    ```
 
 2. **Install with pipx:**
@@ -226,7 +226,7 @@ register-python-argcomplete --shell bash task-monitor
 
 ### Module Not Found
 
-**Symptom:** `ModuleNotFoundError: No module named 'task_queue'`
+**Symptom:** `ModuleNotFoundError: No module named 'task_monitor'`
 
 **Solution:**
 ```bash
