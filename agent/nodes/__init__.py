@@ -69,32 +69,32 @@ def _placeholder_node(state: WorkflowState, node_name: str) -> WorkflowState:
     logger.info(f"Executing placeholder node: {node_name}")
 
     # Update current step
-    step_num = {
-        "extract_spss_node": 1,
-        "transform_metadata_node": 2,
-        "filter_metadata_node": 3,
-        "generate_recoding_rules_node": 4,
-        "validate_recoding_rules_node": 5,
-        "review_recoding_rules_node": 6,
-        "generate_pspp_recoding_syntax_node": 7,
-        "execute_pspp_recoding_node": 8,
-        "generate_indicators_node": 9,
-        "validate_indicators_node": 10,
-        "review_indicators_node": 11,
-        "generate_table_specifications_node": 12,
-        "validate_table_specifications_node": 13,
-        "review_table_specifications_node": 14,
-        "generate_pspp_table_syntax_node": 15,
-        "execute_pspp_tables_node": 16,
-        "generate_python_statistics_script_node": 17,
-        "execute_python_statistics_script_node": 18,
-        "generate_filter_list_node": 19,
-        "apply_filter_to_tables_node": 20,
-        "generate_powerpoint_node": 21,
-        "generate_html_dashboard_node": 22,
-    }.get(node_name, 0)
+    step_name = {
+        "extract_spss_node": "step_1_extract_spss",
+        "transform_metadata_node": "step_2_transform_metadata",
+        "filter_metadata_node": "step_3_filter_metadata",
+        "generate_recoding_rules_node": "step_4_generate_recoding_rules",
+        "validate_recoding_rules_node": "step_5_validate_recoding_rules",
+        "review_recoding_rules_node": "step_6_review_recoding_rules",
+        "generate_pspp_recoding_syntax_node": "step_7_generate_pspp_recoding_syntax",
+        "execute_pspp_recoding_node": "step_8_execute_pspp_recoding",
+        "generate_indicators_node": "step_9_generate_indicators",
+        "validate_indicators_node": "step_10_validate_indicators",
+        "review_indicators_node": "step_11_review_indicators",
+        "generate_table_specifications_node": "step_12_generate_table_specifications",
+        "validate_table_specifications_node": "step_13_validate_table_specifications",
+        "review_table_specifications_node": "step_14_review_table_specifications",
+        "generate_pspp_table_syntax_node": "step_15_generate_pspp_table_syntax",
+        "execute_pspp_tables_node": "step_16_execute_pspp_tables",
+        "generate_python_statistics_script_node": "step_17_generate_statistics_script",
+        "execute_python_statistics_script_node": "step_18_execute_statistics_script",
+        "generate_filter_list_node": "step_19_generate_filter_list",
+        "apply_filter_to_tables_node": "step_20_apply_filter_to_tables",
+        "generate_powerpoint_node": "step_21_generate_powerpoint",
+        "generate_html_dashboard_node": "step_22_generate_html_dashboard",
+    }.get(node_name, "step_0_initial")
 
-    state["current_step"] = step_num
+    state["current_step"] = step_name
     return state
 
 

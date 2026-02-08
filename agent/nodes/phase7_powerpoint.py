@@ -21,7 +21,7 @@ from enum import Enum
 from datetime import datetime
 from pathlib import Path
 
-from agent.state import WorkflowState
+from agent.state import WorkflowState, STEP_21_GENERATE_POWERPOINT
 from agent.config import DEFAULT_CONFIG
 from agent.styling import (
     get_market_research_color,
@@ -429,7 +429,7 @@ def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - powerpoint_file: Path to generated .pptx file
-            - current_step: Set to 21
+            - current_step: Set to STEP_21_GENERATE_POWERPOINT
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
 
@@ -481,7 +481,7 @@ def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -581,7 +581,7 @@ def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
         # ======================================================================
         return {
             **state,
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "powerpoint_file": str(powerpoint_path),
         }
 
@@ -590,7 +590,7 @@ def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "errors": state.get("errors", []) + [error_msg],
         }
     except Exception as e:
@@ -598,7 +598,7 @@ def generate_powerpoint_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "errors": state.get("errors", []) + [error_msg],
         }
 

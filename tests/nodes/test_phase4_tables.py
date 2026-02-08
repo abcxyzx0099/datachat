@@ -34,7 +34,7 @@ Test Coverage:
 import pytest
 from unittest.mock import patch, Mock
 
-from agent.state import ValidationResult
+from agent.state import ValidationResult, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
 from agent.nodes.phase4_tables import (
     generate_table_specifications_node,
     validate_table_specs_node,
@@ -869,7 +869,7 @@ class TestThreeNodePatternTables:
             state = review_table_specifications_node(state)
 
         assert state["table_validation_result"] is not None
-        assert state["current_step"] == 14
+        assert state["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS
 
 
 # =============================================================================

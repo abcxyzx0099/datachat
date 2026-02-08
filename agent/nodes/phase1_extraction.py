@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional
 import pandas as pd
 import pyreadstat
 
-from agent.state import WorkflowState
+from agent.state import WorkflowState, STEP_1_EXTRACT_SPSS, STEP_2_TRANSFORM_METADATA, STEP_3_FILTER_METADATA
 from agent.utils.file_io import read_spss_file
 from agent.utils.tracing import trace_node
 
@@ -47,7 +47,7 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         Updated workflow state with:
             - raw_data: pandas DataFrame with survey responses
             - original_metadata: Dict with SPSS metadata
-            - current_step: Set to 1
+            - current_step: Set to STEP_1_EXTRACT_SPSS
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
 
@@ -71,7 +71,7 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -125,7 +125,7 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         # Return new state (DO NOT modify in-place)
         return {
             **state,
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "original_metadata": original_metadata,
             "warnings": warnings,
         }
@@ -135,7 +135,7 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -144,7 +144,7 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -153,7 +153,7 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -162,7 +162,7 @@ def extract_spss_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -282,7 +282,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - variable_centered_metadata: Dict with variable-centered metadata
-            - current_step: Set to 2
+            - current_step: Set to STEP_2_TRANSFORM_METADATA
             - warnings: List of warnings (appended if any occur)
             - errors: List of errors (appended if any occur)
 
@@ -308,7 +308,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 2,
+            "current_step": STEP_2_TRANSFORM_METADATA,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -317,7 +317,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 2,
+            "current_step": STEP_2_TRANSFORM_METADATA,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -330,7 +330,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 2,
+            "current_step": STEP_2_TRANSFORM_METADATA,
             "errors": state.get("errors", []) + [error_msg],
         }
     except Exception as e:
@@ -338,7 +338,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 2,
+            "current_step": STEP_2_TRANSFORM_METADATA,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -363,7 +363,7 @@ def transform_metadata_node(state: WorkflowState) -> WorkflowState:
         logger.info("Created empty metadata structure for empty DataFrame")
         return {
             **state,
-            "current_step": 2,
+            "current_step": STEP_2_TRANSFORM_METADATA,
             "variable_centered_metadata": empty_metadata,
             "warnings": warnings,
         }
@@ -488,7 +488,7 @@ def filter_metadata_node(state: WorkflowState) -> WorkflowState:
         Updated workflow state with:
             - filtered_metadata: List of variable dicts requiring recoding
             - filtered_out_variables: List of dicts with filtered variable names and reasons
-            - current_step: Set to 3
+            - current_step: Set to STEP_3_FILTER_METADATA
             - warnings: List of warnings (appended if any occur)
             - errors: List of errors (appended if any occur)
 
@@ -516,7 +516,7 @@ def filter_metadata_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -540,7 +540,7 @@ def filter_metadata_node(state: WorkflowState) -> WorkflowState:
         # Return empty filtered metadata
         return {
             **state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "filtered_metadata": [],
             "filtered_out_variables": [],
             "warnings": warnings,

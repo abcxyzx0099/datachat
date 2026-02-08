@@ -34,7 +34,7 @@ Test Coverage:
 import pytest
 from unittest.mock import patch, Mock
 
-from agent.state import ValidationResult
+from agent.state import ValidationResult, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
 from agent.nodes.phase2_recoding import (
     generate_recoding_rules_node,
     validate_recoding_rules_node,

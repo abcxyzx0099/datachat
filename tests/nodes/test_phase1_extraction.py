@@ -76,9 +76,8 @@ from pathlib import Path
 import pandas as pd
 
 from agent.state import (
-    WorkflowState,
-    ValidationResult,
-    create_initial_state,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
+)
 )
 
 # Import nodes from each phase

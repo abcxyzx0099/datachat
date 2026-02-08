@@ -25,6 +25,98 @@ import pandas as pd
 
 
 # =============================================================================
+# Step Name Constants
+# =============================================================================
+
+# Step identifier constants for the 22-step workflow
+# These constants provide human-readable step names instead of numeric identifiers
+STEP_0_INITIAL = "step_0_initial"
+STEP_1_EXTRACT_SPSS = "step_1_extract_spss"
+STEP_2_TRANSFORM_METADATA = "step_2_transform_metadata"
+STEP_3_FILTER_METADATA = "step_3_filter_metadata"
+STEP_4_GENERATE_RECODING_RULES = "step_4_generate_recoding_rules"
+STEP_5_VALIDATE_RECODING_RULES = "step_5_validate_recoding_rules"
+STEP_6_REVIEW_RECODING_RULES = "step_6_review_recoding_rules"
+STEP_7_GENERATE_PSPP_RECODING_SYNTAX = "step_7_generate_pspp_recoding_syntax"
+STEP_8_EXECUTE_PSPP_RECODING = "step_8_execute_pspp_recoding"
+STEP_9_GENERATE_INDICATORS = "step_9_generate_indicators"
+STEP_10_VALIDATE_INDICATORS = "step_10_validate_indicators"
+STEP_11_REVIEW_INDICATORS = "step_11_review_indicators"
+STEP_12_GENERATE_TABLE_SPECIFICATIONS = "step_12_generate_table_specifications"
+STEP_13_VALIDATE_TABLE_SPECIFICATIONS = "step_13_validate_table_specifications"
+STEP_14_REVIEW_TABLE_SPECIFICATIONS = "step_14_review_table_specifications"
+STEP_15_GENERATE_PSPP_TABLE_SYNTAX = "step_15_generate_pspp_table_syntax"
+STEP_16_EXECUTE_PSPP_TABLES = "step_16_execute_pspp_tables"
+STEP_17_GENERATE_STATISTICS_SCRIPT = "step_17_generate_statistics_script"
+STEP_18_EXECUTE_STATISTICS_SCRIPT = "step_18_execute_statistics_script"
+STEP_19_GENERATE_FILTER_LIST = "step_19_generate_filter_list"
+STEP_20_APPLY_FILTER_TO_TABLES = "step_20_apply_filter_to_tables"
+STEP_21_GENERATE_POWERPOINT = "step_21_generate_powerpoint"
+STEP_22_GENERATE_HTML_DASHBOARD = "step_22_generate_html_dashboard"
+
+# Mapping of step names to their numeric order (for ordering/comparison)
+STEP_ORDER = {
+    STEP_0_INITIAL: 0,
+    STEP_1_EXTRACT_SPSS: 1,
+    STEP_2_TRANSFORM_METADATA: 2,
+    STEP_3_FILTER_METADATA: 3,
+    STEP_4_GENERATE_RECODING_RULES: 4,
+    STEP_5_VALIDATE_RECODING_RULES: 5,
+    STEP_6_REVIEW_RECODING_RULES: 6,
+    STEP_7_GENERATE_PSPP_RECODING_SYNTAX: 7,
+    STEP_8_EXECUTE_PSPP_RECODING: 8,
+    STEP_9_GENERATE_INDICATORS: 9,
+    STEP_10_VALIDATE_INDICATORS: 10,
+    STEP_11_REVIEW_INDICATORS: 11,
+    STEP_12_GENERATE_TABLE_SPECIFICATIONS: 12,
+    STEP_13_VALIDATE_TABLE_SPECIFICATIONS: 13,
+    STEP_14_REVIEW_TABLE_SPECIFICATIONS: 14,
+    STEP_15_GENERATE_PSPP_TABLE_SYNTAX: 15,
+    STEP_16_EXECUTE_PSPP_TABLES: 16,
+    STEP_17_GENERATE_STATISTICS_SCRIPT: 17,
+    STEP_18_EXECUTE_STATISTICS_SCRIPT: 18,
+    STEP_19_GENERATE_FILTER_LIST: 19,
+    STEP_20_APPLY_FILTER_TO_TABLES: 20,
+    STEP_21_GENERATE_POWERPOINT: 21,
+    STEP_22_GENERATE_HTML_DASHBOARD: 22,
+}
+
+# Reverse mapping for backward compatibility (numeric to string)
+NUMERIC_TO_STEP_NAME = {
+    0: STEP_0_INITIAL,
+    1: STEP_1_EXTRACT_SPSS,
+    2: STEP_2_TRANSFORM_METADATA,
+    3: STEP_3_FILTER_METADATA,
+    4: STEP_4_GENERATE_RECODING_RULES,
+    5: STEP_5_VALIDATE_RECODING_RULES,
+    6: STEP_6_REVIEW_RECODING_RULES,
+    7: STEP_7_GENERATE_PSPP_RECODING_SYNTAX,
+    8: STEP_8_EXECUTE_PSPP_RECODING,
+    9: STEP_9_GENERATE_INDICATORS,
+    10: STEP_10_VALIDATE_INDICATORS,
+    11: STEP_11_REVIEW_INDICATORS,
+    12: STEP_12_GENERATE_TABLE_SPECIFICATIONS,
+    13: STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
+    14: STEP_14_REVIEW_TABLE_SPECIFICATIONS,
+    15: STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
+    16: STEP_16_EXECUTE_PSPP_TABLES,
+    17: STEP_17_GENERATE_STATISTICS_SCRIPT,
+    18: STEP_18_EXECUTE_STATISTICS_SCRIPT,
+    19: STEP_19_GENERATE_FILTER_LIST,
+    20: STEP_20_APPLY_FILTER_TO_TABLES,
+    21: STEP_21_GENERATE_POWERPOINT,
+    22: STEP_22_GENERATE_HTML_DASHBOARD,
+}
+
+# Review steps (three-node pattern approval steps)
+REVIEW_STEPS = {
+    STEP_6_REVIEW_RECODING_RULES,
+    STEP_11_REVIEW_INDICATORS,
+    STEP_14_REVIEW_TABLE_SPECIFICATIONS,
+}
+
+
+# =============================================================================
 # ValidationResult
 # =============================================================================
 
@@ -247,11 +339,11 @@ class ApprovalState(TypedDict, total=False):
     - Whether human review is required
 
     Fields:
-        current_step: Current step number (0-22)
+        current_step: Current step identifier (string constant from STEP_* constants)
         requires_human_review: Whether current step needs human input
         iteration_count: Number of iterations for current step (for retry logic)
     """
-    current_step: int
+    current_step: str
     requires_human_review: bool
     iteration_count: int
 
@@ -417,7 +509,7 @@ def create_initial_state(input_file_path: str, config: Optional[Dict[str, Any]] 
         # ========================================
         # ApprovalState - Initialized
         # ========================================
-        current_step=0,
+        current_step=STEP_0_INITIAL,
         requires_human_review=False,
         iteration_count=0,
 

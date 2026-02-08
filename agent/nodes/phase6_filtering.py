@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
 
-from agent.state import WorkflowState
+from agent.state import WorkflowState, STEP_19_GENERATE_FILTER_LIST, STEP_20_APPLY_FILTER_TO_TABLES
 from agent.config import DEFAULT_CONFIG
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
         Updated workflow state with:
             - filter_list: Dict with filters list and summary statistics
             - filter_list_json_path: Path to saved filter_list.json
-            - current_step: Set to 19
+            - current_step: Set to STEP_19_GENERATE_FILTER_LIST
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
 
@@ -80,7 +80,7 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -123,7 +123,7 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
 
             return {
                 **state,
-                "current_step": 19,
+                "current_step": STEP_19_GENERATE_FILTER_LIST,
                 "filter_list": filter_list,
                 "warnings": warnings,
             }
@@ -261,7 +261,7 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
         # Return new state
         return {
             **state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "filter_list": filter_list,
             "warnings": warnings,
         }
@@ -271,7 +271,7 @@ def generate_filter_list_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -574,7 +574,7 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
             - filtered_tables: Dict containing only significant tables
             - significant_tables_json_path: Path to saved significant_tables.json
             - significant_tables_csv_path: Path to saved significant_tables.csv
-            - current_step: Set to 20
+            - current_step: Set to STEP_20_APPLY_FILTER_TO_TABLES
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
 
@@ -609,7 +609,7 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -618,7 +618,7 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -665,7 +665,7 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
 
             return {
                 **state,
-                "current_step": 20,
+                "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
                 "filtered_tables": filtered_tables,
                 "significant_tables_json_path": str(json_path),
                 "significant_tables_csv_path": str(csv_path),
@@ -811,7 +811,7 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
         # ======================================================================
         return {
             **state,
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "filtered_tables": filtered_tables,
             "significant_tables_json_path": str(json_path),
             "significant_tables_csv_path": str(csv_path),
@@ -828,6 +828,6 @@ def apply_filter_to_tables_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }

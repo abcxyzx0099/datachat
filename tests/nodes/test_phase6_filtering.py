@@ -33,7 +33,7 @@ from agent.nodes.phase6_filtering import (
     _should_include_table,
     validate_filtering_results,
 )
-from agent.state import WorkflowState
+from agent.state import WorkflowState, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
 
 
 # =============================================================================
@@ -194,7 +194,7 @@ def filtering_state(statistics_state: WorkflowState) -> WorkflowState:
     """State ready for filtering (after Step 18)."""
     return {
         **statistics_state,
-        "current_step": 18,
+        "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
         "warnings": [],
         "errors": [],
     }
@@ -812,7 +812,7 @@ class TestApplyFilterToTablesNode:
         """Test successful filter application with significant tables."""
         state = {
             **filtering_state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": sample_statistical_summary,
             "filter_list": filter_list,
             "config": {**sample_config, "output_dir": str(tmp_path)},
@@ -874,7 +874,7 @@ class TestApplyFilterToTablesNode:
         """Test handling of empty filter list."""
         state = {
             **filtering_state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": sample_statistical_summary,
             "filter_list": {"filters": [], "summary": {"criteria": {}}},
             "config": {**sample_config, "output_dir": str(tmp_path)},
@@ -911,7 +911,7 @@ class TestApplyFilterToTablesNode:
 
         state = {
             **filtering_state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": none_significant_summary,
             "filter_list": filter_list_none,
             "config": {**sample_config, "output_dir": str(tmp_path)},
@@ -934,7 +934,7 @@ class TestApplyFilterToTablesNode:
         """Test error handling when filter_list is missing."""
         state = {
             **filtering_state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": sample_statistical_summary,
             "filter_list": None,
         }
@@ -953,7 +953,7 @@ class TestApplyFilterToTablesNode:
         """Test error handling when statistical_summary is missing."""
         state = {
             **filtering_state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": None,
             "filter_list": filter_list,
         }
@@ -976,7 +976,7 @@ class TestApplyFilterToTablesNode:
         # Create a fresh state without filtered_tables key
         state = {
             **{k: v for k, v in filtering_state.items() if k not in ("filter_list", "filtered_tables")},
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": sample_statistical_summary.copy(),
             "filter_list": filter_list.copy(),
             "config": {**sample_config, "output_dir": str(tmp_path)},
@@ -1008,7 +1008,7 @@ class TestApplyFilterToTablesNode:
         """Test that validation results are added to state."""
         state = {
             **filtering_state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": sample_statistical_summary,
             "filter_list": filter_list,
             "config": {**sample_config, "output_dir": str(tmp_path)},
@@ -1035,7 +1035,7 @@ class TestApplyFilterToTablesNode:
         """Test that CSV output has correct column structure."""
         state = {
             **filtering_state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": sample_statistical_summary,
             "filter_list": filter_list,
             "config": {**sample_config, "output_dir": str(tmp_path)},
@@ -1075,7 +1075,7 @@ class TestApplyFilterToTablesNode:
 
         state = {
             **filtering_state,
-            "current_step": 19,
+            "current_step": STEP_19_GENERATE_FILTER_LIST,
             "statistical_summary": sample_statistical_summary,
             "filter_list": empty_filter_list,
             "config": {**sample_config, "output_dir": str(tmp_path)},
@@ -1108,7 +1108,7 @@ class TestFilteringIntegration:
         """Test complete filtering workflow from Step 19 to Step 20."""
         state = {
             **filtering_state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "statistical_summary": sample_statistical_summary,
             "config": {**sample_config, "temp_dir": str(tmp_path), "output_dir": str(tmp_path)},
         }
@@ -1147,7 +1147,7 @@ class TestFilteringIntegration:
 
         state = {
             **filtering_state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "statistical_summary": sample_statistical_summary,
             "config": {**sample_config, "temp_dir": str(tmp_path), "output_dir": str(tmp_path)},
             "warnings": list(initial_warnings),

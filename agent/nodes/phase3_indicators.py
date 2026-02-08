@@ -15,7 +15,11 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 
-from agent.state import WorkflowState, ValidationResult
+from agent.state import (
+    WorkflowState, ValidationResult,
+    STEP_9_GENERATE_INDICATORS, STEP_10_VALIDATE_INDICATORS,
+    STEP_11_REVIEW_INDICATORS
+)
 from agent.llm.clients import get_llm_client
 from agent.llm.prompts import generate_indicators_prompt
 from agent.config import DEFAULT_CONFIG
@@ -54,7 +58,7 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - indicators: Dict containing generated indicator definitions
-            - current_step: Set to 9
+            - current_step: Set to STEP_9_GENERATE_INDICATORS
             - iteration_count: Incremented if this is a retry
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
@@ -79,7 +83,7 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 9,
+            "current_step": STEP_9_GENERATE_INDICATORS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -139,7 +143,7 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
             # Store error as feedback for retry
             return {
                 **state,
-                "current_step": 9,
+                "current_step": STEP_9_GENERATE_INDICATORS,
                 "iteration_count": iteration_count + 1,
                 "indicator_feedback": error_msg,
                 "errors": state.get("errors", []) + [error_msg],
@@ -153,7 +157,7 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
 
             return {
                 **state,
-                "current_step": 9,
+                "current_step": STEP_9_GENERATE_INDICATORS,
                 "iteration_count": iteration_count + 1,
                 "indicator_feedback": error_msg,
                 "errors": state.get("errors", []) + [error_msg],
@@ -182,7 +186,7 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
         # Clear previous feedback on successful generation
         new_state = {
             **state,
-            "current_step": 9,
+            "current_step": STEP_9_GENERATE_INDICATORS,
             "indicators": indicators,
             "indicator_feedback": None,  # Clear feedback on success
             "warnings": warnings,
@@ -199,7 +203,7 @@ def generate_indicators_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 9,
+            "current_step": STEP_9_GENERATE_INDICATORS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -509,7 +513,7 @@ def validate_indicators_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - indicator_validation_result: ValidationResult object
-            - current_step: Set to 10
+            - current_step: Set to STEP_10_VALIDATE_INDICATORS
             - errors: List of errors (appended if validation fails)
             - warnings: List of warnings (appended if any warnings)
 
@@ -534,7 +538,7 @@ def validate_indicators_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 10,
+            "current_step": STEP_10_VALIDATE_INDICATORS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -543,7 +547,7 @@ def validate_indicators_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 10,
+            "current_step": STEP_10_VALIDATE_INDICATORS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -577,7 +581,7 @@ def validate_indicators_node(state: WorkflowState) -> WorkflowState:
         # Prepare updated state
         new_state = {
             **state,
-            "current_step": 10,
+            "current_step": STEP_10_VALIDATE_INDICATORS,
             "indicator_validation_result": validation_result,
         }
 
@@ -596,7 +600,7 @@ def validate_indicators_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 10,
+            "current_step": STEP_10_VALIDATE_INDICATORS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -630,7 +634,7 @@ def review_indicators_node(state: WorkflowState) -> WorkflowState:
 
     Returns:
         Updated workflow state with:
-            - current_step: Set to 11
+            - current_step: Set to STEP_11_REVIEW_INDICATORS
             - requires_human_review: Set to True
 
     Note:
@@ -656,7 +660,7 @@ def review_indicators_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 11,
+            "current_step": STEP_11_REVIEW_INDICATORS,
             "errors": state.get("errors", []) + [error_msg],
             "requires_human_review": not auto_approve,
             "indicators_approved": auto_approve,
@@ -708,7 +712,7 @@ def review_indicators_node(state: WorkflowState) -> WorkflowState:
         # Return state with approval status
         return {
             **state,
-            "current_step": 11,
+            "current_step": STEP_11_REVIEW_INDICATORS,
             "requires_human_review": not auto_approve,
             "indicators_approved": auto_approve,
         }
@@ -718,7 +722,7 @@ def review_indicators_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 11,
+            "current_step": STEP_11_REVIEW_INDICATORS,
             "errors": state.get("errors", []) + [error_msg],
             "requires_human_review": not auto_approve,
             "indicators_approved": auto_approve,

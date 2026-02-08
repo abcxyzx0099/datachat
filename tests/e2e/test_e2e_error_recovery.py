@@ -44,8 +44,11 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from agent.graph import build_graph
 from agent.state import (
     WorkflowState,
-    create_initial_state,
-    ValidationResult,
+    STEP_0_INITIAL,
+    STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES,
+    STEP_5_VALIDATE_RECODING_RULES,
+    STEP_6_REVIEW_RECODING_RULES,
 )
 from agent.config import DEFAULT_CONFIG
 
@@ -423,7 +426,7 @@ class StateCorruptionInjector:
     def create_state_with_missing_fields() -> Dict[str, Any]:
         """Create a state missing critical required fields."""
         return {
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             # Missing: input_file_path, filtered_metadata
         }
 
@@ -481,7 +484,7 @@ class TestLLMFailureScenarios:
         # Simulate state after Step 3
         prepared_state = {
             **initial_state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "raw_data": pd.DataFrame(),
             "filtered_metadata": [
                 {"name": "age", "label": "Age", "variable_type": "numeric"}
@@ -522,7 +525,7 @@ class TestLLMFailureScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "filtered_metadata": [
                 {"name": "age", "label": "Age", "variable_type": "numeric"}
             ],
@@ -561,7 +564,7 @@ class TestLLMFailureScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "filtered_metadata": [
                 {"name": "age", "label": "Age", "variable_type": "numeric"}
             ],
@@ -600,7 +603,7 @@ class TestLLMFailureScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "filtered_metadata": [
                 {"name": "age", "label": "Age", "variable_type": "numeric"}
             ],
@@ -650,7 +653,7 @@ class TestLLMFailureScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "filtered_metadata": [
                 {"name": "age", "label": "Age", "variable_type": "numeric"}
             ],
@@ -694,7 +697,7 @@ class TestLLMFailureScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "filtered_metadata": [
                 {"name": "age", "label": "Age", "variable_type": "numeric"}
             ],
@@ -976,7 +979,7 @@ class TestValidationLoopScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 4,
+            "current_step": STEP_4_GENERATE_RECODING_RULES,
             "filtered_metadata": [
                 {"name": "age", "label": "Age", "variable_type": "numeric"}
             ],
@@ -1021,7 +1024,7 @@ class TestValidationLoopScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "filtered_metadata": [],
             "recoding_rules": {"recoding_rules": []},
             "recoding_validation_result": ValidationResult(
@@ -1061,7 +1064,7 @@ class TestValidationLoopScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_validation_result": ValidationResult(
                 is_valid=False,
                 errors=["Max iterations reached with validation errors"],
@@ -1098,7 +1101,7 @@ class TestValidationLoopScenarios:
 
         prepared_state = {
             **initial_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_validation_result": ValidationResult(
                 is_valid=False,
                 errors=["Validation error"],
@@ -1495,7 +1498,7 @@ class TestPartialRecoveryScenarios:
         # Create state mid-phase (Step 5: validation)
         mid_phase_state = create_initial_state(sample_sav_file, error_recovery_config)
         mid_phase_state.update({
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "filtered_metadata": [
                 {"name": "age", "label": "Age", "variable_type": "numeric"}
             ],
@@ -1531,7 +1534,7 @@ class TestPartialRecoveryScenarios:
         # Create state at human review step
         review_state = create_initial_state(sample_sav_file, error_recovery_config)
         review_state.update({
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_rules": {"recoding_rules": []},
             "recoding_validation_result": ValidationResult(
                 is_valid=True,

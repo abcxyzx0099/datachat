@@ -41,7 +41,11 @@ import uvicorn
 
 # LangGraph imports
 from agent.graph import get_graph, run_analysis, resume_analysis
-from agent.state import WorkflowState, state_to_dict, get_state_summary
+from agent.state import (
+    WorkflowState, state_to_dict, get_state_summary,
+    STEP_6_REVIEW_RECODING_RULES, STEP_11_REVIEW_INDICATORS,
+    STEP_14_REVIEW_TABLE_SPECIFICATIONS
+)
 
 
 # =============================================================================
@@ -114,7 +118,7 @@ class ThreadStateResponse(BaseModel):
     thread_id: str
     state: Dict[str, Any]
     summary: Dict[str, Any]
-    current_step: int
+    current_step: str
     requires_human_review: bool
 
 
@@ -452,7 +456,7 @@ async def get_thread_state(thread_id: str) -> ThreadStateResponse:
             thread_id=thread_id,
             state=state_dict,
             summary=get_state_summary(state_snapshot.values),
-            current_step=state_snapshot.values.get("current_step", 0),
+            current_step=state_snapshot.values.get("current_step", "step_0_initial"),
             requires_human_review=state_snapshot.values.get("requires_human_review", False)
         )
 
@@ -506,13 +510,13 @@ async def submit_feedback(thread_id: str, request: FeedbackRequest) -> Dict[str,
             )
 
         # Update state based on current step
-        current_step = current_state.get("current_step", 0)
+        current_step = current_state.get("current_step", "step_0_initial")
 
         # Map review steps to their state fields
         review_field_mapping = {
-            6: ("recoding_approved", "recoding_feedback"),
-            11: ("indicators_approved", "indicator_feedback"),
-            14: ("table_specs_approved", "table_specs_feedback"),
+            STEP_6_REVIEW_RECODING_RULES: ("recoding_approved", "recoding_feedback"),
+            STEP_11_REVIEW_INDICATORS: ("indicators_approved", "indicator_feedback"),
+            STEP_14_REVIEW_TABLE_SPECIFICATIONS: ("table_specs_approved", "table_specs_feedback"),
         }
 
         if current_step not in review_field_mapping:

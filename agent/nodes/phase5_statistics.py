@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from agent.state import WorkflowState
+from agent.state import WorkflowState, STEP_17_GENERATE_STATISTICS_SCRIPT, STEP_18_EXECUTE_STATISTICS_SCRIPT
 from agent.config import DEFAULT_CONFIG
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
     Returns:
         Updated workflow state with:
             - statistics_script: Path to generated stats_script.py
-            - current_step: Set to 17
+            - current_step: Set to STEP_17_GENERATE_STATISTICS_SCRIPT
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
 
@@ -83,7 +83,7 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 17,
+            "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -92,7 +92,7 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 17,
+            "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -104,7 +104,7 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
             logger.warning(warning_msg)
             return {
                 **state,
-                "current_step": 17,
+                "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
                 "warnings": state.get("warnings", []) + [warning_msg],
             }
 
@@ -132,7 +132,7 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
 
         return {
             **state,
-            "current_step": 17,
+            "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
             "statistics_script": str(script_path),
         }
 
@@ -141,7 +141,7 @@ def generate_python_statistics_script_node(state: WorkflowState) -> WorkflowStat
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 17,
+            "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -522,7 +522,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
     Returns:
         Updated workflow state with:
             - statistical_summary: Dict with all statistical test results
-            - current_step: Set to 18
+            - current_step: Set to STEP_18_EXECUTE_STATISTICS_SCRIPT
             - errors: List of errors (appended if script fails)
             - warnings: List of warnings (appended for any issues)
 
@@ -555,7 +555,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -565,7 +565,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -602,7 +602,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
 
             return {
                 **state,
-                "current_step": 18,
+                "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
                 "errors": state.get("errors", []) + [error_msg],
             }
 
@@ -622,7 +622,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
             logger.error(error_msg)
             return {
                 **state,
-                "current_step": 18,
+                "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
                 "errors": state.get("errors", []) + [error_msg],
             }
 
@@ -686,7 +686,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         # Update state
         new_state = {
             **state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "statistical_summary": statistical_summary,
             "warnings": warnings,
         }
@@ -699,7 +699,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -708,7 +708,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -717,7 +717,7 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -726,6 +726,6 @@ def execute_python_statistics_script_node(state: WorkflowState) -> WorkflowState
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "errors": state.get("errors", []) + [error_msg],
         }

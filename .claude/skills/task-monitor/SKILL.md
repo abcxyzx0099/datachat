@@ -104,6 +104,73 @@ The task-monitor module provides grouped commands:
 | `logs --follow` | Follow logs live |
 | `logs --lines <n>` | Show last N lines |
 
+## Task ID Format & Usage
+
+### Task ID Format
+
+**Full Task ID**: `task-{timestamp}-{description}`
+
+| Component | Format | Example |
+|-----------|--------|---------|
+| Prefix | `task-` | `task-` |
+| Timestamp | `YYYYMMDD-HHMMSS` | `20260208-091827` |
+| Description | kebab-case | `refactor-current-step-to-string` |
+| Extension | `.md` (not included in ID) | - |
+
+**Full Example:**
+- Filename: `task-20260208-091827-refactor-current-step-to-string.md`
+- Task ID: `task-20260208-091827-refactor-current-step-to-string`
+
+### Using Tasks Commands
+
+```bash
+# Show task document path
+task-monitor tasks show task-20260208-091827-refactor-current-step-to-string
+
+# Show result JSON path and contents
+task-monitor tasks logs task-20260208-091827-refactor-current-step-to-string
+
+# Cancel a running task
+task-monitor tasks cancel task-20260208-091827-refactor-current-step-to-string
+```
+
+### Direct File Access (Alternative Methods)
+
+If CLI commands have issues, access files directly:
+
+```bash
+# List all completed tasks
+ls tasks/ad-hoc/completed/
+
+# List all failed tasks
+ls tasks/ad-hoc/failed/
+
+# List result JSON files
+ls tasks/ad-hoc/results/
+
+# Read a specific result
+cat tasks/ad-hoc/results/task-20260208-091827-refactor-current-step-to-string.json
+
+# Read a specific report
+cat tasks/ad-hoc/reports/task-20260208-091827-refactor-current-step-to-string.md
+
+# Read the original task document
+cat tasks/ad-hoc/completed/task-20260208-091827-refactor-current-step-to-string.md
+```
+
+### Finding Task IDs
+
+```bash
+# List all tasks with timestamps
+find tasks/ad-hoc -name "task-*.md" -ls | head -20
+
+# Find recent tasks
+ls -lt tasks/ad-hoc/completed/ | head -10
+
+# Find tasks by pattern
+ls tasks/ad-hoc/*/task-*refactor*.md 2>/dev/null
+```
+
 ## Lock File Format
 
 When a task is running, a lock file is created:

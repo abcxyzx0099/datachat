@@ -34,7 +34,7 @@ Test Coverage:
 import pytest
 from unittest.mock import patch, Mock
 
-from agent.state import ValidationResult
+from agent.state import ValidationResult, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
 from agent.nodes.phase3_indicators import (
     generate_indicators_node,
     validate_indicators_node,
@@ -225,7 +225,7 @@ class TestGenerateIndicatorsNode:
             "new_metadata": new_metadata,
             "warnings": [],
             "config": {"output_dir": "/tmp/output"},
-            "current_step": 0,
+            "current_step": STEP_0_INITIAL,
             "errors": [],
         }
 

@@ -26,7 +26,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
-from agent.state import WorkflowState, create_initial_state
+from agent.state import WorkflowState, create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
 from agent.nodes.phase5_statistics import (
     generate_python_statistics_script_node,
     execute_python_statistics_script_node,
@@ -43,7 +43,7 @@ def sample_state():
     """Base sample state for testing."""
     return {
         "input_file_path": "test_data.sav",
-        "current_step": 16,
+        "current_step": STEP_16_EXECUTE_PSPP_TABLES,
         "errors": [],
         "warnings": [],
     }
@@ -836,7 +836,7 @@ class TestExecutePythonStatisticsScriptNode:
         # Input state should be unchanged
         assert state.get("warnings") == original_warnings
         assert "statistical_summary" not in state
-        assert state["current_step"] == 16
+        assert state["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
 
     def test_execute_statistics_script_preserves_errors(self, populated_state, tmp_path):
         """Test that existing errors are preserved."""

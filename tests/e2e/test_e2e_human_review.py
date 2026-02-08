@@ -47,9 +47,8 @@ from dataclasses import dataclass
 
 # LangGraph and state imports
 from agent.state import (
-    WorkflowState,
-    ValidationResult,
-    create_initial_state,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
+)
 )
 from agent.config import DEFAULT_CONFIG
 
@@ -108,7 +107,7 @@ except ImportError:
     def sample_state(test_config_dict: Dict[str, Any]) -> WorkflowState:
         """Minimal workflow state for testing (fallback if conftest not available)."""
         return {
-            "current_step": 0,
+            "current_step": STEP_0_INITIAL,
             "input_file_path": "test_data.sav",
             "config": test_config_dict,
             "iteration_count": 0,
@@ -251,7 +250,7 @@ class TestRecodingHumanReview:
         # Prepare state after validation (Step 5 complete)
         state_before_review = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -301,7 +300,7 @@ class TestRecodingHumanReview:
         """
         state_before_review = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -351,7 +350,7 @@ class TestRecodingHumanReview:
         # State after human approval
         approved_state = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -387,7 +386,7 @@ class TestRecodingHumanReview:
         # State after human rejection
         rejected_state = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -426,7 +425,7 @@ class TestRecodingHumanReview:
         """
         state_before_review = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -478,7 +477,7 @@ class TestIndicatorsHumanReview:
         """
         state_before_review = {
             **sample_state,
-            "current_step": 10,
+            "current_step": STEP_10_VALIDATE_INDICATORS,
             "indicators": valid_indicators,
             "new_metadata": {
                 "variable_names": ["satisfaction", "gender", "age"],
@@ -531,7 +530,7 @@ class TestIndicatorsHumanReview:
         """
         state_before_review = {
             **sample_state,
-            "current_step": 10,
+            "current_step": STEP_10_VALIDATE_INDICATORS,
             "indicators": valid_indicators,
             "new_metadata": {
                 "variable_names": ["satisfaction", "gender", "age"],
@@ -580,7 +579,7 @@ class TestIndicatorsHumanReview:
         """
         approved_state = {
             **sample_state,
-            "current_step": 11,
+            "current_step": STEP_11_REVIEW_INDICATORS,
             "indicators": valid_indicators,
             "indicator_validation_result": ValidationResult(
                 is_valid=True,
@@ -611,7 +610,7 @@ class TestIndicatorsHumanReview:
         """
         rejected_state = {
             **sample_state,
-            "current_step": 11,
+            "current_step": STEP_11_REVIEW_INDICATORS,
             "indicators": valid_indicators,
             "indicator_validation_result": ValidationResult(
                 is_valid=True,
@@ -655,7 +654,7 @@ class TestTableSpecsHumanReview:
         """
         state_before_review = {
             **sample_state,
-            "current_step": 13,
+            "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
             "table_specifications": valid_table_specs,
             "new_metadata": {
                 "variable_names": ["gender", "satisfaction"],
@@ -697,7 +696,7 @@ class TestTableSpecsHumanReview:
         """
         state_before_review = {
             **sample_state,
-            "current_step": 13,
+            "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
             "table_specifications": valid_table_specs,
             "new_metadata": {
                 "variable_names": ["gender", "satisfaction"],
@@ -746,7 +745,7 @@ class TestTableSpecsHumanReview:
         """
         approved_state = {
             **sample_state,
-            "current_step": 14,
+            "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
             "table_specifications": valid_table_specs,
             "table_validation_result": ValidationResult(
                 is_valid=True,
@@ -777,7 +776,7 @@ class TestTableSpecsHumanReview:
         """
         rejected_state = {
             **sample_state,
-            "current_step": 14,
+            "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
             "table_specifications": valid_table_specs,
             "table_validation_result": ValidationResult(
                 is_valid=True,
@@ -824,7 +823,7 @@ class TestCheckpointResumption:
         # This simulates what the checkpoint would contain before review
         checkpoint_state = {
             **sample_state,
-            "current_step": 6,  # At review node
+            "current_step": STEP_6_REVIEW_RECODING_RULES,  # At review node
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -861,7 +860,7 @@ class TestCheckpointResumption:
         # Simulate resuming from checkpoint with human approval
         resumed_state = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -896,7 +895,7 @@ class TestCheckpointResumption:
         """
         resumed_state = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -933,7 +932,7 @@ class TestCheckpointResumption:
 
         state_with_feedback = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_approved": False,
             "recoding_feedback": feedback,
             "iteration_count": 1,
@@ -969,7 +968,7 @@ class TestCheckpointResumption:
         # Cycle 1
         state_cycle1 = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "iteration_count": 0,
             "recoding_approved": False,
             "recoding_feedback": "First feedback",
@@ -1019,7 +1018,7 @@ class TestFeedbackIncorporation:
 
         state_after_validation = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_validation_result": validation_result,
             "iteration_count": 1,
         }
@@ -1051,7 +1050,7 @@ class TestFeedbackIncorporation:
 
         state_after_rejection = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -1194,7 +1193,7 @@ class TestReviewDocuments:
         """
         state = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -1247,7 +1246,7 @@ class TestReviewDocuments:
         """
         state = {
             **sample_state,
-            "current_step": 10,
+            "current_step": STEP_10_VALIDATE_INDICATORS,
             "indicators": valid_indicators,
             "new_metadata": {
                 "variable_names": ["satisfaction", "gender"],
@@ -1288,7 +1287,7 @@ class TestReviewDocuments:
         """
         state = {
             **sample_state,
-            "current_step": 13,
+            "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
             "table_specifications": valid_table_specs,
             "new_metadata": {
                 "variable_names": ["gender", "satisfaction"],
@@ -1335,7 +1334,7 @@ class TestReviewDocuments:
         """
         state = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -1377,7 +1376,7 @@ class TestReviewDocuments:
         """
         state = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=False,  # Validation failed
@@ -1453,7 +1452,7 @@ class TestAutoApproval:
         # Simulate state evolution through recoding review (Step 6)
         state_after_recoding_review = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -1473,7 +1472,7 @@ class TestAutoApproval:
         # Simulate state through indicators review (Step 11)
         state_after_indicators_review = {
             **sample_state,
-            "current_step": 11,
+            "current_step": STEP_11_REVIEW_INDICATORS,
             "indicators": valid_indicators,
             "indicator_validation_result": ValidationResult(
                 is_valid=True,
@@ -1491,7 +1490,7 @@ class TestAutoApproval:
         # Simulate state through table specs review (Step 14)
         state_after_table_specs_review = {
             **sample_state,
-            "current_step": 14,
+            "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
             "table_specifications": valid_table_specs,
             "table_validation_result": ValidationResult(
                 is_valid=True,
@@ -1521,7 +1520,7 @@ class TestAutoApproval:
         """
         state_before_review = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -1575,7 +1574,7 @@ class TestAutoApproval:
         # Simulate recoding phase with auto-approval
         state = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
                 errors=[],
@@ -1615,7 +1614,7 @@ class TestHumanReviewEdgeCases:
         """
         state_missing_artifact = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": None,  # Missing
             "config": test_config,
         }
@@ -1643,7 +1642,7 @@ class TestHumanReviewEdgeCases:
         """
         state = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": None,  # Missing
             "iteration_count": 0,
@@ -1678,7 +1677,7 @@ class TestHumanReviewEdgeCases:
         # First rejection
         state_1 = {
             **sample_state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_rules": valid_recoding_rules,
             "recoding_validation_result": ValidationResult(
                 is_valid=True,
@@ -1734,7 +1733,7 @@ class TestHumanReviewEdgeCases:
         """
         state = {
             **sample_state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_validation_result": ValidationResult(
                 is_valid=False,
                 errors=["Persistent error"],

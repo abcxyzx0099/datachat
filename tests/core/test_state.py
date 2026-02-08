@@ -32,26 +32,39 @@ from typing import Dict, Any
 import pandas as pd
 
 from agent.state import (
-    # Validation result
+    WorkflowState,
+    create_initial_state,
     ValidationResult,
-
-    # Sub-states
+    state_to_dict,
+    get_state_summary,
     InputState,
     ExtractionState,
     RecodingState,
     IndicatorState,
-    CrossTableState,
-    StatisticalAnalysisState,
     FilteringState,
-    PresentationState,
-    ApprovalState,
-    TrackingState,
-    WorkflowState,
-
-    # Utilities
-    create_initial_state,
-    state_to_dict,
-    get_state_summary,
+    STEP_0_INITIAL,
+    STEP_1_EXTRACT_SPSS,
+    STEP_2_TRANSFORM_METADATA,
+    STEP_3_FILTER_METADATA,
+    STEP_4_GENERATE_RECODING_RULES,
+    STEP_5_VALIDATE_RECODING_RULES,
+    STEP_6_REVIEW_RECODING_RULES,
+    STEP_7_GENERATE_PSPP_RECODING_SYNTAX,
+    STEP_8_EXECUTE_PSPP_RECODING,
+    STEP_9_GENERATE_INDICATORS,
+    STEP_10_VALIDATE_INDICATORS,
+    STEP_11_REVIEW_INDICATORS,
+    STEP_12_GENERATE_TABLE_SPECIFICATIONS,
+    STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
+    STEP_14_REVIEW_TABLE_SPECIFICATIONS,
+    STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
+    STEP_16_EXECUTE_PSPP_TABLES,
+    STEP_17_GENERATE_STATISTICS_SCRIPT,
+    STEP_18_EXECUTE_STATISTICS_SCRIPT,
+    STEP_19_GENERATE_FILTER_LIST,
+    STEP_20_APPLY_FILTER_TO_TABLES,
+    STEP_21_GENERATE_POWERPOINT,
+    STEP_22_GENERATE_HTML_DASHBOARD,
 )
 
 from agent.config import DEFAULT_CONFIG
@@ -429,24 +442,24 @@ class TestApprovalState:
     def test_approval_state_defaults(self):
         """Test ApprovalState with default values."""
         state: ApprovalState = {
-            "current_step": 0,
+            "current_step": STEP_0_INITIAL,
             "requires_human_review": False,
             "iteration_count": 0,
         }
 
-        assert state["current_step"] == 0
+        assert state["current_step"] == STEP_0_INITIAL
         assert state["requires_human_review"] is False
         assert state["iteration_count"] == 0
 
     def test_approval_state_iteration(self):
         """Test ApprovalState with iteration count."""
         state: ApprovalState = {
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "requires_human_review": True,
             "iteration_count": 2,
         }
 
-        assert state["current_step"] == 5
+        assert state["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert state["requires_human_review"] is True
         assert state["iteration_count"] == 2
 
@@ -588,7 +601,7 @@ class TestWorkflowState:
             "powerpoint_file": None,
             "html_dashboard_file": None,
             # ApprovalState
-            "current_step": 0,
+            "current_step": STEP_0_INITIAL,
             "requires_human_review": False,
             "iteration_count": 0,
             # TrackingState
@@ -598,7 +611,7 @@ class TestWorkflowState:
 
         # Verify all fields are accessible
         assert state["input_file_path"] == "test.sav"
-        assert state["current_step"] == 0
+        assert state["current_step"] == STEP_0_INITIAL
         assert state["errors"] == []
 
 
@@ -614,7 +627,7 @@ class TestCreateInitialState:
         state = create_initial_state("test.sav")
 
         assert state["input_file_path"] == "test.sav"
-        assert state["current_step"] == 0
+        assert state["current_step"] == STEP_0_INITIAL
         assert state["iteration_count"] == 0
         assert state["errors"] == []
         assert state["warnings"] == []
@@ -655,7 +668,7 @@ class TestStateToDict:
         """Test converting WorkflowState to dict."""
         state: WorkflowState = {
             "input_file_path": "test.sav",
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "errors": [],
             "warnings": [],
         }
@@ -664,7 +677,7 @@ class TestStateToDict:
 
         assert isinstance(result, dict)
         assert result["input_file_path"] == "test.sav"
-        assert result["current_step"] == 1
+        assert result["current_step"] == STEP_1_EXTRACT_SPSS
 
     def test_state_to_dict_with_validation_result(self):
         """Test that ValidationResult is converted to dict."""
@@ -678,7 +691,7 @@ class TestStateToDict:
         state: WorkflowState = {
             "input_file_path": "test.sav",
             "recoding_validation_result": validation_result,
-            "current_step": 0,
+            "current_step": STEP_0_INITIAL,
             "errors": [],
             "warnings": [],
         }
@@ -697,7 +710,7 @@ class TestGetStateSummary:
         """Test getting state summary."""
         state: WorkflowState = {
             "input_file_path": "test.sav",
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "requires_human_review": True,
             "iteration_count": 2,
             "errors": ["Error 1"],
@@ -710,7 +723,7 @@ class TestGetStateSummary:
 
         summary = get_state_summary(state)
 
-        assert summary["current_step"] == 5
+        assert summary["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert summary["requires_human_review"] is True
         assert summary["iteration_count"] == 2
         assert summary["errors_count"] == 1
@@ -723,7 +736,7 @@ class TestGetStateSummary:
         """Test state summary with no errors."""
         state: WorkflowState = {
             "input_file_path": "test.sav",
-            "current_step": 0,
+            "current_step": STEP_0_INITIAL,
             "requires_human_review": False,
             "iteration_count": 0,
             "errors": [],
@@ -890,7 +903,7 @@ class TestStateEvolution:
         """Test state evolution from Step 0 (initial) to Step 1 (extraction)."""
         # Step 0: Initial state
         state = create_initial_state("test.sav")
-        assert state["current_step"] == 0
+        assert state["current_step"] == STEP_0_INITIAL
         assert state["raw_data"] is None
         assert state["original_metadata"] is None
 
@@ -900,12 +913,12 @@ class TestStateEvolution:
 
         state_step_1 = {
             **state,
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "raw_data": df,
             "original_metadata": metadata,
         }
 
-        assert state_step_1["current_step"] == 1
+        assert state_step_1["current_step"] == STEP_1_EXTRACT_SPSS
         assert state_step_1["raw_data"] is not None
         assert state_step_1["original_metadata"] is not None
         # Original state unchanged
@@ -926,11 +939,11 @@ class TestStateEvolution:
 
         state_step_2 = {
             **state,
-            "current_step": 2,
+            "current_step": STEP_2_TRANSFORM_METADATA,
             "variable_centered_metadata": variable_centered_metadata,
         }
 
-        assert state_step_2["current_step"] == 2
+        assert state_step_2["current_step"] == STEP_2_TRANSFORM_METADATA
         assert state_step_2["variable_centered_metadata"] is not None
         assert "variables" in state_step_2["variable_centered_metadata"]
         # Previous fields still present
@@ -948,12 +961,12 @@ class TestStateEvolution:
 
         state_step_3 = {
             **state,
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
             "filtered_metadata": filtered_metadata,
             "filtered_out_variables": filtered_out_variables,
         }
 
-        assert state_step_3["current_step"] == 3
+        assert state_step_3["current_step"] == STEP_3_FILTER_METADATA
         assert state_step_3["filtered_metadata"] is not None
         assert len(state_step_3["filtered_metadata"]) == 1
         assert state_step_3["filtered_out_variables"] is not None
@@ -969,11 +982,11 @@ class TestStateEvolution:
 
         state_step_4 = {
             **state,
-            "current_step": 4,
+            "current_step": STEP_4_GENERATE_RECODING_RULES,
             "recoding_rules": recoding_rules,
         }
 
-        assert state_step_4["current_step"] == 4
+        assert state_step_4["current_step"] == STEP_4_GENERATE_RECODING_RULES
         assert state_step_4["recoding_rules"] is not None
         assert "var1" in state_step_4["recoding_rules"]
 
@@ -993,11 +1006,11 @@ class TestStateEvolution:
 
         state_step_5 = {
             **state,
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "recoding_validation_result": validation_result,
         }
 
-        assert state_step_5["current_step"] == 5
+        assert state_step_5["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert state_step_5["recoding_validation_result"] is not None
         assert state_step_5["recoding_validation_result"]['is_valid'] is True
 
@@ -1012,12 +1025,12 @@ class TestStateEvolution:
         # Step 6: Add approval
         state_step_6 = {
             **state,
-            "current_step": 6,
+            "current_step": STEP_6_REVIEW_RECODING_RULES,
             "recoding_approved": True,
             "recoding_feedback": None,
         }
 
-        assert state_step_6["current_step"] == 6
+        assert state_step_6["current_step"] == STEP_6_REVIEW_RECODING_RULES
         assert state_step_6["recoding_approved"] is True
 
     def test_state_evolution_step_6_to_8_new_dataset(self):
@@ -1030,12 +1043,12 @@ class TestStateEvolution:
         new_metadata = {"file_name": "new_data.sav", "n_rows": 100}
         state_step_8 = {
             **state,
-            "current_step": 8,
+            "current_step": STEP_8_EXECUTE_PSPP_RECODING,
             "new_data_file": "/tmp/new_data.sav",
             "new_metadata": new_metadata,
         }
 
-        assert state_step_8["current_step"] == 8
+        assert state_step_8["current_step"] == STEP_8_EXECUTE_PSPP_RECODING
         assert state_step_8["new_data_file"] is not None
         assert state_step_8["new_metadata"] is not None
 
@@ -1047,17 +1060,17 @@ class TestStateEvolution:
 
         # Step 9: Add indicators
         indicators = {"indicator1": {"variables": ["var1", "var2"]}}
-        state_step_9 = {**state, "current_step": 9, "indicators": indicators}
+        state_step_9 = {**state, "current_step": STEP_9_GENERATE_INDICATORS, "indicators": indicators}
         assert state_step_9["indicators"] is not None
 
         # Step 10: Add validation
         validation = ValidationResult(is_valid=True, errors=[], warnings=[], checks_performed=[])
-        state_step_10 = {**state_step_9, "current_step": 10, "indicator_validation_result": validation}
+        state_step_10 = {**state_step_9, "current_step": STEP_10_VALIDATE_INDICATORS, "indicator_validation_result": validation}
         assert state_step_10["indicator_validation_result"] is not None
 
         # Step 11: Add approval
-        state_step_11 = {**state_step_10, "current_step": 11, "indicators_approved": True}
-        assert state_step_11["current_step"] == 11
+        state_step_11 = {**state_step_10, "current_step": STEP_11_REVIEW_INDICATORS, "indicators_approved": True}
+        assert state_step_11["current_step"] == STEP_11_REVIEW_INDICATORS
         assert state_step_11["indicators_approved"] is True
 
     def test_state_evolution_step_11_to_14_tables(self):
@@ -1068,17 +1081,17 @@ class TestStateEvolution:
 
         # Step 12: Add table specifications
         table_specs = {"tables": [{"id": "table1"}]}
-        state_step_12 = {**state, "current_step": 12, "table_specifications": table_specs}
+        state_step_12 = {**state, "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS, "table_specifications": table_specs}
         assert state_step_12["table_specifications"] is not None
 
         # Step 13: Add validation
         validation = ValidationResult(is_valid=True, errors=[], warnings=[], checks_performed=[])
-        state_step_13 = {**state_step_12, "current_step": 13, "table_validation_result": validation}
+        state_step_13 = {**state_step_12, "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS, "table_validation_result": validation}
         assert state_step_13["table_validation_result"] is not None
 
         # Step 14: Add approval
-        state_step_14 = {**state_step_13, "current_step": 14, "table_specs_approved": True}
-        assert state_step_14["current_step"] == 14
+        state_step_14 = {**state_step_13, "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS, "table_specs_approved": True}
+        assert state_step_14["current_step"] == STEP_14_REVIEW_TABLE_SPECIFICATIONS
         assert state_step_14["table_specs_approved"] is True
 
     def test_state_evolution_step_14_to_16_crosstabs(self):
@@ -1090,25 +1103,25 @@ class TestStateEvolution:
         # Step 16: Add cross-table file
         state_step_16 = {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "table_syntax_file": "/tmp/tables.sps",
             "cross_table_file": "/tmp/crosstabs.txt",
         }
 
-        assert state_step_16["current_step"] == 16
+        assert state_step_16["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
         assert state_step_16["table_syntax_file"] is not None
         assert state_step_16["cross_table_file"] is not None
 
     def test_state_evolution_step_16_to_18_statistics(self):
         """Test state evolution from Step 16 to Step 18 (statistics)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 16
+        state["current_step"] = STEP_16_EXECUTE_PSPP_TABLES
         state["cross_table_file"] = "/tmp/crosstabs.txt"
 
         # Step 17: Add statistics script
         state_step_17 = {
             **state,
-            "current_step": 17,
+            "current_step": STEP_17_GENERATE_STATISTICS_SCRIPT,
             "statistics_script": "#!/usr/bin/env python3\n...",
         }
         assert state_step_17["statistics_script"] is not None
@@ -1117,47 +1130,47 @@ class TestStateEvolution:
         summary = {"total_tests": 10, "significant_tests": 5}
         state_step_18 = {
             **state_step_17,
-            "current_step": 18,
+            "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
             "statistical_summary": summary,
         }
-        assert state_step_18["current_step"] == 18
+        assert state_step_18["current_step"] == STEP_18_EXECUTE_STATISTICS_SCRIPT
         assert state_step_18["statistical_summary"] is not None
 
     def test_state_evolution_step_18_to_20_filtering(self):
         """Test state evolution from Step 18 to Step 20 (filtering)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 18
+        state["current_step"] = STEP_18_EXECUTE_STATISTICS_SCRIPT
         state["statistical_summary"] = {"total_tests": 10}
 
         # Step 19: Add filter list
         filter_list = {"table1": {"include": True}}
-        state_step_19 = {**state, "current_step": 19, "filter_list": filter_list}
+        state_step_19 = {**state, "current_step": STEP_19_GENERATE_FILTER_LIST, "filter_list": filter_list}
         assert state_step_19["filter_list"] is not None
 
         # Step 20: Add filtered tables and counts
         filtered_tables = {"table1": {"chi_square": 5.2, "p_value": 0.02}}
         state_step_20 = {
             **state_step_19,
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "filtered_tables": filtered_tables,
             "total_tables_evaluated": 10,
             "significant_tables_count": 5,
             "filtering_valid": True,
         }
-        assert state_step_20["current_step"] == 20
+        assert state_step_20["current_step"] == STEP_20_APPLY_FILTER_TO_TABLES
         assert state_step_20["filtered_tables"] is not None
         assert state_step_20["total_tables_evaluated"] == 10
 
     def test_state_evolution_step_20_to_22_presentation(self):
         """Test state evolution from Step 20 to Step 22 (presentation)."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 20
+        state["current_step"] = STEP_20_APPLY_FILTER_TO_TABLES
         state["filtered_tables"] = {"table1": {}}
 
         # Step 21: Add PowerPoint file
         state_step_21 = {
             **state,
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "powerpoint_file": "/output/presentation.pptx",
         }
         assert state_step_21["powerpoint_file"] is not None
@@ -1165,10 +1178,10 @@ class TestStateEvolution:
         # Step 22: Add HTML dashboard
         state_step_22 = {
             **state_step_21,
-            "current_step": 22,
+            "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
             "html_dashboard_file": "/output/dashboard.html",
         }
-        assert state_step_22["current_step"] == 22
+        assert state_step_22["current_step"] == STEP_22_GENERATE_HTML_DASHBOARD
         assert state_step_22["html_dashboard_file"] is not None
 
 
@@ -1190,7 +1203,7 @@ class TestStateTransitions:
         # After transition: Step 4 starts recoding
         state_after = {
             **state_before,
-            "current_step": 4,
+            "current_step": STEP_4_GENERATE_RECODING_RULES,
             "recoding_rules": {"var1": {"recodings": []}},
         }
 
@@ -1214,18 +1227,18 @@ class TestStateTransitions:
     def test_transition_step_16_all_data_tables_complete(self):
         """Test that Step 16 means all data tables are generated."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 16
+        state["current_step"] = STEP_16_EXECUTE_PSPP_TABLES
         state["cross_table_file"] = "/tmp/crosstabs.txt"
 
         # At Step 16, all data tables should be generated
         assert state["cross_table_file"] is not None
         # Statistical analysis should be ready to run
-        assert state["current_step"] == 16
+        assert state["current_step"] == STEP_16_EXECUTE_PSPP_TABLES
 
     def test_transition_step_18_statistical_summary_ready(self):
         """Test that Step 18 provides statistical summary for filtering."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 18
+        state["current_step"] = STEP_18_EXECUTE_STATISTICS_SCRIPT
         state["statistical_summary"] = {
             "tables": [
                 {"name": "table1", "chi_square": 5.2, "p_value": 0.02, "cramers_v": 0.3}
@@ -1239,7 +1252,7 @@ class TestStateTransitions:
     def test_transition_step_20_significant_tables_ready(self):
         """Test that Step 20 provides significant_tables for PowerPoint."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 20
+        state["current_step"] = STEP_20_APPLY_FILTER_TO_TABLES
         state["filtered_tables"] = {
             "tables": [
                 {"name": "table1", "is_significant": True}
@@ -1266,15 +1279,15 @@ class TestStateImmutability:
         # Simulate node creating new state
         new_state = {
             **original,
-            "current_step": 1,
+            "current_step": STEP_1_EXTRACT_SPSS,
             "raw_data": pd.DataFrame({"col1": [1, 2, 3]}),
         }
 
         # Modify new state
-        new_state["current_step"] = 2
+        new_state["current_step"] = STEP_2_TRANSFORM_METADATA
 
         # Original should be unchanged
-        assert original["current_step"] == 0
+        assert original["current_step"] == STEP_0_INITIAL
         assert original["raw_data"] is None
 
     def test_state_immutability_with_dict_merge(self):
@@ -1283,7 +1296,7 @@ class TestStateImmutability:
         original_id = id(original)
 
         # Create new state using dict unpacking
-        new_state = {**original, "current_step": 5}
+        new_state = {**original, "current_step": STEP_5_VALIDATE_RECODING_RULES}
 
         # Should be different object
         assert id(new_state) != original_id
@@ -1422,7 +1435,7 @@ class TestStateFieldAccess:
         assert state["total_tables_evaluated"] == 0
         assert state["significant_tables_count"] == 0
         assert state["iteration_count"] == 0
-        assert state["current_step"] == 0
+        assert state["current_step"] == STEP_0_INITIAL
 
     def test_list_fields_are_mutable(self):
         """Test that list fields (errors, warnings) are mutable."""
@@ -1456,10 +1469,10 @@ class TestTypeConsistency:
         state["input_file_path"] = "/tmp/test.sav"
         assert isinstance(state["input_file_path"], str)
 
-        # current_step is always int
-        assert isinstance(state["current_step"], int)
-        state["current_step"] = 5
-        assert isinstance(state["current_step"], int)
+        # current_step is always str (step identifier)
+        assert isinstance(state["current_step"], str)
+        state["current_step"] = STEP_5_VALIDATE_RECODING_RULES
+        assert isinstance(state["current_step"], str)
 
         # errors is always list
         assert isinstance(state["errors"], list)
@@ -1531,11 +1544,11 @@ class TestStateEdgeCases:
         """Test state with only some fields set."""
         state: WorkflowState = {
             "input_file_path": "test.sav",
-            "current_step": 3,
+            "current_step": STEP_3_FILTER_METADATA,
         }
 
         assert state["input_file_path"] == "test.sav"
-        assert state["current_step"] == 3
+        assert state["current_step"] == STEP_3_FILTER_METADATA
         assert state.get("recoding_rules") is None
 
     def test_state_copy_independence(self):
@@ -1544,11 +1557,11 @@ class TestStateEdgeCases:
         copy_state = original.copy()
 
         # Modify copy
-        copy_state["current_step"] = 5
+        copy_state["current_step"] = STEP_5_VALIDATE_RECODING_RULES
         copy_state["errors"].append("Error")
 
         # Original should be unchanged (except for shared mutable references)
-        assert original["current_step"] == 0
+        assert original["current_step"] == STEP_0_INITIAL
 
     def test_state_with_none_values(self):
         """Test state fields set to None."""
@@ -1566,11 +1579,11 @@ class TestStateEdgeCases:
     def test_state_field_overwrite(self):
         """Test overwriting state fields."""
         state = create_initial_state("test.sav")
-        state["current_step"] = 5
+        state["current_step"] = STEP_5_VALIDATE_RECODING_RULES
 
         # Overwrite with new value
-        state["current_step"] = 10
-        assert state["current_step"] == 10
+        state["current_step"] = STEP_10_VALIDATE_INDICATORS
+        assert state["current_step"] == STEP_10_VALIDATE_INDICATORS
 
 
 # =============================================================================
@@ -1584,7 +1597,7 @@ class TestStateSerialization:
         """Test state_to_dict preserves all fields."""
         state: WorkflowState = {
             "input_file_path": "test.sav",
-            "current_step": 5,
+            "current_step": STEP_5_VALIDATE_RECODING_RULES,
             "errors": ["error1"],
             "warnings": ["warning1"],
             "recoding_approved": True,
@@ -1593,7 +1606,7 @@ class TestStateSerialization:
         result = state_to_dict(state)
 
         assert result["input_file_path"] == "test.sav"
-        assert result["current_step"] == 5
+        assert result["current_step"] == STEP_5_VALIDATE_RECODING_RULES
         assert result["errors"] == ["error1"]
         assert result["warnings"] == ["warning1"]
 

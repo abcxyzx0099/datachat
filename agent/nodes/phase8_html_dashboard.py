@@ -25,7 +25,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
-from agent.state import WorkflowState
+from agent.state import WorkflowState, STEP_22_GENERATE_HTML_DASHBOARD
 from agent.config import DEFAULT_CONFIG
 from agent.nodes.phase7_powerpoint import select_chart_type, ChartType
 from agent.styling import (
@@ -78,7 +78,7 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - html_dashboard_file: Path to output/dashboard.html
-            - current_step: Set to 22
+            - current_step: Set to STEP_22_GENERATE_HTML_DASHBOARD
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
 
@@ -106,7 +106,7 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 22,
+            "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -115,7 +115,7 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 22,
+            "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -127,7 +127,7 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
             logger.error(error_msg)
             return {
                 **state,
-                "current_step": 22,
+                "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
                 "errors": state.get("errors", []) + [error_msg],
             }
 
@@ -167,7 +167,7 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
 
         return {
             **state,
-            "current_step": 22,
+            "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
             "html_dashboard_file": str(dashboard_path),
         }
 
@@ -176,7 +176,7 @@ def generate_html_dashboard_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 22,
+            "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
             "errors": state.get("errors", []) + [error_msg],
         }
 

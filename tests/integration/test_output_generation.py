@@ -58,7 +58,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pandas as pd
 
-from agent.state import WorkflowState, create_initial_state
+from agent.state import WorkflowState, create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
 from agent.config import DEFAULT_CONFIG
 from agent.nodes.phase7_powerpoint import (
     generate_powerpoint_node,
@@ -377,7 +377,7 @@ def populated_powerpoint_state(
     Simulates state after Step 20 completes.
     """
     return {
-        "current_step": 20,
+        "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
         "config": test_config,
         "filtered_tables": sample_significant_tables,
         "statistical_summary": sample_statistical_summary,
@@ -496,7 +496,7 @@ def populated_html_state(
         json.dump(sample_cross_table_data, f)
 
     return {
-        "current_step": 21,
+        "current_step": STEP_21_GENERATE_POWERPOINT,
         "config": test_config,
         "cross_table_file": str(cross_table_file),
         "statistical_summary": sample_statistical_summary,
@@ -763,7 +763,7 @@ class TestPowerPointGeneration:
     ):
         """Test that missing filtered_tables produces error."""
         state = {
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "config": test_config,
             "filtered_tables": None,
             "errors": []
@@ -783,7 +783,7 @@ class TestPowerPointGeneration:
     ):
         """Test PowerPoint generation with empty tables list."""
         state = {
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "config": test_config,
             "filtered_tables": {"tables": [], "summary": {"original_count": 0, "filtered_count": 0}},
             "statistical_summary": {"tables": []},
@@ -842,7 +842,7 @@ class TestPowerPointGeneration:
     ):
         """Test PowerPoint generation handles missing metadata gracefully."""
         state = {
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "config": test_config,
             "filtered_tables": sample_significant_tables,
             "statistical_summary": sample_statistical_summary,
@@ -926,7 +926,7 @@ class TestHTMLDashboardGeneration:
     ):
         """Test that missing cross_table_file produces error."""
         state = {
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "config": test_config,
             "cross_table_file": None,
             "statistical_summary": {"tables": []},
@@ -946,7 +946,7 @@ class TestHTMLDashboardGeneration:
     ):
         """Test that non-existent cross_table_file produces error."""
         state = {
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "config": test_config,
             "cross_table_file": str(temp_output_dir / "nonexistent.json"),
             "statistical_summary": {"tables": []},
@@ -971,7 +971,7 @@ class TestHTMLDashboardGeneration:
             json.dump({"tables": []}, f)
 
         state = {
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "config": test_config,
             "cross_table_file": str(cross_table_file),
             "statistical_summary": None,
@@ -1175,7 +1175,7 @@ class TestOutputGenerationEdgeCases:
     ):
         """Test PowerPoint with no significant tables."""
         state = {
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "config": test_config,
             "filtered_tables": {"tables": [], "summary": {"original_count": 0, "filtered_count": 0}},
             "statistical_summary": {"tables": [], "significant_tables": 0},
@@ -1203,7 +1203,7 @@ class TestOutputGenerationEdgeCases:
             json.dump({"tables": []}, f)
 
         state = {
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "config": test_config,
             "cross_table_file": str(cross_table_file),
             "statistical_summary": {"tables": [], "significant_tables": 0},
@@ -1247,7 +1247,7 @@ class TestOutputGenerationEdgeCases:
         }
 
         state = {
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "config": test_config,
             "filtered_tables": large_table,
             "statistical_summary": {
@@ -1298,7 +1298,7 @@ class TestOutputGenerationEdgeCases:
         }
 
         state = {
-            "current_step": 21,
+            "current_step": STEP_21_GENERATE_POWERPOINT,
             "config": test_config,
             "cross_table_file": str(cross_table_file),
             "statistical_summary": incomplete_stats,
@@ -1414,7 +1414,7 @@ class TestOutputGenerationIntegration:
 
         # Create initial state
         state = {
-            "current_step": 20,
+            "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
             "config": test_config,
             "filtered_tables": sample_significant_tables,
             "statistical_summary": sample_statistical_summary,

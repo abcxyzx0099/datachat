@@ -19,7 +19,12 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 
-from agent.state import WorkflowState, ValidationResult
+from agent.state import (
+    WorkflowState, ValidationResult,
+    STEP_12_GENERATE_TABLE_SPECIFICATIONS, STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
+    STEP_14_REVIEW_TABLE_SPECIFICATIONS, STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
+    STEP_16_EXECUTE_PSPP_TABLES
+)
 from agent.llm.clients import get_llm_client
 from agent.llm.prompts import generate_table_specifications_prompt
 from agent.config import DEFAULT_CONFIG
@@ -59,7 +64,7 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - table_specifications: Dict containing generated table specifications
-            - current_step: Set to 12
+            - current_step: Set to STEP_12_GENERATE_TABLE_SPECIFICATIONS
             - iteration_count: Incremented if this is a retry
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
@@ -85,7 +90,7 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 12,
+            "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -149,7 +154,7 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
             # Store error as feedback for retry
             return {
                 **state,
-                "current_step": 12,
+                "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
                 "iteration_count": iteration_count + 1,
                 "table_specs_feedback": error_msg,
                 "errors": state.get("errors", []) + [error_msg],
@@ -163,7 +168,7 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
 
             return {
                 **state,
-                "current_step": 12,
+                "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
                 "iteration_count": iteration_count + 1,
                 "table_specs_feedback": error_msg,
                 "errors": state.get("errors", []) + [error_msg],
@@ -193,7 +198,7 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
         # Clear previous feedback on successful generation
         new_state = {
             **state,
-            "current_step": 12,
+            "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
             "table_specifications": table_specs,
             "table_specs_feedback": None,  # Clear feedback on success
             "warnings": warnings,
@@ -210,7 +215,7 @@ def generate_table_specifications_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 12,
+            "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -527,7 +532,7 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - table_validation_result: ValidationResult object
-            - current_step: Set to 13
+            - current_step: Set to STEP_13_VALIDATE_TABLE_SPECIFICATIONS
             - errors: List of errors (appended if validation fails)
             - warnings: List of warnings (appended if any warnings)
 
@@ -552,7 +557,7 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 13,
+            "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -561,7 +566,7 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 13,
+            "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -595,7 +600,7 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
         # Prepare updated state
         new_state = {
             **state,
-            "current_step": 13,
+            "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
             "table_validation_result": validation_result,
         }
 
@@ -614,7 +619,7 @@ def validate_table_specs_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 13,
+            "current_step": STEP_13_VALIDATE_TABLE_SPECIFICATIONS,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -648,7 +653,7 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
 
     Returns:
         Updated workflow state with:
-            - current_step: Set to 14
+            - current_step: Set to STEP_14_REVIEW_TABLE_SPECIFICATIONS
             - requires_human_review: Set to True
 
     Note:
@@ -674,7 +679,7 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 14,
+            "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
             "errors": state.get("errors", []) + [error_msg],
             "requires_human_review": not auto_approve,
             "table_specs_approved": auto_approve,
@@ -726,7 +731,7 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
         # Return state with approval status
         return {
             **state,
-            "current_step": 14,
+            "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
             "requires_human_review": not auto_approve,
             "table_specs_approved": auto_approve,
         }
@@ -736,7 +741,7 @@ def review_table_specifications_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 14,
+            "current_step": STEP_14_REVIEW_TABLE_SPECIFICATIONS,
             "errors": state.get("errors", []) + [error_msg],
             "requires_human_review": not auto_approve,
             "table_specs_approved": auto_approve,
@@ -901,7 +906,7 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
         Updated workflow state with:
             - table_syntax_file: Path to generated tables.sps file
             - pspp_tables_syntax: Generated PSPP CTABLES syntax string
-            - current_step: Set to 15
+            - current_step: Set to STEP_15_GENERATE_PSPP_TABLE_SYNTAX
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
 
@@ -927,7 +932,7 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 15,
+            "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -940,7 +945,7 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
             logger.warning(warning_msg)
             return {
                 **state,
-                "current_step": 15,
+                "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
                 "warnings": state.get("warnings", []) + [warning_msg],
             }
 
@@ -1006,7 +1011,7 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
 
         return {
             **state,
-            "current_step": 15,
+            "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
             "pspp_tables_syntax": pspp_syntax,
             "table_syntax_file": str(syntax_file_path),  # Store path for Step 16
             "warnings": warnings,
@@ -1017,7 +1022,7 @@ def generate_pspp_table_syntax_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 15,
+            "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1151,7 +1156,7 @@ def generate_pspp_crosstabs_syntax_node(state: WorkflowState) -> WorkflowState:
         Updated workflow state with:
             - pspp_crosstabs_syntax: Generated PSPP syntax string
             - crosstabs_syntax_file: Path to generated .sps file
-            - current_step: Set to 15
+            - current_step: Set to STEP_15_GENERATE_PSPP_TABLE_SYNTAX
             - errors: List of errors (appended if any occur)
             - warnings: List of warnings (appended if any occur)
 
@@ -1177,7 +1182,7 @@ def generate_pspp_crosstabs_syntax_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 15,
+            "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1190,7 +1195,7 @@ def generate_pspp_crosstabs_syntax_node(state: WorkflowState) -> WorkflowState:
             logger.warning(warning_msg)
             return {
                 **state,
-                "current_step": 15,
+                "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
                 "warnings": state.get("warnings", []) + [warning_msg],
             }
 
@@ -1235,7 +1240,7 @@ def generate_pspp_crosstabs_syntax_node(state: WorkflowState) -> WorkflowState:
 
         return {
             **state,
-            "current_step": 15,
+            "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
             "pspp_crosstabs_syntax": pspp_syntax,
             "crosstabs_syntax_file": str(syntax_file_path),  # Store path for Step 16
         }
@@ -1245,7 +1250,7 @@ def generate_pspp_crosstabs_syntax_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 15,
+            "current_step": STEP_15_GENERATE_PSPP_TABLE_SYNTAX,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1318,7 +1323,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - cross_table_file: Path to output/cross_tables.txt
-            - current_step: Set to 16
+            - current_step: Set to STEP_16_EXECUTE_PSPP_TABLES
             - errors: Appended if PSPP execution fails
             - warnings: Appended for any PSPP warnings
 
@@ -1350,7 +1355,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1359,7 +1364,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1369,7 +1374,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1379,7 +1384,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1416,7 +1421,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
 
             return {
                 **state,
-                "current_step": 16,
+                "current_step": STEP_16_EXECUTE_PSPP_TABLES,
                 "errors": state.get("errors", []) + [error_msg],
             }
 
@@ -1437,7 +1442,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
             logger.error(error_msg)
             return {
                 **state,
-                "current_step": 16,
+                "current_step": STEP_16_EXECUTE_PSPP_TABLES,
                 "errors": state.get("errors", []) + [error_msg],
             }
 
@@ -1455,7 +1460,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
         # Update state
         new_state = {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "cross_table_file": cross_table_file,
             "warnings": warnings,
         }
@@ -1468,7 +1473,7 @@ def execute_pspp_crosstabs_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1496,7 +1501,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
     Returns:
         Updated workflow state with:
             - cross_table_file: Path to output/cross_table.json
-            - current_step: Set to 16
+            - current_step: Set to STEP_16_EXECUTE_PSPP_TABLES
             - errors: Appended if PSPP execution fails
             - warnings: Appended for any PSPP warnings
 
@@ -1529,7 +1534,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1538,7 +1543,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1548,7 +1553,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1558,7 +1563,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 
@@ -1597,7 +1602,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
 
             return {
                 **state,
-                "current_step": 16,
+                "current_step": STEP_16_EXECUTE_PSPP_TABLES,
                 "errors": state.get("errors", []) + [error_msg],
             }
 
@@ -1618,7 +1623,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
             logger.error(error_msg)
             return {
                 **state,
-                "current_step": 16,
+                "current_step": STEP_16_EXECUTE_PSPP_TABLES,
                 "errors": state.get("errors", []) + [error_msg],
             }
 
@@ -1656,7 +1661,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         # Update state
         new_state = {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "cross_table_file": cross_table_json,  # Primary output is JSON
             "warnings": warnings,
         }
@@ -1673,7 +1678,7 @@ def execute_pspp_tables_node(state: WorkflowState) -> WorkflowState:
         logger.error(error_msg, exc_info=True)
         return {
             **state,
-            "current_step": 16,
+            "current_step": STEP_16_EXECUTE_PSPP_TABLES,
             "errors": state.get("errors", []) + [error_msg],
         }
 

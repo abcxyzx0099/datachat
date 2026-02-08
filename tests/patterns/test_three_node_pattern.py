@@ -35,9 +35,8 @@ from typing import Dict, Any
 from unittest.mock import Mock, MagicMock, patch
 
 from agent.state import (
-    WorkflowState,
-    ValidationResult,
-    create_initial_state,
+    STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES, WorkflowState,
+)
 )
 
 from agent.edges import (
@@ -69,7 +68,7 @@ def initial_recoding_state(sample_state) -> WorkflowState:
     """State before Step 4 (ready to generate recoding rules)."""
     return {
         **sample_state,
-        "current_step": 3,
+        "current_step": STEP_3_FILTER_METADATA,
         "filtered_metadata": [
             {
                 "name": "age",
@@ -133,7 +132,7 @@ def initial_indicators_state(sample_state) -> WorkflowState:
     """State before Step 9 (ready to generate indicators)."""
     return {
         **sample_state,
-        "current_step": 8,
+        "current_step": STEP_8_EXECUTE_PSPP_RECODING,
         "new_metadata": {
             "variable_names": ["gender", "satisfaction", "age", "income"],
             "variable_labels": {
@@ -165,7 +164,7 @@ def initial_table_specs_state(sample_state) -> WorkflowState:
     """State before Step 12 (ready to generate table specifications)."""
     return {
         **sample_state,
-        "current_step": 11,
+        "current_step": STEP_11_REVIEW_INDICATORS,
         "new_metadata": {
             "variable_names": ["gender", "satisfaction", "age", "income"],
             "variable_labels": {

@@ -40,7 +40,7 @@ from fastapi import UploadFile
 
 # Import server module
 from agent import server
-from agent.state import WorkflowState, ValidationResult, create_initial_state
+from agent.state import WorkflowState, ValidationResult, create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
 from agent.config import DEFAULT_CONFIG
 
 
@@ -87,7 +87,7 @@ def mock_state_snapshot():
     """Mock a LangGraph state snapshot."""
     snapshot = Mock()
     snapshot.values = {
-        "current_step": 5,
+        "current_step": STEP_5_VALIDATE_RECODING_RULES,
         "requires_human_review": True,
         "recoding_approved": False,
         "indicators_approved": False,
@@ -999,7 +999,7 @@ class TestPydanticModels:
         model = ThreadStateResponse(
             thread_id="test-123",
             state={"key": "value"},
-            summary={"current_step": 5},
+            summary={"current_step": STEP_5_VALIDATE_RECODING_RULES},
             current_step=5,
             requires_human_review=True
         )

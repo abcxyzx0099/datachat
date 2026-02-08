@@ -39,6 +39,11 @@ from agent.state import (
     WorkflowState,
     create_initial_state,
     ValidationResult,
+    STEP_0_INITIAL,
+    STEP_1_EXTRACT_SPSS,
+    STEP_4_GENERATE_RECODING_RULES,
+    STEP_5_VALIDATE_RECODING_RULES,
+    STEP_6_REVIEW_RECODING_RULES,
 )
 
 
@@ -541,7 +546,7 @@ def extraction_state(sample_state: WorkflowState, sample_dataframe: pd.DataFrame
     """
     return {
         **sample_state,
-        "current_step": 3,
+        "current_step": STEP_3_FILTER_METADATA,
         "raw_data": sample_dataframe,
         "original_metadata": sample_metadata,
         "variable_centered_metadata": None,  # Would be populated by actual transform
@@ -572,7 +577,7 @@ def populated_state(sample_state: WorkflowState, sample_dataframe: pd.DataFrame,
     """
     return {
         **sample_state,
-        "current_step": 3,
+        "current_step": STEP_3_FILTER_METADATA,
         "raw_data": sample_dataframe,
         "original_metadata": sample_metadata,
         "variable_centered_metadata": variable_centered_metadata,
@@ -590,7 +595,7 @@ def recoding_state(extraction_state: WorkflowState) -> WorkflowState:
     """
     return {
         **extraction_state,
-        "current_step": 8,
+        "current_step": STEP_8_EXECUTE_PSPP_RECODING,
         "recoding_rules": {"recoding_rules": []},
         "recoding_iteration": 0,
         "recoding_approved": True,
@@ -612,7 +617,7 @@ def indicator_state(recoding_state: WorkflowState) -> WorkflowState:
     """
     return {
         **recoding_state,
-        "current_step": 11,
+        "current_step": STEP_11_REVIEW_INDICATORS,
         "indicators": {
             "indicators": [
                 {"name": "demographics", "variables": ["gender", "age_group"]},
@@ -633,7 +638,7 @@ def table_state(indicator_state: WorkflowState) -> WorkflowState:
     """
     return {
         **indicator_state,
-        "current_step": 16,
+        "current_step": STEP_16_EXECUTE_PSPP_TABLES,
         "table_specifications": {
             "tables": [
                 {
@@ -659,7 +664,7 @@ def statistics_state(table_state: WorkflowState) -> WorkflowState:
     """
     return {
         **table_state,
-        "current_step": 18,
+        "current_step": STEP_18_EXECUTE_STATISTICS_SCRIPT,
         "statistical_summary": [
             {
                 "table_name": "gender_x_education",
@@ -683,7 +688,7 @@ def filtering_state(statistics_state: WorkflowState) -> WorkflowState:
     """
     return {
         **statistics_state,
-        "current_step": 20,
+        "current_step": STEP_20_APPLY_FILTER_TO_TABLES,
         "filter_list": [
             {"table_id": "gender_x_education", "include": True, "passes_significance": True}
         ],
@@ -707,7 +712,7 @@ def presentation_state(filtering_state: WorkflowState) -> WorkflowState:
     """
     return {
         **filtering_state,
-        "current_step": 22,
+        "current_step": STEP_22_GENERATE_HTML_DASHBOARD,
         "powerpoint_path": "/tmp/presentation.pptx",
         "html_dashboard_path": "/tmp/dashboard.html",
     }
@@ -737,7 +742,7 @@ def state_at_max_iterations(sample_state: WorkflowState) -> WorkflowState:
     """
     return {
         **sample_state,
-        "current_step": 4,
+        "current_step": STEP_4_GENERATE_RECODING_RULES,
         "recoding_iteration": 3,
         "recoding_validation": ValidationResult(
             is_valid=False,
@@ -1372,7 +1377,7 @@ def state_with_iteration_error(sample_state: WorkflowState) -> WorkflowState:
     """
     return {
         **sample_state,
-        "current_step": 4,
+        "current_step": STEP_4_GENERATE_RECODING_RULES,
         "iteration_count": 3,
         "recoding_validation_result": ValidationResult(
             is_valid=False,
@@ -1393,7 +1398,7 @@ def state_at_step_4(sample_state: WorkflowState) -> WorkflowState:
     """
     return {
         **sample_state,
-        "current_step": 4,
+        "current_step": STEP_4_GENERATE_RECODING_RULES,
         "raw_data": sample_dataframe(),
         "variable_centered_metadata": variable_centered_metadata(),
         "filtered_metadata": filtered_metadata(),
@@ -1410,7 +1415,7 @@ def state_at_step_9(sample_state: WorkflowState) -> WorkflowState:
     """
     return {
         **sample_state,
-        "current_step": 9,
+        "current_step": STEP_9_GENERATE_INDICATORS,
         "new_metadata": new_metadata(),
         "new_data_file": "/tmp/new_data.sav",
     }
@@ -1426,7 +1431,7 @@ def state_at_step_12(sample_state: WorkflowState) -> WorkflowState:
     """
     return {
         **sample_state,
-        "current_step": 12,
+        "current_step": STEP_12_GENERATE_TABLE_SPECIFICATIONS,
         "indicators": valid_indicators(),
         "indicators_approved": True,
     }
@@ -1542,7 +1547,7 @@ def state_with_all_phases_populated() -> WorkflowState:
         "filtering_valid": False,
         "powerpoint_file": None,
         "html_dashboard_file": None,
-        "current_step": 5,
+        "current_step": STEP_5_VALIDATE_RECODING_RULES,
         "requires_human_review": False,
         "iteration_count": 1,
         "errors": [],
@@ -1620,13 +1625,13 @@ def sample_state_transitions():
     return [
         (0, create_initial_state("tests/fixtures/sample_data.sav")),
         (3, {**create_initial_state("tests/fixtures/sample_data.sav"),
-              "current_step": 3, "raw_data": sample_dataframe()}),
+              "current_step": STEP_3_FILTER_METADATA, "raw_data": sample_dataframe()}),
         (8, {**create_initial_state("tests/fixtures/sample_data.sav"),
-              "current_step": 8, "new_data_file": "/tmp/new.sav"}),
+              "current_step": STEP_8_EXECUTE_PSPP_RECODING, "new_data_file": "/tmp/new.sav"}),
         (11, {**create_initial_state("tests/fixtures/sample_data.sav"),
-               "current_step": 11, "indicators": valid_indicators()}),
+               "current_step": STEP_11_REVIEW_INDICATORS, "indicators": valid_indicators()}),
         (16, {**create_initial_state("tests/fixtures/sample_data.sav"),
-               "current_step": 16, "cross_table_file": "/tmp/ct.sav"}),
+               "current_step": STEP_16_EXECUTE_PSPP_TABLES, "cross_table_file": "/tmp/ct.sav"}),
         (22, {**create_initial_state("tests/fixtures/sample_data.sav"),
-               "current_step": 22, "powerpoint_file": "/tmp/out.pptx"}),
+               "current_step": STEP_22_GENERATE_HTML_DASHBOARD, "powerpoint_file": "/tmp/out.pptx"}),
     ]

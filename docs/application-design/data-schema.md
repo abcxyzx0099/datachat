@@ -271,14 +271,51 @@ class PresentationState(TypedDict):
 class ApprovalState(TypedDict):
     """Human-in-the-loop approval tracking (crosses all steps)"""
 
-    approval_comments: List[Dict[str, Any]]
-    pending_approval_step: Optional[str]
+    current_step: str                      # Current step identifier (e.g., "step_4_generate_recoding_rules")
+    requires_human_review: bool            # Whether current step needs human input
+    iteration_count: int                   # Number of iterations for current step (for retry logic)
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `approval_comments` | `List[Dict]` | Human feedback history |
-| `pending_approval_step` | `str` | Current step awaiting review |
+| `current_step` | `str` | Current step identifier from STEP_* constants (e.g., "step_6_review_recoding_rules") |
+| `requires_human_review` | `bool` | Whether current step needs human input |
+| `iteration_count` | `int` | Number of iterations for current step (for retry logic) |
+
+#### Step Identifiers
+
+The workflow uses string constants for step identifiers instead of numeric values:
+
+| Step | Identifier Constant | Description |
+|------|---------------------|-------------|
+| 0 | `STEP_0_INITIAL` | Initial state |
+| 1 | `STEP_1_EXTRACT_SPSS` | Extract SPSS data |
+| 2 | `STEP_2_TRANSFORM_METADATA` | Transform metadata |
+| 3 | `STEP_3_FILTER_METADATA` | Filter metadata |
+| 4 | `STEP_4_GENERATE_RECODING_RULES` | Generate recoding rules |
+| 5 | `STEP_5_VALIDATE_RECODING_RULES` | Validate recoding rules |
+| 6 | `STEP_6_REVIEW_RECODING_RULES` | Review recoding rules |
+| 7 | `STEP_7_GENERATE_PSPP_RECODING_SYNTAX` | Generate PSPP recoding syntax |
+| 8 | `STEP_8_EXECUTE_PSPP_RECODING` | Execute PSPP recoding |
+| 9 | `STEP_9_GENERATE_INDICATORS` | Generate indicators |
+| 10 | `STEP_10_VALIDATE_INDICATORS` | Validate indicators |
+| 11 | `STEP_11_REVIEW_INDICATORS` | Review indicators |
+| 12 | `STEP_12_GENERATE_TABLE_SPECIFICATIONS` | Generate table specifications |
+| 13 | `STEP_13_VALIDATE_TABLE_SPECIFICATIONS` | Validate table specifications |
+| 14 | `STEP_14_REVIEW_TABLE_SPECIFICATIONS` | Review table specifications |
+| 15 | `STEP_15_GENERATE_PSPP_TABLE_SYNTAX` | Generate PSPP table syntax |
+| 16 | `STEP_16_EXECUTE_PSPP_TABLES` | Execute PSPP tables |
+| 17 | `STEP_17_GENERATE_STATISTICS_SCRIPT` | Generate statistics script |
+| 18 | `STEP_18_EXECUTE_STATISTICS_SCRIPT` | Execute statistics script |
+| 19 | `STEP_19_GENERATE_FILTER_LIST` | Generate filter list |
+| 20 | `STEP_20_APPLY_FILTER_TO_TABLES` | Apply filter to tables |
+| 21 | `STEP_21_GENERATE_POWERPOINT` | Generate PowerPoint |
+| 22 | `STEP_22_GENERATE_HTML_DASHBOARD` | Generate HTML dashboard |
+
+**Review Steps** (three-node pattern approval steps):
+- `STEP_6_REVIEW_RECODING_RULES`
+- `STEP_11_REVIEW_INDICATORS`
+- `STEP_14_REVIEW_TABLE_SPECIFICATIONS`
 
 #### Approval Comment Schema
 

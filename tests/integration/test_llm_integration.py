@@ -687,7 +687,7 @@ class TestEndToEndLLMFlow:
                 mock_chat_openai.return_value = mock_client
 
                 # Setup state
-                from agent.state import create_initial_state
+                from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
                 state = create_initial_state("test.sav", mock_config)
                 state["filtered_metadata"] = sample_metadata
                 state["iteration_count"] = 0
@@ -712,7 +712,7 @@ class TestEndToEndLLMFlow:
             mock_chat_openai.return_value = mock_client
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", mock_config)
 
             # Build new_metadata structure
@@ -744,7 +744,7 @@ class TestEndToEndLLMFlow:
             mock_chat_openai.return_value = mock_client
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", mock_config)
 
             # Build new_metadata structure
@@ -778,7 +778,7 @@ class TestEndToEndLLMFlow:
             mock_chat_openai.return_value = mock_client
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", mock_config)
             state["filtered_metadata"] = sample_metadata
             state["iteration_count"] = 1  # Simulate retry
@@ -799,7 +799,7 @@ class TestEndToEndLLMFlow:
         max_iterations = DEFAULT_CONFIG.get("max_self_correction_iterations", 3)
 
         # Create state at max iteration
-        from agent.state import create_initial_state
+        from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
         state = create_initial_state("test.sav", mock_config)
         state["filtered_metadata"] = sample_metadata
         state["iteration_count"] = max_iterations
@@ -828,7 +828,7 @@ class TestLLMErrorHandling:
             mock_chat_openai.return_value = mock_client
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", DEFAULT_CONFIG)
             state["filtered_metadata"] = sample_metadata
 
@@ -848,7 +848,7 @@ class TestLLMErrorHandling:
             mock_chat_openai.return_value = mock_client
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", DEFAULT_CONFIG)
             state["filtered_metadata"] = sample_metadata
 
@@ -868,7 +868,7 @@ class TestLLMErrorHandling:
             mock_chat_openai.return_value = mock_client
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", DEFAULT_CONFIG)
             state["filtered_metadata"] = sample_metadata
 
@@ -889,7 +889,7 @@ class TestLLMErrorHandling:
             mock_chat_openai.return_value = mock_client
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", DEFAULT_CONFIG)
             state["filtered_metadata"] = sample_metadata
 
@@ -910,7 +910,7 @@ class TestLLMErrorHandling:
             mock_chat_openai.return_value = mock_client
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", DEFAULT_CONFIG)
             state["filtered_metadata"] = sample_metadata
 
@@ -1014,7 +1014,7 @@ class TestIntegrationStyleWorkflows:
             }
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", config)
             state["filtered_metadata"] = sample_metadata
 
@@ -1024,7 +1024,7 @@ class TestIntegrationStyleWorkflows:
 
             # Verify generation
             assert "recoding_rules" in state
-            assert state["current_step"] == 4
+            assert state["current_step"] == STEP_4_GENERATE_RECODING_RULES
 
             # Step 5: Validate recoding rules
             from agent.nodes.phase2_recoding import validate_recoding_rules_node
@@ -1032,7 +1032,7 @@ class TestIntegrationStyleWorkflows:
 
             # Verify validation ran
             assert "recoding_validation_result" in state
-            assert state["current_step"] == 5
+            assert state["current_step"] == STEP_5_VALIDATE_RECODING_RULES
 
     def test_full_indicators_workflow_with_validation(self, sample_metadata):
         """Test indicators workflow through validation."""
@@ -1053,7 +1053,7 @@ class TestIntegrationStyleWorkflows:
             }
 
             # Setup state
-            from agent.state import create_initial_state
+            from agent.state import create_initial_state, STEP_0_INITIAL, STEP_1_EXTRACT_SPSS, STEP_4_GENERATE_RECODING_RULES, STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES
             state = create_initial_state("test.sav", config)
             state["new_metadata"] = {
                 "variable_names": [v["name"] for v in sample_metadata],
@@ -1067,7 +1067,7 @@ class TestIntegrationStyleWorkflows:
 
             # Verify generation
             assert "indicators" in state
-            assert state["current_step"] == 9
+            assert state["current_step"] == STEP_9_GENERATE_INDICATORS
 
             # Step 10: Validate indicators
             from agent.nodes.phase3_indicators import validate_indicators_node
@@ -1075,7 +1075,7 @@ class TestIntegrationStyleWorkflows:
 
             # Verify validation ran
             assert "indicator_validation_result" in state
-            assert state["current_step"] == 10
+            assert state["current_step"] == STEP_10_VALIDATE_INDICATORS
 
 
 # =============================================================================
