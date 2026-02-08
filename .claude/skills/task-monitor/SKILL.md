@@ -68,6 +68,8 @@ Task Source Directories: 2
       Pending: 0, Completed: 0, Failed: 0
 ```
 
+**Note:** The overview counts files in `pending/` - tasks that are currently running will still appear as "Pending" because the task file remains in `pending/` during execution. Use `--detailed` to see running tasks separately.
+
 ### Tasks Commands
 
 | Command | Purpose |
@@ -264,19 +266,27 @@ ls -lt tasks/ad-hoc/completed/ | head -10
 ls tasks/ad-hoc/*/task-*refactor*.md
 ```
 
-## Lock Files
+## In-Memory Task Tracking
 
-When a task is running, a lock file exists:
+The daemon tracks currently running tasks using **in-memory tracking** (not lock files).
 
-**Location:** `{source-directory}/pending/.task-{task-id}.lock`
+**How it works:**
+- The daemon maintains a `current_tasks` dictionary: `queue_id -> task_id`
+- When a task starts, it's tracked in memory
+- The task file stays in `pending/` during execution
+- When complete, the file moves to `completed/` or `failed/`
+- No lock files are created
 
-**Purpose:**
-- Tracks which task is currently running
-- Lock file is removed when task completes
+**Status Command Behavior:**
+- **Overview** (`task-monitor status`): Counts files in `pending/` - includes running tasks
+- **Detailed** (`task-monitor status --detailed`): Shows running task separately from pending
 
 ```bash
-# Check for running tasks
-ls tasks/ad-hoc/pending/.task-*.lock
+# Check for running tasks (uses in-memory tracking)
+task-monitor status --detailed
+
+# The daemon logs show when tasks start/complete
+journalctl --user -u task-monitor -f
 ```
 
 ## Related Skills
@@ -306,14 +316,18 @@ systemctl --user status task-monitor.service
 journalctl --user -u task-monitor -n 50
 ```
 
-### Task stuck with lock file
+### Task stuck in "running" state
+
+If a task appears to be stuck running:
 
 ```bash
-# Check lock file
-cat tasks/ad-hoc/pending/.task-XXX.lock
+# Check daemon logs to see what's happening
+journalctl --user -u task-monitor -n 50
 
-# Check if process is still running
-ps aux | grep <pid-from-lock>
+# Restart the daemon to clear in-memory state
+systemctl --user restart task-monitor
 
-# If process is dead, daemon will clean up stale locks automatically
+# After restart, the task will be re-queued in pending/
 ```
+
+**Note:** In-memory tracking is cleared when the daemon restarts. Tasks in `pending/` will be re-processed from the beginning.
