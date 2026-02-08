@@ -146,9 +146,7 @@ from agent.nodes.phase4_tables import (
     validate_table_specs_node as validate_table_specifications_node,
     review_table_specifications_node,
     generate_pspp_table_syntax_node,
-    generate_pspp_crosstabs_syntax_node,  # Alternative CROSSTABS-based implementation
-    execute_pspp_tables_node,  # Primary CTABLES-based implementation
-    execute_pspp_crosstabs_node,  # Alternative CROSSTABS-based implementation
+    execute_pspp_tables_node,
 )
 
 
@@ -223,9 +221,7 @@ __all__ = [
     "validate_table_specifications_node",
     "review_table_specifications_node",
     "generate_pspp_table_syntax_node",
-    "generate_pspp_crosstabs_syntax_node",  # Alternative CROSSTABS implementation
-    "execute_pspp_tables_node",  # Primary CTABLES implementation
-    "execute_pspp_crosstabs_node",  # Alternative CROSSTABS implementation
+    "execute_pspp_tables_node",
     # Phase 5
     "generate_python_statistics_script_node",
     "execute_python_statistics_script_node",
