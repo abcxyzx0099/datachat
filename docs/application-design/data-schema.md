@@ -120,7 +120,7 @@ class InputState(TypedDict):
 class ExtractionState(TypedDict):
     """Data extraction and preparation - Steps 1-3"""
     original_metadata: Optional[Dict[str, Any]]   # Raw metadata from pyreadstat
-    variable_centered_metadata: Optional[List[Dict[str, Any]]]  # Metadata grouped by variable
+    variable_centered_metadata: Optional[Dict[str, Any]]         # Metadata grouped by variable
     filtered_metadata: Optional[List[Dict[str, Any]]]          # Metadata after filtering
     filtered_out_variables: Optional[List[Dict[str, Any]]]     # Variables removed + reasons
 ```
@@ -130,7 +130,7 @@ class ExtractionState(TypedDict):
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
 | `original_metadata` | `Dict` | Step 1 | Raw SPSS variable metadata |
-| `variable_centered_metadata` | `List[Dict]` | Step 2 | Metadata restructured by variable |
+| `variable_centered_metadata` | `Dict` | Step 2 | Metadata restructured by variable |
 | `filtered_metadata` | `List[Dict]` | Step 3 | Variables requiring recoding |
 | `filtered_out_variables` | `List[Dict]` | Step 3 | Excluded variables with reasons |
 
@@ -256,14 +256,12 @@ class PresentationState(TypedDict):
 
     powerpoint_file: Optional[str]
     html_dashboard_file: Optional[str]
-    charts_generated: Optional[List[Dict[str, Any]]]
 ```
 
 | Field | Type | Populated | Description |
 |-------|------|-----------|-------------|
 | `powerpoint_file` | `str` | Step 21 | Generated PowerPoint file |
 | `html_dashboard_file` | `str` | Step 22 | Generated HTML dashboard |
-| `charts_generated` | `List[Dict]` | Step 21/22 | Chart metadata |
 
 ### 2.10 ApprovalState
 
@@ -334,29 +332,14 @@ The workflow uses string constants for step identifiers instead of numeric value
 class TrackingState(TypedDict):
     """Execution tracking (crosses all steps)"""
 
-    execution_log: List[Dict[str, Any]]
     errors: List[str]
     warnings: List[str]
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `execution_log` | `List[Dict]` | Step-by-step execution log |
 | `errors` | `List[str]` | Error messages |
 | `warnings` | `List[str]` | Warning messages |
-
-#### Execution Log Entry Schema
-
-```python
-{
-    "step": str,              # Step name
-    "status": str,            # "pending" | "completed" | "failed" | "skipped"
-    "reason": Optional[str],  # Reason for status
-    "error": Optional[str],   # Error message
-    "output_path": Optional[str],  # File path
-    "timestamp": str          # ISO timestamp
-}
-```
 
 ---
 
