@@ -1,39 +1,58 @@
 ---
 name: task-planning
-description: "Generate organized task lists from documentation and implementation using intelligent assessment. Prompts user to handle existing plans (Archive/Remove/Keep). Two scope options: TDD-Driven Development, Holistic Testing. Output goes to tasks/planned/planning/."
+description: "Generate organized task lists from documentation, gap analysis, and implementation. Detects project type (brownfield/greenfield), handles existing plans, and supports multiple scopes including gap-based development. Output goes to tasks/planned/planning/."
 ---
 
 # Task Planning
 
-Generate organized task planning documents from project documentation and implementation.
+Generate organized task planning documents from project documentation, gap analysis reports, and implementation assessment.
 
-**Existing Plan Handling**: Before generating new plans, if existing documents are found in `tasks/planned/planning/`, the user is prompted to choose: Archive, Remove All, or Keep as Is.
+**Key Features:**
+- **Project Type Detection** - Brownfield (existing code) vs Greenfield (new project)
+- **Gap Analysis Integration** - Uses gap analysis reports as input for brownfield projects
+- **Existing Plan Handling** - Archive / Remove / Keep existing plans
+- **Multiple Scopes** - TDD-Driven, Holistic Testing, Gap-Based Development
 
 ## Overview
 
-1. **Handle Existing Plans** - User confirms: Archive / Remove / Keep
-2. **Scope Discussion** - Interactive session to determine scope (2 options)
-3. **Discover Sources** - Read documentation AND investigate implementation
-4. **Intelligently Assess** - AI evaluates project nature, adapts to what exists
-5. **Choose Organization** - Select structure (FLAT_LIST, IMPLEMENTATION_PHASE, FEATURE_MODULE)
-6. **Generate Tasks** - Create tasks using TaskCreate tool
-7. **Save Output** - Write to `tasks/planned/planning/{descriptive-name}.md`
+1. **Detect Project Type** - Determine brownfield (existing code) or greenfield (new project)
+2. **Check Gap Analysis** (brownfield only) - Use existing reports or run new analysis
+3. **Handle Existing Plans** - User confirms: Archive / Remove / Keep
+4. **Scope Discussion** - Interactive session to determine scope
+5. **Discover Sources** - Read documentation, gap analysis, AND investigate implementation
+6. **Intelligently Assess** - AI evaluates project nature, adapts to what exists
+7. **Choose Organization** - Select structure (FLAT_LIST, IMPLEMENTATION_PHASE, FEATURE_MODULE)
+8. **Generate Tasks** - Create tasks using TaskCreate tool
+9. **Save Output** - Write to `tasks/planned/planning/{descriptive-name}.md`
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    Start([Start]) --> Check{Existing<br/>plans?}
-    Check -->|No| Scope["📋 Scope Discussion"]
-    Check -->|Yes| Confirm["🤔 User decides: Archive / Remove / Keep"]
+    Start([Start]) --> Type{Project<br/>Type?}
+
+    Type -->|Brownfield| GapCheck{Gap<br/>Analysis?}
+    Type -->|Greenfield| PlansCheck{Existing<br/>plans?}
+
+    GapCheck -->|Yes| UseGap["📊 Use Gap<br/>Reports"]
+    GapCheck -->|No| RunGap["🔍 Run Gap<br/>Analysis"]
+    GapCheck -->|Skip| PlansCheck
+
+    RunGap --> UseGap
+    UseGap --> PlansCheck
+
+    PlansCheck -->|No| Scope["📋 Scope Discussion"]
+    PlansCheck -->|Yes| Confirm["🤔 Archive / Remove / Keep"]
     Confirm --> Scope
 
-    Scope --> Sources["📚 Dual Source Discovery"]
+    Scope --> Sources["📚 Triple Source Discovery"]
 
     Sources --> Docs["📄 Documentation<br/>(docs/application-design/)"]
+    Sources --> Gap["📊 Gap Reports<br/>(implementation/gap-analysis/)"]
     Sources --> Impl["💻 Implementation<br/>(Adaptive - if exists)"]
 
     Docs --> Assess[AI Intelligent Assessment]
+    Gap --> Assess
     Impl --> Assess
 
     Assess --> Decide{Choose<br/>organization}
@@ -50,27 +69,186 @@ flowchart LR
     Save --> End([End])
 ```
 
-## Input Sources (Always Both)
+## Input Sources
 
-| Source | Location | Purpose | Behavior |
+| Source | Location | Purpose | When Used |
 |--------|----------|---------|----------|
-| **Documentation** | `docs/application-design/` | Project requirements, architecture, features | **Always read** - primary source |
-| **Implementation** | Codebase (`agent/`, tests, etc.) | Existing code, tests, coverage | **Adaptive** - investigate if exists, skip if not |
+| **Documentation** | `docs/application-design/` | Project requirements, architecture, features | **Always** |
+| **Gap Analysis Reports** | `implementation/gap-analysis/` | Identified gaps, priorities, recommendations | **Brownfield** (if available) |
+| **Implementation** | Codebase (`agent/`, tests, etc.) | Existing code, tests, coverage | **Adaptive** |
 
-### AI Intelligence for Implementation Handling
+### AI Intelligence for Source Handling
 
 ```python
-# AI determines implementation existence and relevance
-if implementation_exists():
-    analyze_current_implementation()
-    identify_gaps_and_limitations()
-    generate_regression_tests_for_existing_code()
-else:
-    skip_implementation_analysis()
+# AI determines what sources to use based on project type
+project_type = detect_project_type()  # brownfield or greenfield
+
+# For brownfield projects
+if project_type == "brownfield":
+    # Always check for gap analysis reports
+    if gap_analysis_exists():
+        read_gap_analysis_reports()
+        extract_prioritized_gaps()
+    else:
+        offer_to_run_gap_analysis()
+
+    # Then check implementation
+    if implementation_exists():
+        analyze_current_implementation()
+        identify_gaps_and_limitations()
+        generate_regression_tests_for_existing_code()
+
+# For greenfield projects
+else:  # greenfield
+    # Skip gap analysis (no existing code)
     proceed_from_documentation_only()
+
+    # Implementation may exist for initial setup
+    if implementation_exists():
+        analyze_implementation_adaptively()
 ```
 
-## Phase -1: Handle Existing Plans (User Confirmation)
+### Gap Analysis Integration for Brownfield Projects
+
+```python
+# AI intelligently incorporates gap analysis findings
+if gap_analysis_available():
+    gap_report = read_latest_gap_analysis()
+
+    # Extract prioritized findings
+    high_priority_gaps = gap_report.get("high_priority_items", [])
+    medium_priority_gaps = gap_report.get("medium_priority_items", [])
+
+    # Use gap findings to inform task priorities
+    generate_tasks_based_on_gaps(high_priority_gaps, medium_priority_gaps)
+
+    # Include gap report references in task descriptions
+    for task in tasks:
+        task.gap_source = gap_report.file_name
+        task.gap_reference = gap_report.finding_id
+```
+
+## Phase -2: Project Type Detection
+
+**First step** - Determine if this is a brownfield (existing code) or greenfield (new project) initiative.
+
+### Ask User: Project Type
+
+```python
+AskUserQuestion(
+    questions=[
+        {
+            "question": "What type of project is this?",
+            "header": "Project Type",
+            "multiSelect": False,
+            "options": [
+                {
+                    "label": "Brownfield (Existing Code)",
+                    "description": "Working with existing codebase. Gap analysis recommended first."
+                },
+                {
+                    "label": "Greenfield (New Project)",
+                    "description": "Starting from scratch. No gap analysis needed."
+                }
+            ]
+        }
+    ]
+)
+```
+
+### Project Type Characteristics
+
+| Aspect | Brownfield | Greenfield |
+|--------|-----------|------------|
+| **Existing Code** | Yes | No |
+| **First Step** | Gap Analysis | Requirements/Design |
+| **Input Sources** | Docs + Gap Reports + Implementation | Docs + Implementation (adaptive) |
+| **Task Focus** | Fill gaps, improve, refactor | Build from scratch |
+| **Scope Options** | All + Gap-Based Development | All except Gap-Based |
+
+---
+
+## Phase -1: Gap Analysis Check (Brownfield Only)
+
+**Only for brownfield projects** - Check for existing gap analysis reports or offer to run new analysis.
+
+### Check for Existing Gap Analysis
+
+```bash
+# Check for gap analysis reports
+ls -la implementation/gap-analysis/*.md 2>/dev/null | wc -l
+```
+
+### If Gap Analysis Exists
+
+Ask user whether to use existing reports:
+
+```python
+AskUserQuestion(
+    questions=[
+        {
+            "question": "Found existing gap analysis reports. Use them as input for task planning?",
+            "header": "Gap Analysis Reports",
+            "multiSelect": False,
+            "options": [
+                {
+                    "label": "Yes - Use Existing Reports",
+                    "description": "Read and use existing gap analysis as planning input"
+                },
+                {
+                    "label": "No - Run New Analysis",
+                    "description": "Run gap-analysis skill first, then proceed to planning"
+                },
+                {
+                    "label": "Skip - Proceed Without",
+                    "description": "Continue with task planning without gap analysis input"
+                }
+            ]
+        }
+    ]
+)
+```
+
+### If No Gap Analysis Exists
+
+Offer to run gap analysis:
+
+```python
+AskUserQuestion(
+    questions=[
+        {
+            "question": "No gap analysis reports found. Run gap analysis before task planning?",
+            "header": "Gap Analysis",
+            "multiSelect": False,
+            "options": [
+                {
+                    "label": "Yes - Run Gap Analysis",
+                    "description": "Execute gap-analysis skill: FEATURE, BEST, or TEST analysis"
+                },
+                {
+                    "label": "No - Skip",
+                    "description": "Proceed directly to task planning"
+                }
+            ]
+        }
+    ]
+)
+```
+
+### Handle Gap Analysis Selection
+
+```bash
+# If user selected "Run Gap Analysis":
+# Execute gap-analysis skill based on user choice
+# Feature gap: FEATURE: Analyze feature gaps
+# Best practice: BEST: Analyze best practice gaps
+# Test coverage: TEST: Analyze test coverage gaps
+# Full analysis: FULL ANALYSIS: Complete gap analysis
+```
+
+---
+
+## Phase 0: Handle Existing Plans (User Confirmation)
 
 **Before any user interaction**, check if `tasks/planned/planning/` contains existing documents and ask the user how to handle them.
 
@@ -148,6 +326,10 @@ AskUserQuestion(
                 {
                     "label": "Holistic Testing",
                     "description": "Write → Run → Fix → Debug cycle. Full testing lifecycle. May use existing tests as baseline."
+                },
+                {
+                    "label": "Gap-Based Development (Brownfield)",
+                    "description": "Uses gap analysis report as primary input. Prioritizes tasks based on gap findings. For existing codebases."
                 }
             ]
         }
@@ -157,13 +339,14 @@ AskUserQuestion(
 
 ### Scope Comparison
 
-| Aspect | TDD-Driven Development | Holistic Testing |
-|--------|----------------------|------------------|
-| **Primary Goal** | Develop features through testing | Achieve comprehensive test coverage |
-| **Cycle** | Red → Green → Refactor | Write → Run → Fix → Debug |
-| **Test Timing** | Tests written FIRST (before implementation) | Tests written alongside or after |
-| **Existing Code** | Analyzes and adds regression tests | May use existing tests as baseline |
-| **Target** | Working features with passing tests | 80%+ coverage, 100% pass rate |
+| Aspect | TDD-Driven Development | Holistic Testing | Gap-Based Development |
+|--------|----------------------|------------------|----------------------|
+| **Primary Goal** | Develop features through testing | Achieve comprehensive test coverage | Fill identified gaps |
+| **Best For** | New features, test-first approach | Coverage improvements | Brownfield projects |
+| **Input** | Documentation | Documentation | Gap Analysis Report |
+| **Prioritization** | Test order | Coverage targets | Gap priorities (H/M/L) |
+| **Existing Code** | Adds regression tests | Uses as baseline | Analyzes gaps |
+| **Project Type** | Both | Both | Brownfield only |
 
 ### 0.2 Scope Reference Documents
 
@@ -173,6 +356,7 @@ AskUserQuestion(
 |-------|-------------------|---------------|
 | **TDD-Driven Development** | `.claude/skills/task-planning/references/tdd-driven-development.md` | Red → Green → Refactor |
 | **Holistic Testing** | `.claude/skills/task-planning/references/holistic-testing.md` | Write → Run → Fix → Debug |
+| **Gap-Based Development** | Gap analysis reports + Best Practices | Priority-based task generation |
 
 ### 0.3 Gather Additional Context
 
@@ -195,7 +379,7 @@ AskUserQuestion(
 )
 ```
 
-## Phase 1: Dual Source Discovery
+## Phase 2: Triple Source Discovery
 
 ```bash
 # Source 1: Documentation (Always read)
@@ -208,7 +392,16 @@ files = Glob("**/*.md", path="docs/application-design/")
 # - Integration points
 # - Technical stack
 
-# Source 2: Implementation (Adaptive)
+# Source 2: Gap Analysis Reports (Brownfield - if available)
+if brownfield and gap_analysis_exists():
+    reports = Glob("*.md", path="implementation/gap-analysis/")
+    # Read gap analysis reports and understand:
+    # - Feature gaps: Missing/incomplete features
+    # - Best practice gaps: Deviations from standards
+    # - Test coverage gaps: Missing test scenarios
+    # - Prioritized findings (High/Medium/Low)
+
+# Source 3: Implementation (Adaptive)
 if implementation_exists():
     # Investigate current implementation
     - Analyze existing code structure
@@ -292,9 +485,24 @@ Save to `tasks/planned/planning/{descriptive-name}.md`:
 ```markdown
 # Task List: {Project Name}
 
-**Scope**: {TDD-Driven Development | Holistic Testing}
+**Project Type**: {Brownfield / Greenfield}
+**Scope**: {TDD-Driven Development | Holistic Testing | Gap-Based Development}
 **Organization**: {FLAT_LIST | IMPLEMENTATION_PHASE | FEATURE_MODULE}
 **Total Tasks**: {Count}
+
+## Project Type Detection
+{Brownfield or Greenfield determination}
+- Existing Code: {Yes / No}
+- Gap Analysis: {Run / Skipped / Used Existing}
+
+## Gap Analysis Input
+{For brownfield projects with gap analysis}
+- Analysis Date: {date}
+- Feature Gaps: {summary}
+- Best Practice Gaps: {summary}
+- Test Coverage Gaps: {summary}
+- Priority Focus: {High/Medium/Low items from gap analysis}
+- Gap Report References: {list of gap analysis files used}
 
 ## Reference Document
 **Instructions**: `.claude/skills/task-planning/references/{scope-reference}.md`
@@ -313,7 +521,7 @@ Save to `tasks/planned/planning/{descriptive-name}.md`:
 - Identified Gaps: {list}
 
 ## Project Context
-{Brief summary combining documentation and implementation findings}
+{Brief summary combining documentation, gap analysis, and implementation findings}
 
 ## Task Breakdown
 {Organized tasks following the reference document patterns}
@@ -324,14 +532,26 @@ Save to `tasks/planned/planning/{descriptive-name}.md`:
 
 ## Quick Reference
 
-### Scope Decision Tree (Simplified)
+### Project Type Decision Tree
+
+```
+Is there existing code to analyze?
+├── YES → Brownfield → Check Gap Analysis
+│   ├── Gap analysis exists? → Use as input
+│   └── No gap analysis? → Offer to run gap-analysis skill
+└── NO → Greenfield → Skip gap analysis, proceed with docs
+```
+
+### Scope Decision Tree
 
 ```
 What is your primary goal?
 ├── Develop features through testing
 │   └── TDD-Driven Development (Red → Green → Refactor)
-└── Achieve comprehensive test coverage
-    └── Holistic Testing (Write → Run → Fix → Debug)
+├── Achieve comprehensive test coverage
+│   └── Holistic Testing (Write → Run → Fix → Debug)
+└── Fill identified gaps (Brownfield only)
+    └── Gap-Based Development (Priority-driven)
 ```
 
 ### Input Source Decision Tree
@@ -339,6 +559,9 @@ What is your primary goal?
 ```
 Documentation
 └── Always read from docs/application-design/
+
+Gap Analysis Reports (Brownfield)
+└── Read if available from implementation/gap-analysis/
 
 Implementation
 └── AI intelligently handles:
@@ -358,13 +581,15 @@ Is the work simple/linear?
 
 ## Best Practices
 
-1. **Always read the reference document** for the selected scope before generating tasks
-2. **Investigate implementation adaptively** - Check if code exists, analyze if present, skip if absent
-3. **Keep tasks atomic** - Each task should be independently completable
-4. **Limit category size** - 3-8 tasks per category
-5. **Clear descriptions** - Define what "done" means
-6. **Logical ordering** - Respect dependencies
-7. **Document findings** - Always report implementation assessment in output
+1. **Detect project type first** - Brownfield vs Greenfield determines workflow
+2. **For brownfield: Check gap analysis** - Use existing reports or offer to run gap-analysis skill
+3. **Always read the reference document** for the selected scope before generating tasks
+4. **Investigate implementation adaptively** - Check if code exists, analyze if present, skip if absent
+5. **Keep tasks atomic** - Each task should be independently completable
+6. **Limit category size** - 3-8 tasks per category
+7. **Clear descriptions** - Define what "done" means
+8. **Logical ordering** - Respect dependencies
+9. **Document findings** - Always report implementation assessment and gap analysis in output
 
 ## Reference Documents
 
@@ -385,6 +610,7 @@ Is the work simple/linear?
 
 ## Related Skills
 
+- **gap-analysis**: Analyzes gaps between requirements/implementation/best practices (First step for brownfield projects)
 - **task-documents**: Generates task specifications from planning documents
 - **task-monitor**: Coordinates task execution using task-monitor CLI
 - **task-execution**: Executes tasks with worker-auditor workflow (auto-iteration)

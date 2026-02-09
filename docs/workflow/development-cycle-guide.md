@@ -4,17 +4,139 @@ Complete guide to the asynchronous task execution system (task-monitor) with eve
 
 ## Table of Contents
 
-1. [Quick Start](#quick-start)
-2. [System Overview](#system-overview)
-3. [Architecture Diagram](#architecture-diagram)
-4. [Directory Structure](#directory-structure)
-5. [Task Document Format](#task-document-format)
-6. [Skills Reference](#skills-reference)
-7. [Execution Model](#execution-model)
-8. [Result Tracking](#result-tracking)
-9. [CLI Commands](#cli-commands)
-10. [Service Management](#service-management)
-11. [Troubleshooting](#troubleshooting)
+1. [Development Cycle](#development-cycle)
+2. [Quick Start](#quick-start)
+3. [System Overview](#system-overview)
+4. [Architecture Diagram](#architecture-diagram)
+5. [Directory Structure](#directory-structure)
+6. [Task Document Format](#task-document-format)
+7. [Skills Reference](#skills-reference)
+8. [Execution Model](#execution-model)
+9. [Result Tracking](#result-tracking)
+10. [CLI Commands](#cli-commands)
+11. [Service Management](#service-management)
+12. [Troubleshooting](#troubleshooting)
+
+---
+
+## Development Cycle
+
+The task system supports two development workflows with different entry points depending on project type:
+
+### Brownfield vs Greenfield Projects
+
+| Aspect | Brownfield (Existing Code) | Greenfield (New Project) |
+|--------|---------------------------|--------------------------|
+| **Starting Point** | Existing codebase | Blank slate |
+| **First Step** | Gap Analysis | Requirements/Design |
+| **Purpose** | Understand current state, identify gaps | Define what to build |
+| **Key Questions** | What's missing? What needs improvement? | What are we building? How? |
+
+### Brownfield Development Cycle
+
+For existing codebases, start with **Gap Analysis** to understand current state:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 1: Gap Analysis (Diagnostic)                                      │
+│                                                                         │
+│   gap-analysis skill → implementation/gap-analysis/{type}-{component}-{date}.md │
+│                                                                         │
+│   Three analysis types:                                                 │
+│   - FEATURE: Requirements vs Implementation gaps                        │
+│   - BEST: Implementation vs Framework best practices gaps              │
+│   - TEST: Current tests vs Ideal testing coverage gaps                 │
+│                                                                         │
+│   Output: Gap analysis report with prioritized findings               │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 2: Task Planning (Prescriptive)                                   │
+│                                                                         │
+│   task-planning skill → tasks/planned/planning/{name}.md               │
+│                                                                         │
+│   Input: Gap analysis report + design documents                        │
+│   Output: Organized task list with priorities                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 3: Task Specification Generation                                   │
+│                                                                         │
+│   task-documents skill → tasks/planned/pending/task-*.md               │
+│                                                                         │
+│   Converts planning documents into executable task specifications       │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 4: Task Execution (Implementation)                                │
+│                                                                         │
+│   task-monitor daemon → task-execution skill                           │
+│                                                                         │
+│   Executes tasks with worker-auditor workflow (auto-iteration)        │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 5: Verification                                                   │
+│                                                                         │
+│   task-verification skill → Ensures 100% completion                   │
+│                                                                         │
+│   Verify all changes are correct, nothing missed, no loose ends       │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Greenfield Development Cycle
+
+For new projects, skip gap analysis and start with Requirements/Design:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 1: Requirements & Design                                          │
+│                                                                         │
+│   - Define requirements (what to build)                                │
+│   - Create design documents (how to build it)                          │
+│   - docs/application-design/                                           │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 2: Task Planning (Prescriptive)                                   │
+│                                                                         │
+│   task-planning skill → tasks/planned/planning/{name}.md               │
+│                                                                         │
+│   Input: Design documents + requirements                              │
+│   Output: Organized task list with priorities                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Step 3-5: Same as Brownfield (Task Spec → Execution → Verification)   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Decision Tree: Brownfield or Greenfield?
+
+```
+Is there existing code to analyze?
+         │
+         ├─ YES → Brownfield → Start with Gap Analysis
+         │                    (FEATURE / BEST / TEST)
+         │
+         └─ NO  → Greenfield → Start with Requirements/Design
+```
+
+### Workflow Summary
+
+| Phase | Brownfield | Greenfield |
+|-------|------------|------------|
+| **1. Assessment** | Gap Analysis | Requirements/Design |
+| **2. Planning** | Task Planning | Task Planning |
+| **3. Specification** | Task Documents | Task Documents |
+| **4. Execution** | Task Monitor | Task Monitor |
+| **5. Verification** | Task Verification | Task Verification |
 
 ---
 
@@ -473,6 +595,60 @@ task-monitor run --cycles 1
 ### 6. task-cleanup
 
 **Purpose:** Clean up the tasks directory by removing all materials while preserving directory structure
+
+**Workflow:**
+1. Verify tasks directory exists
+2. Show current contents and count files to be removed
+3. Confirm with user before proceeding
+4. Remove all files from subdirectories (both ad-hoc and planned queues)
+5. Verify cleanup complete
+
+**Official Directories Cleaned:**
+- `tasks/ad-hoc/*` - All ad-hoc subdirectories
+- `tasks/planned/*` - All planned subdirectories
+- `tasks/planned/planning/` - Planning documents
+
+**Preserved:**
+- All subdirectories (empty, ready for new tasks)
+
+### 7. gap-analysis
+
+**Purpose:** Analyze gaps between requirements/implementation/best practices for brownfield projects
+
+**Three Analysis Types:**
+
+| Type | Compares | Identifies | Command |
+|------|----------|------------|---------|
+| **Feature Gap** | Requirements vs Implementation | Missing/incomplete features | `FEATURE: ...` |
+| **Best Practice Gap** | Implementation vs Framework Standards | Deviations from best practices | `BEST: ...` |
+| **Test Coverage Gap** | Current Tests vs Ideal Testing | Missing test scenarios and coverage | `TEST: ...` |
+
+**Output:**
+- `implementation/gap-analysis/{type}-{component}-{date}.md`
+  - Example: `best-practice-langgraph-20260209.md`
+  - Example: `feature-gap-agent-20260209.md`
+  - Example: `test-coverage-api-20260209.md`
+
+**Usage:**
+```
+FEATURE: Analyze feature gaps in the agent system
+BEST: Analyze LangGraph best practice gaps
+TEST: Analyze test coverage gaps in agent system
+FULL ANALYSIS: Complete gap analysis for the agent system
+```
+
+**Integration:**
+- Gap analysis reports feed into **task-planning** skill as input
+- First step for **brownfield projects** (existing codebases)
+- Skipped for **greenfield projects** (new projects)
+
+**Key Features:**
+- Uses context7 MCP for current framework best practices
+- Evidence-based findings with file/line references
+- Prioritized recommendations (High/Medium/Low)
+- Actionable with effort estimates
+
+---
 
 **Workflow:**
 1. Verify tasks directory exists
