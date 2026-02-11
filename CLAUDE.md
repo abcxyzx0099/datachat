@@ -229,20 +229,35 @@ When reverse proxy is configured with domain `sysy.site`:
 
 ### Starting the Applications
 
-**CRITICAL RULE: AI agents must ALWAYS use `dev-start.sh` to start the application.** Never start servers individually unless explicitly requested for debugging.
+**CRITICAL RULE: AI agents must ALWAYS use `start-langgraph.sh` to start the application.** Never start servers individually unless explicitly requested for debugging.
 
 ```bash
-./dev-start.sh
+./start-langgraph.sh          # Start all servers (Studio + API + UI)
+./start-langgraph.sh --studio # Studio only (port 2024)
+./start-langgraph.sh --web    # Web app only (ports 8123 + 3000)
 ```
 
-**Why `dev-start.sh` is required:**
+**Why `start-langgraph.sh` is required:**
 
 The script ensures the application runs correctly on all three ports by automatically killing any existing processes on ports 2024, 8123, and 3000 before launching new services, which prevents port conflicts and guarantees each service starts on its designated port (Studio on 2024, API on 8123, UI on 3000). It also coordinates service startup and manages process IDs for graceful shutdown.
 
 To stop all servers:
 ```bash
-./dev-stop.sh
+./stop-langgraph.sh           # Stop all servers
+./stop-langgraph.sh --studio  # Stop Studio only
+./stop-langgraph.sh --web     # Stop web app only
 ```
+
+### Starting the AionUI Integration (Hybrid Mode)
+
+For hybrid integration with the external AionUi WebUI project, use the AionUI scripts:
+
+```bash
+./start-aionui.sh   # Start LangGraph API (8123) + AionUi WebUI (3000)
+./stop-aionui.sh    # Stop both services
+```
+
+**Note:** The AionUI mode uses the external AionUi project located at `/home/admin/workspaces/AionUi` for the frontend UI, instead of the local Agent Chat UI.
 
 ---
 
