@@ -160,6 +160,11 @@ from agent.nodes.phase5_statistics import (
     execute_python_statistics_script_node,
 )
 
+# Import direct library call implementation (NEW: replaces 17-18)
+from agent.nodes.phase5_statistics_direct import (
+    compute_statistics_node,
+)
+
 
 # =============================================================================
 # Phase 6: Significant Tables Selection (Steps 19-20)

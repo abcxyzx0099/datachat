@@ -43,8 +43,9 @@ import uvicorn
 from agent.graph import get_graph, run_analysis, resume_analysis
 from agent.state import (
     WorkflowState, state_to_dict, get_state_summary,
-    STEP_6_REVIEW_RECODING_RULES, STEP_11_REVIEW_INDICATORS,
-    STEP_14_REVIEW_TABLE_SPECIFICATIONS
+    STEP_5_VALIDATE_RECODING_RULES, STEP_6_REVIEW_RECODING_RULES,
+    STEP_10_VALIDATE_INDICATORS, STEP_11_REVIEW_INDICATORS,
+    STEP_13_VALIDATE_TABLE_SPECIFICATIONS, STEP_14_REVIEW_TABLE_SPECIFICATIONS
 )
 
 
@@ -417,6 +418,25 @@ async def invoke_thread(
         }
 
     except Exception as e:
+        # Check if this is a GraphInterrupt (human-in-the-loop)
+        error_str = str(e)
+        if "Interrupt(value=" in error_str and "approval_required" in error_str:
+            # Graph was interrupted for human review - get the current state
+            logging.info(f"Analysis interrupted for human review: {thread_id}")
+            graph = get_compiled_graph()
+            config = {"configurable": {"thread_id": thread_id}}
+            state_snapshot = graph.get_state(config)
+
+            if state_snapshot:
+                state_dict = state_to_dict(state_snapshot.values)
+                return {
+                    "thread_id": thread_id,
+                    "status": "interrupted",
+                    "result": state_dict,
+                    "summary": get_state_summary(state_snapshot.values),
+                    "message": "Analysis interrupted - requires human approval"
+                }
+
         logging.error(f"Analysis failed for thread {thread_id}: {e}")
         raise HTTPException(
             status_code=500,
@@ -513,9 +533,14 @@ async def submit_feedback(thread_id: str, request: FeedbackRequest) -> Dict[str,
         current_step = current_state.get("current_step", "step_0_initial")
 
         # Map review steps to their state fields
+        # Note: Also handle the case where current_step is still on the validation step
+        # but requires_human_review is True (interrupt was raised before state update)
         review_field_mapping = {
+            STEP_5_VALIDATE_RECODING_RULES: ("recoding_approved", "recoding_feedback"),
             STEP_6_REVIEW_RECODING_RULES: ("recoding_approved", "recoding_feedback"),
+            STEP_10_VALIDATE_INDICATORS: ("indicators_approved", "indicator_feedback"),
             STEP_11_REVIEW_INDICATORS: ("indicators_approved", "indicator_feedback"),
+            STEP_13_VALIDATE_TABLE_SPECIFICATIONS: ("table_specs_approved", "table_specs_feedback"),
             STEP_14_REVIEW_TABLE_SPECIFICATIONS: ("table_specs_approved", "table_specs_feedback"),
         }
 
@@ -527,10 +552,17 @@ async def submit_feedback(thread_id: str, request: FeedbackRequest) -> Dict[str,
 
         approved_field, feedback_field = review_field_mapping[current_step]
 
-        # Update state with feedback
-        current_state[approved_field] = request.approved
+        # Build state update for checkpoint persistence
+        # Only update the approval field - do not update requires_human_review or current_step
+        # as those are managed by the graph nodes
+        state_update = {approved_field: request.approved}
         if request.feedback:
-            current_state[feedback_field] = request.feedback
+            state_update[feedback_field] = request.feedback
+
+        # Update state with feedback and persist to checkpointer
+        # Use as_node to specify which node's perspective the update is from
+        # This is needed when the graph is interrupted
+        graph.update_state(config, state_update, as_node="__start__")
 
         logging.info(
             f"Submitted feedback for thread {thread_id}, "

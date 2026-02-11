@@ -99,6 +99,7 @@ STEP_15_GENERATE_PSPP_TABLE_SYNTAX = "step_15_generate_pspp_table_syntax"
 STEP_16_EXECUTE_PSPP_TABLES = "step_16_execute_pspp_tables"
 STEP_17_GENERATE_STATISTICS_SCRIPT = "step_17_generate_statistics_script"
 STEP_18_EXECUTE_STATISTICS_SCRIPT = "step_18_execute_statistics_script"
+STEP_17_18_COMPUTE_STATS = "step_17_18_compute_statistics"
 STEP_19_GENERATE_FILTER_LIST = "step_19_generate_filter_list"
 STEP_20_APPLY_FILTER_TO_TABLES = "step_20_apply_filter_to_tables"
 STEP_21_GENERATE_POWERPOINT = "step_21_generate_powerpoint"
@@ -125,11 +126,14 @@ STEP_ORDER = {
     STEP_16_EXECUTE_PSPP_TABLES: 16,
     STEP_17_GENERATE_STATISTICS_SCRIPT: 17,
     STEP_18_EXECUTE_STATISTICS_SCRIPT: 18,
+    STEP_17_18_COMPUTE_STATS: 17.5,  # Combined step for direct library call
     STEP_19_GENERATE_FILTER_LIST: 19,
     STEP_20_APPLY_FILTER_TO_TABLES: 20,
     STEP_21_GENERATE_POWERPOINT: 21,
     STEP_22_GENERATE_HTML_DASHBOARD: 22,
 }
+# Reverse mapping for backward compatibility (numeric to string)
+STEP_NAME_TO_NUMERIC = {
 
 # Reverse mapping for backward compatibility (numeric to string)
 NUMERIC_TO_STEP_NAME = {
@@ -152,6 +156,8 @@ NUMERIC_TO_STEP_NAME = {
     16: STEP_16_EXECUTE_PSPP_TABLES,
     17: STEP_17_GENERATE_STATISTICS_SCRIPT,
     18: STEP_18_EXECUTE_STATISTICS_SCRIPT,
+    17.5: STEP_17_18_COMPUTE_STATS,  # NEW: Combined step for direct library call
+    17.5: STEP_17_18_COMPUTE_STATS,  # NEW: Combined step for direct library call
     19: STEP_19_GENERATE_FILTER_LIST,
     20: STEP_20_APPLY_FILTER_TO_TABLES,
     21: STEP_21_GENERATE_POWERPOINT,
@@ -230,8 +236,10 @@ class InputState(TypedDict, total=False):
 
     Fields:
         input_file_path: Path to input .sav file
+        config: Configuration dictionary for workflow parameters
     """
     input_file_path: str
+    config: Dict[str, Any]
 
 
 class ExtractionState(TypedDict, total=False):
@@ -571,6 +579,7 @@ def create_initial_state(input_file_path: str, config: Optional[Dict[str, Any]] 
         # ========================================
         errors=[],
         warnings=[],
+        config=config,  # Configuration dictionary for workflow parameters
     )
 
 

@@ -186,9 +186,8 @@ def build_graph(
     builder.add_node("generate_pspp_table_syntax_node", generate_pspp_table_syntax_node)
     builder.add_node("execute_pspp_tables_node", execute_pspp_tables_node)
 
-    # Phase 5: Statistical Analysis (Steps 17-18)
-    builder.add_node("generate_python_statistics_script_node", generate_python_statistics_script_node)
-    builder.add_node("execute_python_statistics_script_node", execute_python_statistics_script_node)
+    # Phase 5: Statistical Analysis (Steps 17-18) - Direct Library Call
+    builder.add_node("compute_statistics_node", compute_statistics_node)
 
     # Phase 6: Significant Tables Selection (Steps 19-20)
     builder.add_node("generate_filter_list_node", generate_filter_list_node)
@@ -204,7 +203,7 @@ def build_graph(
     # Set Entry Point
     # =============================================================================
 
-    builder.set_entry_point("extract_spss_node")
+    builder.set_entry_point("extract_spss_node")  # Single entry point for statistics computation
 
     # =============================================================================
     # Add Linear Edges (Sequential Flow)
@@ -233,7 +232,7 @@ def build_graph(
     builder.add_edge("generate_pspp_table_syntax_node", "execute_pspp_tables_node")
 
     # Phase 5: Step 16 → 17 → 18
-    builder.add_edge("execute_pspp_tables_node", "generate_python_statistics_script_node")
+    builder.add_edge("execute_pspp_tables_node", "compute_statistics_node")
     builder.add_edge("generate_python_statistics_script_node", "execute_python_statistics_script_node")
 
     # Phase 6: Step 18 → 19 → 20
@@ -309,6 +308,7 @@ def build_graph(
         logging.info("LangSmith tracing not configured or disabled")
 
     # Compile the graph with checkpointer
+    # Note: recursion_limit is set when invoking, not compiling
     graph = builder.compile(checkpointer=checkpointer)
 
     logging.info("LangGraph StateGraph compiled successfully")
@@ -399,8 +399,13 @@ def run_analysis(
     # Get compiled graph
     graph = get_graph(checkpointer_path=checkpointer_path, config=config)
 
-    # Configure thread ID for checkpointing
-    run_config = {"configurable": {"thread_id": thread_id}}
+    # Configure thread ID for checkpointing and recursion limit
+    # 22 nodes + 3 feedback loops (max 3 iterations each) = ~31 steps max
+    # Set limit to 50 to allow for retries without hitting infinite loops
+    run_config = {
+        "configurable": {"thread_id": thread_id},
+        "recursion_limit": 50
+    }
 
     logging.info(f"Starting survey analysis: {input_file_path}")
     logging.info(f"Thread ID: {thread_id}")
@@ -459,8 +464,11 @@ def resume_analysis(
     # Get compiled graph
     graph = get_graph(checkpointer_path=checkpointer_path, config=config)
 
-    # Configure thread ID for checkpoint restoration
-    run_config = {"configurable": {"thread_id": thread_id}}
+    # Configure thread ID for checkpoint restoration and recursion limit
+    run_config = {
+        "configurable": {"thread_id": thread_id},
+        "recursion_limit": 50
+    }
 
     logging.info(f"Resuming survey analysis for thread: {thread_id}")
 
