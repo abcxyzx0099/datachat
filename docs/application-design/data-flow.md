@@ -79,7 +79,7 @@ Design and implement an automated workflow for market research survey data analy
 
 ## 3. Data Flow
 
-The workflow consists of **13 steps** organized into **4 stages**:
+The workflow consists of **13 steps** organized into **5 stages**:
 
 ### 3.1 Workflow Diagram
 
@@ -115,23 +115,31 @@ flowchart TD
         tableSpec[("table_specification.json")]:::artifactStyle
     end
 
-    %% STAGE 3: Computation
+    %% STAGE 3: Cross-Table Calculation
     subgraph STAGE3[" "]
         direction TB
-        stage3_label["**STAGE 3: Computation**"]:::stageLabelStyle
+        stage3_label["**STAGE 3: Cross-Table Calculation**"]:::stageLabelStyle
 
         S7["Step 7<br/>Apply Recoding Rules<br/>(PSPP)"]:::processingGreen
         S8["Step 8<br/>Compute Indicators"]:::processingGreen
         S9["Step 9<br/>Generate Cross-Tables<br/>(PSPP)"]:::processingGreen
+        crosstabs[("recoded_data<br/>indicators.csv<br/>cross_tables.csv")]:::artifactStyle
+    end
+
+    %% STAGE 4: Statistical Analysis
+    subgraph STAGE4[" "]
+        direction TB
+        stage4_label["**STAGE 4: Statistical Analysis**"]:::stageLabelStyle
+
         S10["Step 10<br/>Statistical Analysis"]:::processingGreen
         S11["Step 11<br/>Filter Significant Tables"]:::processingGreen
         results[("filtered_tables<br/>statistical_summary")]:::artifactStyle
     end
 
-    %% STAGE 4: Output
-    subgraph STAGE4[" "]
+    %% STAGE 5: Reporting
+    subgraph STAGE5[" "]
         direction TB
-        stage4_label["**STAGE 4: Reporting**"]:::stageLabelStyle
+        stage5_label["**STAGE 5: Reporting**"]:::stageLabelStyle
 
         S12["Step 12<br/>Generate PowerPoint"]:::processingGreen
         S13["Step 13<br/>Generate HTML Dashboard"]:::processingGreen
@@ -147,10 +155,12 @@ flowchart TD
     S6 -->|Approve| tableSpec
     S6 -.->|Reject| S4
 
-    tableSpec ==> S7 --> S8 --> S9 --> S10 --> S11 --> results
+    tableSpec ==> S7 --> S8 --> S9 --> crosstabs
     S7 -.-> recoded_data
     S8 -.-> indicators.csv
     S9 -.-> cross_tables.csv
+
+    crosstabs ==> S10 --> S11 --> results
 
     results ==> S12 --> ppt
     results ==> S13 --> html
@@ -182,8 +192,9 @@ flowchart TD
 |-------|--------|-------------|-------|--------|
 | **1** | 1-3 | Load data, extract/transform/filter metadata | .sav file | `filtered_metadata` |
 | **2** | 4-6 | Generate, validate, review table specification | `filtered_metadata` | `table_specification.json` |
-| **3** | 7-11 | Apply recoding, compute indicators, generate tables, statistics, filter | `table_specification.json`, data | `filtered_tables`, `statistical_summary` |
-| **4** | 12-13 | Generate PowerPoint and HTML dashboard | Filtered results | `presentation.pptx`, `dashboard.html` |
+| **3** | 7-9 | Apply recoding, compute indicators, generate cross-tables | `table_specification.json`, data | `recoded_data.sav`, `indicators.csv`, `cross_tables.csv` |
+| **4** | 10-11 | Statistical analysis and significance filtering | Cross-tables | `filtered_tables`, `statistical_summary` |
+| **5** | 12-13 | Generate PowerPoint and HTML dashboard | Filtered results | `presentation.pptx`, `dashboard.html` |
 
 ---
 
@@ -268,21 +279,30 @@ This structure allows:
 
 **Feedback Loop:** If validation fails or review rejects, regenerate from Step 4.
 
-### Stage 3: Computation (Steps 7-11)
+### Stage 3: Cross-Table Calculation (Steps 7-9)
 
 | Step | Module | Purpose | Type |
 |------|---------|---------|------|
 | 7 | `spss_analyzer.pspp.RecodingSyntaxGenerator` + `PSPPExecutor` | Apply recoding | Deterministic |
 | 8 | `spss_analyzer.analysis.IndicatorGenerator` | Compute indicators | Deterministic |
 | 9 | `spss_analyzer.pspp.CTablesSyntaxGenerator` + `PSPPExecutor` | Generate cross-tables | Deterministic |
+
+**Orchestration:** `survey-coordinator` skill manages these steps.
+
+**Outputs:** `recoded_data.sav`, `indicators.csv`, `cross_tables.csv`
+
+### Stage 4: Statistical Analysis (Steps 10-11)
+
+| Step | Module | Purpose | Type |
+|------|---------|---------|------|
 | 10 | `spss_analyzer.analysis.StatisticsCalculator` | Calculate statistics | Deterministic |
 | 11 | `spss_analyzer.filtering.SignificanceFilter` | Filter significant tables | Deterministic |
 
-**Orchestration:** `survey-coordinator` skill manages all steps.
+**Orchestration:** `survey-coordinator` skill manages these steps.
 
-**Outputs:** `recoded_data.sav`, `indicators.csv`, `cross_tables.csv`, `statistical_summary.json`, `filtered_tables.json`
+**Outputs:** `statistical_summary.json`, `filtered_tables.json`
 
-### Stage 4: Reporting (Steps 12-13)
+### Stage 5: Reporting (Steps 12-13)
 
 | Step | Module | Purpose | Type |
 |------|---------|---------|------|
