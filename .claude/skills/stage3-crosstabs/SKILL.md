@@ -1,70 +1,121 @@
 ---
 name: stage3-crosstabs
-description: 'Stage 3: Cross-Table Calculation - Apply recoding, compute indicators, generate cross-tables using PSPP. Output: recoded_data.sav, indicators.csv, cross_tables.csv. Use when running computation on validated specification.'
+description: 'Stage 3: Cross-Table Calculation - Executes recoding, computes indicators, and generates cross-tables using PSPP. Use when table specification is ready and computation is needed.'
 license: Apache-2.0
 ---
 
 # Stage 3: Cross-Table Calculation
 
-Execute recoding, indicator computation, and cross-table generation.
+Computes indicators and generates cross-tables from survey data.
 
 ## Overview
 
 Executes **Steps 7-9** of the workflow:
-- Step 7: Apply recoding rules (PSPP)
+- Step 7: Apply recoding rules
 - Step 8: Compute indicators
-- Step 9: Generate cross-tables (PSPP)
+- Step 9: Generate cross-tables
 
 ## When to Use
 
 Use this skill when:
-- Table specification is validated
-- Ready to run computation
-- Need to prepare data for statistical analysis
+- Table specification is complete (Stage 2)
+- Need to compute derived indicators
+- Need to generate cross-tabulation tables
+- Preparing data for statistical testing
 
 ## Usage
 
 ```
-User: Run cross-table calculation
+User: Compute crosstabs for our survey
 
-Assistant: [Step 7] Applying recoding rules via PSPP...
-           Created: recoded_data.sav (50 variables recoded)
+Assistant: [Step 7] Applying recoding rules...
+           No global recodings defined - skipping
 
            [Step 8] Computing indicators...
-           Created: indicators.csv (5 indicators)
+           Computed 6 indicators:
+           - sat_overall: 3.42 (mean)
+           - top2_box: 67.8% (percentage)
+           - nps_score: 42 (NPS)
+           - ... (3 more)
 
-           [Step 9] Generating cross-tables via PSPP...
-           Created: cross_tables.csv (25 tables)
+           Saved: indicators.csv
 
-Stage 3 complete! Ready for statistical analysis.
+           [Step 9] Generating cross-tables...
+           Generated 18 cross-table specifications:
+           PSPP syntax created: pspp_crosstabs.sps
+           Tables ready for PSPP execution
+
+           Stage 3 complete!
 ```
 
 ## Input
 
 | Input | Required | Description |
 |--------|-----------|-------------|
-| `table_specification.json` | Yes | Validated specification |
-| Source `.sav` file | Yes | Original survey data |
+| `--sav-file` | Yes | Path to SPSS .sav file |
+| `--spec-file` | Yes | Path to table_specification.json |
+| `--metadata-file` | Yes | Path to filtered_metadata.json |
 
 ## Output
 
 | File | Content |
 |-------|----------|
-| `recoded_data.sav` | Data after recoding |
 | `indicators.csv` | Computed indicator values |
-| `cross_tables.csv` | Raw cross-tabulations |
+| `cross_tables.json` | Cross-table results |
+| `pspp_recoding.sps` | PSPP recoding syntax (if applicable) |
+| `pspp_crosstabs.sps` | PSPP crosstabs syntax |
+
+## Recoding Types
+
+| Type | Description | Example |
+|-------|-------------|----------|
+| **Value map** | Remap specific values | 1→100, 2→75, 3→50 |
+| **Range** | Group values into categories | 1-3→"Low", 4-5→"High" |
+| **Missing** | Set values as system missing | 99→$SYSMIS |
+
+## Indicator Computation
+
+| Aggregation | Formula | Use Case |
+|-------------|---------|-----------|
+| `mean` | Average of values | Scale variables (satisfaction, ratings) |
+| `sum` | Sum of values | Total counts, scores |
+| `count` | Non-null count | Sample sizes, response counts |
+| `median` | Middle value | Robust central tendency |
+| `min` | Minimum value | Range analysis |
+| `max` | Maximum value | Range analysis |
+
+## PSPP Integration
+
+This skill generates PSPP syntax for:
+- **Recoding**: Variable transformations
+- **Crosstabs**: Cross-tabulation tables
+- **CTABLES**: Custom table format with statistics
+
+Generated syntax can be executed with:
+```bash
+pspp pspp_crosstabs.sps -o output.txt
+```
 
 ## Library Modules
 
 | Module | Purpose |
 |---------|---------|
-| `spss_analyzer.pspp.RecodingSyntaxGenerator` | Generate PSPP recoding syntax |
+| `spss_analyzer.io.SPSSReader` | Read .sav files |
 | `spss_analyzer.pspp.PSPPExecutor` | Execute PSPP commands |
-| `spss_analyzer.analysis.IndicatorGenerator` | Compute indicators |
-| `spss_analyzer.pspp.CTablesSyntaxGenerator` | Generate cross-table syntax |
+| `spss_analyzer.pspp.RecodingSyntaxGenerator` | Generate recode syntax |
+| `spss_analyzer.pspp.CTablesSyntaxGenerator` | Generate ctables syntax |
 
-## Dependencies
+## Data Flow
 
-- PSPP (external package)
-- Source .sav file
-- Validated table specification
+```
+Stage 2 Specification
+    ↓
+Stage 3 Computation
+    ↓ (indicators.csv)
+    ↓ (cross_tables.json)
+Stage 4 Statistics
+```
+
+## Next Stage
+
+After Stage 3 completes, proceed to **Stage 4: Statistical Analysis** (`stage4-statistics`)

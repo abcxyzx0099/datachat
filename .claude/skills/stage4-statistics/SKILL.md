@@ -1,82 +1,142 @@
 ---
 name: stage4-statistics
-description: 'Stage 4: Statistical Analysis - Calculate statistics (chi-square, Cramer's V) and filter significant tables. Output: statistical_summary.json, filtered_tables.json. Use when analyzing cross-tables for significance.'
+description: 'Stage 4: Statistical Analysis - Calculates chi-square tests and filters significant tables. Use when cross-tables are ready and statistical testing is needed.'
 license: Apache-2.0
 ---
 
 # Stage 4: Statistical Analysis
 
-Perform statistical testing and significance filtering on cross-tables.
+Performs chi-square tests and filters significant tables.
 
 ## Overview
 
 Executes **Steps 10-11** of the workflow:
-- Step 10: Statistical analysis
+- Step 10: Calculate chi-square statistics
 - Step 11: Filter significant tables
 
 ## When to Use
 
 Use this skill when:
-- Cross-tables are generated (Stage 3 complete)
-- Need to identify significant findings
-- Preparing for report generation
+- Cross-tables are computed (Stage 3)
+- Need to test table significance
+- Filtering tables for reporting
+- Preparing data for presentation generation
 
 ## Usage
 
 ```
-User: Run statistical analysis
+User: Test significance of all crosstabs
 
 Assistant: [Step 10] Calculating statistics...
-           Chi-square tests: 25 tables
-           Cramer's V computed: 25 tables
-           Created: statistical_summary.json
+           Chi-square tests: 18 tables
+           Using threshold: p < 0.05
 
-           [Step 11] Filtering significant tables...
-           Threshold: p < 0.05
-           Passed: 18/25 tables (72%)
-           Created: filtered_tables.json
+           Results:
+           - Significant: 8 tables (44.4%)
+           - Not significant: 10 tables (55.6%)
+           - Errors: 0 tables
 
-Stage 4 complete! Ready for report generation.
+           Top significant findings:
+           - Gender × Satisfaction: χ²=12.34, p=0.002 **
+           - Age × Brand Rating: χ²=8.91, p=0.031 *
+           - Region × NPS: χ²=15.67, p=0.004 **
+
+           [Step 11] Filtering tables...
+           Selected 8 significant tables for reporting
+           Excluded 10 non-significant tables
+
+           Saved: statistical_summary.json
+           Saved: filtered_tables.json
+
+           Stage 4 complete!
 ```
 
 ## Input
 
 | Input | Required | Description |
 |--------|-----------|-------------|
-| `cross_tables.csv` | Yes | From Stage 3 output |
-| `table_specification.json` | Yes | For significance threshold |
+| `--crosstabs-file` | Yes | Path to cross_tables.json from Stage 3 |
+| `--spec-file` | Yes | Path to table_specification.json |
+| `--output-dir` | No | Output directory (default: output/) |
+| `--threshold` | No | Override significance threshold (default: from spec) |
 
 ## Output
 
 | File | Content |
 |-------|----------|
-| `statistical_summary.json` | Chi-square, p-values, Cramer's V |
-| `filtered_tables.json` | Tables passing significance threshold |
+| `statistical_summary.json` | Summary of all statistical tests |
+| `filtered_tables.json` | List of significant tables only |
 
-## Statistical Tests
+## Statistical Test
 
-| Test | Purpose |
-|-------|---------|
-| Chi-square | Test independence between variables |
-| p-value | Significance level |
-| Cramer's V | Effect size for categorical data |
+Chi-square test of independence:
+- **Tests**: Whether row and column variables are independent
+- **Null hypothesis**: Variables are independent (no relationship)
+- **Alternative hypothesis**: Variables are related
+- **Significance**: p < threshold (default 0.05)
+
+## Output Format
+
+### statistical_summary.json
+```json
+{
+  "total_tests": 18,
+  "significant_count": 8,
+  "significance_threshold": 0.05
+}
+```
+
+### filtered_tables.json
+```json
+[
+  {
+    "table_id": "gender_x_satisfaction",
+    "table_name": "Gender by Satisfaction",
+    "chi_square": 12.34,
+    "p_value": 0.002,
+    "degrees_of_freedom": 4,
+    "expected": [[10.5, 12.3, ...], [...]],
+    "significant": true
+  }
+]
+```
+
+## Significance Levels
+
+| p-value range | Interpretation | Symbol |
+|---------------|----------------|--------|
+| p < 0.001 | Highly significant | *** |
+| p < 0.01 | Very significant | ** |
+| p < 0.05 | Significant | * |
+| p >= 0.05 | Not significant | ns |
 
 ## Library Modules
 
 | Module | Purpose |
 |---------|---------|
-| `spss_analyzer.analysis.StatisticsCalculator` | Chi-square, p-value, Cramer's V |
-| `spss_analyzer.filtering.SignificanceFilter` | Filter by significance threshold |
+| `scipy.stats.chi2_contingency` | Chi-square test |
+| `pandas.DataFrame` | Data manipulation |
+| `json` | Data serialization |
 
-## Configuration
+## Data Flow
 
-Significance threshold from `table_specification.json`:
-
-```json
-{
-  "output_settings": {
-    "significance_threshold": 0.05,
-    "min_sample_size": 30
-  }
-}
 ```
+Stage 3 Crosstabs
+    ↓ (cross_tables.json)
+Stage 4 Statistics
+    ↓ (statistical_summary.json)
+    ↓ (filtered_tables.json)
+Stage 5 Reports
+```
+
+## Error Handling
+
+| Error Type | Handling |
+|------------|-----------|
+| **Insufficient data** | Table marked with error, excluded |
+| **Zero expected count** | Chi-square not computed, marked as error |
+| **Invalid table format** | Error message logged, processing continues |
+
+## Next Stage
+
+After Stage 4 completes, proceed to **Stage 5: Reporting** (`stage5-reports`)

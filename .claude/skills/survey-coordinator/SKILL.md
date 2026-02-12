@@ -1,148 +1,129 @@
 ---
 name: survey-coordinator
-description: 'Survey Analysis Coordinator - Orchestrates all 5 stages of the workflow. Use when running complete end-to-end survey analysis from SPSS data to final reports.'
+description: 'Survey Analysis Orchestrator - Coordinates 5-stage workflow for SPSS survey analysis. Use when running complete analysis pipeline, managing stage dependencies, handling checkpoints, or recovering from errors.'
 license: Apache-2.0
 ---
 
-# Survey Coordinator - Workflow Orchestrator
+# Survey Coordinator
 
-Orchestrate the complete 5-stage survey analysis workflow.
+Orchestrates the complete 5-stage survey analysis workflow.
 
 ## Overview
 
-This skill coordinates all stage skills to execute the full workflow:
-
-```
-Stage 1: Data Preparation (Steps 1-3)
-    ↓
-Stage 2: Table Specification (Steps 4-6)
-    ↓
-Stage 3: Cross-Table Calculation (Steps 7-9)
-    ↓
-Stage 4: Statistical Analysis (Steps 10-11)
-    ↓
-Stage 5: Reporting (Steps 12-13)
-```
+The survey coordinator manages the entire analysis pipeline:
+- **Stage 1**: Data Preparation (`stage1-data-prep`)
+- **Stage 2**: Table Specification (`stage2-spec-gen`)
+- **Stage 3**: Cross-Table Calculation (`stage3-crosstabs`)
+- **Stage 4**: Statistical Analysis (`stage4-statistics`)
+- **Stage 5**: Reporting (`stage5-reports`)
 
 ## When to Use
 
 Use this skill when:
-- Running complete end-to-end analysis
-- Need to orchestrate multiple stages
-- Want automated pipeline execution
+- Running complete survey analysis from .sav file
+- Need to coordinate multi-stage workflow
+- Managing stage dependencies and data flow
+- Implementing checkpoint/recovery机制
+- Need progress tracking across stages
 
 ## Usage
 
-### Full Pipeline
-
 ```
-User: Analyze my survey data
+User: Analyze survey_data.sav with full workflow
 
-Assistant: Starting complete analysis pipeline...
+Assistant: [Starting 5-Stage Workflow]
+           [Stage 1] Data Preparation...
+           Loaded 150 variables, filtered to 45 analysis variables
+           Saved: filtered_metadata.json
 
-           === Stage 1: Data Preparation ===
-           Loading survey_data.sav...
-           Extracting 156 variables...
-           Filtering to relevant variables...
-           ✓ Complete
+           [Stage 2] Table Specification...
+           Generated 18 tables, 6 indicators
+           Saved: table_specification.json
 
-           === Stage 2: Table Specification ===
-           Generating specification with AI...
-           Validating structure...
-           Please review specification...
-           ✓ Approved
+           [Stage 3] Cross-Table Calculation...
+           Computed 6 indicators, generated crosstabs
+           Saved: indicators.csv, cross_tables.json
 
-           === Stage 3: Cross-Table Calculation ===
-           Applying recoding...
-           Computing indicators...
-           Generating cross-tables...
-           ✓ Complete (25 tables)
+           [Stage 4] Statistical Analysis...
+           Chi-square tests: 18 tables
+           Significant (p<0.05): 8 tables
+           Saved: statistical_summary.json, filtered_tables.json
 
-           === Stage 4: Statistical Analysis ===
-           Running chi-square tests...
-           Filtering significant tables...
-           ✓ Complete (18 significant)
+           [Stage 5] Reporting...
+           Generated 24-slide presentation
+           Created interactive HTML dashboard
+           Saved: presentation.pptx, dashboard.html
 
-           === Stage 5: Reporting ===
-           Creating PowerPoint...
-           Creating HTML dashboard...
-           ✓ Complete
-
-           === ANALYSIS COMPLETE ===
-           Reports ready:
-           - presentation.pptx
-           - dashboard.html
+           Analysis complete! All outputs in output/
 ```
 
-### Resume from Stage
+## Input
+
+| Input | Required | Description |
+|--------|-----------|-------------|
+| `--sav-file` | Yes | Path to SPSS .sav file |
+| `--output-dir` | No | Output directory (default: output/) |
+
+## Output
+
+| File/Directory | Content |
+|----------------|----------|
+| `output/filtered_metadata.json` | Analysis variables from Stage 1 |
+| `output/table_specification.json` | Table/indicator specs from Stage 2 |
+| `output/indicators.csv` | Computed indicators from Stage 3 |
+| `output/cross_tables.json` | Cross-table results from Stage 3 |
+| `output/statistical_summary.json` | Test results from Stage 4 |
+| `output/filtered_tables.json` | Significant tables from Stage 4 |
+| `output/presentation.pptx` | PowerPoint presentation from Stage 5 |
+| `output/dashboard.html` | Interactive dashboard from Stage 5 |
+
+## Workflow Features
+
+- **Checkpointing**: Each stage saves progress for recovery
+- **Dependency Management**: Ensures stages execute in correct order
+- **Error Recovery**: Can resume from failed stage
+- **Progress Tracking**: Reports completion status for each stage
+- **Data Validation**: Verifies inputs before each stage
+
+## Library Modules
+
+| Module | Purpose |
+|---------|---------|
+| `spss_analyzer.io.SPSSReader` | Read .sav files |
+| `spss_analyzer.io.MetadataTransformer` | Transform/filter metadata |
+| `spss_analyzer.specification.SpecificationGenerator` | Generate table specs |
+| `spss_analyzer.pspp.PSPPExecutor` | Execute PSPP syntax |
+
+## Stage Dependencies
 
 ```
-User: Continue analysis from Stage 3
-
-Assistant: Resuming from Stage 3: Cross-Table Calculation...
-           Using existing: table_specification.json
-           ✓ Complete
-           Continuing to Stage 4...
+Stage 1 (Data Prep)
+    ↓
+Stage 2 (Specification)
+    ↓
+Stage 3 (Crosstabs)
+    ↓
+Stage 4 (Statistics)
+    ↓
+Stage 5 (Reports)
 ```
 
-## Stage Skills
+## Running Individual Stages
 
-| Stage | Skill | Purpose |
-|--------|---------|---------|
-| 1 | `stage1-data-prep` | Load and filter metadata |
-| 2 | `stage2-spec-gen` | Generate/validate specification |
-| 3 | `stage3-crosstabs` | Recoding, indicators, cross-tables |
-| 4 | `stage4-statistics` | Statistical tests, filtering |
-| 5 | `stage5-reports` | PowerPoint, dashboard |
-
-## Orchestration Features
-
-- **Checkpointing**: Resume from any stage
-- **Error handling**: Stop on failure, report issue
-- **Progress tracking**: Show stage-by-stage progress
-- **Dependency management**: Ensure inputs are ready
-
-## Input Requirements
-
-| Input | Required | From |
-|--------|-----------|--------|
-| `.sav` file path | Yes | User input |
-| Start stage | No | Default: Stage 1 |
-
-## Output Artifacts
-
-Complete pipeline produces:
-
-| Stage | Output |
-|--------|---------|
-| 1 | `filtered_metadata.json` |
-| 2 | `table_specification.json` |
-| 3 | `recoded_data.sav`, `indicators.csv`, `cross_tables.csv` |
-| 4 | `statistical_summary.json`, `filtered_tables.json` |
-| 5 | `presentation.pptx`, `dashboard.html` |
-
-## Error Handling
-
-| Error | Action |
-|--------|---------|
-| Stage 1 fails | Check .sav file path |
-| Stage 2 validation fails | Review specification manually |
-| Stage 3 fails | Check PSPP installation |
-| Stage 4 fails | Review cross-tables data |
-| Stage 5 fails | Check filtered results |
-
-## Workflow Control
-
-### Checkpoint Resume
-
+To run a single stage:
 ```bash
-# Resume from specific stage
-survey-coordinator --resume-from stage3
-```
+# Stage 1 only
+stage1-data-prep --sav-file data.sav --output-dir output/
 
-### Dry Run
+# Stage 2 only (requires Stage 1 output)
+stage2-spec-gen --metadata-file output/filtered_metadata.json
 
-```bash
-# Validate pipeline without execution
-survey-coordinator --dry-run
+# Stage 3 only (requires Stages 1-2 output)
+stage3-crosstabs --sav-file data.sav --spec-file output/table_specification.json
+
+# Stage 4 only (requires Stage 3 output)
+stage4-statistics --crosstabs-file output/cross_tables.json
+
+# Stage 5 only (requires Stage 4 output)
+stage5-reports --filtered-file output/filtered_tables.json
 ```
