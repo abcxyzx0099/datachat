@@ -100,10 +100,10 @@ pspp pspp_crosstabs.sps -o output.txt
 
 | Module | Purpose |
 |---------|---------|
-| `spss_analyzer.io.SPSSReader` | Read .sav files |
-| `spss_analyzer.pspp.PSPPExecutor` | Execute PSPP commands |
-| `spss_analyzer.pspp.RecodingSyntaxGenerator` | Generate recode syntax |
-| `spss_analyzer.pspp.CTablesSyntaxGenerator` | Generate ctables syntax |
+| `survey_analyzer.io.SPSSReader` | Read .sav files |
+| `survey_analyzer.pspp.PSPPExecutor` | Execute PSPP commands |
+| `survey_analyzer.pspp.RecodingSyntaxGenerator` | Generate recode syntax |
+| `survey_analyzer.pspp.CTablesSyntaxGenerator` | Generate ctables syntax |
 
 ## Data Flow
 

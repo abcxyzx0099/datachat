@@ -24,7 +24,7 @@ from pathlib import Path
 
 def cmd_data_read(args):
     """Read SPSS .sav file and output metadata."""
-    from spss_analyzer.io import SPSSReader, MetadataTransformer
+    from survey_analyzerio import SPSSReader, MetadataTransformer
 
     reader = SPSSReader()
     data, meta = reader.read(args.sav_file)
@@ -42,7 +42,7 @@ def cmd_data_read(args):
 
 def cmd_data_filter(args):
     """Filter metadata by category count."""
-    from spss_analyzer.io import MetadataTransformer
+    from survey_analyzerio import MetadataTransformer
 
     with open(args.metadata_file) as f:
         metadata = json.load(f)
@@ -62,7 +62,7 @@ def cmd_data_filter(args):
 
 def cmd_spec_tables(args):
     """Generate table specifications from metadata."""
-    from spss_analyzer.specification import TableSpecificationGenerator
+    from survey_analyzerspecification import TableSpecificationGenerator
 
     with open(args.metadata_file) as f:
         metadata = json.load(f)
@@ -79,7 +79,7 @@ def cmd_spec_tables(args):
 
 def cmd_analysis_indicators(args):
     """Compute indicators from specification."""
-    from spss_analyzer.analysis import IndicatorsCalculator
+    from survey_analyzeranalysis import IndicatorsCalculator
 
     with open(args.spec_file) as f:
         spec = json.load(f)
@@ -102,8 +102,8 @@ def cmd_analysis_indicators(args):
 
 def cmd_stats_test(args):
     """Calculate chi-square tests on crosstabs."""
-    from spss_analyzer.analysis import StatisticsCalculator
-    from spss_analyzer.filtering import SignificanceFilter
+    from survey_analyzeranalysis import StatisticsCalculator
+    from survey_analyzerfiltering import SignificanceFilter
 
     with open(args.crosstabs_file) as f:
         crosstabs = json.load(f)
@@ -124,7 +124,7 @@ def cmd_stats_test(args):
 
 def cmd_stats_filter(args):
     """Filter tables by significance."""
-    from spss_analyzer.filtering import SignificanceFilter
+    from survey_analyzerfiltering import SignificanceFilter
 
     with open(args.crosstabs_file) as f:
         data = json.load(f)
@@ -143,7 +143,7 @@ def cmd_stats_filter(args):
 
 def cmd_reporting_ppt(args):
     """Generate PowerPoint report."""
-    from spss_analyzer.reporting import PowerPointGenerator
+    from survey_analyzerreporting import PowerPointGenerator
 
     with open(args.tables_file) as f:
         data = json.load(f)
@@ -159,7 +159,7 @@ def cmd_reporting_ppt(args):
 
 def cmd_reporting_html(args):
     """Generate HTML dashboard."""
-    from spss_analyzer.reporting import HTMLDashboardGenerator
+    from survey_analyzerreporting import HTMLDashboardGenerator
 
     with open(args.tables_file) as f:
         data = json.load(f)
@@ -175,11 +175,11 @@ def cmd_reporting_html(args):
 
 def cmd_all_workflow(args):
     """Run complete 5-stage workflow."""
-    from spss_analyzer.io import SPSSReader, MetadataTransformer
-    from spss_analyzer.specification import TableSpecificationGenerator
-    from spss_analyzer.analysis import IndicatorsCalculator, StatisticsCalculator
-    from spss_analyzer.filtering import SignificanceFilter
-    from spss_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
+    from survey_analyzerio import SPSSReader, MetadataTransformer
+    from survey_analyzerspecification import TableSpecificationGenerator
+    from survey_analyzeranalysis import IndicatorsCalculator, StatisticsCalculator
+    from survey_analyzerfiltering import SignificanceFilter
+    from survey_analyzerreporting import PowerPointGenerator, HTMLDashboardGenerator
 
     output_path = Path(args.output_dir)
     output_path.mkdir(parents=True, exist_ok=True)

@@ -13,7 +13,7 @@ This library provides standalone functions for analyzing SPSS survey data that c
 ## Library Structure
 
 ```
-lib/spss_analyzer/
+lib/survey_analyzer/
 ├── __init__.py              # Package initialization
 ├── analysis/                # Core analysis functions
 │   ├── __init__.py
@@ -50,7 +50,7 @@ Computes statistical tests for cross-tabulation tables:
 - Test validation (assumptions checking)
 
 ```python
-from spss_analyzer.analysis import StatisticsCalculator
+from survey_analyzer.analysis import StatisticsCalculator
 
 calc = StatisticsCalculator(significance_level=0.05)
 result = calc.analyze_table(
@@ -73,7 +73,7 @@ Groups related variables into indicators for combined analysis:
 - Manual grouping (predefined groups)
 
 ```python
-from spss_analyzer.analysis import IndicatorGenerator, IndicatorConfig, IndicatorType
+from survey_analyzer.analysis import IndicatorGenerator, IndicatorConfig, IndicatorType
 
 gen = IndicatorGenerator()
 config = IndicatorConfig(
@@ -95,7 +95,7 @@ Filters tables based on statistical significance criteria:
 - Validity requirement (excludes tests with violated assumptions)
 
 ```python
-from spss_analyzer.filtering import SignificanceFilter, FilterCriteria
+from survey_analyzer.filtering import SignificanceFilter, FilterCriteria
 
 criteria = FilterCriteria(
     significance_level=0.05,
@@ -116,7 +116,7 @@ Reads SPSS (.sav) files using pyreadstat:
 - Extracts value labels
 
 ```python
-from spss_analyzer.io import SPSSReader
+from survey_analyzer.io import SPSSReader
 
 reader = SPSSReader()
 df, metadata = reader.read("survey.sav")
@@ -130,7 +130,7 @@ Transforms SPSS metadata between formats:
 - Filtered (business rules)
 
 ```python
-from spss_analyzer.io import MetadataTransformer
+from survey_analyzer.io import MetadataTransformer
 
 transformer = MetadataTransformer()
 new_metadata = transformer.to_variable_centered(metadata)
@@ -147,7 +147,7 @@ Generates PSPP syntax for data transformations:
 
 **Recoding Syntax:**
 ```python
-from spss_analyzer.pspp import RecodingSyntaxGenerator
+from survey_analyzer.pspp import RecodingSyntaxGenerator
 
 gen = RecodingSyntaxGenerator()
 syntax = gen.generate_syntax(recoding_rules, file_label="Age Recoding")
@@ -159,7 +159,7 @@ print(syntax)
 
 **CTABLES Syntax:**
 ```python
-from spss_analyzer.pspp import CTablesSyntaxGenerator
+from survey_analyzer.pspp import CTablesSyntaxGenerator
 
 gen = CTablesSyntaxGenerator()
 syntax = gen.generate_syntax(table_specifications)
@@ -176,7 +176,7 @@ print(syntax)
 Executes PSPP syntax files:
 
 ```python
-from spss_analyzer.pspp import PSPPExecutor
+from survey_analyzer.pspp import PSPPExecutor
 
 executor = PSPPExecutor()
 result = executor.execute_syntax(
@@ -196,7 +196,7 @@ else:
 Generates PowerPoint presentations:
 
 ```python
-from spss_analyzer.reporting import PowerPointGenerator
+from survey_analyzer.reporting import PowerPointGenerator
 
 gen = PowerPointGenerator()
 gen.create_presentation(
@@ -217,7 +217,7 @@ Generates interactive HTML dashboards:
 - CSV export
 
 ```python
-from spss_analyzer.reporting import HTMLDashboardGenerator
+from survey_analyzer.reporting import HTMLDashboardGenerator
 
 gen = HTMLDashboardGenerator()
 html = gen.generate_dashboard(
@@ -232,7 +232,7 @@ gen.save("output/dashboard.html", html)
 
 ```bash
 cd /home/admin/workspaces/datachat/lib
-python3 -m spss_analyzer.examples.demo
+python3 -m survey_analyzer.examples.demo
 ```
 
 Demo output shows:
@@ -285,7 +285,7 @@ entry_point: main
 
 ```python
 # skills/spss_statistics.py
-from spss_analyzer.analysis import StatisticsCalculator
+from survey_analyzer.analysis import StatisticsCalculator
 
 def main(state, config):
     calc = StatisticsCalculator(**config)
@@ -319,11 +319,11 @@ python-pptx          # PowerPoint generation
 
 ```python
 # Complete workflow using the library
-from spss_analyzer.io import SPSSReader, MetadataTransformer
-from spss_analyzer.analysis import StatisticsCalculator, IndicatorGenerator
-from spss_analyzer.filtering import SignificanceFilter
-from spss_analyzer.pspp import RecodingSyntaxGenerator, CTablesSyntaxGenerator, PSPPExecutor
-from spss_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
+from survey_analyzer.io import SPSSReader, MetadataTransformer
+from survey_analyzer.analysis import StatisticsCalculator, IndicatorGenerator
+from survey_analyzer.filtering import SignificanceFilter
+from survey_analyzer.pspp import RecodingSyntaxGenerator, CTablesSyntaxGenerator, PSPPExecutor
+from survey_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
 
 # 1. Read SPSS file
 reader = SPSSReader()

@@ -116,8 +116,8 @@ The generated `table_specification.json` contains:
 
 | Module | Purpose |
 |---------|---------|
-| `spss_analyzer.specification.SpecificationGenerator` | Generate table/indicator specs |
-| `spss_analyzer.io.MetadataTransformer` | Transform and filter metadata |
+| `survey_analyzer.specification.SpecificationGenerator` | Generate table/indicator specs |
+| `survey_analyzer.io.MetadataTransformer` | Transform and filter metadata |
 
 ## AI Analysis
 

@@ -24,10 +24,10 @@ __version__ = "0.2.0"
 
 # Lazy imports to avoid circular dependencies
 # Import modules directly when needed:
-# from spss_analyzer.io import SPSSReader, MetadataTransformer
-# from spss_analyzer.analysis import StatisticsCalculator
-# from spss_analyzer.filtering import SignificanceFilter
-# from spss_analyzer.specification import TableSpecificationValidator
+# from survey_analyzerio import SPSSReader, MetadataTransformer
+# from survey_analyzeranalysis import StatisticsCalculator
+# from survey_analyzerfiltering import SignificanceFilter
+# from survey_analyzerspecification import TableSpecificationValidator
 
 __all__ = [
     # I/O

@@ -45,7 +45,7 @@ Assistant: I'll test the stage1-data-prep skill...
 ```
 User: Debug the SPSS reader function
 
-Assistant: I'll test the spss_analyzer.io.SPSSReader class...
+Assistant: I'll test the survey_analyzer.io.SPSSReader class...
 [Test with various file formats, check metadata extraction]
 ```
 
@@ -93,7 +93,7 @@ Direct testing of library functions:
 
 ```python
 # Example: Testing metadata transformer
-from spss_analyzer.io import MetadataTransformer
+from survey_analyzer.io import MetadataTransformer
 
 transformer = MetadataTransformer()
 

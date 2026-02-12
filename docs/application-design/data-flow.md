@@ -54,7 +54,7 @@ Design and implement an automated workflow for market research survey data analy
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    spss_analyzer Library                        │
+│                    survey_analyzer Library                        │
 │  (Pure Python: Data Processing & Computation)                    │
 ├─────────────────────────────────────────────────────────────────────────┤
 │ specification/  │ Schema & validator for table_specification.json      │
@@ -263,9 +263,9 @@ This structure allows:
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 1 | `stage1-data-prep` | `spss_analyzer.io.SPSSReader` | Load .sav file | Deterministic |
-| 2 | `stage1-data-prep` | `spss_analyzer.io.MetadataTransformer` | Extract & transform metadata | Deterministic |
-| 3 | `stage1-data-prep` | `spss_analyzer.io.MetadataTransformer` | Filter variables | Deterministic |
+| 1 | `stage1-data-prep` | `survey_analyzer.io.SPSSReader` | Load .sav file | Deterministic |
+| 2 | `stage1-data-prep` | `survey_analyzer.io.MetadataTransformer` | Extract & transform metadata | Deterministic |
+| 3 | `stage1-data-prep` | `survey_analyzer.io.MetadataTransformer` | Filter variables | Deterministic |
 
 **Skill:** `stage1-data-prep` handles all Stage 1 operations.
 
@@ -289,9 +289,9 @@ This structure allows:
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 7 | `stage3-crosstabs` | `spss_analyzer.pspp.RecodingSyntaxGenerator` + `PSPPExecutor` | Apply recoding | Deterministic |
-| 8 | `stage3-crosstabs` | `spss_analyzer.analysis.IndicatorGenerator` | Compute indicators | Deterministic |
-| 9 | `stage3-crosstabs` | `spss_analyzer.pspp.CTablesSyntaxGenerator` + `PSPPExecutor` | Generate cross-tables | Deterministic |
+| 7 | `stage3-crosstabs` | `survey_analyzer.pspp.RecodingSyntaxGenerator` + `PSPPExecutor` | Apply recoding | Deterministic |
+| 8 | `stage3-crosstabs` | `survey_analyzer.analysis.IndicatorGenerator` | Compute indicators | Deterministic |
+| 9 | `stage3-crosstabs` | `survey_analyzer.pspp.CTablesSyntaxGenerator` + `PSPPExecutor` | Generate cross-tables | Deterministic |
 
 **Skill:** `stage3-crosstabs` handles all Stage 3 operations.
 
@@ -301,8 +301,8 @@ This structure allows:
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 10 | `stage4-statistics` | `spss_analyzer.analysis.StatisticsCalculator` | Calculate statistics | Deterministic |
-| 11 | `stage4-statistics` | `spss_analyzer.filtering.SignificanceFilter` | Filter significant tables | Deterministic |
+| 10 | `stage4-statistics` | `survey_analyzer.analysis.StatisticsCalculator` | Calculate statistics | Deterministic |
+| 11 | `stage4-statistics` | `survey_analyzer.filtering.SignificanceFilter` | Filter significant tables | Deterministic |
 
 **Skill:** `stage4-statistics` handles all Stage 4 operations.
 
@@ -312,8 +312,8 @@ This structure allows:
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 12 | `stage5-reports` | `spss_analyzer.reporting.PowerPointGenerator` | Create .pptx | Deterministic |
-| 13 | `stage5-reports` | `spss_analyzer.reporting.HTMLDashboardGenerator` | Create .html | Deterministic |
+| 12 | `stage5-reports` | `survey_analyzer.reporting.PowerPointGenerator` | Create .pptx | Deterministic |
+| 13 | `stage5-reports` | `survey_analyzer.reporting.HTMLDashboardGenerator` | Create .html | Deterministic |
 
 **Skill:** `stage5-reports` handles all Stage 5 operations.
 

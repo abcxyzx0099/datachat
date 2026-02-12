@@ -77,8 +77,8 @@ Stage 5 complete! Reports ready for delivery.
 
 | Module | Purpose |
 |---------|---------|
-| `spss_analyzer.reporting.PowerPointGenerator` | Create .pptx files |
-| `spss_analyzer.reporting.HTMLDashboardGenerator` | Create .html files |
+| `survey_analyzer.reporting.PowerPointGenerator` | Create .pptx files |
+| `survey_analyzer.reporting.HTMLDashboardGenerator` | Create .html files |
 
 ## Dependencies
 

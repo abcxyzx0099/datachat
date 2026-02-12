@@ -89,10 +89,10 @@ Assistant: [Starting 5-Stage Workflow]
 
 | Module | Purpose |
 |---------|---------|
-| `spss_analyzer.io.SPSSReader` | Read .sav files |
-| `spss_analyzer.io.MetadataTransformer` | Transform/filter metadata |
-| `spss_analyzer.specification.SpecificationGenerator` | Generate table specs |
-| `spss_analyzer.pspp.PSPPExecutor` | Execute PSPP syntax |
+| `survey_analyzer.io.SPSSReader` | Read .sav files |
+| `survey_analyzer.io.MetadataTransformer` | Transform/filter metadata |
+| `survey_analyzer.specification.SpecificationGenerator` | Generate table specs |
+| `survey_analyzer.pspp.PSPPExecutor` | Execute PSPP syntax |
 
 ## Stage Dependencies
 

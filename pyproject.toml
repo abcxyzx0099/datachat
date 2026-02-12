@@ -1,5 +1,5 @@
 [project]
-name = "datachat-spss-analyzer"
+name = "datachat-survey-analyzer"
 version = "1.0.0"
 description = "DataChat SPSS Analyzer - LangGraph-based survey analysis tool"
 requires-python = ">=3.13"

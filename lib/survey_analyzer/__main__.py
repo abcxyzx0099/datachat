@@ -5,7 +5,7 @@ Provides convenient command-line interface to all survey analysis operations.
 Usage: python -m spss_analyzer <command> [options]
 """
 
-from spss_analyzer.cli import main
+from survey_analyzercli import main
 
 
 if __name__ == '__main__':
