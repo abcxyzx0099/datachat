@@ -43,7 +43,7 @@ from .reporting import (
     save_reports
 )
 
-from . import all as workflow
+from . import all as workflow_cli
 
 __all__ = [
     # Data operations
