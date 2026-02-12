@@ -1,55 +1,48 @@
 """
 Stage 5: Reporting
 
-Uses spss_analyzer library modules directly.
+Uses spss-analyzer CLI command.
 """
 
 import sys
 import argparse
-import json
-from pathlib import Path
+import subprocess
 
 
 def run_stage(
     filtered_tables_file: str,
     output_dir: str = "output"
 ) -> bool:
-    """Run Stage 5 using library modules directly."""
+    """Run Stage 5 using spss-analyzer CLI."""
     print("=" * 60)
     print("📑 Stage 5: Reporting")
     print("=" * 60)
 
-    from spss_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
-
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    # Load filtered tables and summary
-    with open(filtered_tables_file, 'r') as f:
-        data = json.load(f)
-
-    # Handle both formats: direct list or wrapped with summary
-    if isinstance(data, list):
-        filtered_tables = data
-        summary = {}
-    elif isinstance(data, dict):
-        filtered_tables = data.get('tables', [])
-        summary = data.get('summary', {})
-    else:
-        filtered_tables = []
-        summary = {}
-
     # Generate PowerPoint
-    ppt_gen = PowerPointGenerator()
-    ppt_file = output_path / "presentation.pptx"
-    ppt_gen.generate(filtered_tables, summary, str(ppt_file))
-    print(f"Saved PowerPoint: {ppt_file}")
+    result = subprocess.run(
+        ['spss-analyzer', 'reporting', 'ppt',
+         '--tables-file', filtered_tables_file,
+         '--output-dir', output_dir],
+        capture_output=False
+    )
+
+    if result.returncode != 0:
+        return False
+
+    print("PowerPoint generated")
 
     # Generate HTML Dashboard
-    dash_gen = HTMLDashboardGenerator()
-    dash_file = output_path / "dashboard.html"
-    dash_gen.generate(filtered_tables, summary, str(dash_file))
-    print(f"Saved HTML dashboard: {dash_file}")
+    result = subprocess.run(
+        ['spss-analyzer', 'reporting', 'html',
+         '--tables-file', filtered_tables_file,
+         '--output-dir', output_dir],
+        capture_output=False
+    )
+
+    if result.returncode != 0:
+        return False
+
+    print("HTML dashboard generated")
 
     print("\n" + "=" * 60)
     print("✅ Stage 5 Complete!")

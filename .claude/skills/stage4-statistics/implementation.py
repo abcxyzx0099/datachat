@@ -1,13 +1,12 @@
 """
 Stage 4: Statistical Analysis
 
-Uses spss_analyzer library modules directly.
+Uses spss-analyzer CLI command.
 """
 
 import sys
 import argparse
-import json
-from pathlib import Path
+import subprocess
 
 
 def run_stage(
@@ -16,46 +15,36 @@ def run_stage(
     output_dir: str = "output",
     threshold: float = 0.05
 ) -> bool:
-    """Run Stage 4 using library modules directly."""
+    """Run Stage 4 using spss-analyzer CLI."""
     print("=" * 60)
     print("📈 Stage 4: Statistical Analysis")
     print("=" * 60)
 
-    from spss_analyzer.analysis import StatisticsCalculator
-    from spss_analyzer.filtering import SignificanceFilter
-
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    # Load crosstabs
-    with open(crosstabs_file, 'r') as f:
-        crosstabs = json.load(f)
-
     # Calculate chi-square
-    stats_calc = StatisticsCalculator()
-    test_results = stats_calc.calculate_chi_square(crosstabs)
-
-    # Filter significant
-    sig_filter = SignificanceFilter()
-    filtered_tables, summary = sig_filter.filter_significant(
-        test_results,
-        threshold=threshold
+    result = subprocess.run(
+        ['spss-analyzer', 'stats', 'test',
+         '--crosstabs-file', crosstabs_file,
+         '--threshold', str(threshold),
+         '--output-file', f'{output_dir}/test_results.json'],
+        capture_output=False
     )
 
-    # Save results
-    stats_file = output_path / "statistical_summary.json"
-    with open(stats_file, 'w') as f:
-        json.dump(summary, f, indent=2)
-    print(f"Saved summary: {stats_file}")
+    if result.returncode != 0:
+        return False
 
-    filtered_file = output_path / "filtered_tables.json"
-    with open(filtered_file, 'w') as f:
-        json.dump(filtered_tables, f, indent=2)
-    print(f"Saved filtered tables: {filtered_file}")
+    print("Chi-square tests calculated")
 
-    sig_count = summary.get('significant_count', 0)
-    total_count = summary.get('total_tests', 0)
-    print(f"Significant: {sig_count}/{total_count}")
+    # Filter significant tables
+    result = subprocess.run(
+        ['spss-analyzer', 'stats', 'filter',
+         '--crosstabs-file', f'{output_dir}/test_results.json',
+         '--threshold', str(threshold),
+         '--output-file', f'{output_dir}/filtered_tables.json'],
+        capture_output=False
+    )
+
+    if result.returncode != 0:
+        return False
 
     print("\n" + "=" * 60)
     print("✅ Stage 4 Complete!")
@@ -85,6 +74,7 @@ def main():
     # Get threshold from spec if not provided
     threshold = args.threshold
     if threshold is None:
+        import json
         with open(args.spec_file, 'r') as f:
             spec = json.load(f)
         threshold = spec.get('output_settings', {}).get('significance_threshold', 0.05)

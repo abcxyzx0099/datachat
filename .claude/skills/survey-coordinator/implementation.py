@@ -2,22 +2,20 @@
 Survey Coordinator - Workflow Orchestrator
 
 Orchestrates all 5 stages of survey analysis workflow.
-Calls library modules directly - no CLI wrapper layer.
+Uses spss-analyzer CLI commands.
 """
 
-import json
 import sys
 import argparse
-from pathlib import Path
-from typing import Optional
+import subprocess
 
 
 def run_workflow(
     sav_file: str,
     output_dir: str = "output",
-    skip_stages: Optional[str] = None
+    skip_stages: str = None
 ) -> bool:
-    """Run complete 5-stage analysis workflow using library modules directly.
+    """Run complete 5-stage analysis workflow using spss-analyzer CLI.
 
     Args:
         sav_file: Path to SPSS .sav file
@@ -27,172 +25,134 @@ def run_workflow(
     Returns:
         True if workflow completed successfully
     """
-    # Import library modules directly
-    from spss_analyzer.io import SPSSReader, MetadataTransformer
-    from spss_analyzer.specification import TableSpecificationGenerator
-    from spss_analyzer.analysis import IndicatorsCalculator, StatisticsCalculator
-    from spss_analyzer.pspp import CTablesSyntaxGenerator
-    from spss_analyzer.filtering import SignificanceFilter
-    from spss_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
-
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
+    print("=" * 60)
+    print("📊 SPSS Survey Analysis - 5-Stage Workflow")
+    print("=" * 60)
 
     skip_list = (skip_stages or '').split(',')
 
     # Stage 1: Data Preparation
     if '1' not in skip_list:
-        print("\n" + "=" * 60)
-        print("📁 Stage 1: Data Preparation")
+        print("\n📁 Stage 1: Data Preparation")
         print("-" * 60)
 
-        # Read metadata
-        reader = SPSSReader()
-        data, meta = reader.read(sav_file)
-
-        # Transform metadata
-        transformer = MetadataTransformer()
-        metadata_dict = transformer.to_variable_centered(meta)
-
-        # Filter variables
-        filtered_metadata = transformer.filter_variables(
-            metadata_dict,
-            min_categories=2,
-            max_categories=10
+        result = subprocess.run(
+            ['spss-analyzer', 'data', 'read',
+             '--sav-file', sav_file,
+             '--output-file', f'{output_dir}/filtered_metadata.json'],
+            capture_output=False
         )
 
-        # Save filtered metadata
-        metadata_file = output_path / "filtered_metadata.json"
-        with open(metadata_file, 'w') as f:
-            json.dump(filtered_metadata, f, indent=2)
+        if result.returncode != 0:
+            return False
 
-        print(f"   Saved: {metadata_file}")
-        print(f"   Variables: {len(filtered_metadata.get('variables', {}))} analysis variables")
+        print("   Data read and filtered")
 
     # Stage 2: Table Specification
     if '2' not in skip_list:
-        print("\n" + "=" * 60)
-        print("📋 Stage 2: Table Specification")
+        print("\n📋 Stage 2: Table Specification")
         print("-" * 60)
 
-        # Load metadata if not already loaded
-        if '1' in skip_list:
-            with open(output_path / "filtered_metadata.json", 'r') as f:
-                filtered_metadata = json.load(f)
+        result = subprocess.run(
+            ['spss-analyzer', 'spec', 'tables',
+             '--metadata-file', f'{output_dir}/filtered_metadata.json',
+             '--output-file', f'{output_dir}/table_specification.json'],
+            capture_output=False
+        )
 
-        # Use specification generator
-        spec_gen = TableSpecificationGenerator()
-        spec = spec_gen.generate(filtered_metadata)
+        if result.returncode != 0:
+            return False
 
-        # Save specification
-        spec_file = output_path / "table_specification.json"
-        with open(spec_file, 'w') as f:
-            json.dump(spec, f, indent=2)
-
-        print(f"   Saved: {spec_file}")
-        print(f"   Tables: {len(spec.get('tables', []))}")
+        print("   Table specification generated")
 
     # Stage 3: Cross-Table Calculation
     if '3' not in skip_list:
-        print("\n" + "=" * 60)
-        print("📊 Stage 3: Cross-Table Calculation")
+        print("\n📊 Stage 3: Cross-Table Calculation")
         print("-" * 60)
 
-        # Load spec if not already loaded
-        if '2' in skip_list:
-            with open(output_path / "table_specification.json", 'r') as f:
-                spec = json.load(f)
-            with open(output_path / "filtered_metadata.json", 'r') as f:
-                filtered_metadata = json.load(f)
+        result = subprocess.run(
+            ['spss-analyzer', 'analysis', 'indicators',
+             '--spec-file', f'{output_dir}/table_specification.json',
+             '--metadata-file', f'{output_dir}/filtered_metadata.json',
+             '--output-file', f'{output_dir}/indicators.json'],
+            capture_output=False
+        )
 
-        # Compute indicators
-        calc = IndicatorsCalculator()
-        indicators_data = calc.compute(spec.get('indicators', []), filtered_metadata)
+        if result.returncode != 0:
+            return False
 
-        # Save indicators
-        indicators_file = output_path / "indicators.json"
-        with open(indicators_file, 'w') as f:
-            json.dump(indicators_data, f, indent=2)
+        print("   Indicators computed")
 
-        print(f"   Saved: {indicators_file}")
+        result = subprocess.run(
+            ['spss-analyzer', 'analysis', 'crosstabs',
+             '--spec-file', f'{output_dir}/table_specification.json',
+             '--metadata-file', f'{output_dir}/filtered_metadata.json',
+             '--output-file', f'{output_dir}/cross_tables.json'],
+            capture_output=False
+        )
 
-        # Generate crosstabs
-        ctables_gen = CTablesSyntaxGenerator()
-        tables_spec = spec.get('tables', [])
+        if result.returncode != 0:
+            return False
 
-        crosstabs = {}
-        for table_spec in tables_spec:
-            table_id = table_spec.get('id')
-            crosstabs[table_id] = {
-                'spec': table_spec,
-                'syntax': ctables_gen.generate([table_spec])
-            }
-
-        # Save crosstabs
-        crosstabs_file = output_path / "cross_tables.json"
-        with open(crosstabs_file, 'w') as f:
-            json.dump(crosstabs, f, indent=2)
-
-        print(f"   Saved: {crosstabs_file}")
+        print("   Crosstabs generated")
 
     # Stage 4: Statistical Analysis
     if '4' not in skip_list:
-        print("\n" + "=" * 60)
-        print("📈 Stage 4: Statistical Analysis")
+        print("\n📈 Stage 4: Statistical Analysis")
         print("-" * 60)
 
-        # Load crosstabs
-        with open(output_path / "cross_tables.json", 'r') as f:
-            crosstabs = json.load(f)
+        result = subprocess.run(
+            ['spss-analyzer', 'stats', 'test',
+             '--crosstabs-file', f'{output_dir}/cross_tables.json',
+             '--output-file', f'{output_dir}/test_results.json'],
+            capture_output=False
+        )
 
-        # Calculate chi-square
-        stats_calc = StatisticsCalculator()
-        test_results = stats_calc.calculate_chi_square(crosstabs, threshold=0.05)
+        if result.returncode != 0:
+            return False
 
-        # Filter significant
-        sig_filter = SignificanceFilter()
-        filtered_tables, summary = sig_filter.filter_significant(test_results)
+        print("   Chi-square tests calculated")
 
-        # Save results
-        stats_file = output_path / "statistical_summary.json"
-        with open(stats_file, 'w') as f:
-            json.dump(summary, f, indent=2)
+        result = subprocess.run(
+            ['spss-analyzer', 'stats', 'filter',
+             '--crosstabs-file', f'{output_dir}/test_results.json',
+             '--output-file', f'{output_dir}/filtered_tables.json'],
+            capture_output=False
+        )
 
-        filtered_file = output_path / "filtered_tables.json"
-        with open(filtered_file, 'w') as f:
-            json.dump(filtered_tables, f, indent=2)
+        if result.returncode != 0:
+            return False
 
-        sig_count = summary.get('significant_count', 0)
-        total_count = summary.get('total_tests', 0)
-
-        print(f"   Significant: {sig_count}/{total_count}")
+        print("   Significant tables filtered")
 
     # Stage 5: Reporting
     if '5' not in skip_list:
-        print("\n" + "=" * 60)
-        print("📑 Stage 5: Reporting")
+        print("\n📑 Stage 5: Reporting")
         print("-" * 60)
 
-        # Load results if not already loaded
-        if '4' in skip_list:
-            with open(output_path / "filtered_tables.json", 'r') as f:
-                filtered_tables = json.load(f)
-            with open(output_path / "statistical_summary.json", 'r') as f:
-                summary = json.load(f)
+        result = subprocess.run(
+            ['spss-analyzer', 'reporting', 'ppt',
+             '--tables-file', f'{output_dir}/filtered_tables.json',
+             '--output-dir', output_dir],
+            capture_output=False
+        )
 
-        # Generate PowerPoint
-        ppt_gen = PowerPointGenerator()
-        ppt_file = output_path / "presentation.pptx"
-        ppt_gen.generate(filtered_tables, summary, str(ppt_file))
+        if result.returncode != 0:
+            return False
 
-        print(f"   Saved: {ppt_file}")
+        print("   PowerPoint generated")
 
-        # Generate HTML Dashboard
-        dash_gen = HTMLDashboardGenerator()
-        dash_file = output_path / "dashboard.html"
-        dash_gen.generate(filtered_tables, summary, str(dash_file))
+        result = subprocess.run(
+            ['spss-analyzer', 'reporting', 'html',
+             '--tables-file', f'{output_dir}/filtered_tables.json',
+             '--output-dir', output_dir],
+            capture_output=False
+        )
 
-        print(f"   Saved: {dash_file}")
+        if result.returncode != 0:
+            return False
+
+        print("   HTML dashboard generated")
 
     print("\n" + "=" * 60)
     print("✅ All stages completed successfully!")

@@ -1,41 +1,29 @@
 """
 Stage 2: Table Specification
 
-Uses spss_analyzer library modules directly.
+Uses spss-analyzer CLI command.
 """
 
 import sys
 import argparse
-import json
-from pathlib import Path
+import subprocess
 
 
 def run_stage(metadata_file: str, output_dir: str = "output") -> bool:
-    """Run Stage 2 using library modules directly."""
+    """Run Stage 2 using spss-analyzer CLI."""
     print("=" * 60)
     print("📋 Stage 2: Table Specification")
     print("=" * 60)
 
-    from spss_analyzer.specification import TableSpecificationGenerator
+    result = subprocess.run(
+        ['spss-analyzer', 'spec', 'tables',
+         '--metadata-file', metadata_file,
+         '--output-file', f'{output_dir}/table_specification.json'],
+        capture_output=False
+    )
 
-    # Load metadata
-    with open(metadata_file, 'r') as f:
-        metadata = json.load(f)
-
-    # Generate specification
-    spec_gen = TableSpecificationGenerator()
-    spec = spec_gen.generate(metadata)
-
-    # Save specification
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    spec_file = output_path / "table_specification.json"
-    with open(spec_file, 'w') as f:
-        json.dump(spec, f, indent=2)
-
-    print(f"Saved specification: {spec_file}")
-    print(f"Tables generated: {len(spec.get('tables', []))}")
+    if result.returncode != 0:
+        return False
 
     print("\n" + "=" * 60)
     print("✅ Stage 2 Complete!")
