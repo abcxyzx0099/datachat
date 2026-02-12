@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""
+SPSS Survey Analysis - CLI Entry Point
+
+Project-level bin script for spss_analyzer CLI.
+Uses absolute paths - works from anywhere.
+
+Usage:
+    spss-analyzer <command> [options]
+
+Commands:
+    data      - Read and filter survey data
+    spec      - Generate table specifications
+    analysis   - Compute indicators and crosstabs
+    stats      - Statistical analysis
+    reporting  - Generate reports
+    all        - Run complete workflow
+
+Examples:
+    spss-analyzer data read --sav-file survey.sav
+    spss-analyzer all --sav-file data.sav --output-dir results/
+"""
+
+import sys
+import os
+from pathlib import Path
+
+# Absolute path to library - works from anywhere
+LIB_DIR = Path("/home/admin/workspaces/datachat/lib")
+SPSS_ANALYZER_DIR = LIB_DIR / "spss_analyzer"
+
+# Add to Python path for imports
+sys.path.insert(0, str(SPSS_ANALYZER_DIR))
+
+from spss_analyzer.cli import (
+    data,
+    specification,
+    analysis,
+    statistics,
+    reporting,
+    all as workflow,
+)
+
+
+def main():
+    """Main entry point - routes to appropriate CLI module."""
+    if len(sys.argv) < 2:
+        _show_help()
+        sys.exit(0)
+
+    command = sys.argv[1].lower()
+    args = sys.argv[2:]
+
+    # Route to appropriate module
+    if command in ['data', 'metadata', 'read', 'filter']:
+        sys.argv = ['python', '-m', 'spss_analyzer.cli.data'] + args
+        data.main()
+    elif command in ['spec', 'specification', 'tables', 'indicators', 'combine']:
+        sys.argv = ['python', '-m', 'spss_analyzer.cli.specification'] + args
+        specification.main()
+    elif command in ['analysis', 'analyze', 'indicators', 'crosstabs', 'recode']:
+        sys.argv = ['python', '-m', 'spss_analyzer.cli.analysis'] + args
+        analysis.main()
+    elif command in ['stats', 'statistics', 'chi', 'test', 'filter']:
+        sys.argv = ['python', '-m', 'spss_analyzer.cli.statistics'] + args
+        statistics.main()
+    elif command in ['reporting', 'report', 'ppt', 'dashboard', 'both']:
+        sys.argv = ['python', '-m', 'spss_analyzer.cli.reporting'] + args
+        reporting.main()
+    elif command in ['all', 'workflow', 'run']:
+        sys.argv = ['python', '-m', 'spss_analyzer.cli.all'] + args
+        workflow.main()
+    else:
+        print(f"Unknown command: {command}")
+        print("Run: spss-analyzer --help")
+        _show_help()
+        sys.exit(1)
+
+
+def _show_help():
+    """Show help information."""
+    print("SPSS Survey Analysis - Semantic CLI Commands")
+    print("=" * 50)
+    print("\nAvailable commands:")
+    print("  data        - Read and filter survey data")
+    print("  spec        - Generate table specifications")
+    print("  analysis     - Compute indicators and crosstabs")
+    print("  stats        - Statistical analysis (chi-square, filtering)")
+    print("  reporting    - Generate PowerPoint and HTML dashboard")
+    print("  all         - Run complete 5-stage workflow")
+    print("\nExamples:")
+    print("  spss-analyzer data read --sav-file survey.sav")
+    print("  spss-analyzer spec tables --metadata-file filtered_metadata.json")
+    print("  spss-analyzer analysis indicators --spec-file table_specification.json")
+    print("  spss-analyzer stats test --crosstabs-file cross_tables.json")
+    print("  spss-analyzer reporting both --tables-file filtered_tables.json")
+    print("  spss-analyzer all --sav-file survey.sav --output-dir results/")
+    print("\nFor module-specific help:")
+    print("  spss-analyzer data --help")
+    print("  spss-analyzer spec --help")
+    print("\nInstallation:")
+    print("  1. Add to PATH: export PATH=\"$PATH:/home/admin/workspaces/datachat/bin\"")
+    print("  2. Or symlink: ln -s $(pwd)/bin/spss-analyzer /usr/local/bin/spss-analyzer")
+
+
+if __name__ == "__main__":
+    main()
