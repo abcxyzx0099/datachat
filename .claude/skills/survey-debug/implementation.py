@@ -1,66 +1,124 @@
 """
 Survey Debug - Debugging & Testing Tool
 
-Tests spss-analyzer CLI library functions.
+Tests spss-analyzer library modules directly.
 """
 
 import sys
 import argparse
 
 
-def _run_cli(args: list) -> int:
-    """Run spss-analyzer CLI command."""
-    import subprocess
-    result = subprocess.run(['spss-analyzer'] + args,
-                          capture_output=True, text=True)
-    print(result.stdout)
-    return result.returncode
-
-
 def test_all() -> bool:
-    """Run all debug tests using spss-analyzer CLI."""
+    """Run all debug tests by importing library modules."""
     print("=" * 60)
-    print("🔧 Survey Debug - Testing spss-analyzer CLI")
+    print("🔧 Survey Debug - Testing spss-analyzer Library")
     print("=" * 60)
+
+    results = {}
 
     # Test data operations
     print("\n[Testing data operations...]")
-    result = _run_cli(['data', '--help'])
-    data_ok = result == 0
+    try:
+        from spss_analyzer.io import SPSSReader, MetadataTransformer
+        results['Data'] = True
+        print("  ✅ PASS: spss_analyzer.io")
+    except Exception as e:
+        results['Data'] = False
+        print(f"  ❌ FAIL: spss_analyzer.io - {e}")
 
     # Test specification
     print("[Testing specification...]")
-    result = _run_cli(['spec', '--help'])
-    spec_ok = result == 0
+    try:
+        from spss_analyzer.specification import TableSpecificationGenerator
+        results['Specification'] = True
+        print("  ✅ PASS: spss_analyzer.specification")
+    except Exception as e:
+        results['Specification'] = False
+        print(f"  ❌ FAIL: spss_analyzer.specification - {e}")
 
     # Test analysis
     print("[Testing analysis...]")
-    result = _run_cli(['analysis', '--help'])
-    analysis_ok = result == 0
+    try:
+        from spss_analyzer.analysis import IndicatorsCalculator, StatisticsCalculator
+        results['Analysis'] = True
+        print("  ✅ PASS: spss_analyzer.analysis")
+    except Exception as e:
+        results['Analysis'] = False
+        print(f"  ❌ FAIL: spss_analyzer.analysis - {e}")
 
-    # Test statistics
-    print("[Testing statistics...]")
-    result = _run_cli(['stats', '--help'])
-    stats_ok = result == 0
+    # Test filtering
+    print("[Testing filtering...]")
+    try:
+        from spss_analyzer.filtering import SignificanceFilter
+        results['Filtering'] = True
+        print("  ✅ PASS: spss_analyzer.filtering")
+    except Exception as e:
+        results['Filtering'] = False
+        print(f"  ❌ FAIL: spss_analyzer.filtering - {e}")
 
     # Test reporting
     print("[Testing reporting...]")
-    result = _run_cli(['reporting', '--help'])
-    reporting_ok = result == 0
+    try:
+        from spss_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
+        results['Reporting'] = True
+        print("  ✅ PASS: spss_analyzer.reporting")
+    except Exception as e:
+        results['Reporting'] = False
+        print(f"  ❌ FAIL: spss_analyzer.reporting - {e}")
 
-    passed = all([data_ok, spec_ok, analysis_ok, stats_ok, reporting_ok])
+    # Test PSPP
+    print("[Testing PSPP...]")
+    try:
+        from spss_analyzer.pspp import CTablesSyntaxGenerator
+        results['PSPP'] = True
+        print("  ✅ PASS: spss_analyzer.pspp")
+    except Exception as e:
+        results['PSPP'] = False
+        print(f"  ❌ FAIL: spss_analyzer.pspp - {e}")
+
+    passed = sum(1 for v in results.values() if v)
+    total = len(results)
 
     print("\n" + "=" * 60)
-    print(f"📊 Test Results: {sum(passed)}/{len(passed)} passed")
+    print(f"📊 Test Results: {passed}/{total} passed")
     print("=" * 60)
 
-    for test_name, is_ok in [('Data', data_ok), ('Specification', spec_ok),
-                            ('Analysis', analysis_ok), ('Statistics', stats_ok),
-                            ('Reporting', reporting_ok)]:
+    for test_name, is_ok in results.items():
         status = "✅ PASS" if is_ok else "❌ FAIL"
         print(f"  {test_name}: {status}")
 
-    return passed
+    return passed == total
+
+
+def test_module(module_name: str) -> bool:
+    """Test a specific module by importing it."""
+    print(f"\n[Testing {module_name} module...]")
+
+    module_map = {
+        'data': ('spss_analyzer.io', ['SPSSReader', 'MetadataTransformer']),
+        'spec': ('spss_analyzer.specification', ['TableSpecificationGenerator']),
+        'analysis': ('spss_analyzer.analysis', ['IndicatorsCalculator', 'StatisticsCalculator']),
+        'stats': ('spss_analyzer.analysis', ['StatisticsCalculator']),
+        'filtering': ('spss_analyzer.filtering', ['SignificanceFilter']),
+        'reporting': ('spss_analyzer.reporting', ['PowerPointGenerator', 'HTMLDashboardGenerator']),
+        'pspp': ('spss_analyzer.pspp', ['CTablesSyntaxGenerator']),
+    }
+
+    if module_name not in module_map:
+        print(f"  ❌ Unknown module: {module_name}")
+        return False
+
+    module_path, classes = module_map[module_name]
+
+    try:
+        module = __import__(module_path, fromlist=classes)
+        for cls in classes:
+            getattr(module, cls)
+        print(f"  ✅ PASS: {module_path}")
+        return True
+    except Exception as e:
+        print(f"  ❌ FAIL: {module_path} - {e}")
+        return False
 
 
 def main():
@@ -79,34 +137,36 @@ def main():
     spec_parser = subparsers.add_parser('spec', help='Test specification operations')
     analysis_parser = subparsers.add_parser('analysis', help='Test analysis operations')
     stats_parser = subparsers.add_parser('stats', help='Test statistics operations')
-    report_parser = subparsers.add_parser('reporting', help='Test reporting operations')
+    filtering_parser = subparsers.add_parser('filtering', help='Test filtering operations')
+    reporting_parser = subparsers.add_parser('reporting', help='Test reporting operations')
+    pspp_parser = subparsers.add_parser('pspp', help='Test PSPP operations')
 
     args = parser.parse_args()
 
     if args.command == 'test-all':
         success = test_all()
         sys.exit(0 if success else 1)
-
     elif args.command == 'data':
-        result = _run_cli(['data', '--help'])
-        sys.exit(result)
-
+        success = test_module('data')
+        sys.exit(0 if success else 1)
     elif args.command == 'spec':
-        result = _run_cli(['spec', '--help'])
-        sys.exit(result)
-
+        success = test_module('spec')
+        sys.exit(0 if success else 1)
     elif args.command == 'analysis':
-        result = _run_cli(['analysis', '--help'])
-        sys.exit(result)
-
+        success = test_module('analysis')
+        sys.exit(0 if success else 1)
     elif args.command == 'stats':
-        result = _run_cli(['stats', '--help'])
-        sys.exit(result)
-
+        success = test_module('stats')
+        sys.exit(0 if success else 1)
+    elif args.command == 'filtering':
+        success = test_module('filtering')
+        sys.exit(0 if success else 1)
     elif args.command == 'reporting':
-        result = _run_cli(['reporting', '--help'])
-        sys.exit(result)
-
+        success = test_module('reporting')
+        sys.exit(0 if success else 1)
+    elif args.command == 'pspp':
+        success = test_module('pspp')
+        sys.exit(0 if success else 1)
     else:
         parser.print_help()
 

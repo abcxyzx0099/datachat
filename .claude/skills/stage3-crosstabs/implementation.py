@@ -1,19 +1,13 @@
 """
-Stage 3: Cross-Table Calculation - CLI Wrapper
+Stage 3: Cross-Table Calculation
 
-Uses spss-analyzer CLI for analysis operations.
+Uses spss_analyzer library modules directly.
 """
 
 import sys
 import argparse
-
-
-def _run_cli(args: list) -> int:
-    """Run spss-analyzer CLI command."""
-    import subprocess
-    result = subprocess.run(['spss-analyzer'] + args,
-                          capture_output=False)
-    return result.returncode
+import json
+from pathlib import Path
 
 
 def run_stage(
@@ -22,28 +16,51 @@ def run_stage(
     metadata_file: str,
     output_dir: str = "output"
 ) -> bool:
-    """Run Stage 3 using spss-analyzer CLI."""
+    """Run Stage 3 using library modules directly."""
     print("=" * 60)
     print("📊 Stage 3: Cross-Table Calculation")
     print("=" * 60)
 
-    # Compute indicators using CLI
-    result = _run_cli(['analysis', 'indicators',
-                         '--spec-file', spec_file,
-                         '--data-file', sav_file,
-                         '--output-file', f'{output_dir}/indicators.csv'])
+    from spss_analyzer.analysis import IndicatorsCalculator
+    from spss_analyzer.pspp import CTablesSyntaxGenerator
 
-    if result != 0:
-        return False
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-    # Generate crosstabs using CLI
-    result = _run_cli(['analysis', 'crosstabs',
-                         '--spec-file', spec_file,
-                         '--metadata-file', metadata_file,
-                         '--output-file', f'{output_dir}/cross_tables.json'])
+    # Load specification
+    with open(spec_file, 'r') as f:
+        spec = json.load(f)
 
-    if result != 0:
-        return False
+    # Load metadata
+    with open(metadata_file, 'r') as f:
+        metadata = json.load(f)
+
+    # Compute indicators
+    calc = IndicatorsCalculator()
+    indicators = calc.compute(spec.get('indicators', []), metadata)
+
+    indicators_file = output_path / "indicators.json"
+    with open(indicators_file, 'w') as f:
+        json.dump(indicators, f, indent=2)
+    print(f"Saved indicators: {indicators_file}")
+
+    # Generate crosstabs syntax
+    ctables_gen = CTablesSyntaxGenerator()
+    tables_spec = spec.get('tables', [])
+
+    crosstabs = {}
+    for table_spec in tables_spec:
+        table_id = table_spec.get('id')
+        crosstabs[table_id] = {
+            'spec': table_spec,
+            'syntax': ctables_gen.generate([table_spec])
+        }
+
+    # Save crosstabs
+    crosstabs_file = output_path / "cross_tables.json"
+    with open(crosstabs_file, 'w') as f:
+        json.dump(crosstabs, f, indent=2)
+    print(f"Saved crosstabs: {crosstabs_file}")
 
     print("\n" + "=" * 60)
     print("✅ Stage 3 Complete!")
@@ -55,7 +72,7 @@ def run_stage(
 def main():
     """CLI entry point for Stage 3."""
     parser = argparse.ArgumentParser(
-        description="Stage 3: Cross-Table Calculation (CLI wrapper)"
+        description="Stage 3: Cross-Table Calculation"
     )
 
     parser.add_argument("--sav-file", required=True,

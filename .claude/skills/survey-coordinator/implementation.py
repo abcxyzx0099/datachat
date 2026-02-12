@@ -10,7 +10,6 @@ import sys
 import argparse
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
 
 
 def run_workflow(
@@ -30,20 +29,21 @@ def run_workflow(
     """
     # Import library modules directly
     from spss_analyzer.io import SPSSReader, MetadataTransformer
-    from spss_analyzer.analysis import StatisticsCalculator
+    from spss_analyzer.specification import TableSpecificationGenerator
+    from spss_analyzer.analysis import IndicatorsCalculator, StatisticsCalculator
+    from spss_analyzer.pspp import CTablesSyntaxGenerator
     from spss_analyzer.filtering import SignificanceFilter
     from spss_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
 
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
-    # Stage 1: Data Preparation
-    print("=" * 60)
-    print("📊 SPSS Survey Analysis - 5-Stage Workflow")
-    print("=" * 60)
+    skip_list = (skip_stages or '').split(',')
 
-    if '1' not in (skip_stages or '').split(',')):
-        print("\n📁 Stage 1: Data Preparation")
+    # Stage 1: Data Preparation
+    if '1' not in skip_list:
+        print("\n" + "=" * 60)
+        print("📁 Stage 1: Data Preparation")
         print("-" * 60)
 
         # Read metadata
@@ -67,18 +67,22 @@ def run_workflow(
             json.dump(filtered_metadata, f, indent=2)
 
         print(f"   Saved: {metadata_file}")
-        print("   Variables: {len(filtered_metadata.get('variables', {}))} analysis variables")
+        print(f"   Variables: {len(filtered_metadata.get('variables', {}))} analysis variables")
 
     # Stage 2: Table Specification
-    if '2' not in (skip_stages or '').split(',')):
-        print("\n📋 Stage 2: Table Specification")
+    if '2' not in skip_list:
+        print("\n" + "=" * 60)
+        print("📋 Stage 2: Table Specification")
         print("-" * 60)
 
-        # Use specification generator
-        from spss_analyzer.specification import TableSpecificationGenerator
+        # Load metadata if not already loaded
+        if '1' in skip_list:
+            with open(output_path / "filtered_metadata.json", 'r') as f:
+                filtered_metadata = json.load(f)
 
+        # Use specification generator
         spec_gen = TableSpecificationGenerator()
-        spec = spec_gen.generate(filtered_metadata_dict=filtered_metadata_dict)
+        spec = spec_gen.generate(filtered_metadata)
 
         # Save specification
         spec_file = output_path / "table_specification.json"
@@ -89,32 +93,30 @@ def run_workflow(
         print(f"   Tables: {len(spec.get('tables', []))}")
 
     # Stage 3: Cross-Table Calculation
-    if '3' not in (skip_stages or '').split(',')):
-        print("\n📊 Stage 3: Cross-Table Calculation")
+    if '3' not in skip_list:
+        print("\n" + "=" * 60)
+        print("📊 Stage 3: Cross-Table Calculation")
         print("-" * 60)
 
+        # Load spec if not already loaded
+        if '2' in skip_list:
+            with open(output_path / "table_specification.json", 'r') as f:
+                spec = json.load(f)
+            with open(output_path / "filtered_metadata.json", 'r') as f:
+                filtered_metadata = json.load(f)
+
         # Compute indicators
-        stats_calc = StatisticsCalculator()
-        indicators_data = stats_calc.compute_indicators(
-            data=[],
-            spec.get('indicators', []),
-            metadata_dict
-        )
+        calc = IndicatorsCalculator()
+        indicators_data = calc.compute(spec.get('indicators', []), filtered_metadata)
 
         # Save indicators
-        indicators_file = output_path / "indicators.csv"
+        indicators_file = output_path / "indicators.json"
         with open(indicators_file, 'w') as f:
-            import csv
-            writer = csv.DictWriter(indicators_file, fieldnames=['indicator_id', 'value'])
-            writer.writeheader()
-            for row in indicators_data:
-                writer.writerow(row)
+            json.dump(indicators_data, f, indent=2)
 
         print(f"   Saved: {indicators_file}")
 
         # Generate crosstabs
-        from spss_analyzer.specification import CTablesSyntaxGenerator
-
         ctables_gen = CTablesSyntaxGenerator()
         tables_spec = spec.get('tables', [])
 
@@ -134,12 +136,13 @@ def run_workflow(
         print(f"   Saved: {crosstabs_file}")
 
     # Stage 4: Statistical Analysis
-    if '4' not in (skip_stages or '').split(',')):
-        print("\n📈 Stage 4: Statistical Analysis")
+    if '4' not in skip_list:
+        print("\n" + "=" * 60)
+        print("📈 Stage 4: Statistical Analysis")
         print("-" * 60)
 
         # Load crosstabs
-        with open(crosstabs_file, 'r') as f:
+        with open(output_path / "cross_tables.json", 'r') as f:
             crosstabs = json.load(f)
 
         # Calculate chi-square
@@ -165,21 +168,29 @@ def run_workflow(
         print(f"   Significant: {sig_count}/{total_count}")
 
     # Stage 5: Reporting
-    if '5' not in (skip_stages or '').split(',')):
-        print("\n📑 Stage 5: Reporting")
+    if '5' not in skip_list:
+        print("\n" + "=" * 60)
+        print("📑 Stage 5: Reporting")
         print("-" * 60)
+
+        # Load results if not already loaded
+        if '4' in skip_list:
+            with open(output_path / "filtered_tables.json", 'r') as f:
+                filtered_tables = json.load(f)
+            with open(output_path / "statistical_summary.json", 'r') as f:
+                summary = json.load(f)
 
         # Generate PowerPoint
         ppt_gen = PowerPointGenerator()
         ppt_file = output_path / "presentation.pptx"
-        ppt_gen.generate(filtered_tables, summary, ppt_file)
+        ppt_gen.generate(filtered_tables, summary, str(ppt_file))
 
         print(f"   Saved: {ppt_file}")
 
         # Generate HTML Dashboard
         dash_gen = HTMLDashboardGenerator()
         dash_file = output_path / "dashboard.html"
-        dash_gen.generate(filtered_tables, summary, dash_file)
+        dash_gen.generate(filtered_tables, summary, str(dash_file))
 
         print(f"   Saved: {dash_file}")
 
@@ -189,14 +200,6 @@ def run_workflow(
     print("=" * 60)
 
     return True
-
-
-def _run_cli(args: list) -> int:
-    """Run spss-analyzer CLI command."""
-    import subprocess
-    result = subprocess.run(['spss-analyzer'] + args,
-                          capture_output=False)
-    return result.returncode
 
 
 def main():
