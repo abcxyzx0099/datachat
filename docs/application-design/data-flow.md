@@ -68,12 +68,14 @@ Design and implement an automated workflow for market research survey data analy
 
 ### 2.2 Skill Responsibilities
 
-| Skill | Purpose | Library Modules Used |
-|--------|-----------|---------------------|
-| **survey-spec-gen** | Generate consolidated table specification (AI-orchestrated) | `specification/` |
-| **survey-validate** | Validate specification against schema and references | `specification/validator.py` |
-| **survey-coordinator** | Orchestrate computation workflow | All library modules |
-| **survey-output** | Generate final reports (PPT, HTML) | `reporting/` |
+| Skill | Stage | Purpose | Type |
+|--------|---------|-----------|------|
+| **stage1-data-prep** | 1 | Load .sav, extract/filter metadata | Deterministic |
+| **stage2-spec-gen** | 2 | Generate/validate table specification (AI-orchestrated) | AI |
+| **stage3-crosstabs** | 3 | Recoding, indicators, cross-tables | Deterministic |
+| **stage4-statistics** | 4 | Statistical analysis, filtering | Deterministic |
+| **stage5-reports** | 5 | PowerPoint, HTML dashboard | Deterministic |
+| **survey-coordinator** | All | Orchestrate complete 5-stage pipeline | Coordinator |
 
 ---
 
@@ -259,11 +261,13 @@ This structure allows:
 
 ### Stage 1: Data Preparation (Steps 1-3)
 
-| Step | Skill/Module | Purpose | Type |
-|------|---------------|---------|------|
-| 1 | `spss_analyzer.io.SPSSReader` | Load .sav file | Deterministic |
-| 2 | `spss_analyzer.io.MetadataTransformer` | Extract & transform metadata | Deterministic |
-| 3 | `spss_analyzer.io.MetadataTransformer` | Filter variables | Deterministic |
+| Step | Skill | Module | Purpose | Type |
+|------|--------|---------|------|
+| 1 | `stage1-data-prep` | `spss_analyzer.io.SPSSReader` | Load .sav file | Deterministic |
+| 2 | `stage1-data-prep` | `spss_analyzer.io.MetadataTransformer` | Extract & transform metadata | Deterministic |
+| 3 | `stage1-data-prep` | `spss_analyzer.io.MetadataTransformer` | Filter variables | Deterministic |
+
+**Skill:** `stage1-data-prep` handles all Stage 1 operations.
 
 **Output:** `filtered_metadata.json`
 
@@ -271,9 +275,11 @@ This structure allows:
 
 | Step | Skill | Purpose | Type |
 |------|--------|---------|------|
-| 4 | `survey-spec-gen` | Generate table_specification.json (AI-orchestrated) | AI |
-| 5 | `survey-validate` | Validate specification | Validation |
+| 4 | `stage2-spec-gen` | Generate table_specification.json (AI-orchestrated) | AI |
+| 5 | `stage2-spec-gen` | Validate specification | Validation |
 | 6 | Human review via skill interaction | Approve/reject specification | Review |
+
+**Skill:** `stage2-spec-gen` handles all Stage 2 operations.
 
 **Output:** `table_specification.json`
 
@@ -281,35 +287,35 @@ This structure allows:
 
 ### Stage 3: Cross-Table Calculation (Steps 7-9)
 
-| Step | Module | Purpose | Type |
-|------|---------|---------|------|
-| 7 | `spss_analyzer.pspp.RecodingSyntaxGenerator` + `PSPPExecutor` | Apply recoding | Deterministic |
-| 8 | `spss_analyzer.analysis.IndicatorGenerator` | Compute indicators | Deterministic |
-| 9 | `spss_analyzer.pspp.CTablesSyntaxGenerator` + `PSPPExecutor` | Generate cross-tables | Deterministic |
+| Step | Skill | Module | Purpose | Type |
+|------|--------|---------|------|
+| 7 | `stage3-crosstabs` | `spss_analyzer.pspp.RecodingSyntaxGenerator` + `PSPPExecutor` | Apply recoding | Deterministic |
+| 8 | `stage3-crosstabs` | `spss_analyzer.analysis.IndicatorGenerator` | Compute indicators | Deterministic |
+| 9 | `stage3-crosstabs` | `spss_analyzer.pspp.CTablesSyntaxGenerator` + `PSPPExecutor` | Generate cross-tables | Deterministic |
 
-**Orchestration:** `survey-coordinator` skill manages these steps.
+**Skill:** `stage3-crosstabs` handles all Stage 3 operations.
 
 **Outputs:** `recoded_data.sav`, `indicators.csv`, `cross_tables.csv`
 
 ### Stage 4: Statistical Analysis (Steps 10-11)
 
-| Step | Module | Purpose | Type |
-|------|---------|---------|------|
-| 10 | `spss_analyzer.analysis.StatisticsCalculator` | Calculate statistics | Deterministic |
-| 11 | `spss_analyzer.filtering.SignificanceFilter` | Filter significant tables | Deterministic |
+| Step | Skill | Module | Purpose | Type |
+|------|--------|---------|------|
+| 10 | `stage4-statistics` | `spss_analyzer.analysis.StatisticsCalculator` | Calculate statistics | Deterministic |
+| 11 | `stage4-statistics` | `spss_analyzer.filtering.SignificanceFilter` | Filter significant tables | Deterministic |
 
-**Orchestration:** `survey-coordinator` skill manages these steps.
+**Skill:** `stage4-statistics` handles all Stage 4 operations.
 
 **Outputs:** `statistical_summary.json`, `filtered_tables.json`
 
 ### Stage 5: Reporting (Steps 12-13)
 
-| Step | Module | Purpose | Type |
-|------|---------|---------|------|
-| 12 | `spss_analyzer.reporting.PowerPointGenerator` | Create .pptx | Deterministic |
-| 13 | `spss_analyzer.reporting.HTMLDashboardGenerator` | Create .html | Deterministic |
+| Step | Skill | Module | Purpose | Type |
+|------|--------|---------|------|
+| 12 | `stage5-reports` | `spss_analyzer.reporting.PowerPointGenerator` | Create .pptx | Deterministic |
+| 13 | `stage5-reports` | `spss_analyzer.reporting.HTMLDashboardGenerator` | Create .html | Deterministic |
 
-**Orchestration:** `survey-output` skill manages report generation.
+**Skill:** `stage5-reports` handles all Stage 5 operations.
 
 **Outputs:** `presentation.pptx`, `dashboard.html`
 
