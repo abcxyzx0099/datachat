@@ -2,7 +2,7 @@
 Survey Coordinator - Workflow Orchestrator
 
 Orchestrates all 5 stages of survey analysis workflow.
-Uses spss-analyzer CLI for all operations.
+Calls library modules directly - no CLI wrapper layer.
 """
 
 import json
@@ -18,7 +18,7 @@ def run_workflow(
     output_dir: str = "output",
     skip_stages: Optional[str] = None
 ) -> bool:
-    """Run complete 5-stage analysis workflow using spss-analyzer CLI.
+    """Run complete 5-stage analysis workflow using library modules directly.
 
     Args:
         sav_file: Path to SPSS .sav file
@@ -28,23 +28,167 @@ def run_workflow(
     Returns:
         True if workflow completed successfully
     """
-    # Use spss-analyzer CLI to run workflow
-    result = _run_cli(['spss-analyzer', 'all',
-                         '--sav-file', sav_file,
-                         '--output-dir', output_dir] +
-                         (['--skip', skip_stages] if skip_stages else []))
+    # Import library modules directly
+    from spss_analyzer.io import SPSSReader, MetadataTransformer
+    from spss_analyzer.analysis import StatisticsCalculator
+    from spss_analyzer.filtering import SignificanceFilter
+    from spss_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
 
-    if result == 0:
-        print("\n" + "=" * 60)
-        print("✅ All stages completed successfully!")
-        print(f"📂 Results saved to: {output_dir}")
-        print("=" * 60)
-    else:
-        print("\n" + "=" * 60)
-        print("❌ Workflow did not complete successfully")
-        print("=" * 60)
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-    return result == 0
+    # Stage 1: Data Preparation
+    print("=" * 60)
+    print("📊 SPSS Survey Analysis - 5-Stage Workflow")
+    print("=" * 60)
+
+    if '1' not in (skip_stages or '').split(',')):
+        print("\n📁 Stage 1: Data Preparation")
+        print("-" * 60)
+
+        # Read metadata
+        reader = SPSSReader()
+        data, meta = reader.read(sav_file)
+
+        # Transform metadata
+        transformer = MetadataTransformer()
+        metadata_dict = transformer.to_variable_centered(meta)
+
+        # Filter variables
+        filtered_metadata = transformer.filter_variables(
+            metadata_dict,
+            min_categories=2,
+            max_categories=10
+        )
+
+        # Save filtered metadata
+        metadata_file = output_path / "filtered_metadata.json"
+        with open(metadata_file, 'w') as f:
+            json.dump(filtered_metadata, f, indent=2)
+
+        print(f"   Saved: {metadata_file}")
+        print("   Variables: {len(filtered_metadata.get('variables', {}))} analysis variables")
+
+    # Stage 2: Table Specification
+    if '2' not in (skip_stages or '').split(',')):
+        print("\n📋 Stage 2: Table Specification")
+        print("-" * 60)
+
+        # Use specification generator
+        from spss_analyzer.specification import TableSpecificationGenerator
+
+        spec_gen = TableSpecificationGenerator()
+        spec = spec_gen.generate(filtered_metadata_dict=filtered_metadata_dict)
+
+        # Save specification
+        spec_file = output_path / "table_specification.json"
+        with open(spec_file, 'w') as f:
+            json.dump(spec, f, indent=2)
+
+        print(f"   Saved: {spec_file}")
+        print(f"   Tables: {len(spec.get('tables', []))}")
+
+    # Stage 3: Cross-Table Calculation
+    if '3' not in (skip_stages or '').split(',')):
+        print("\n📊 Stage 3: Cross-Table Calculation")
+        print("-" * 60)
+
+        # Compute indicators
+        stats_calc = StatisticsCalculator()
+        indicators_data = stats_calc.compute_indicators(
+            data=[],
+            spec.get('indicators', []),
+            metadata_dict
+        )
+
+        # Save indicators
+        indicators_file = output_path / "indicators.csv"
+        with open(indicators_file, 'w') as f:
+            import csv
+            writer = csv.DictWriter(indicators_file, fieldnames=['indicator_id', 'value'])
+            writer.writeheader()
+            for row in indicators_data:
+                writer.writerow(row)
+
+        print(f"   Saved: {indicators_file}")
+
+        # Generate crosstabs
+        from spss_analyzer.specification import CTablesSyntaxGenerator
+
+        ctables_gen = CTablesSyntaxGenerator()
+        tables_spec = spec.get('tables', [])
+
+        crosstabs = {}
+        for table_spec in tables_spec:
+            table_id = table_spec.get('id')
+            crosstabs[table_id] = {
+                'spec': table_spec,
+                'syntax': ctables_gen.generate([table_spec])
+            }
+
+        # Save crosstabs
+        crosstabs_file = output_path / "cross_tables.json"
+        with open(crosstabs_file, 'w') as f:
+            json.dump(crosstabs, f, indent=2)
+
+        print(f"   Saved: {crosstabs_file}")
+
+    # Stage 4: Statistical Analysis
+    if '4' not in (skip_stages or '').split(',')):
+        print("\n📈 Stage 4: Statistical Analysis")
+        print("-" * 60)
+
+        # Load crosstabs
+        with open(crosstabs_file, 'r') as f:
+            crosstabs = json.load(f)
+
+        # Calculate chi-square
+        stats_calc = StatisticsCalculator()
+        test_results = stats_calc.calculate_chi_square(crosstabs, threshold=0.05)
+
+        # Filter significant
+        sig_filter = SignificanceFilter()
+        filtered_tables, summary = sig_filter.filter_significant(test_results)
+
+        # Save results
+        stats_file = output_path / "statistical_summary.json"
+        with open(stats_file, 'w') as f:
+            json.dump(summary, f, indent=2)
+
+        filtered_file = output_path / "filtered_tables.json"
+        with open(filtered_file, 'w') as f:
+            json.dump(filtered_tables, f, indent=2)
+
+        sig_count = summary.get('significant_count', 0)
+        total_count = summary.get('total_tests', 0)
+
+        print(f"   Significant: {sig_count}/{total_count}")
+
+    # Stage 5: Reporting
+    if '5' not in (skip_stages or '').split(',')):
+        print("\n📑 Stage 5: Reporting")
+        print("-" * 60)
+
+        # Generate PowerPoint
+        ppt_gen = PowerPointGenerator()
+        ppt_file = output_path / "presentation.pptx"
+        ppt_gen.generate(filtered_tables, summary, ppt_file)
+
+        print(f"   Saved: {ppt_file}")
+
+        # Generate HTML Dashboard
+        dash_gen = HTMLDashboardGenerator()
+        dash_file = output_path / "dashboard.html"
+        dash_gen.generate(filtered_tables, summary, dash_file)
+
+        print(f"   Saved: {dash_file}")
+
+    print("\n" + "=" * 60)
+    print("✅ All stages completed successfully!")
+    print(f"📂 Results saved to: {output_dir}")
+    print("=" * 60)
+
+    return True
 
 
 def _run_cli(args: list) -> int:

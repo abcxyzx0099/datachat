@@ -1,11 +1,10 @@
 """
 Stage 2: Table Specification - CLI Wrapper
 
-Uses spss-analyzer CLI for specification operations.
+Uses spss_analyzer library modules directly.
 """
 
 import sys
-import argparse
 
 
 def _run_cli(args: list) -> int:
@@ -22,16 +21,18 @@ def run_stage(metadata_file: str, output_dir: str = "output") -> bool:
     print("📋 Stage 2: Table Specification")
     print("=" * 60)
 
-    # Generate specification using CLI
+    # Use specification generator from library
     result = _run_cli(['spec', 'tables',
                          '--metadata-file', metadata_file])
 
-    if result == 0:
-        print("\n" + "=" * 60)
-        print("✅ Stage 2 Complete!")
-        print("=" * 60)
+    if result != 0:
+        return False
 
-    return result == 0
+    print("\n" + "=" * 60)
+    print("✅ Stage 2 Complete!")
+    print("=" * 60)
+
+    return True
 
 
 def main():
