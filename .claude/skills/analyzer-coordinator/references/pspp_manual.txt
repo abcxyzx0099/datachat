@@ -1,0 +1,1 @@
+../../docs/reference/external-official-manual/PSPP-syntax/pspp_manual.txt

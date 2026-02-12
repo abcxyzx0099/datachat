@@ -60,11 +60,11 @@ Task Source Directories: 2
 📁 Per-Source Summary:
 
   📁 ad-hoc (✅ Idle)
-      Path: /home/admin/workspaces/datachat/tasks/ad-hoc
+      Path: /home/admin/workspaces/datachat/task-monitor/ad-hoc
       Pending: 1, Completed: 2, Failed: 0
 
   📁 planned (✅ Idle)
-      Path: /home/admin/workspaces/datachat/tasks/planned
+      Path: /home/admin/workspaces/datachat/task-monitor/planned
       Pending: 0, Completed: 0, Failed: 0
 ```
 
@@ -128,27 +128,27 @@ task-monitor status --detailed
 
 ```bash
 # List completed tasks
-ls tasks/ad-hoc/completed/
+ls task-monitor/ad-hoc/completed/
 
 # View result for specific task
 task-monitor tasks result task-20260208-090033-fix-langgraph-json-docs
 
 # Or read directly
-cat tasks/ad-hoc/results/task-20260208-090033-fix-langgraph-json-docs.json
-cat tasks/ad-hoc/reports/task-20260208-090033-fix-langgraph-json-docs.md
+cat task-monitor/ad-hoc/results/task-20260208-090033-fix-langgraph-json-docs.json
+cat task-monitor/ad-hoc/reports/task-20260208-090033-fix-langgraph-json-docs.md
 ```
 
 ### View Failed Task Details
 
 ```bash
 # List failed tasks
-ls tasks/ad-hoc/failed/
+ls task-monitor/ad-hoc/failed/
 
 # View result for failed task
 task-monitor tasks result task-20260208-091827-refactor-current-step-to-string
 
 # Check error file
-cat tasks/ad-hoc/failed/task-20260208-091827-refactor-current-step-to-string.error.*
+cat task-monitor/ad-hoc/failed/task-20260208-091827-refactor-current-step-to-string.error.*
 ```
 
 ### Monitor Running Task
@@ -177,7 +177,7 @@ task-monitor tasks cancel task-20260208-091827-refactor-current-step-to-string
 ## Directory Structure Reference
 
 ```
-tasks/
+task-monitor/
 ├── ad-hoc/
 │   ├── pending/          # Tasks waiting to be processed
 │   ├── completed/        # Successfully completed tasks
@@ -217,14 +217,14 @@ journalctl --user -u task-monitor -n 50 # Show last 50 lines
 
 ```bash
 # List completed tasks
-ls tasks/ad-hoc/completed/
+ls task-monitor/ad-hoc/completed/
 
 # View completed task report
-cat tasks/ad-hoc/reports/task-{id}.md
+cat task-monitor/ad-hoc/reports/task-{id}.md
 
 # Check result JSON
 task-monitor tasks result task-{id}
-cat tasks/ad-hoc/results/task-{id}.json
+cat task-monitor/ad-hoc/results/task-{id}.json
 ```
 
 **Successful completion indicators:**
@@ -239,10 +239,10 @@ cat tasks/ad-hoc/results/task-{id}.json
 task-monitor status
 
 # View failed task
-cat tasks/ad-hoc/failed/task-{id}.md
+cat task-monitor/ad-hoc/failed/task-{id}.md
 
 # Check error file
-cat tasks/ad-hoc/failed/task-{id}.error.*
+cat task-monitor/ad-hoc/failed/task-{id}.error.*
 
 # Check result for error details
 task-monitor tasks result task-{id}
@@ -257,13 +257,13 @@ task-monitor tasks result task-{id}
 
 ```bash
 # List all tasks
-find tasks/ad-hoc -name "task-*.md"
+find task-monitor/ad-hoc -name "task-*.md"
 
 # Find recent tasks
-ls -lt tasks/ad-hoc/completed/ | head -10
+ls -lt task-monitor/ad-hoc/completed/ | head -10
 
 # Find tasks by pattern
-ls tasks/ad-hoc/*/task-*refactor*.md
+ls task-monitor/ad-hoc/*/task-*refactor*.md
 ```
 
 ## In-Memory Task Tracking

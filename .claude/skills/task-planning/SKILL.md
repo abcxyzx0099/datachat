@@ -1,6 +1,6 @@
 ---
 name: task-planning
-description: "Generate organized task lists from documentation, gap analysis, and implementation. Detects project type (brownfield/greenfield), handles existing plans, and supports multiple scopes including gap-based development. Output goes to tasks/planned/planning/."
+description: "Generate organized task lists from documentation, gap analysis, and implementation. Detects project type (brownfield/greenfield), handles existing plans, and supports multiple scopes including gap-based development. Output goes to task-monitor/planned/planning/."
 ---
 
 # Task Planning
@@ -23,7 +23,7 @@ Generate organized task planning documents from project documentation, gap analy
 6. **Intelligently Assess** - AI evaluates project nature, adapts to what exists
 7. **Choose Organization** - Select structure (FLAT_LIST, IMPLEMENTATION_PHASE, FEATURE_MODULE)
 8. **Generate Tasks** - Create tasks using TaskCreate tool
-9. **Save Output** - Write to `tasks/planned/planning/{descriptive-name}.md`
+9. **Save Output** - Write to `task-monitor/planned/planning/{descriptive-name}.md`
 
 ## Architecture
 
@@ -65,7 +65,7 @@ flowchart LR
     Phase --> Generate
     Module --> Generate
 
-    Generate --> Save[Save to tasks/planned/planning/]
+    Generate --> Save[Save to task-monitor/planned/planning/]
     Save --> End([End])
 ```
 
@@ -250,11 +250,11 @@ AskUserQuestion(
 
 ## Phase 0: Handle Existing Plans (User Confirmation)
 
-**Before any user interaction**, check if `tasks/planned/planning/` contains existing documents and ask the user how to handle them.
+**Before any user interaction**, check if `task-monitor/planned/planning/` contains existing documents and ask the user how to handle them.
 
 ```bash
 # Check for existing plans
-ls -la tasks/planned/planning/*.md 2>/dev/null | wc -l
+ls -la task-monitor/planned/planning/*.md 2>/dev/null | wc -l
 ```
 
 ### User Confirmation
@@ -294,10 +294,10 @@ AskUserQuestion(
 mkdir -p history
 ARCHIVE_NAME="history/Archive-TaskPlanning-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$ARCHIVE_NAME"
-mv tasks/planned/planning/*.md "$ARCHIVE_NAME/" 2>/dev/null
+mv task-monitor/planned/planning/*.md "$ARCHIVE_NAME/" 2>/dev/null
 
 # If user selected "Remove All":
-rm tasks/planned/planning/*.md 2>/dev/null
+rm task-monitor/planned/planning/*.md 2>/dev/null
 
 # If user selected "Keep as Is":
 # Do nothing - new plan will be created alongside existing plans
@@ -480,7 +480,7 @@ TaskCreate(
 
 ## Output Format
 
-Save to `tasks/planned/planning/{descriptive-name}.md`:
+Save to `task-monitor/planned/planning/{descriptive-name}.md`:
 
 ```markdown
 # Task List: {Project Name}

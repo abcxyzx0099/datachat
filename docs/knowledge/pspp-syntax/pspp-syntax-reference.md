@@ -6,8 +6,6 @@
 **Stage**: Development
 **Runtime**: Backend
 
-> **IMPORTANT**: This PSPP implementation is **deferred**. The current development focuses on **Python/pandas engine** only. This document is provided for future reference.
-
 ---
 
 ## Overview

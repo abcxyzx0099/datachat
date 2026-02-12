@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Analysis Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --color-primary: #4287f5;
+        --color-secondary: #48bb78;
+        --color-accent: #f6e05e;
+        --color-significant: #48bb78;
+        --color-not-significant: #e53e3e;
+        --color-text: #2d3748;
+        --color-text-light: #718096;
+        --color-bg: #f7fafc;
+        --color-border: #e2e8f0;
+        --color-table-header: #edf2f7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--color-text);
+            background-color: var(--color-bg);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary)cc 100%);
+            color: white;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .search-box {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        #table-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        #table-list li {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.2s;
+            font-size: 0.9em;
+        }
+
+        #table-list li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Content Styles */
+        .content {
+            margin-left: 280px;
+            padding: 30px;
+            max-width: 1400px;
+        }
+
+        h1 {
+            color: var(--color-primary);
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        /* Summary Section */
+        .summary {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            border: 1px solid var(--color-border);
+        }
+
+        .summary h2 {
+            color: var(--color-primary);
+            margin-bottom: 25px;
+            font-size: 1.6em;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .stat-card {
+            background: var(--color-bg);
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--color-border);
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .stat-card .label {
+            color: var(--color-text-light);
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+
+        /* Table Card Styles */
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 5px solid var(--color-border);
+        }
+
+        .table-card.significant {
+            border-left-color: var(--color-significant);
+        }
+
+        .table-card.not-significant {
+            border-left-color: var(--color-not-significant);
+        }
+
+        .table-card h3 {
+            color: var(--color-primary);
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin: 25px 0;
+            padding: 15px;
+            background: var(--color-bg);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table.data-table th, table.data-table td {
+            padding: 14px;
+            text-align: center;
+            border: 1px solid var(--color-border);
+        }
+
+        table.data-table th {
+            background: var(--color-table-header);
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        table.data-table tr:hover {
+            background: var(--color-bg);
+        }
+
+        .stats-footer {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--color-bg);
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .significant-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        .significant-badge.yes {
+            background: var(--color-significant);
+            color: white;
+        }
+
+        .significant-badge.no {
+            background: var(--color-not-significant);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>Navigation</h3>
+        </div>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search tables...">
+        </div>
+        <ul id="table-list">
+            <li data-table-id="table_001">
+                ✓ Gender × Satisfaction
+            </li>
+        </ul>
+    </div>
+    <div class="content">
+        <h1>Survey Analysis Dashboard</h1>
+
+        <div class="summary">
+            <h2>Analysis Summary</h2>
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="number">1</div>
+                    <div class="label">Total Tables</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">1</div>
+                    <div class="label">Significant (p < 0.05)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">1</div>
+                    <div class="label">Valid Tests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">100.0%</div>
+                    <div class="label">Significance Rate</div>
+                </div>
+            </div>
+        </div>
+        <div id="tables">
+        <div class="table-card significant" id="table-table_001">
+            <h3>Gender × Satisfaction</h3>
+            <div class="chart-container">
+                <canvas id="chart-table_001"></canvas>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Row \ Column</th>
+                        <th>Satisfied</th>
+                        <th>Neutral</th>
+                        <th>Dissatisfied</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Male</strong></td>
+                        <td>150<br><small>(57.7%)</small></td>
+                        <td>80<br><small>(30.8%)</small></td>
+                        <td>30<br><small>(11.5%)</small></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Female</strong></td>
+                        <td>130<br><small>(49.2%)</small></td>
+                        <td>90<br><small>(34.1%)</small></td>
+                        <td>40<br><small>(15.3%)</small></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="stats-footer">
+                χ² = 15.4200, 
+                p = 0.0040, 
+                V = 0.1200 (small)
+                <span class="significant-badge yes">Significant</span>
+            </div>
+        </div>
+        </div>
+    </div>
+    <script>
+        const tableData = [{"tableId": "table_001", "tableName": "Gender \u00d7 Satisfaction", "rowLabels": ["Male", "Female"], "columnLabels": ["Satisfied", "Neutral", "Dissatisfied"], "counts": [[150, 80, 30], [130, 90, 40]], "chartType": "bar", "isValid": true}];
+
+        const charts = {};
+
+        document.addEventListener('DOMContentLoaded', function() {{
+            initializeCharts();
+            initializeEventListeners();
+        }});
+
+        function initializeCharts() {{
+            tableData.forEach(table => {{
+                if (table.isValid) {{
+                    createChart(table);
+                }}
+            }});
+        }}
+
+        function createChart(table) {{
+            const canvasId = `chart-${{table.tableId}}`;
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const chartData = {{
+                labels: table.rowLabels,
+                datasets: table.columnLabels.map((label, i) => ({{
+                    label: label,
+                    data: table.counts.map(row => row[i] || 0),
+                    backgroundColor: getColor(i)
+                }}))
+            }};
+
+            if (charts[canvasId]) {{
+                charts[canvasId].destroy();
+            }}
+
+            charts[canvasId] = new Chart(ctx, {{
+                type: 'bar',
+                data: chartData,
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {{
+                        legend: {{
+                            display: table.columnLabels.length > 1,
+                            position: 'top'
+                        }}
+                    }},
+                    scales: {{
+                        x: {{ beginAtZero: true }},
+                        y: {{ beginAtZero: true }}
+                    }}
+                }}
+            }});
+        }}
+
+        function getColor(index) {{
+            const colors = [
+                'rgba(66, 153, 225, 0.8)',
+                'rgba(72, 187, 120, 0.8)',
+                'rgba(246, 224, 94, 0.8)',
+                'rgba(237, 137, 54, 0.8)'
+            ];
+            return colors[index % colors.length];
+        }}
+
+        function initializeEventListeners() {{
+            document.querySelectorAll('#table-list li').forEach(item => {{
+                item.addEventListener('click', function() {{
+                    const tableId = this.getAttribute('data-table-id');
+                    const card = document.getElementById(`table-${{tableId}}`);
+                    if (card) {{
+                        card.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+                    }}
+                }});
+            }});
+
+            document.getElementById('search-input').addEventListener('input', function() {{
+                const search = this.value.toLowerCase();
+                document.querySelectorAll('.table-card').forEach(card => {{
+                    const name = card.getAttribute('data-table-name') || '';
+                    const match = name.toLowerCase().includes(search);
+                    card.style.display = match ? 'block' : 'none';
+                }});
+            }});
+        }}
+    </script>
+</body>
+</html>

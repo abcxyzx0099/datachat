@@ -1,10 +1,10 @@
 # Survey Analysis Skills
 
-A collection of Claude Code skills for SPSS survey analysis, based on the `spss_analyzer` Python library.
+A collection of Claude Code skills for SPSS survey analysis, based on the `survey_analyzer` Python library.
 
 ## Skills
 
-### survey-spec-gen
+### analyzer-tablespec-gen
 
 Generates a consolidated table specification document from SPSS metadata.
 
@@ -90,32 +90,41 @@ Filtered tables: output/filtered_tables.json
 
 The typical analysis workflow is:
 
-1. **survey-spec-gen** → Generate `table_specification.json`
+1. **analyzer-tablespec-gen** → Generate `table_specification.json`
 2. **survey-validate** → Validate the specification
 3. **survey-coordinator** → Run analysis workflow
 4. **survey-output** → Generate final reports
 
 ## Dependencies
 
-All skills depend on the `spss_analyzer` Python library located at `lib/spss_analyzer/`.
+All skills depend on the `survey_analyzer` Python package located at `survey_analyzer/`.
+
+Install in development mode:
+```bash
+pip install -e ./survey_analyzer
+```
 
 ## Library Structure
 
 ```
-lib/spss_analyzer/
-├── specification/  # Schema and validator for table_specification.json
-├── io/            # SPSS file reading and metadata handling
-├── pspp/           # PSPP syntax generation and execution
-├── analysis/        # Statistics and indicators
-├── filtering/        # Significance filtering
-└── reporting/        # PowerPoint and HTML generation
+survey_analyzer/
+├── src/survey_analyzer/
+│   ├── specification/  # Schema and validator for table_specification.json
+│   ├── io/             # SPSS file reading and metadata handling
+│   ├── pspp/           # PSPP syntax generation and execution
+│   ├── analysis/       # Statistics and indicators
+│   ├── filtering/      # Significance filtering
+│   └── reporting/      # PowerPoint and HTML generation
+├── tests/              # Package tests
+├── docs/               # Package documentation
+└── pyproject.toml      # Package configuration
 ```
 
 ## Quick Start
 
 ```bash
 # 1. Generate specification
-python .claude/skills/survey-spec-gen/implementation.py \
+python .claude/skills/analyzer-tablespec-gen/implementation.py \
     output/filtered_metadata.json \
     --source-file survey_data.sav \
     --output table_specification.json

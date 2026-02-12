@@ -16,13 +16,13 @@ Removes all task files while preserving directory structure. Cleans ad-hoc queue
 git add -A && git commit -m "safety: before task cleanup" && git push
 
 # 2. Preview what will be removed
-find tasks/ -mindepth 2 -type f
+find task-monitor/ -mindepth 2 -type f
 
 # 3. Clean all (single command)
-find tasks/ -mindepth 2 -type f -delete
+find task-monitor/ -mindepth 2 -type f -delete
 
 # 4. Verify
-find tasks/ -mindepth 2 -type f  # Should return nothing
+find task-monitor/ -mindepth 2 -type f  # Should return nothing
 ```
 
 ---
@@ -30,7 +30,7 @@ find tasks/ -mindepth 2 -type f  # Should return nothing
 ## Directory Structure
 
 ```
-tasks/
+task-monitor/
 ├── ad-hoc/                    # Ad-hoc queue
 │   ├── staging/              → Emptied
 │   ├── pending/              → Emptied
@@ -80,60 +80,60 @@ git push
 
 ```bash
 # List all files to be removed
-find tasks/ -mindepth 2 -type f
+find task-monitor/ -mindepth 2 -type f
 
 # Count files per directory
 echo "=== Ad-hoc ==="
-for dir in tasks/ad-hoc/*/; do echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"; done
+for dir in task-monitor/ad-hoc/*/; do echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"; done
 
 echo "=== Planned ==="
-for dir in tasks/planned/*/; do echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"; done
+for dir in task-monitor/planned/*/; do echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"; done
 ```
 
 ### 3. Clean All Files
 
 **Single command (recommended):**
 ```bash
-find tasks/ -mindepth 2 -type f -delete
+find task-monitor/ -mindepth 2 -type f -delete
 ```
 
 **Or by queue (step-by-step):**
 ```bash
 # Ad-hoc queue
-rm -f tasks/ad-hoc/staging/task-*.md
-rm -f tasks/ad-hoc/pending/task-*.md
-rm -f tasks/ad-hoc/completed/task-*.md
-rm -f tasks/ad-hoc/failed/task-*.md
-rm -f tasks/ad-hoc/results/task-*.json
-rm -rf tasks/ad-hoc/reports/task-*
+rm -f task-monitor/ad-hoc/staging/task-*.md
+rm -f task-monitor/ad-hoc/pending/task-*.md
+rm -f task-monitor/ad-hoc/completed/task-*.md
+rm -f task-monitor/ad-hoc/failed/task-*.md
+rm -f task-monitor/ad-hoc/results/task-*.json
+rm -rf task-monitor/ad-hoc/reports/task-*
 
 # Planned queue
-rm -f tasks/planned/staging/task-*.md
-rm -f tasks/planned/pending/task-*.md
-rm -f tasks/planned/completed/task-*.md
-rm -f tasks/planned/failed/task-*.md
-rm -f tasks/planned/planning/*.md
-rm -f tasks/planned/results/task-*.json
-rm -rf tasks/planned/reports/task-*
+rm -f task-monitor/planned/staging/task-*.md
+rm -f task-monitor/planned/pending/task-*.md
+rm -f task-monitor/planned/completed/task-*.md
+rm -f task-monitor/planned/failed/task-*.md
+rm -f task-monitor/planned/planning/*.md
+rm -f task-monitor/planned/results/task-*.json
+rm -rf task-monitor/planned/reports/task-*
 
 # Legacy directories
-rm -f tasks/staging/task-*.md
-rm -f tasks/pending/task-*.md
-rm -f tasks/completed/task-*.md
-rm -f tasks/failed/task-*.md
-rm -f tasks/planning/*.md
-rm -f tasks/results/task-*.json
-rm -rf tasks/reports/task-*
+rm -f task-monitor/staging/task-*.md
+rm -f task-monitor/pending/task-*.md
+rm -f task-monitor/completed/task-*.md
+rm -f task-monitor/failed/task-*.md
+rm -f task-monitor/planning/*.md
+rm -f task-monitor/results/task-*.json
+rm -rf task-monitor/reports/task-*
 ```
 
 ### 4. Verify Cleanup
 
 ```bash
 # Should return empty
-find tasks/ -mindepth 2 -type f
+find task-monitor/ -mindepth 2 -type f
 
 # Or count files (all should show 0)
-for dir in tasks/*/ tasks/*/*/; do
+for dir in task-monitor/*/ task-monitor/*/*/; do
     [ -d "$dir" ] && echo "$dir: $(ls -1 "$dir" 2>/dev/null | wc -l) files"
 done
 ```
@@ -156,26 +156,26 @@ done
 
 | Directory | Files Removed |
 |-----------|---------------|
-| `tasks/ad-hoc/staging/` | `task-*.md` |
-| `tasks/ad-hoc/pending/` | `task-*.md` |
-| `tasks/ad-hoc/completed/` | `task-*.md` |
-| `tasks/ad-hoc/failed/` | `task-*.md` |
-| `tasks/ad-hoc/results/` | `task-*.json` |
-| `tasks/ad-hoc/reports/` | `task-*/` (subdirectories) |
-| `tasks/planned/staging/` | `task-*.md` |
-| `tasks/planned/pending/` | `task-*.md` |
-| `tasks/planned/completed/` | `task-*.md` |
-| `tasks/planned/failed/` | `task-*.md` |
-| `tasks/planned/planning/` | `*.md` |
-| `tasks/planned/results/` | `task-*.json` |
-| `tasks/planned/reports/` | `task-*/` (subdirectories) |
-| `tasks/staging/` | `task-*.md` (legacy) |
-| `tasks/pending/` | `task-*.md` (legacy) |
-| `tasks/completed/` | `task-*.md` (legacy) |
-| `tasks/failed/` | `task-*.md` (legacy) |
-| `tasks/planning/` | `*.md` (legacy) |
-| `tasks/results/` | `task-*.json` (legacy) |
-| `tasks/reports/` | `task-*/` (legacy) |
+| `task-monitor/ad-hoc/staging/` | `task-*.md` |
+| `task-monitor/ad-hoc/pending/` | `task-*.md` |
+| `task-monitor/ad-hoc/completed/` | `task-*.md` |
+| `task-monitor/ad-hoc/failed/` | `task-*.md` |
+| `task-monitor/ad-hoc/results/` | `task-*.json` |
+| `task-monitor/ad-hoc/reports/` | `task-*/` (subdirectories) |
+| `task-monitor/planned/staging/` | `task-*.md` |
+| `task-monitor/planned/pending/` | `task-*.md` |
+| `task-monitor/planned/completed/` | `task-*.md` |
+| `task-monitor/planned/failed/` | `task-*.md` |
+| `task-monitor/planned/planning/` | `*.md` |
+| `task-monitor/planned/results/` | `task-*.json` |
+| `task-monitor/planned/reports/` | `task-*/` (subdirectories) |
+| `task-monitor/staging/` | `task-*.md` (legacy) |
+| `task-monitor/pending/` | `task-*.md` (legacy) |
+| `task-monitor/completed/` | `task-*.md` (legacy) |
+| `task-monitor/failed/` | `task-*.md` (legacy) |
+| `task-monitor/planning/` | `*.md` (legacy) |
+| `task-monitor/results/` | `task-*.json` (legacy) |
+| `task-monitor/reports/` | `task-*/` (legacy) |
 
 ---
 

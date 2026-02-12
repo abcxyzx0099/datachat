@@ -41,7 +41,7 @@ flowchart TD
 ## How It Works
 
 1. **Safety Checkpoint** - Commit and push current state (git)
-2. **Create Task Report** - Create task report in `tasks/{queue}/reports/`
+2. **Create Task Report** - Create task report in `task-monitor/{queue}/reports/`
 3. **Implement** - Implementation Agent works and updates the document
 4. **Audit** - Auditor Agent independently verifies and updates the document
 5. **Iterate** - If audit fails, repeat steps 3-4 (max 3 times)
@@ -50,13 +50,13 @@ flowchart TD
 ## Input
 
 You will receive:
-- **Task document** - File path or markdown content (format: `tasks/{queue}/pending/task-{id}.md`)
+- **Task document** - File path or markdown content (format: `task-monitor/{queue}/pending/task-{id}.md`)
 - **Max iterations** - Optional (default: 3)
 
 **Queue Detection:** Extract `{queue}` from the task path:
-- If task path contains `tasks/ad-hoc/` → use `ad-hoc`
-- If task path contains `tasks/planned/` → use `planned`
-- Report location: `tasks/{queue}/reports/{task-id}.md`
+- If task path contains `task-monitor/ad-hoc/` → use `ad-hoc`
+- If task path contains `task-monitor/planned/` → use `planned`
+- Report location: `task-monitor/{queue}/reports/{task-id}.md`
 
 ## Execution Steps
 
@@ -94,7 +94,7 @@ git push
 
 ```bash
 # Copy template from skill directory and rename with task ID
-cp .claude/skills/task-execution/references/task-report-template.md tasks/{queue}/reports/{task-id}.md
+cp .claude/skills/task-execution/references/task-report-template.md task-monitor/{queue}/reports/{task-id}.md
 ```
 
 **Populate the template:**
@@ -117,7 +117,7 @@ Task(
     prompt="Read the task document and implement it thoroughly.
 
 IMPORTANT: Update the Implementation section in the task report at:
-tasks/{queue}/reports/{task-id}.md
+task-monitor/{queue}/reports/{task-id}.md
 
 In your Implementation section, document:
 - What you investigated
@@ -159,7 +159,7 @@ Check:
 - Edge cases - Are edge cases handled?
 
 Update the Audit Report section in the task report at:
-tasks/{queue}/reports/{task-id}.md
+task-monitor/{queue}/reports/{task-id}.md
 
 Your report MUST include:
 - Verdict: PASS or FAIL (clear statement at the top)
@@ -244,7 +244,7 @@ The task report structure is defined in the template file:
 ```
 
 **Example workflow:**
-1. Coordinator copies template → `tasks/{queue}/reports/{task-id}.md`
+1. Coordinator copies template → `task-monitor/{queue}/reports/{task-id}.md`
 2. Implementation Agent writes in Iteration N → Implementation
 3. Auditor Agent writes in Iteration N → Audit Report with PASS/FAIL verdict
 4. If FAIL and iteration < 3, add new iteration block and repeat from step 2
@@ -257,7 +257,7 @@ The task report structure is defined in the template file:
 {
   "status": "completed or max_iterations_reached",
   "task_document": "[file path]",
-  "working_document": "tasks/{queue}/reports/{task-id}.md",
+  "working_document": "task-monitor/{queue}/reports/{task-id}.md",
   "iterations": [N],
   "final_verdict": "[read from Audit Report section]",
   "final_rating": "[read from Audit Report section]",
@@ -273,7 +273,7 @@ The task report structure is defined in the template file:
 ```
 🔒 Creating safety checkpoint...
 📋 Task: [summary]
-📄 Created task report: tasks/{queue}/reports/{task-id}.md
+📄 Created task report: task-monitor/{queue}/reports/{task-id}.md
 🔄 Iteration 1/3
 👷 Implementation complete
 🔍 Auditing (independent verification)...
@@ -284,7 +284,7 @@ The task report structure is defined in the template file:
 ## Key Principles
 
 - **Always checkpoint first** - Create restore point before any work
-- **Shared task report** - Single source of truth in `tasks/{queue}/reports/`
+- **Shared task report** - Single source of truth in `task-monitor/{queue}/reports/`
 - **Independent auditor** - Auditor verifies against the ORIGINAL TASK DOCUMENT, not Implementation section
 - **Let subagents work autonomously** - Don't micromanage
 - **Respect the audit verdict** - PASS commits, FAIL iterates

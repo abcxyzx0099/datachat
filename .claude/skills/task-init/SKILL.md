@@ -43,7 +43,7 @@ The task system supports two independent queues that execute in parallel:
 ## Directory Structure
 
 ```
-tasks/
+task-monitor/
 ├── ad-hoc/                              # Ad-hoc task queue (Task Source Directory)
 │   ├── staging/                    # Staging area (atomic writes)
 │   ├── pending/                  # Watchdog monitors this subdirectory
@@ -153,13 +153,13 @@ task-monitor queues add /path/to/queue \
 
 # Add ad-hoc queue (manual setup)
 task-monitor queues add \
-    /home/admin/workspaces/datachat/tasks/ad-hoc \
+    /home/admin/workspaces/datachat/task-monitor/ad-hoc \
     --id ad-hoc \
     --project-workspace /home/admin/workspaces/datachat
 
 # Add planned queue (manual setup)
 task-monitor queues add \
-    /home/admin/workspaces/datachat/tasks/planned \
+    /home/admin/workspaces/datachat/task-monitor/planned \
     --id planned \
     --project-workspace /home/admin/workspaces/datachat
 ```
@@ -254,11 +254,11 @@ systemctl --user enable task-monitor.service
 
 ```bash
 # Create custom queue directories
-mkdir -p tasks/custom/{staging,pending,completed,failed,results,reports}
+mkdir -p task-monitor/custom/{staging,pending,completed,failed,results,reports}
 
 # Add custom queue
 task-monitor queues add \
-    /home/admin/workspaces/datachat/tasks/custom \
+    /home/admin/workspaces/datachat/task-monitor/custom \
     --id custom \
     --project-workspace /home/admin/workspaces/datachat \
     --description "Custom queue"
@@ -275,8 +275,8 @@ Once initialized, tasks are generated using the `task-documents` skill:
 
 | Scenario | Skill Usage | Target Directory |
 |----------|-------------|------------------|
-| **Ad-hoc task** | `task-documents` from conversation | `tasks/ad-hoc/pending/` |
-| **Planned task** | `task-documents` from planning doc | `tasks/planned/pending/` |
+| **Ad-hoc task** | `task-documents` from conversation | `task-monitor/ad-hoc/pending/` |
+| **Planned task** | `task-documents` from planning doc | `task-monitor/planned/pending/` |
 
 ---
 

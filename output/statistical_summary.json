@@ -1,0 +1,7 @@
+{
+  "total_tests": 20,
+  "significant_count": 9,
+  "not_significant_count": 9,
+  "error_count": 0,
+  "significance_threshold": 0.05
+}

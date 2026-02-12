@@ -1,8 +1,12 @@
 [project]
-name = "datachat-survey-analyzer"
+name = "datachat"
 version = "1.0.0"
-description = "DataChat SPSS Analyzer - LangGraph-based survey analysis tool"
+description = "DataChat - LangGraph-based survey analysis application"
 requires-python = ">=3.13"
+
+dependencies = [
+    "survey-analyzer @ file:///${PROJECT_ROOT}/survey_analyzer",
+]
 
 [build-system]
 requires = ["setuptools>=61.0"]

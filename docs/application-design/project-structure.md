@@ -30,7 +30,7 @@ project-root/
 ├── tests/              # Test files
 ├── temp/               # Temporary files
 ├── web/                # Web interface (Next.js frontend)
-├── tasks/              # Task specifications and planning
+├── task-system/              # Task specifications and planning
 ├── implementation/     # Implementation documentation
 ├── history/            # Archived materials
 ├── scripts/            # Shell scripts
@@ -72,7 +72,7 @@ project-root/
 | `temp/` | Temporary files (one-time use) |
 | `utils/` | Project-wide utility functions |
 | `web/` | Web interface (Agent Chat UI - Next.js) |
-| `tasks/` | Task specifications and planning documents |
+| `task-system/` | Task specifications and planning documents |
 | `implementation/` | Implementation documentation |
 | `history/` | Archived materials and legacy documents |
 | `scripts/` | Shell scripts (production deployment) |
@@ -175,12 +175,12 @@ docs/
     └── knowledge/                # Knowledge base articles
 ```
 
-### 3.6 tasks/ Directory
+### 3.6 task-system/ Directory
 
-The `tasks/` directory contains task specifications and planning documents for the task management system.
+The `task-system/` directory contains task specifications and planning documents for the task management system.
 
 ```
-tasks/
+task-system/
 ├── ad-hoc/                              # Ad-hoc task queue
 │   ├── staging/                    # Staging area (atomic writes)
 │   ├── pending/                  # Task specifications (watchdog monitors)

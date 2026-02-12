@@ -1,0 +1,330 @@
+{
+  "version": "1.0",
+  "source_file": "data/real-data.sav",
+  "tables": [
+    {
+      "id": "table_001",
+      "name": "labels0 × labels30",
+      "rows": {
+        "variable": "DEVICE_INFO"
+      },
+      "columns": {
+        "variable": "S5X1E"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_002",
+      "name": "labels0 × labels36",
+      "rows": {
+        "variable": "DEVICE_INFO"
+      },
+      "columns": {
+        "variable": "S14"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_003",
+      "name": "labels0 × labels59",
+      "rows": {
+        "variable": "DEVICE_INFO"
+      },
+      "columns": {
+        "variable": "S19AX3"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_004",
+      "name": "labels0 × labels60",
+      "rows": {
+        "variable": "DEVICE_INFO"
+      },
+      "columns": {
+        "variable": "S19XB"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_005",
+      "name": "labels0 × labels63",
+      "rows": {
+        "variable": "DEVICE_INFO"
+      },
+      "columns": {
+        "variable": "S19BX3"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_006",
+      "name": "labels1 × labels30",
+      "rows": {
+        "variable": "SAMPLE"
+      },
+      "columns": {
+        "variable": "S5X1E"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_007",
+      "name": "labels1 × labels36",
+      "rows": {
+        "variable": "SAMPLE"
+      },
+      "columns": {
+        "variable": "S14"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_008",
+      "name": "labels1 × labels59",
+      "rows": {
+        "variable": "SAMPLE"
+      },
+      "columns": {
+        "variable": "S19AX3"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_009",
+      "name": "labels1 × labels60",
+      "rows": {
+        "variable": "SAMPLE"
+      },
+      "columns": {
+        "variable": "S19XB"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_010",
+      "name": "labels1 × labels63",
+      "rows": {
+        "variable": "SAMPLE"
+      },
+      "columns": {
+        "variable": "S19BX3"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_011",
+      "name": "labels2 × labels30",
+      "rows": {
+        "variable": "S0"
+      },
+      "columns": {
+        "variable": "S5X1E"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_012",
+      "name": "labels2 × labels36",
+      "rows": {
+        "variable": "S0"
+      },
+      "columns": {
+        "variable": "S14"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_013",
+      "name": "labels2 × labels59",
+      "rows": {
+        "variable": "S0"
+      },
+      "columns": {
+        "variable": "S19AX3"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_014",
+      "name": "labels2 × labels60",
+      "rows": {
+        "variable": "S0"
+      },
+      "columns": {
+        "variable": "S19XB"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_015",
+      "name": "labels2 × labels63",
+      "rows": {
+        "variable": "S0"
+      },
+      "columns": {
+        "variable": "S19BX3"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_016",
+      "name": "labels16 × labels30",
+      "rows": {
+        "variable": "S2A"
+      },
+      "columns": {
+        "variable": "S5X1E"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_017",
+      "name": "labels16 × labels36",
+      "rows": {
+        "variable": "S2A"
+      },
+      "columns": {
+        "variable": "S14"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_018",
+      "name": "labels16 × labels59",
+      "rows": {
+        "variable": "S2A"
+      },
+      "columns": {
+        "variable": "S19AX3"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_019",
+      "name": "labels16 × labels60",
+      "rows": {
+        "variable": "S2A"
+      },
+      "columns": {
+        "variable": "S19XB"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    },
+    {
+      "id": "table_020",
+      "name": "labels16 × labels63",
+      "rows": {
+        "variable": "S2A"
+      },
+      "columns": {
+        "variable": "S19BX3"
+      },
+      "metrics": [
+        "count",
+        "row_percent",
+        "col_percent"
+      ]
+    }
+  ],
+  "indicators": [
+    {
+      "id": "ind_001",
+      "name": "Sample Distribution",
+      "variables": [
+        "SAMPLE"
+      ],
+      "aggregation": "count",
+      "description": "Distribution of sample groups"
+    },
+    {
+      "id": "ind_002",
+      "name": "Device Usage",
+      "variables": [
+        "DEVICE_INFO"
+      ],
+      "aggregation": "count",
+      "description": "Device type distribution"
+    }
+  ],
+  "global_recodings": [],
+  "output_settings": {
+    "significance_threshold": 0.05
+  }
+}
