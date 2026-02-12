@@ -1,14 +1,19 @@
 """
-Stage 3: Cross-Table Calculation Wrapper
+Stage 3: Cross-Table Calculation - CLI Wrapper
 
-Thin wrapper that calls semantic library analysis operations.
-No processing logic - just orchestration.
+Uses spss-analyzer CLI for analysis operations.
 """
 
 import sys
-import json
 import argparse
-from pathlib import Path
+
+
+def _run_cli(args: list) -> int:
+    """Run spss-analyzer CLI command."""
+    import subprocess
+    result = subprocess.run(['spss-analyzer'] + args,
+                          capture_output=False)
+    return result.returncode
 
 
 def run_stage(
@@ -17,60 +22,31 @@ def run_stage(
     metadata_file: str,
     output_dir: str = "output"
 ) -> bool:
-    """Run Stage 3 using library CLI.
-
-    Args:
-        sav_file: Path to .sav file
-        spec_file: Path to table_specification.json
-        metadata_file: Path to filtered_metadata.json
-        output_dir: Output directory
-
-    Returns:
-        True if successful
-    """
-    from spss_analyzer.cli import data, analysis
-
+    """Run Stage 3 using spss-analyzer CLI."""
     print("=" * 60)
     print("📊 Stage 3: Cross-Table Calculation")
     print("=" * 60)
 
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
+    # Compute indicators using CLI
+    result = _run_cli(['analysis', 'indicators',
+                         '--spec-file', spec_file,
+                         '--data-file', sav_file,
+                         '--output-file', f'{output_dir}/indicators.csv'])
 
-    # Load metadata
-    with open(metadata_file, 'r') as f:
-        metadata = json.load(f)
+    if result != 0:
+        return False
 
-    # Load specification
-    with open(spec_file, 'r') as f:
-        spec = json.load(f)
+    # Generate crosstabs using CLI
+    result = _run_cli(['analysis', 'crosstabs',
+                         '--spec-file', spec_file,
+                         '--metadata-file', metadata_file,
+                         '--output-file', f'{output_dir}/cross_tables.json'])
 
-    # Use library to read data
-    print("\n[Reading survey data...]")
-    survey_data, metadata = data.read_metadata(sav_file)
-
-    # Use library to compute indicators
-    print("[Computing indicators...]")
-    indicators_data = analysis.compute_indicators(
-        survey_data if survey_data else [],
-        spec.get('indicators', []),
-        metadata
-    )
-
-    indicators_file = output_path / "indicators.csv"
-    analysis.save_indicators(indicators_data, str(indicators_file))
-
-    # Use library to generate crosstabs
-    print("\n[Generating cross-tables...]")
-    crosstabs = analysis.generate_crosstabs(spec.get('tables', []), metadata)
-
-    crosstabs_file = output_path / "cross_tables.json"
-    analysis.save_crosstabs(crosstabs, str(crosstabs_file))
+    if result != 0:
+        return False
 
     print("\n" + "=" * 60)
     print("✅ Stage 3 Complete!")
-    print(f"📄 Saved: {indicators_file}")
-    print(f"📄 Saved: {crosstabs_file}")
     print("=" * 60)
 
     return True
@@ -79,7 +55,7 @@ def run_stage(
 def main():
     """CLI entry point for Stage 3."""
     parser = argparse.ArgumentParser(
-        description="Stage 3: Cross-Table Calculation (wrapper)"
+        description="Stage 3: Cross-Table Calculation (CLI wrapper)"
     )
 
     parser.add_argument("--sav-file", required=True,
@@ -93,12 +69,12 @@ def main():
 
     args = parser.parse_args()
 
-    return 0 if run_stage(
+    return run_stage(
         args.sav_file,
         args.spec_file,
         args.metadata_file,
         args.output_dir
-    ) else 1
+    )
 
 
 if __name__ == "__main__":
