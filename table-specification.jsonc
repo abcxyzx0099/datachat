@@ -1,108 +1,175 @@
 {
-  // ============================================================================
-  // Core Identification
-  // ============================================================================
-  "spec_id": "crosstab_2024_consumer_survey_001",     // Unique specification ID
-  "project_id": "proj_2024_china_consumer_insights",  // Project reference
-  "dataset_id": "ds_q1_2024_national_survey",         // Dataset reference
-  "description": "Cross-tabulation analysis for market research survey",  // Human-readable description
+  "spec_id": "crosstab_2024_consumer_survey_001",
+  "project_id": "proj_2024_china_consumer_insights",
+  "dataset_id": "ds_q1_2024_national_survey",
+  "description": "Cross-tabulation analysis for market research survey",
 
-  // ============================================================================
-  // Data Filtering
-  // ============================================================================
   "filter_clause": {
-    "age_min": 18,           // Minimum age filter
-    "age_max": 65,           // Maximum age filter
-    "exclude_incomplete": true  // Exclude incomplete responses
+    "age_min": 18,
+    "age_max": 65,
+    "exclude_incomplete": true
   },
 
-  // ============================================================================
-  // Row Dimension Indicators (define table rows)
-  // ============================================================================
-  "row_indicators": [
+  "column_indicators": [
     {
-      // ---- Example 1: Categorical variable (Single choice) ----
-      "indicator_code": "Q1_GENDER",           // SPSS variable name
-      "indicator_label": "请问您的性别是？(单选)",    // Question text
-      "question_type": "Single",              // Single, MultiSelect, Frequency, Rating, Matrix, Ranking, Numeric
-      "explicit": ["1", "2"],              // Specific values to include (null = all)
-      "variable_format": "numeric",           // Data type: numeric, string, date
-      "transformation_rules": null,           // Recoding rules for subtotals
-      "validation": {"min": 0, "max": 99},  // Value constraints
-      "settings_template": "categorical"     // Template reference (see table-settings.json)
+      "indicator_code": "AGE_GROUP",
+      "indicator_label": "年龄分组",
+      "indicator_scenario": "Demographic",
+      "question_type": "Single",
+      "explicit": ["1", "2", "3", "4", "5"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
     },
     {
-      // ---- Example 2: Numeric variable (continuous) ----
-      "indicator_code": "S1_AGE",            // SPSS variable name
-      "indicator_label": "请问您的年龄是？",       // Question text
-      "question_type": "Numeric",             // Continuous numeric data
-      "explicit": null,                     // Include all values
-      "variable_format": "numeric",           // Data type
-      "transformation_rules": null,            // No recoding needed
-      "validation": {"min": 18, "max": 65}, // Age range validation
-      "settings_template": "scalar"            // Use statistics: MEAN MEDIAN STDDEV MIN MAX
+      "indicator_code": "GENDER",
+      "indicator_label": "性别",
+      "indicator_scenario": "Demographic",
+      "question_type": "Single",
+      "explicit": ["1", "2"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
     },
     {
-      // ---- Example 3: Categorical with transformation rules ----
-      "indicator_code": "Q5_SATISFACTION",   // SPSS variable name
-      "indicator_label": "请评价您对产品的满意度",  // Question text
-      "question_type": "Rating",               // Likert scale
-      "explicit": ["1", "2", "3", "4", "5"],  // All 5 scale points
-      "variable_format": "numeric",           // Data type
-      "transformation_rules": [             // Recoding rules for subtotals
-        {
-          "source_values": ["1", "2", "3"],  // Collapse low ratings
-          "target_value": "99",              // Into "Other"
-          "target_label": "其他",
-          "hide_categories": true            // Hide original categories after recoding
-        },
-        {
-          "source_values": {"min": 0, "max": 25},  // Group ages 18-25
-          "target_value": "1",
-          "target_label": "18-25岁",
-          "hide_categories": true
-        }
-      ],
-      "validation": {"min": 1, "max": 5},
+      "indicator_code": "REGION",
+      "indicator_label": "地区",
+      "indicator_scenario": "Demographic",
+      "question_type": "Single",
+      "explicit": null,
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "EDUCATION",
+      "indicator_label": "教育程度",
+      "indicator_scenario": "Demographic",
+      "question_type": "Single",
+      "explicit": ["1", "2", "3", "4", "5", "6"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "INCOME",
+      "indicator_label": "收入",
+      "indicator_scenario": "Demographic",
+      "question_type": "Single",
+      "explicit": null,
+      "variable_format": "numeric",
+      "transformation_rules": null,
       "settings_template": "categorical"
     }
   ],
 
-  // ============================================================================
-  // Column Dimension Indicators (define table columns)
-  // ============================================================================
-  // Note: Column variables are always categorical (no statistics on column axis)
-  "column_indicators": [
+  "row_indicators": [
     {
-      "indicator_code": "S3_LICENSE",          // SPSS variable name
-      "indicator_label": "请问您是否有驾照。(单选)",    // Question text
-      "question_type": "Single",             // Single choice
-      "explicit": null,                     // Include all categories
-      "variable_format": "numeric",           // Data type
-      "transformation_rules": null,            // No recoding
-      "validation": null,                    // No constraints
-      "settings_template": "categorical"     // No statistics (columns are labels)
+      "indicator_code": "Q1_GENDER_RAW",
+      "indicator_label": "请问您的性别是？(单选)",
+      "indicator_scenario": "Raw",
+      "source_variables": ["Q1_GENDER"],
+      "variable_format": "numeric",
+      "settings_template": "categorical"
     },
     {
-      "indicator_code": "S4_INDUSTRY",        // SPSS variable name
-      "indicator_label": "请问您或您家人是否在以下行业工作？(多选)",  // Question text
-      "question_type": "MultiSelect",          // Multiple selections allowed
-      "explicit": null,                     // Include all categories
-      "variable_format": "numeric",           // Data type
-      "transformation_rules": null,            // No recoding
-      "validation": null,                    // No constraints
-      "settings_template": "categorical"     // No statistics (columns are labels)
+      "indicator_code": "S1_AGE",
+      "indicator_label": "请问您的年龄是？",
+      "indicator_scenario": "Raw",
+      "source_variables": ["S1_AGE"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "scalar"
+    },
+    {
+      "indicator_code": "Q1_WORK_STATUS",
+      "indicator_label": "工作状态",
+      "indicator_scenario": "Raw",
+      "source_variables": ["Q1_WORK_STATUS"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "Q5_SATISFACTION",
+      "indicator_label": "请评价您对产品的满意度",
+      "indicator_scenario": "Categorical",
+      "source_variables": ["Q5_SATISFACTION"],
+      "explicit": ["1", "2", "3", "4", "5"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "Q5_SATISFACTION_RECODED",
+      "indicator_label": "满意度（重编码）",
+      "indicator_scenario": "Categorical_Transform",
+      "source_variables": ["Q5_SATISFACTION"],
+      "variable_format": "numeric",
+      "transformation_rules": [
+        {
+          "source_values": ["1", "2", "3"],
+          "target_value": "99",
+          "target_label": "低满意度",
+          "hide_source_categories": true
+        }
+      ],
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "INCOME_INDEX",
+      "indicator_label": "收入指数",
+      "indicator_scenario": "Indicator_MultiSource",
+      "source_variables": ["SALARY_MONTHLY", "BONUS_MONTHLY", "OTHER_INCOME"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "S1_INCOME_VALIDATED",
+      "indicator_label": "收入（验证）",
+      "indicator_scenario": "Categorical_Validation",
+      "source_variables": ["S1_INCOME_MONTHLY"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "S1_AGE_GROUP",
+      "indicator_label": "年龄分组",
+      "indicator_scenario": "Scalar_Transform",
+      "source_variables": ["S1_AGE"],
+      "variable_format": "numeric",
+      "transformation_rules": [
+        {
+          "source_values": {"min": 0, "max": 25},
+          "target_value": "1",
+          "target_label": "18-25岁"
+        },
+        {
+          "source_values": {"min": 26, "max": 35},
+          "target_value": "2",
+          "target_label": "26-35岁"
+        },
+        {
+          "source_values": {"min": 36, "max": 45},
+          "target_value": "3",
+          "target_label": "36-45岁"
+        },
+        {
+          "source_values": {"min": 46, "max": 60},
+          "target_value": "4",
+          "target_label": "46-60岁"
+        },
+        {
+          "source_values": {"min": 61, "max": 99},
+          "target_value": "5",
+          "target_label": "60岁以上"
+        }
+      ],
+      "settings_template": "scalar"
     }
   ],
 
-  // ============================================================================
-  // Weighting Variable
-  // ============================================================================
-  "weight_indicator": "weight1"    // SPSS variable for case weighting
-
-  // ============================================================================
-  // Display and chart settings are in table-settings.json as:
-  // - default_display_options (table formatting)
-  // - default_chart_config (chart visualization)
-  // ============================================================================
+  "weight_indicator": "weight1"
 }
