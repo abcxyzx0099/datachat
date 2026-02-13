@@ -10,100 +10,49 @@
     "exclude_incomplete": true
   },
 
-  "column_indicators": [
-    {
-      "indicator_code": "AGE_GROUP",
-      "indicator_label": "年龄分组",
-      "indicator_scenario": "Demographic",
-      "question_type": "Single",
-      "explicit": ["1", "2", "3", "4", "5"],
-      "variable_format": "numeric",
-      "transformation_rules": null,
-      "settings_template": "categorical"
-    },
-    {
-      "indicator_code": "GENDER",
-      "indicator_label": "性别",
-      "indicator_scenario": "Demographic",
-      "question_type": "Single",
-      "explicit": ["1", "2"],
-      "variable_format": "numeric",
-      "transformation_rules": null,
-      "settings_template": "categorical"
-    },
-    {
-      "indicator_code": "REGION",
-      "indicator_label": "地区",
-      "indicator_scenario": "Demographic",
-      "question_type": "Single",
-      "explicit": null,
-      "variable_format": "numeric",
-      "transformation_rules": null,
-      "settings_template": "categorical"
-    },
-    {
-      "indicator_code": "EDUCATION",
-      "indicator_label": "教育程度",
-      "indicator_scenario": "Demographic",
-      "question_type": "Single",
-      "explicit": ["1", "2", "3", "4", "5", "6"],
-      "variable_format": "numeric",
-      "transformation_rules": null,
-      "settings_template": "categorical"
-    },
-    {
-      "indicator_code": "INCOME",
-      "indicator_label": "收入",
-      "indicator_scenario": "Demographic",
-      "question_type": "Single",
-      "explicit": null,
-      "variable_format": "numeric",
-      "transformation_rules": null,
-      "settings_template": "categorical"
-    }
-  ],
+  "weight_indicator": "weight1",
 
   "row_indicators": [
+    // Raw - Direct SPSS variable, no transformation
     {
       "indicator_code": "Q1_GENDER_RAW",
       "indicator_label": "请问您的性别是？(单选)",
-      "indicator_scenario": "Raw",
       "source_variables": ["Q1_GENDER"],
       "variable_format": "numeric",
       "settings_template": "categorical"
     },
+    // Raw - Direct SPSS variable (scalar)
     {
       "indicator_code": "S1_AGE",
       "indicator_label": "请问您的年龄是？",
-      "indicator_scenario": "Raw",
       "source_variables": ["S1_AGE"],
       "variable_format": "numeric",
       "transformation_rules": null,
       "settings_template": "scalar"
     },
+    // Raw - Direct SPSS variable
     {
       "indicator_code": "Q1_WORK_STATUS",
       "indicator_label": "工作状态",
-      "indicator_scenario": "Raw",
       "source_variables": ["Q1_WORK_STATUS"],
       "variable_format": "numeric",
       "transformation_rules": null,
       "settings_template": "categorical"
     },
+    // Categorical - Single choice variable
     {
       "indicator_code": "Q5_SATISFACTION",
       "indicator_label": "请评价您对产品的满意度",
-      "indicator_scenario": "Categorical",
       "source_variables": ["Q5_SATISFACTION"],
       "explicit": ["1", "2", "3", "4", "5"],
       "variable_format": "numeric",
       "transformation_rules": null,
       "settings_template": "categorical"
     },
+    // Categorical Transform - With recoding rules
     {
       "indicator_code": "Q5_SATISFACTION_RECODED",
       "indicator_label": "满意度（重编码）",
-      "indicator_scenario": "Categorical_Transform",
       "source_variables": ["Q5_SATISFACTION"],
       "variable_format": "numeric",
       "transformation_rules": [
@@ -116,28 +65,28 @@
       ],
       "settings_template": "categorical"
     },
+    // Indicator MultiSource - Multiple source variables combined
     {
       "indicator_code": "INCOME_INDEX",
       "indicator_label": "收入指数",
-      "indicator_scenario": "Indicator_MultiSource",
       "source_variables": ["SALARY_MONTHLY", "BONUS_MONTHLY", "OTHER_INCOME"],
       "variable_format": "numeric",
       "transformation_rules": null,
       "settings_template": "categorical"
     },
+    // Categorical Validation - With validation rules
     {
       "indicator_code": "S1_INCOME_VALIDATED",
       "indicator_label": "收入（验证）",
-      "indicator_scenario": "Categorical_Validation",
       "source_variables": ["S1_INCOME_MONTHLY"],
       "variable_format": "numeric",
       "transformation_rules": null,
       "settings_template": "categorical"
     },
+    // Scalar Transform - Numeric with recoding/grouping rules
     {
       "indicator_code": "S1_AGE_GROUP",
       "indicator_label": "年龄分组",
-      "indicator_scenario": "Scalar_Transform",
       "source_variables": ["S1_AGE"],
       "variable_format": "numeric",
       "transformation_rules": [
@@ -171,5 +120,56 @@
     }
   ],
 
-  "weight_indicator": "weight1"
+  "column_indicators": [
+    // Demographic - Simple demographic variable
+    {
+      "indicator_code": "AGE_GROUP",
+      "indicator_label": "年龄分组",
+      "question_type": "Single",
+      "explicit": ["1", "2", "3", "4", "5"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    // Demographic - Simple demographic variable
+    {
+      "indicator_code": "GENDER",
+      "indicator_label": "性别",
+      "question_type": "Single",
+      "explicit": ["1", "2"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    // Demographic - Simple demographic variable
+    {
+      "indicator_code": "REGION",
+      "indicator_label": "地区",
+      "question_type": "Single",
+      "explicit": null,
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    // Demographic - Simple demographic variable
+    {
+      "indicator_code": "EDUCATION",
+      "indicator_label": "教育程度",
+      "question_type": "Single",
+      "explicit": ["1", "2", "3", "4", "5", "6"],
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    },
+    // Demographic - Simple demographic variable
+    {
+      "indicator_code": "INCOME",
+      "indicator_label": "收入",
+      "question_type": "Single",
+      "explicit": null,
+      "variable_format": "numeric",
+      "transformation_rules": null,
+      "settings_template": "categorical"
+    }
+  ]
 }
