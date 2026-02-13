@@ -1,0 +1,108 @@
+{
+  // ============================================================================
+  // Core Identification
+  // ============================================================================
+  "spec_id": "crosstab_2024_consumer_survey_001",     // Unique specification ID
+  "project_id": "proj_2024_china_consumer_insights",  // Project reference
+  "dataset_id": "ds_q1_2024_national_survey",         // Dataset reference
+  "description": "Cross-tabulation analysis for market research survey",  // Human-readable description
+
+  // ============================================================================
+  // Data Filtering
+  // ============================================================================
+  "filter_clause": {
+    "age_min": 18,           // Minimum age filter
+    "age_max": 65,           // Maximum age filter
+    "exclude_incomplete": true  // Exclude incomplete responses
+  },
+
+  // ============================================================================
+  // Row Dimension Indicators (define table rows)
+  // ============================================================================
+  "row_indicators": [
+    {
+      // ---- Example 1: Categorical variable (Single choice) ----
+      "indicator_code": "Q1_GENDER",           // SPSS variable name
+      "indicator_label": "请问您的性别是？(单选)",    // Question text
+      "question_type": "Single",              // Single, MultiSelect, Frequency, Rating, Matrix, Ranking, Numeric
+      "explicit": ["1", "2"],              // Specific values to include (null = all)
+      "variable_format": "numeric",           // Data type: numeric, string, date
+      "transformation_rules": null,           // Recoding rules for subtotals
+      "validation": {"min": 0, "max": 99},  // Value constraints
+      "settings_template": "categorical"     // Template reference (see table-settings.json)
+    },
+    {
+      // ---- Example 2: Numeric variable (continuous) ----
+      "indicator_code": "S1_AGE",            // SPSS variable name
+      "indicator_label": "请问您的年龄是？",       // Question text
+      "question_type": "Numeric",             // Continuous numeric data
+      "explicit": null,                     // Include all values
+      "variable_format": "numeric",           // Data type
+      "transformation_rules": null,            // No recoding needed
+      "validation": {"min": 18, "max": 65}, // Age range validation
+      "settings_template": "scalar"            // Use statistics: MEAN MEDIAN STDDEV MIN MAX
+    },
+    {
+      // ---- Example 3: Categorical with transformation rules ----
+      "indicator_code": "Q5_SATISFACTION",   // SPSS variable name
+      "indicator_label": "请评价您对产品的满意度",  // Question text
+      "question_type": "Rating",               // Likert scale
+      "explicit": ["1", "2", "3", "4", "5"],  // All 5 scale points
+      "variable_format": "numeric",           // Data type
+      "transformation_rules": [             // Recoding rules for subtotals
+        {
+          "source_values": ["1", "2", "3"],  // Collapse low ratings
+          "target_value": "99",              // Into "Other"
+          "target_label": "其他",
+          "hide_categories": true            // Hide original categories after recoding
+        },
+        {
+          "source_values": {"min": 0, "max": 25},  // Group ages 18-25
+          "target_value": "1",
+          "target_label": "18-25岁",
+          "hide_categories": true
+        }
+      ],
+      "validation": {"min": 1, "max": 5},
+      "settings_template": "categorical"
+    }
+  ],
+
+  // ============================================================================
+  // Column Dimension Indicators (define table columns)
+  // ============================================================================
+  // Note: Column variables are always categorical (no statistics on column axis)
+  "column_indicators": [
+    {
+      "indicator_code": "S3_LICENSE",          // SPSS variable name
+      "indicator_label": "请问您是否有驾照。(单选)",    // Question text
+      "question_type": "Single",             // Single choice
+      "explicit": null,                     // Include all categories
+      "variable_format": "numeric",           // Data type
+      "transformation_rules": null,            // No recoding
+      "validation": null,                    // No constraints
+      "settings_template": "categorical"     // No statistics (columns are labels)
+    },
+    {
+      "indicator_code": "S4_INDUSTRY",        // SPSS variable name
+      "indicator_label": "请问您或您家人是否在以下行业工作？(多选)",  // Question text
+      "question_type": "MultiSelect",          // Multiple selections allowed
+      "explicit": null,                     // Include all categories
+      "variable_format": "numeric",           // Data type
+      "transformation_rules": null,            // No recoding
+      "validation": null,                    // No constraints
+      "settings_template": "categorical"     // No statistics (columns are labels)
+    }
+  ],
+
+  // ============================================================================
+  // Weighting Variable
+  // ============================================================================
+  "weight_indicator": "weight1"    // SPSS variable for case weighting
+
+  // ============================================================================
+  // Display and chart settings are in table-settings.json as:
+  // - default_display_options (table formatting)
+  // - default_chart_config (chart visualization)
+  // ============================================================================
+}

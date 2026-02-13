@@ -1,0 +1,127 @@
+{
+  // ============================================================================
+  // Categorical Template
+  // For: Single, MultiSelect, Frequency, Rating, Matrix, Ranking questions
+  // Statistics: COUNT COLPCT (no mean, median, stddev, etc.)
+  // ============================================================================
+  "categorical": {
+    // Category ordering and display
+    "categories": {
+      "order": "A",                    // A = ascending, D = descending
+      "sort_key": "VALUE",           // Sort by: VALUE, LABEL, or COUNT
+      "include_missing": false,        // Include user-missing values in counts
+      "totals": {
+        "show": true,                // Show total row/column
+        "label": "总计",             // Custom total label (Chinese)
+        "position": "AFTER"           // Position: AFTER or BEFORE
+      },
+      "empty": "EXCLUDE"              // INCLUDE or EXCLUDE empty categories
+    },
+    // Percentage display options
+    "percentages": {
+      "show_row_pct": false,         // Show row percentage
+      "show_col_pct": true,          // Show column percentage
+      "show_table_pct": false          // Show table percentage (N%)
+    },
+    // Label display options
+    "display": {
+      "variable_label": "BOTH",         // DEFAULT, NAME, LABEL, BOTH, or NONE
+      "category_label_position": "AUTO",  // AUTO, OPPOSITE, or LAYER
+      "hide_empty_categories": true    // Hide categories with zero counts
+    },
+    // Statistics to display (categorical only uses COUNT)
+    "statistics": {
+      "count": true,                 // Show count (N)
+      "mean": false,                 // Not used for categorical
+      "median": false,                // Not used for categorical
+      "mode": false,                  // Not used for categorical
+      "stddev": false,                // Not used for categorical
+      "variance": false,              // Not used for categorical
+      "min": false,                   // Not used for categorical
+      "max": false,                   // Not used for categorical
+      "sum": false,                   // Not used for categorical
+      "range": false,                 // Not used for categorical
+      "semean": false,                // Not used for categorical
+      "missing": true,                 // Show missing count
+      "ptile": null                   // Percentile (null = not used)
+    },
+    // Missing value handling
+    "missing_values": "exclude"          // exclude, include, or mean_substitute
+  },
+
+  // ============================================================================
+  // Scalar Template
+  // For: Numeric questions (continuous data)
+  // Statistics: MEAN MEDIAN STDDEV MIN MAX (descriptive statistics)
+  // ============================================================================
+  "scalar": {
+    // Category ordering and display
+    "categories": {
+      "order": "A",                    // A = ascending, D = descending
+      "sort_key": "VALUE",           // Sort by: VALUE, LABEL, or COUNT
+      "include_missing": false,        // Include user-missing values in counts
+      "totals": {
+        "show": true,                // Show total row/column
+        "label": "合计",             // Custom total label (Chinese)
+        "position": "AFTER"           // Position: AFTER or BEFORE
+      },
+      "empty": "EXCLUDE"              // INCLUDE or EXCLUDE empty categories
+    },
+    // Percentage display options (usually not shown for scalar)
+    "percentages": {
+      "show_row_pct": false,         // Show row percentage
+      "show_col_pct": false,          // Show column percentage
+      "show_table_pct": false          // Show table percentage (N%)
+    },
+    // Label display options
+    "display": {
+      "variable_label": "LABEL",         // DEFAULT, NAME, LABEL, BOTH, or NONE
+      "category_label_position": "AUTO",  // AUTO, OPPOSITE, or LAYER
+      "hide_empty_categories": true    // Hide categories with zero counts
+    },
+    // Statistics to display (scalar uses full descriptive statistics)
+    "statistics": {
+      "count": true,                 // Show count (N)
+      "mean": true,                  // Show mean (average)
+      "median": true,                // Show median (middle value)
+      "mode": false,                 // Do not show mode (most frequent)
+      "stddev": true,                // Show standard deviation
+      "variance": false,              // Do not show variance
+      "min": true,                   // Show minimum value
+      "max": true,                   // Show maximum value
+      "sum": false,                   // Do not show sum
+      "range": false,                 // Do not show range (max-min)
+      "semean": false,                // Do not show standard error of mean
+      "missing": true,                 // Show missing count
+      "ptile": null                   // Percentile (null = not used)
+    },
+    // Missing value handling
+    "missing_values": "exclude"          // exclude, include, or mean_substitute
+  },
+
+  // ============================================================================
+  // Default Display Options
+  // Applied when not overridden in table-specification.json
+  // ============================================================================
+  "default_display_options": {
+    "table_format": "compact",           // compact, full, or wide
+    "empty_display": "BLANK",           // ZERO, BLANK, or custom text
+    "missing_display": "N/A",            // Custom missing value display text
+    "variable_labels": "BOTH",           // DEFAULT, NAME, LABEL, BOTH, or NONE
+    "hide_empty_rows": true,            // Hide rows with zero counts
+    "hide_empty_columns": false,         // Hide columns with zero counts
+    "sort_by": "label"                 // Sort by: label or count
+  },
+
+  // ============================================================================
+  // Default Chart Configuration
+  // Applied when not overridden in table-specification.json
+  // ============================================================================
+  "default_chart_config": {
+    "chart_type": "stacked_bar",       // stacked_bar, grouped_bar, heatmap, mosaic, or none
+    "color_scheme": "corporate_blue",   // Color palette name
+    "show_labels": true,              // Show data labels on chart
+    "show_legend": true,               // Show chart legend
+    "title_template": "{row} × {column}"  // Title with {row} and {column} placeholders
+  }
+}
