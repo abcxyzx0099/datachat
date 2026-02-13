@@ -1,0 +1,167 @@
+# Table Settings - Default Templates for CTABLES
+
+## Complete Structure
+
+```json
+{
+  "categorical": {
+    "categories": {
+      "order": "A",
+      "sort_key": "VALUE",
+      "include_missing": false,
+      "totals": {
+        "show": true,
+        "label": "总计",
+        "position": "AFTER"
+      },
+      "empty": "EXCLUDE"
+    },
+    "percentages": {
+      "show_row_pct": false,
+      "show_col_pct": true,
+      "show_table_pct": false
+    },
+    "display": {
+      "variable_label": "BOTH",
+      "category_label_position": "AUTO",
+      "hide_empty_categories": true
+    },
+    "statistics": {
+      "count": true,
+      "mean": false,
+      "median": false,
+      "mode": false,
+      "stddev": false,
+      "variance": false,
+      "min": false,
+      "max": false,
+      "sum": false,
+      "range": false,
+      "semean": false,
+      "missing": true,
+      "ptile": null
+    }
+  },
+
+  "scalar": {
+    "categories": {
+      "order": "A",
+      "sort_key": "VALUE",
+      "include_missing": false,
+      "totals": {
+        "show": true,
+        "label": "合计",
+        "position": "AFTER"
+      },
+      "empty": "EXCLUDE"
+    },
+    "percentages": {
+      "show_row_pct": false,
+      "show_col_pct": false,
+      "show_table_pct": false
+    },
+    "display": {
+      "variable_label": "LABEL",
+      "category_label_position": "AUTO",
+      "hide_empty_categories": true
+    },
+    "statistics": {
+      "count": true,
+      "mean": true,
+      "median": true,
+      "mode": false,
+      "stddev": true,
+      "variance": false,
+      "min": true,
+      "max": true,
+      "sum": false,
+      "range": false,
+      "semean": false,
+      "missing": true,
+      "ptile": null
+    }
+  }
+}
+```
+
+## Field Descriptions
+
+### Categories
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `order` | string | `A` (ascending) or `D` (descending) |
+| `sort_key` | string | `VALUE`, `LABEL`, or `COUNT` |
+| `include_missing` | boolean | Include user-missing values |
+| `totals.show` | boolean | Show total row/column |
+| `totals.label` | string | Custom label for total |
+| `totals.position` | string | `AFTER` or `BEFORE` |
+| `empty` | string | `INCLUDE` or `EXCLUDE` empty categories |
+
+### Percentages
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `show_row_pct` | boolean | Show row percentage |
+| `show_col_pct` | boolean | Show column percentage |
+| `show_table_pct` | boolean | Show table percentage |
+
+### Display
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `variable_label` | string | `DEFAULT`, `NAME`, `LABEL`, `BOTH`, or `NONE` |
+| `category_label_position` | string | `AUTO`, `OPPOSITE`, or `LAYER` |
+| `hide_empty_categories` | boolean | Hide categories with zero counts |
+
+### Statistics
+
+| Field | Type | Categorical | Scalar |
+|-------|------|-------------|--------|
+| `count` | boolean | ✓ | ✓ |
+| `mean` | boolean | - | ✓ |
+| `median` | boolean | - | ✓ |
+| `mode` | boolean | - | - |
+| `stddev` | boolean | - | ✓ |
+| `variance` | boolean | - | - |
+| `min` | boolean | - | ✓ |
+| `max` | boolean | - | ✓ |
+| `sum` | boolean | - | - |
+| `range` | boolean | - | - |
+| `semean` | boolean | - | - |
+| `missing` | boolean | ✓ | ✓ |
+| `ptile` | number or null | - | - |
+
+## Template Usage by Question Type
+
+| Question Type | Template | Notes |
+|---------------|----------|-------|
+| Single | categorical | - |
+| MultiSelect | categorical | Each checkbox is a category |
+| Frequency | categorical | - |
+| Rating | categorical or scalar | Use scalar for mean/median statistics |
+| Matrix | categorical | Grid with double suffix |
+| Ranking | categorical | Rank order variables |
+| Numeric | scalar | Continuous data |
+
+## PSPP CTABLES Mapping
+
+### Categorical Template
+```spss
+CTABLES
+  /TABLE=Q1 [COLPCT] BY Q2
+  /CATEGORIES VARIABLES=Q1 ORDER=A TOTAL=YES LABEL='总计'
+  /CATEGORIES VARIABLES=Q2 ORDER=A TOTAL=YES LABEL='总计'
+  /VLABELS VARIABLES=Q1 DISPLAY=BOTH
+  /VLABELS VARIABLES=Q2 DISPLAY=BOTH.
+```
+
+### Scalar Template
+```spss
+CTABLES
+  /TABLE=S1 [MEAN MEDIAN STDDEV MIN MAX] BY Q1
+  /CATEGORIES VARIABLES=S1 ORDER=A TOTAL=YES LABEL='合计'
+  /CATEGORIES VARIABLES=Q1 ORDER=A TOTAL=YES LABEL='总计'
+  /VLABELS VARIABLES=S1 DISPLAY=LABEL
+  /VLABELS VARIABLES=Q1 DISPLAY=LABEL.
+```

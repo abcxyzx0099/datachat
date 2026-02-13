@@ -1,0 +1,143 @@
+# Crosstab Specification JSON Structure
+
+## Overview
+
+This specification defines cross-tabulation analysis with all display and chart settings included.
+
+## Complete JSON Structure
+
+```json
+{
+  "spec_id": "crosstab_2024_consumer_survey_001",
+  "project_id": "proj_2024_china_consumer_insights",
+  "dataset_id": "ds_q1_2024_national_survey",
+  "description": "Cross-tabulation analysis for market research survey",
+
+  "filter_clause": {
+    "age_min": 18,
+    "age_max": 65,
+    "exclude_incomplete": true
+  },
+
+  "row_indicators": [
+    {
+      "indicator_code": "Q1_GENDER",
+      "indicator_label": "请问您的性别是？(单选)",
+      "question_type": "Single",
+      "explicit": ["1", "2"],
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "S1_AGE",
+      "indicator_label": "请问您的年龄是？",
+      "question_type": "Numeric",
+      "explicit": null,
+      "settings_template": "scalar"
+    },
+    {
+      "indicator_code": "Q5_SATISFACTION",
+      "indicator_label": "请评价您对产品的满意度",
+      "question_type": "Rating",
+      "explicit": ["1", "2", "3", "4", "5"],
+      "settings_template": "categorical"
+    }
+  ],
+
+  "column_indicators": [
+    {
+      "indicator_code": "S3_LICENSE",
+      "indicator_label": "请问您是否有驾照。(单选)",
+      "question_type": "Single",
+      "explicit": null,
+      "settings_template": "categorical"
+    },
+    {
+      "indicator_code": "S4_INDUSTRY",
+      "indicator_label": "请问您或您家人是否在以下行业工作？(多选)",
+      "question_type": "MultiSelect",
+      "explicit": null,
+      "settings_template": "categorical"
+    }
+  ],
+
+  "weight_indicator": "weight1",
+
+  "display_options": {
+    "table_format": "compact",
+    "empty_display": "BLANK",
+    "missing_display": "N/A",
+    "variable_labels": "BOTH",
+    "hide_empty_rows": true,
+    "hide_empty_columns": false,
+    "sort_by": "label"
+  },
+
+  "chart_config": {
+    "chart_type": "stacked_bar",
+    "color_scheme": "corporate_blue",
+    "show_labels": true,
+    "show_legend": true,
+    "title_template": "{row} × {column}"
+  }
+}
+```
+
+## Field Descriptions
+
+### Core Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec_id` | string | ✓ | Unique specification identifier |
+| `project_id` | string | ✓ | Project reference |
+| `dataset_id` | string | ✓ | Dataset reference |
+| `description` | string | ✓ | Human-readable description |
+| `row_indicators` | array | ✓ | Row dimension indicators |
+| `column_indicators` | array | ✓ | Column dimension indicators |
+| `weight_indicator` | string | ✓ | Weighting variable name |
+| `display_options` | object | ✓ | Output formatting options |
+| `chart_config` | object | ✓ | Chart configuration |
+
+### Indicator Object Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `indicator_code` | string | ✓ | Variable name in SPSS file |
+| `indicator_label` | string | ✓ | Question text |
+| `question_type` | enum | ✓ | Single, MultiSelect, Frequency, Rating, Matrix, Ranking, Numeric |
+| `explicit` | array or null | ✓ | Specific values or null |
+| `settings_template` | string | ✓ | Template: categorical or scalar |
+
+### display_options Fields
+
+| Field | Type | Description |
+|-------|------|----------|-------------|
+| `table_format` | string | compact, full, wide |
+| `empty_display` | string | ZERO, BLANK, custom |
+| `missing_display` | string | Custom missing value text |
+| `variable_labels` | string | DEFAULT, NAME, LABEL, BOTH, NONE |
+| `hide_empty_rows` | boolean | Hide zero-count rows |
+| `hide_empty_columns` | boolean | Hide zero-count columns |
+| `sort_by` | string | label, count |
+
+### chart_config Fields
+
+| Field | Type | Description |
+|-------|------|----------|-------------|
+| `chart_type` | string | stacked_bar, grouped_bar, heatmap, mosaic, none |
+| `color_scheme` | string | Color palette name |
+| `show_labels` | boolean | Show data labels |
+| `show_legend` | boolean | Show chart legend |
+| `title_template` | string | Title with {row}, {column} placeholders |
+
+## Notes
+
+- Simple structure: crosstab spec references table-settings.json for templates
+- 10 fields total
+- row_indicators and column_indicators define dimensions
+- display_options and chart_config define output formatting
+- filter_clause defines data filtering
+
+---
+
+**Restored**: `/home/admin/workspaces/datachat/crosstab-specification.json`
