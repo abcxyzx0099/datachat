@@ -8,10 +8,11 @@ This document describes the simplified workflow design for the Survey Analysis &
 
 1. [Overview](#1-overview)
 2. [Architecture](#2-architecture)
-3. [Data Flow](#3-data-flow)
-4. [Table Specification](#4-table-specification)
-5. [Workflow Steps](#5-workflow-steps)
-6. [Key Terminology](#6-key-terminology)
+3. [The survey_analyzer Library](#3-the-survey_analyzer-library)
+4. [Data Flow](#4-data-flow)
+5. [Table Specification](#5-table-specification)
+6. [Workflow Steps](#6-workflow-steps)
+7. [Key Terminology](#7-key-terminology)
 
 ---
 
@@ -78,7 +79,179 @@ Design and implement an automated workflow for market research survey data analy
 
 ---
 
-## 3. Data Flow
+## 3. The survey_analyzer Library
+
+The **`survey_analyzer`** is a custom Python library developed specifically for this project. It encapsulates all core data processing and statistical computation functions, making them reusable across:
+
+- **Claude Code Skills** (workflow orchestration)
+- **Web Application** (LangGraph agents, FastAPI endpoints)
+- **CLI Tools** (command-line interface)
+- **Python Scripts** (direct programmatic access)
+
+### 3.1 Library Structure
+
+```
+survey_analyzer/
+└── src/survey_analyzer/
+    ├── __init__.py           # Package exports (version 0.2.0)
+    ├── cli.py                # Command-line interface
+    ├── io/                   # SPSS file I/O operations
+    │   ├── reader.py         # SPSSReader class
+    │   └── metadata.py       # MetadataTransformer class
+    ├── analysis/             # Statistical calculations
+    │   ├── statistics.py     # StatisticsCalculator, chi_square_test
+    │   └── indicators.py     # IndicatorGenerator
+    ├── filtering/            # Significance filtering
+    │   └── significance.py   # SignificanceFilter, filter_significant()
+    ├── reporting/            # Output generation
+    │   ├── powerpoint.py     # PowerPointGenerator
+    │   └── dashboard.py      # HTMLDashboardGenerator
+    ├── specification/        # Table specification schema
+    │   ├── schema.py         # Data models (TableSpecification, Indicator)
+    │   └── validator.py      # TableSpecificationValidator
+    └── pspp/                 # [DEPRECATED] PSPP syntax (to be removed)
+```
+
+### 3.2 Module Reference
+
+| Module | Classes | Functions | Purpose |
+|--------|---------|-----------|---------|
+| **`io/`** | `SPSSReader`, `MetadataTransformer` | `read()`, `to_variable_centered()`, `filter_variables()` | Read .sav files, extract/transform metadata |
+| **`analysis/`** | `StatisticsCalculator`, `IndicatorGenerator` | `chi_square_test()`, `generate_indicators()` | Chi-square, Cramer's V, indicator generation |
+| **`filtering/`** | `SignificanceFilter`, `FilterCriteria` | `filter_significant()` | Filter tables by p-value threshold |
+| **`reporting/`** | `PowerPointGenerator`, `HTMLDashboardGenerator` | `create_powerpoint()`, `create_dashboard()` | Generate PPT, HTML outputs |
+| **`specification/`** | `TableSpecification`, `TableSpecificationValidator` | `validate_specification()`, `is_valid_specification()` | Schema validation for table specs |
+
+### 3.3 Installation & Import
+
+#### Installation (Development)
+
+```bash
+# From project root
+cd /home/admin/workspaces/datachat
+pip install -e ./survey_analyzer
+```
+
+#### Import Examples
+
+```python
+# Core I/O operations
+from survey_analyzer.io import SPSSReader, MetadataTransformer
+
+# Statistical analysis
+from survey_analyzer.analysis import StatisticsCalculator, chi_square_test
+
+# Filtering
+from survey_analyzer.filtering import SignificanceFilter, filter_significant
+
+# Reporting
+from survey_analyzer.reporting import PowerPointGenerator, create_powerpoint
+
+# Specification validation
+from survey_analyzer.specification import (
+    TableSpecification,
+    validate_specification,
+    is_valid_specification
+)
+```
+
+### 3.4 Usage by Stage
+
+#### Stage 1: Data Preparation
+
+```python
+from survey_analyzer.io import SPSSReader, MetadataTransformer
+
+reader = SPSSReader(encoding="UTF-8")
+df, metadata = reader.read("survey.sav")
+
+transformer = MetadataTransformer()
+variable_metadata = transformer.to_variable_centered(metadata)
+filtered = transformer.filter_variables(variable_metadata)
+analysis_vars = transformer.get_analysis_variables(filtered)
+```
+
+#### Stage 3: Cross-Tabulation
+
+```python
+from survey_analyzer.analysis import chi_square_test
+import pandas as pd
+
+# Generate cross-tabulation
+crosstab = pd.crosstab(df['row_var'], df['col_var'])
+
+# Calculate statistics
+chi2, p_value, dof, expected = chi_square_test(crosstab)
+```
+
+#### Stage 4: Filtering
+
+```python
+from survey_analyzer.filtering import filter_significant
+
+# Filter tables by p-value threshold
+significant_tables = filter_significant(
+    tables_with_stats,
+    threshold=0.05
+)
+```
+
+#### Stage 5: Reporting
+
+```python
+from survey_analyzer.reporting import create_powerpoint
+
+# Generate PowerPoint presentation
+create_powerpoint(
+    tables=filtered_tables,
+    output_path="output/presentation.pptx",
+    title="Survey Analysis Results"
+)
+```
+
+### 3.5 Web Application Integration
+
+The `survey_analyzer` library is the **core computation engine** for the web application:
+
+| Web Component | Library Usage |
+|---------------|---------------|
+| **LangGraph Agents** | Import and call library functions directly |
+| **FastAPI Endpoints** | Wrap library calls for HTTP access |
+| **Background Tasks** | Execute long-running analysis jobs |
+| **Result Caching** | Store outputs for retrieval |
+
+#### Example: FastAPI Endpoint
+
+```python
+from fastapi import FastAPI, UploadFile
+from survey_analyzer.io import SPSSReader, MetadataTransformer
+from survey_analyzer.analysis import StatisticsCalculator
+
+app = FastAPI()
+
+@app.post("/api/analyze")
+async def analyze_survey(file: UploadFile):
+    # Use library functions
+    reader = SPSSReader()
+    df, metadata = reader.read(file.file)
+
+    transformer = MetadataTransformer()
+    filtered = transformer.filter_variables(
+        transformer.to_variable_centered(metadata)
+    )
+
+    return {"variables": filtered}
+```
+
+### 3.6 Version & Dependencies
+
+- **Current Version**: `0.2.0`
+- **Python Requirement**: `>=3.11`
+- **Dependencies**: pandas, pyreadstat, scipy, numpy, python-pptx, matplotlib
+
+---
+
+## 4. Data Flow
 
 The workflow consists of **13 steps** organized into **5 stages**:
 
@@ -198,7 +371,7 @@ flowchart TD
 
 ---
 
-## 4. Table Specification
+## 5. Table Specification
 
 The **table_specification.jsonc** is a consolidated artifact generated from `filtered_metadata.json` and user-edited `table-specification.xlsx`.
 
@@ -294,7 +467,7 @@ def apply_recode(series, rules):
 
 ---
 
-## 5. Workflow Steps
+## 6. Workflow Steps
 
 ### Stage 1: Data Preparation (Steps 1-3)
 
@@ -452,7 +625,7 @@ def filter_significance(tables_with_stats, alpha=0.05):
 
 ---
 
-## 6. Key Terminology
+## 7. Key Terminology
 
 | Term | Definition |
 |------|------------|
