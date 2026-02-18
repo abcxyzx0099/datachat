@@ -1,14 +1,14 @@
 [project]
 name = "survey-analyzer"
-version = "1.0.0"
-description = "SPSS Survey Analysis Library - Extract, recode, compute indicators, cross-tables, statistics, filtering, and reports"
+version = "0.3.0"
+description = "SPSS Survey Analysis Library - Pure Python analysis (transformation, crosstabs, statistics), no PSPP dependency"
 readme = "src/survey_analyzer/README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "DataChat Team"}
 ]
-keywords = ["spss", "survey", "analysis", "pspp", "statistics"]
+keywords = ["spss", "survey", "analysis", "statistics", "crosstab", "chi-square"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -25,6 +25,8 @@ dependencies = [
     "pandas>=2.0.0",
     "pyreadstat>=1.2.0",
     "python-pptx>=0.6.21",
+    "scipy>=1.10.0",
+    "numpy>=1.24.0",
 ]
 
 [project.optional-dependencies]

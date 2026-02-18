@@ -103,18 +103,23 @@ class MetadataTransformer:
         metadata: Dict[str, Any],
         include_patterns: Optional[List[str]] = None,
         exclude_patterns: Optional[List[str]] = None,
-        min_categories: int = 2,
-        max_categories: int = 50,
+        max_categories: int = 30,
+        filter_other_text: bool = True,
     ) -> Dict[str, Any]:
         """
         Filter metadata variables based on business rules.
+
+        Filtering Rules:
+        1. High Cardinality: DROP variables with > max_categories distinct values
+        2. Other Text Fields: DROP variables where name contains "other" AND type is string
+        3. Binary Variables: KEEP (2 categories are preserved for analysis)
 
         Args:
             metadata: Variable-centered metadata
             include_patterns: List of regex patterns - variables must match one
             exclude_patterns: List of regex patterns - exclude if matched
-            min_categories: Minimum number of value categories
-            max_categories: Maximum number of value categories
+            max_categories: Maximum number of value categories (default: 30 per business rules)
+            filter_other_text: Whether to filter "other" text fields (default: True)
 
         Returns:
             Filtered metadata dictionary
@@ -124,13 +129,13 @@ class MetadataTransformer:
             >>> filtered = transformer.filter_variables(
             ...     metadata,
             ...     include_patterns=[r"^q[0-9]+"],  # Questions only
-            ...     min_categories=2,
-            ...     max_categories=10
+            ...     max_categories=30
             ... )
         """
         import re
 
         filtered = {}
+        dropped = {}
         include_regexes = [
             re.compile(p) for p in (include_patterns or [])
         ]
@@ -149,26 +154,51 @@ class MetadataTransformer:
                 if any(r.match(var_name) for r in exclude_regexes):
                     continue
 
-            # Check category count
+            # Get category count
             value_labels = var_info.get("value_labels", {})
             num_categories = len(value_labels)
+            variable_type = var_info.get("variable_type", "unknown")
 
-            if num_categories < min_categories:
-                logger.debug(
-                    f"Excluding {var_name}: too few categories ({num_categories})"
-                )
-                continue
-
+            # Rule 1: High Cardinality - DROP if > max_categories
             if num_categories > max_categories:
+                dropped[var_name] = {
+                    "reason": "high_cardinality",
+                    "cardinality": num_categories
+                }
                 logger.debug(
-                    f"Excluding {var_name}: too many categories ({num_categories})"
+                    f"Excluding {var_name}: high cardinality ({num_categories} > {max_categories})"
                 )
                 continue
 
+            # Rule 2: Other Text Fields - DROP if name contains "other" AND type is string
+            if filter_other_text and "other" in var_name.lower() and variable_type == "string":
+                dropped[var_name] = {
+                    "reason": "other_text_field",
+                    "type": variable_type
+                }
+                logger.debug(
+                    f"Excluding {var_name}: other text field"
+                )
+                continue
+
+            # Rule 3: Single/Empty variables - DROP if < 1 category (no data)
+            # Note: Binary variables (2 categories) are KEPT
+            if num_categories < 1:
+                dropped[var_name] = {
+                    "reason": "no_categories",
+                    "cardinality": num_categories
+                }
+                logger.debug(
+                    f"Excluding {var_name}: no categories ({num_categories})"
+                )
+                continue
+
+            # Variable passed all filters
             filtered[var_name] = var_info
 
         logger.info(
-            f"Filtered variables: {len(filtered)}/{len(metadata)} remaining"
+            f"Filtered variables: {len(filtered)}/{len(metadata)} remaining, "
+            f"{len(dropped)} dropped"
         )
 
         return filtered
@@ -180,6 +210,9 @@ class MetadataTransformer:
     ) -> List[str]:
         """
         Get list of variables suitable for cross-tabulation analysis.
+
+        Note: Binary variables (2 categories) are INCLUDED for analysis.
+        Only variables without value labels (open-ended text) are excluded.
 
         Args:
             metadata: Variable-centered metadata
@@ -209,12 +242,13 @@ class MetadataTransformer:
             if exclude_metadata_fields and var_name.lower() in metadata_fields:
                 continue
 
-            # Skip variables without value labels (likely open-ended)
+            # Skip variables without value labels (likely open-ended text)
             if not var_info.get("value_labels"):
                 continue
 
-            # Skip single-value variables
-            if len(var_info["value_labels"]) < 2:
+            # Skip empty variables (0 categories)
+            # Note: Binary variables (2 categories) are KEPT
+            if len(var_info["value_labels"]) < 1:
                 continue
 
             analysis_vars.append(var_name)
