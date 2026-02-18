@@ -10,7 +10,8 @@ Nginx reverse proxy enables public access to DataChat through `https://www.sysy.
 Internet → nginx (443/80) → Backend Services
                               ├─ Frontend (localhost:3000 or 25808)
                               ├─ API (localhost:8123)
-                              └─ Studio (localhost:2024)
+                              ├─ Studio (localhost:2024)
+                              └─ Code Server (localhost:8080)
 ```
 
 ## Dual UI Support
@@ -30,6 +31,7 @@ DataChat supports two frontend UIs. Switch between them using:
 | `/` | `localhost:3000` | `localhost:25808` |
 | `/api/` | `localhost:8123` | `localhost:8123` |
 | `/studio/` | `localhost:2024` | `localhost:2024` |
+| `/code/` | `localhost:8080` | `localhost:8080` |
 
 ### Configuration Files
 
@@ -66,7 +68,24 @@ Managed by Certbot at `/etc/letsencrypt/live/sysy.site/` (auto-renewal enabled).
 | Agent Chat UI | `./start-langgraph.sh` | `./stop-langgraph.sh` |
 | AionUi WebUI | `./start-aionui.sh` | `./stop-aionui.sh` |
 
+## Code Server Access
+
+Code Server (VS Code in browser) is accessible at:
+- `https://www.sysy.site/code/` (with SSL)
+- `https://sysy.site/code/` (without www)
+
+**Features available:**
+- Full VS Code editing experience
+- Terminal access (WebSocket enabled)
+- File browser and extensions
+- Works on mobile devices
+
 ## Troubleshooting
+
+**Issue: "Code server not loading"**
+- Check code server is running: `curl http://localhost:8080`
+- Verify nginx config: `sudo /usr/sbin/nginx -t`
+- Check logs: `sudo journalctl -u code-server -n 50`
 
 **Issue: "Failed to connect to LangGraph server"**
 - Check backend: `curl http://localhost:8123/health`

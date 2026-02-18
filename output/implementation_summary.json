@@ -1,0 +1,185 @@
+{
+  "execution_info": {
+    "timestamp": "2026-02-16T22:46:53.368430",
+    "stage": "Stage 1: Data Preparation",
+    "skill": "analyzer-data-prep",
+    "library": "survey_analyzer.io"
+  },
+  "input_data": {
+    "file_path": "/home/admin/workspaces/datachat/data/real-data.sav",
+    "file_name": "real-data.sav",
+    "file_size_bytes": 10056546,
+    "case_count": 13064,
+    "encoding_used": "GBK"
+  },
+  "filtering_configuration": {
+    "binary_variables": "KEPT (preserved for analysis)",
+    "high_cardinality_threshold": 30,
+    "other_text_fields": "DROPPED (name contains \"other\" + string type)",
+    "min_categories": 1
+  },
+  "results": {
+    "total_variables": 357,
+    "kept_variables": 347,
+    "dropped_variables": 10,
+    "binary_variables_kept": 11,
+    "keep_rate": "97.2%"
+  },
+  "dropped_variables_by_reason": {
+    "high_cardinality": {
+      "count": 10,
+      "description": "Variables with more than 30 distinct values",
+      "variables": [
+        {
+          "name": "S19BX2",
+          "cardinality": 1179,
+          "type": "categorical"
+        },
+        {
+          "name": "S19AX2",
+          "cardinality": 1179,
+          "type": "categorical"
+        },
+        {
+          "name": "S5X1B",
+          "cardinality": 1179,
+          "type": "categorical"
+        },
+        {
+          "name": "S0XB",
+          "cardinality": 336,
+          "type": "categorical"
+        },
+        {
+          "name": "S19BX1",
+          "cardinality": 141,
+          "type": "categorical"
+        },
+        {
+          "name": "S5X1A",
+          "cardinality": 141,
+          "type": "categorical"
+        },
+        {
+          "name": "S19AX1",
+          "cardinality": 141,
+          "type": "categorical"
+        },
+        {
+          "name": "S19AX2A",
+          "cardinality": 36,
+          "type": "categorical"
+        },
+        {
+          "name": "S5X1B1",
+          "cardinality": 36,
+          "type": "categorical"
+        },
+        {
+          "name": "S0XA",
+          "cardinality": 31,
+          "type": "categorical"
+        }
+      ]
+    },
+    "other_text_field": {
+      "count": 0,
+      "description": "Variables with \"other\" in name and string type",
+      "variables": []
+    },
+    "no_categories": {
+      "count": 0,
+      "description": "Variables with no value labels",
+      "variables": []
+    }
+  },
+  "kept_binary_variables": {
+    "count": 11,
+    "variables": [
+      {
+        "name": "DEVICE_INFO",
+        "label": "labels0",
+        "values": {
+          "1.0": "PC端",
+          "2.0": "移动端"
+        }
+      },
+      {
+        "name": "S21",
+        "label": "labels65",
+        "values": {
+          "1.0": "自己的",
+          "2.0": "公司的"
+        }
+      },
+      {
+        "name": "S5X1E",
+        "label": "labels30",
+        "values": {
+          "1.0": "国产的 (在国内生产的)",
+          "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
+        }
+      },
+      {
+        "name": "S3",
+        "label": "labels17",
+        "values": {
+          "1.0": "是",
+          "2.0": "否"
+        }
+      },
+      {
+        "name": "S14",
+        "label": "labels36",
+        "values": {
+          "1.0": "是替代前一辆车的，我家原来的车就不用了",
+          "2.0": "是再增加一辆，我家原来的车继续使用"
+        }
+      },
+      {
+        "name": "S19BX3",
+        "label": "labels63",
+        "values": {
+          "1.0": "国产的 (在国内生产的)",
+          "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
+        }
+      },
+      {
+        "name": "S2A",
+        "label": "labels16",
+        "values": {
+          "1.0": "首购者",
+          "2.0": "再购者"
+        }
+      },
+      {
+        "name": "S19XB",
+        "label": "labels60",
+        "values": {
+          "1.0": "有",
+          "2.0": "没有"
+        }
+      },
+      {
+        "name": "S19AX3",
+        "label": "labels59",
+        "values": {
+          "1.0": "国产的 (在国内生产的)",
+          "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
+        }
+      },
+      {
+        "name": "SAMPLE",
+        "label": "labels1",
+        "values": {
+          "1.0": "随机样本",
+          "2.0": "追加样本"
+        }
+      }
+    ]
+  },
+  "output_files": {
+    "filtered_metadata": "output/filtered_metadata.json",
+    "implementation_summary": "output/implementation_summary.json"
+  }
+}

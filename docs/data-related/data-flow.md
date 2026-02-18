@@ -1,6 +1,6 @@
 # Data Flow
 
-This document describes the simplified workflow design for the Survey Analysis & Visualization system using a **Pure Python Library + Claude Code Skills** architecture.
+This document describes the simplified workflow design for the Survey Analysis & Visualization system using a **Python library + Claude Code Skills** architecture.
 
 ---
 
@@ -8,11 +8,10 @@ This document describes the simplified workflow design for the Survey Analysis &
 
 1. [Overview](#1-overview)
 2. [Architecture](#2-architecture)
-3. [The survey_analyzer Library](#3-the-survey_analyzer-library)
-4. [Data Flow](#4-data-flow)
-5. [Table Specification](#5-table-specification)
-6. [Workflow Steps](#6-workflow-steps)
-7. [Key Terminology](#7-key-terminology)
+3. [Data Flow](#3-data-flow)
+4. [Table Specification](#4-table-specification)
+5. [Workflow Steps](#5-workflow-steps)
+6. [Key Terminology](#6-key-terminology)
 
 ---
 
@@ -60,7 +59,8 @@ Design and implement an automated workflow for market research survey data analy
 ├─────────────────────────────────────────────────────────────────────────┤
 │ specification/  │ Schema & validator for table_specification.json      │
 │ io/             │ SPSS file I/O and metadata handling                │
-│ analysis/         │ Cross-tabulation, statistics, and indicators        │
+│ pspp/            │ PSPP syntax generation and execution                     │
+│ analysis/         │ Statistics and indicators                              │
 │ filtering/        │ Significance filtering                                  │
 │ reporting/        │ PowerPoint and HTML generation                       │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -72,186 +72,14 @@ Design and implement an automated workflow for market research survey data analy
 |--------|---------|-----------|------|
 | **stage1-data-prep** | 1 | Load .sav, extract/filter metadata | Deterministic |
 | **stage2-spec-gen** | 2 | Generate/validate table specification (AI-orchestrated) | AI |
-| **stage3-crosstabs** | 3 | Recoding, cross-tabulation, statistics calculation | Deterministic |
-| **stage4-statistics** | 4 | Significance filtering | Deterministic |
+| **stage3-crosstabs** | 3 | Recoding, indicators, cross-tables | Deterministic |
+| **stage4-statistics** | 4 | Statistical analysis, filtering | Deterministic |
 | **stage5-reports** | 5 | PowerPoint, HTML dashboard | Deterministic |
 | **survey-coordinator** | All | Orchestrate complete 5-stage pipeline | Coordinator |
 
 ---
 
-## 3. The survey_analyzer Library
-
-The **`survey_analyzer`** is a custom Python library developed specifically for this project. It encapsulates all core data processing and statistical computation functions, making them reusable across:
-
-- **Claude Code Skills** (workflow orchestration)
-- **Web Application** (LangGraph agents, FastAPI endpoints)
-- **CLI Tools** (command-line interface)
-- **Python Scripts** (direct programmatic access)
-
-### 3.1 Library Structure
-
-```
-survey_analyzer/
-└── src/survey_analyzer/
-    ├── __init__.py           # Package exports (version 0.2.0)
-    ├── cli.py                # Command-line interface
-    ├── io/                   # SPSS file I/O operations
-    │   ├── reader.py         # SPSSReader class
-    │   └── metadata.py       # MetadataTransformer class
-    ├── analysis/             # Statistical calculations
-    │   ├── statistics.py     # StatisticsCalculator, chi_square_test
-    │   └── indicators.py     # IndicatorGenerator
-    ├── filtering/            # Significance filtering
-    │   └── significance.py   # SignificanceFilter, filter_significant()
-    ├── reporting/            # Output generation
-    │   ├── powerpoint.py     # PowerPointGenerator
-    │   └── dashboard.py      # HTMLDashboardGenerator
-    ├── specification/        # Table specification schema
-    │   ├── schema.py         # Data models (TableSpecification, Indicator)
-    │   └── validator.py      # TableSpecificationValidator
-    └── pspp/                 # [DEPRECATED] PSPP syntax (to be removed)
-```
-
-### 3.2 Module Reference
-
-| Module | Classes | Functions | Purpose |
-|--------|---------|-----------|---------|
-| **`io/`** | `SPSSReader`, `MetadataTransformer` | `read()`, `to_variable_centered()`, `filter_variables()` | Read .sav files, extract/transform metadata |
-| **`analysis/`** | `StatisticsCalculator`, `IndicatorGenerator` | `chi_square_test()`, `generate_indicators()` | Chi-square, Cramer's V, indicator generation |
-| **`filtering/`** | `SignificanceFilter`, `FilterCriteria` | `filter_significant()` | Filter tables by p-value threshold |
-| **`reporting/`** | `PowerPointGenerator`, `HTMLDashboardGenerator` | `create_powerpoint()`, `create_dashboard()` | Generate PPT, HTML outputs |
-| **`specification/`** | `TableSpecification`, `TableSpecificationValidator` | `validate_specification()`, `is_valid_specification()` | Schema validation for table specs |
-
-### 3.3 Installation & Import
-
-#### Installation (Development)
-
-```bash
-# From project root
-cd /home/admin/workspaces/datachat
-pip install -e ./survey_analyzer
-```
-
-#### Import Examples
-
-```python
-# Core I/O operations
-from survey_analyzer.io import SPSSReader, MetadataTransformer
-
-# Statistical analysis
-from survey_analyzer.analysis import StatisticsCalculator, chi_square_test
-
-# Filtering
-from survey_analyzer.filtering import SignificanceFilter, filter_significant
-
-# Reporting
-from survey_analyzer.reporting import PowerPointGenerator, create_powerpoint
-
-# Specification validation
-from survey_analyzer.specification import (
-    TableSpecification,
-    validate_specification,
-    is_valid_specification
-)
-```
-
-### 3.4 Usage by Stage
-
-#### Stage 1: Data Preparation
-
-```python
-from survey_analyzer.io import SPSSReader, MetadataTransformer
-
-reader = SPSSReader(encoding="UTF-8")
-df, metadata = reader.read("survey.sav")
-
-transformer = MetadataTransformer()
-variable_metadata = transformer.to_variable_centered(metadata)
-filtered = transformer.filter_variables(variable_metadata)
-analysis_vars = transformer.get_analysis_variables(filtered)
-```
-
-#### Stage 3: Cross-Tabulation
-
-```python
-from survey_analyzer.analysis import chi_square_test
-import pandas as pd
-
-# Generate cross-tabulation
-crosstab = pd.crosstab(df['row_var'], df['col_var'])
-
-# Calculate statistics
-chi2, p_value, dof, expected = chi_square_test(crosstab)
-```
-
-#### Stage 4: Filtering
-
-```python
-from survey_analyzer.filtering import filter_significant
-
-# Filter tables by p-value threshold
-significant_tables = filter_significant(
-    tables_with_stats,
-    threshold=0.05
-)
-```
-
-#### Stage 5: Reporting
-
-```python
-from survey_analyzer.reporting import create_powerpoint
-
-# Generate PowerPoint presentation
-create_powerpoint(
-    tables=filtered_tables,
-    output_path="output/presentation.pptx",
-    title="Survey Analysis Results"
-)
-```
-
-### 3.5 Web Application Integration
-
-The `survey_analyzer` library is the **core computation engine** for the web application:
-
-| Web Component | Library Usage |
-|---------------|---------------|
-| **LangGraph Agents** | Import and call library functions directly |
-| **FastAPI Endpoints** | Wrap library calls for HTTP access |
-| **Background Tasks** | Execute long-running analysis jobs |
-| **Result Caching** | Store outputs for retrieval |
-
-#### Example: FastAPI Endpoint
-
-```python
-from fastapi import FastAPI, UploadFile
-from survey_analyzer.io import SPSSReader, MetadataTransformer
-from survey_analyzer.analysis import StatisticsCalculator
-
-app = FastAPI()
-
-@app.post("/api/analyze")
-async def analyze_survey(file: UploadFile):
-    # Use library functions
-    reader = SPSSReader()
-    df, metadata = reader.read(file.file)
-
-    transformer = MetadataTransformer()
-    filtered = transformer.filter_variables(
-        transformer.to_variable_centered(metadata)
-    )
-
-    return {"variables": filtered}
-```
-
-### 3.6 Version & Dependencies
-
-- **Current Version**: `0.2.0`
-- **Python Requirement**: `>=3.11`
-- **Dependencies**: pandas, pyreadstat, scipy, numpy, python-pptx, matplotlib
-
----
-
-## 4. Data Flow
+## 3. Data Flow
 
 The workflow consists of **13 steps** organized into **5 stages**:
 
@@ -290,24 +118,25 @@ flowchart TD
         tableSpec[("table_specification.jsonc")]:::artifactStyle
     end
 
-    %% STAGE 3: Cross-Tabulation Generation
+    %% STAGE 3: PSPP Syntax & Execution
     subgraph STAGE3[" "]
         direction TB
-        stage3_label["**STAGE 3: Cross-Tabulation Generation**"]:::stageLabelStyle
+        stage3_label["**STAGE 3: PSPP Syntax & Execution**"]:::stageLabelStyle
 
-        S7["Step 7<br/>Apply Recoding<br/>& Transformations"]:::processingGreen
-        S8["Step 8<br/>Generate Cross-Tables<br/>with Statistics"]:::processingGreen
-        S9["Step 9<br/>Export Tables + Statistics"]:::processingGreen
-        crosstabs[("cross_tables_with_stats.json")]:::artifactStyle
+        S7["Step 7<br/>Generate PSPP Syntax<br/>from JSONC"]:::processingGreen
+        S8["Step 8<br/>Execute PSPP Syntax"]:::processingGreen
+        S9["Step 9<br/>Export Cross-Tables to CSV"]:::processingGreen
+        syntax[("analysis.sps")]:::artifactStyle
+        crosstabs[("cross_tables.csv")]:::artifactStyle
     end
 
-    %% STAGE 4: Statistical Filtering
+    %% STAGE 4: Statistical Analysis
     subgraph STAGE4[" "]
         direction TB
-        stage4_label["**STAGE 4: Statistical Filtering**"]:::stageLabelStyle
+        stage4_label["**STAGE 4: Statistical Analysis**"]:::stageLabelStyle
 
-        S10["Step 10<br/>Filter by Significance<br/>(p-value < 0.05)"]:::processingGreen
-        S11["Step 11<br/>Generate Summary Report"]:::processingGreen
+        S10["Step 10<br/>Statistical Analysis"]:::processingGreen
+        S11["Step 11<br/>Filter Significant Tables"]:::processingGreen
         results[("filtered_tables<br/>statistical_summary")]:::artifactStyle
     end
 
@@ -331,7 +160,8 @@ flowchart TD
     S6 -->|Approve| tableSpec
     S6 -.->|Reject| S4
 
-    tableSpec ==> S7 --> S8 --> S9 --> crosstabs
+    tableSpec ==> S7 --> syntax
+    syntax ==> S8 --> S9 --> crosstabs
 
     crosstabs ==> S10 --> S11 --> results
 
@@ -349,10 +179,10 @@ flowchart TD
 | Color | Meaning | Examples |
 |-------|---------|----------|
 | 🔵 **Blue** | AI-Orchestrated Processing (Skill generates artifact) | Step 4 |
-| 🟢 **Green** | Deterministic Processing (Python library: pandas, scipy, numpy) | Steps 1-3, 7-13 |
+| 🟢 **Green** | Deterministic Processing (Python library, PSPP, scipy) | Steps 1-3, 7-13 |
 | 🟠 **Orange** | Validation (Python checks syntax/references) | Step 5 |
 | 🟣 **Purple** | Review (Human validates semantic quality) | Step 6 |
-| 🟡 **Yellow** | Data Artifacts (Files and outputs) | `.sav`, `.json`, `.pptx`, `.html` |
+| 🟡 **Yellow** | Data Artifacts (Files and outputs) | `.sav`, `.csv`, `.json`, `.pptx`, `.html` |
 
 **Line Styles:**
 - `-->` Solid line: Forward flow to next step
@@ -365,13 +195,13 @@ flowchart TD
 |-------|--------|-------------|-------|--------|
 | **1** | 1-3 | Load data, extract/transform/filter metadata | .sav file | `filtered_metadata.json` |
 | **2** | 4-6 | Generate, validate, review table specification (AI-orchestrated) | `filtered_metadata.json` + `table-specification.xlsx` | `table_specification.jsonc` |
-| **3** | 7-9 | Apply transformations, generate cross-tables with statistics | `table_specification.jsonc` | `cross_tables_with_stats.json` |
-| **4** | 10-11 | Filter tables by significance, generate summary | `cross_tables_with_stats.json` | `filtered_tables.json`, `statistical_summary.json` |
+| **3** | 7-9 | Generate PSPP syntax, execute, export cross-tables | `table_specification.jsonc` | `.sps` + `cross_tables.csv` |
+| **4** | 10-11 | Statistical analysis and significance filtering | `cross_tables.csv` | `filtered_tables.json`, `statistical_summary.json` |
 | **5** | 12-13 | Generate PowerPoint and HTML dashboard | Filtered results | `presentation.pptx`, `dashboard.html` |
 
 ---
 
-## 5. Table Specification
+## 4. Table Specification
 
 The **table_specification.jsonc** is a consolidated artifact generated from `filtered_metadata.json` and user-edited `table-specification.xlsx`.
 
@@ -439,13 +269,12 @@ The **table_specification.jsonc** is a consolidated artifact generated from `fil
 
 ### 4.3 Transformation Rules Format
 
-The `transformation_rules` field uses a simplified syntax that Python translates into pandas operations:
+The `transformation_rules` field uses **PSPP/SPSS syntax**:
 
 | Format | Example | Description |
 |--------|---------|-------------|
 | Single value | `(3=2)` | Recode value 3 to 2 |
 | Range | `(1 THRU 3=99)` | Recode values 1-3 to 99 |
-| Multiple rules | `(1=1)(2=2)(3 THRU 5=99)` | Chain multiple recoding rules |
 | Compute | `COMPUTE var = a + b` | Calculate new variable |
 | Null | `null` | No transformation |
 
@@ -454,20 +283,14 @@ The `transformation_rules` field uses a simplified syntax that Python translates
 "transformation_rules": "(1 THRU 2=1) (3=2) (4 THRU 5=3)"
 ```
 
-Python implementation using pandas:
-```python
-import pandas as pd
-
-# Parse transformation rules and apply
-def apply_recode(series, rules):
-    # Parse "(1 THRU 2=1) (3=2) (4 THRU 5=3)"
-    # Apply using pandas map/cut
-    return recoded_series
+Generates PSPP syntax:
+```pspp
+RECODE source_var (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO target_var.
 ```
 
 ---
 
-## 6. Workflow Steps
+## 5. Workflow Steps
 
 ### Stage 1: Data Preparation (Steps 1-3)
 
@@ -505,112 +328,35 @@ def apply_recode(series, rules):
 
 **Feedback Loop:** If validation fails or review rejects, regenerate from Step 4.
 
-### Stage 3: Cross-Tabulation Generation (Steps 7-9)
+### Stage 3: PSPP Syntax Generation & Execution (Steps 7-9)
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 7 | `stage3-crosstabs` | `survey_analyzer.analysis.TransformationEngine` | Apply recoding and transformation rules | Deterministic |
-| 8 | `stage3-crosstabs` | `survey_analyzer.analysis.CrossTabGenerator` | Generate cross-tables with chi-square and Cramer's V | Deterministic |
-| 9 | `stage3-crosstabs` | `survey_analyzer.analysis.ResultsExporter` | Export tables + statistics to JSON | Deterministic |
+| 7 | `stage3-crosstabs` | `survey_analyzer.pspp.SyntaxGenerator` | Generate PSPP syntax from JSONC | Deterministic |
+| 8 | `stage3-crosstabs` | `survey_analyzer.pspp.PSPPExecutor` | Execute PSPP syntax | Deterministic |
+| 9 | `stage3-crosstabs` | `survey_analyzer.pspp.CrosstabsExporter` | Export cross-tables to CSV | Deterministic |
 
 **Skill:** `stage3-crosstabs` handles all Stage 3 operations.
 
 **Input:** `table_specification.jsonc`
 
-**Outputs:**
-- `cross_tables_with_stats.json` (cross-tables + chi-square + Cramer's V)
+**Outputs:** `analysis.sps` (PSPP syntax), `cross_tables.csv`
 
-**Python Implementation:**
-```python
-import pandas as pd
-from scipy.stats import chi2_contingency
-import numpy as np
+**Why Direct Programming?**
+- Deterministic conversion from JSONC to PSPP syntax
+- Straightforward PSPP execution
+- No AI interpretation needed
 
-# Step 7: Apply transformations
-def apply_transformations(df, indicators):
-    for indicator in indicators:
-        if indicator['transformation_rules']:
-            # Parse and apply recoding rules
-            df[indicator['indicator_code']] = recode(
-                df[indicator['source_variables']],
-                indicator['transformation_rules']
-            )
-
-# Step 8: Generate cross-tabs with statistics
-def generate_crosstab_with_stats(row_var, col_var, weight_var=None):
-    # Create contingency table
-    crosstab = pd.crosstab(
-        index=df[row_var],
-        columns=df[col_var],
-        values=df[weight_var] if weight_var else None,
-        aggfunc='sum' if weight_var else 'count',
-        margins=True,
-        normalize='columns'  # Column percentages
-    )
-
-    # Calculate chi-square test
-    chi2, p_value, dof, expected = chi2_contingency(crosstab)
-
-    # Calculate Cramer's V (effect size)
-    n = crosstab.sum().sum()
-    min_dim = min(crosstab.shape[0]-1, crosstab.shape[1]-1)
-    cramers_v = np.sqrt(chi2 / (n * min_dim))
-
-    return {
-        'crosstab': crosstab.to_dict(),
-        'statistics': {
-            'chi_square': float(chi2),
-            'p_value': float(p_value),
-            'degrees_of_freedom': int(dof),
-            'cramers_v': float(cramers_v)
-        }
-    }
-```
-
-**Dependencies:**
-- `pandas` - Data manipulation and cross-tabulation
-- `scipy` - Chi-square statistical test
-- `numpy` - Numerical operations for Cramer's V
-- `pyreadstat` - Reading SPSS (.sav) files
-
-**Why Pure Python?**
-- No external PSPP dependency required
-- Easier deployment and CI/CD
-- Full control over statistical calculations
-- Python-native error handling and debugging
-
-### Stage 4: Statistical Filtering (Steps 10-11)
+### Stage 4: Statistical Analysis (Steps 10-11)
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 10 | `stage4-statistics` | `survey_analyzer.filtering.SignificanceFilter` | Filter tables by p-value < 0.05 | Deterministic |
-| 11 | `stage4-statistics` | `survey_analyzer.reporting.SummaryGenerator` | Generate statistical summary | Deterministic |
+| 10 | `stage4-statistics` | `survey_analyzer.analysis.StatisticsCalculator` | Calculate statistics | Deterministic |
+| 11 | `stage4-statistics` | `survey_analyzer.filtering.SignificanceFilter` | Filter significant tables | Deterministic |
 
 **Skill:** `stage4-statistics` handles all Stage 4 operations.
 
-**Input:** `cross_tables_with_stats.json` (from Stage 3)
-
-**Processing:**
-```python
-def filter_significance(tables_with_stats, alpha=0.05):
-    """Filter tables by p-value threshold"""
-    significant = []
-    for table in tables_with_stats:
-        p_value = table['statistics']['p_value']
-        table['is_significant'] = p_value < alpha
-        if table['is_significant']:
-            significant.append(table)
-    return significant, tables_with_stats  # Return both filtered and all
-```
-
-**Outputs:**
-- `filtered_tables.json` (only significant tables, p-value < 0.05)
-- `statistical_summary.json` (chi-square, p-value, Cramer's V for all tables)
-
-**Why Direct Programming?**
-- Simple filtering by p-value threshold
-- Statistical calculations already completed in Stage 3
-- Pure Python list comprehension filtering
+**Outputs:** `statistical_summary.json`, `filtered_tables.json`
 
 ### Stage 5: Reporting (Steps 12-13)
 
@@ -625,7 +371,7 @@ def filter_significance(tables_with_stats, alpha=0.05):
 
 ---
 
-## 7. Key Terminology
+## 6. Key Terminology
 
 | Term | Definition |
 |------|------------|
@@ -635,13 +381,10 @@ def filter_significance(tables_with_stats, alpha=0.05):
 | **question_label** | Full Chinese question text from `filtered_metadata.json` |
 | **question_description** | Concise English label from Excel |
 | **question_type** | Single Choice, Multiple Choice, Matrix, Numeric Input, Rating Scale (dropdown in Excel) |
-| **transformation_rules** | Simplified recoding syntax translated to pandas operations (e.g., "(1 THRU 3=99) (4=100)") |
+| **transformation_rules** | PSPP/SPSS syntax string (e.g., "(1 THRU 3=99) (4=100)") |
 | **statistic_type** | `categorical` (column percent) or `scalar` (mean, median, min, max) |
-| **cross_tables_with_stats.json** | Python-generated output with cross-tables, chi-square, p-value, Cramer's V |
-| **filtered_tables.json** | Tables that passed significance test (p-value < 0.05) |
-| **statistical_summary.json** | Summary report with all chi-square and Cramer's V statistics |
-| **AI-orchestrated step** | Workflow step where Skill uses AI to generate content (Stage 2 only) |
-| **Deterministic processing** | Pure Python functions with predictable outputs (All stages except Stage 2) |
+| **AI-orchestrated step** | Workflow step where Skill uses AI to generate content (Stage 2) |
+| **Deterministic processing** | Pure Python functions with predictable outputs (Stages 1, 3, 4, 5) |
 | **Skill orchestration** | Claude Code Skills coordinating library module execution |
 | **Specification validation** | Checking JSONC structure, variable references, and business logic |
 
