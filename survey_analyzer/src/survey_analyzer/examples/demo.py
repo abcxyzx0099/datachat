@@ -25,11 +25,14 @@ from analysis.indicators import (
     IndicatorType,
     generate_indicators
 )
+from analysis.transformation import TransformationEngine, apply_recode
+from analysis.crosstab import CrossTabGenerator, generate_crosstab
 from filtering.significance import SignificanceFilter, FilterCriteria, filter_significant
-from pspp.syntax import RecodingSyntaxGenerator, CTablesSyntaxGenerator
-from pspp.executor import PSPPExecutor, PSPPConfig, PSPPResult
 from reporting.powerpoint import PowerPointGenerator, ChartType
 from reporting.dashboard import HTMLDashboardGenerator, DashboardConfig
+
+import pandas as pd
+import numpy as np
 
 
 def demo_statistics():
@@ -242,89 +245,123 @@ def demo_filter_apply():
     print()
 
 
-def demo_pspp_syntax():
-    """Demo PSPP syntax generation."""
+def demo_transformation():
+    """Demo variable transformation engine."""
     print("=" * 60)
-    print("DEMO: PSPP Syntax Generation")
+    print("DEMO: Variable Transformation Engine")
     print("=" * 60)
     print()
 
-    # Recoding rules
-    print("1. Recoding Syntax Generator")
+    # Create sample DataFrame
+    print("1. Sample Data")
+    print("-" * 60)
+    df = pd.DataFrame({
+        'age': [18, 25, 35, 45, 55, 65, 22, 28, 38, 48],
+        'satisfaction': [1, 2, 3, 4, 5, 4, 3, 2, 1, 5],
+        'income': [15000, 25000, 35000, 45000, 55000, 65000, 20000, 30000, 40000, 50000]
+    })
+    print(df)
+    print()
+
+    # Recoding demo
+    print("2. Recoding: Group Age into Categories")
+    print("-" * 60)
+    print("Rule: '(1 THRU 2=1) (3=2) (4 THRU 5=3)'")
+    print()
+
+    engine = TransformationEngine()
+    recoded = apply_recode(df['age'], "(1 THRU 2=1) (3=2) (4 THRU 5=3)")
+
+    print("Original age -> Recoded age_group")
+    for i in range(min(5, len(df))):
+        print(f"  {df['age'][i]} -> {recoded.iloc[i]}")
+    print()
+
+    # Batch transformation demo
+    print("3. Batch Transformation from Indicators")
     print("-" * 60)
     print()
 
-    recoding_rules = [
+    indicators = [
         {
-            "source_variable": "age",
-            "target_variable": "age_group",
-            "transformation_type": "range_grouping",
-            "description": "Age groups for analysis",
-            "rules": [
-                {"source_min": 0, "source_max": 30, "target_value": 1, "target_label": "18-30"},
-                {"source_min": 31, "source_max": 50, "target_value": 2, "target_label": "31-50"},
-                {"source_min": 51, "source_max": "HI", "target_value": 3, "target_label": "51+"},
-            ]
+            'indicator_code': 'age_group',
+            'source_variables': ['age'],
+            'transformation_rules': '(1 THRU 30=1) (31 THRU 50=2) (51 THRU HI=3)'
+        },
+        {
+            'indicator_code': 'sat_group',
+            'source_variables': ['satisfaction'],
+            'transformation_rules': '(1 THRU 2=1) (3=2) (4 THRU 5=3)'
         }
     ]
 
-    gen = RecodingSyntaxGenerator()
-    syntax = gen.generate_syntax(recoding_rules, file_label="Age Recoding")
-    print(syntax)
+    df_transformed = engine.apply_transformations(df, indicators)
+    print("Transformed DataFrame:")
+    print(df_transformed[['age', 'age_group', 'satisfaction', 'sat_group']])
     print()
 
-    # CTABLES syntax
-    print("2. CTABLES Syntax Generator")
+
+def demo_crosstab():
+    """Demo cross-tabulation with statistics."""
+    print("=" * 60)
+    print("DEMO: Cross-Tabulation with Statistics")
+    print("=" * 60)
+    print()
+
+    # Create sample DataFrame
+    print("1. Sample Data (200 respondents)")
+    print("-" * 60)
+    np.random.seed(42)
+    df = pd.DataFrame({
+        'gender': np.random.choice(['Male', 'Female'], 200),
+        'satisfaction': np.random.choice([1, 2, 3, 4, 5], 200),
+        'age_group': np.random.choice([1, 2, 3], 200),
+        'region': np.random.choice(['North', 'South', 'East', 'West'], 200)
+    })
+    print(df.head(10))
+    print()
+
+    # Generate single crosstab
+    print("2. Single Cross-Tabulation: Gender x Satisfaction")
     print("-" * 60)
     print()
 
-    table_specs = [
-        {
-            "table_id": "gender_x_satisfaction",
-            "row_variable": "gender",
-            "column_variable": "satisfaction",
-            "statistics": ["count", "columnpct", "chisq", "cramersv"]
-        }
+    result = generate_crosstab(df, 'gender', 'satisfaction')
+    print(f"Table ID: {result['table_id']}")
+    print(f"Statistics:")
+    print(f"  Chi-square: {result['statistics']['chi_square']:.4f}")
+    print(f"  p-value: {result['statistics']['p_value']:.4f}")
+    print(f"  Cramer's V: {result['statistics']['cramers_v']:.4f}")
+    print(f"  Interpretation: {result['statistics']['interpretation']}")
+    print(f"  Significant: {result['statistics']['is_significant']}")
+    print()
+
+    # Print the crosstab table
+    print("Cross-tabulation table:")
+    crosstab_df = pd.DataFrame(result['crosstab']).T if isinstance(result['crosstab'], dict) else result['crosstab']
+    print(crosstab_df)
+    print()
+
+    # Batch generation demo
+    print("3. Batch Cross-Tabulation")
+    print("-" * 60)
+    print()
+
+    table_pairs = [
+        {'row_var': 'gender', 'col_var': 'age_group'},
+        {'row_var': 'region', 'col_var': 'satisfaction'}
     ]
 
-    ctables_gen = CTablesSyntaxGenerator()
-    ctables_syntax = ctables_gen.generate_syntax(table_specs)
-    print(ctables_syntax)
+    generator = CrossTabGenerator()
+    results = generator.generate_batch(df, table_pairs)
+
+    print(f"Generated {len(results)} cross-tabulations:")
+    for r in results:
+        if r.is_valid:
+            sig = "**" if r.statistics['p_value'] < 0.01 else "*" if r.statistics['p_value'] < 0.05 else ""
+            print(f"  {r.table_id}: χ²={r.statistics['chi_square']:.2f}, p={r.statistics['p_value']:.4f} {sig}")
     print()
 
-
-def demo_pspp_executor():
-    """Demo PSPP executor (without actual execution)."""
-    print("=" * 60)
-    print("DEMO: PSPP Executor")
-    print("=" * 60)
-    print()
-
-    executor = PSPPExecutor()
-
-    # Check if PSPP is available
-    print("Checking PSPP availability...")
-    available = executor.check_pspp_available()
-    print(f"PSPP available: {available}")
-    print()
-
-    if available:
-        version = executor.get_pspp_version()
-        print(f"PSPP version: {version}")
-        print()
-
-        # Note: We don't actually execute since we don't have test files
-        print("Note: Actual execution requires .sav and .sps files.")
-        print("Example usage:")
-        print("  result = executor.execute_syntax(")
-        print("      syntax_file='recoding.sps',")
-        print("      input_file='original.sav',")
-        print("      output_file='recoded.sav'")
-        print("  )")
-    else:
-        print("PSPP is not installed on this system.")
-        print("Install with: apt-get install pspp")
-    print()
 
 
 def demo_powerpoint():
@@ -624,10 +661,10 @@ def main():
 
     try:
         demo_statistics()
+        demo_transformation()
+        demo_crosstab()
         demo_filtering()
         demo_filter_apply()
-        demo_pspp_syntax()
-        demo_pspp_executor()
         demo_powerpoint()
         demo_indicators()
         demo_dashboard()
@@ -639,13 +676,13 @@ def main():
         print("The library is ready to use.")
         print()
         print("Import examples:")
-        print("  from survey_analyzeranalysis import StatisticsCalculator")
-        print("  from survey_analyzeranalysis import IndicatorGenerator")
-        print("  from survey_analyzerfiltering import SignificanceFilter")
-        print("  from survey_analyzerpspp import RecodingSyntaxGenerator")
-        print("  from survey_analyzerpspp import PSPPExecutor")
-        print("  from survey_analyzerreporting import PowerPointGenerator")
-        print("  from survey_analyzerreporting import HTMLDashboardGenerator")
+        print("  from survey_analyzer.analysis import StatisticsCalculator")
+        print("  from survey_analyzer.analysis import TransformationEngine")
+        print("  from survey_analyzer.analysis import CrossTabGenerator")
+        print("  from survey_analyzer.analysis import IndicatorGenerator")
+        print("  from survey_analyzer.filtering import SignificanceFilter")
+        print("  from survey_analyzer.reporting import PowerPointGenerator")
+        print("  from survey_analyzer.reporting import HTMLDashboardGenerator")
         print()
 
     except Exception as e:

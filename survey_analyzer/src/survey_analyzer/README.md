@@ -4,11 +4,21 @@ A reusable Python library for SPSS survey data analysis, extracted from the Data
 
 ## Overview
 
-This library provides standalone functions for analyzing SPSS survey data that can be called from:
+This library provides **pure Python** functions for analyzing SPSS survey data that can be called from:
 - Python scripts
 - CLI commands
 - LangGraph nodes (via skill wrappers)
+- Web applications (FastAPI)
 - Other applications
+
+## Pure Python Implementation (No PSPP Dependency)
+
+This library uses pure Python for all computations:
+- **pandas** for data manipulation and cross-tabulation
+- **scipy.stats** for chi-square statistical testing
+- **numpy** for numerical operations
+
+No external PSPP binary required!
 
 ## Library Structure
 
@@ -18,6 +28,8 @@ lib/survey_analyzer/
 ├── analysis/                # Core analysis functions
 │   ├── __init__.py
 │   ├── statistics.py        # Chi-square, Cramer's V calculator
+│   ├── transformation.py    # Variable recoding with pandas (NEW)
+│   ├── crosstab.py          # Cross-tabulation with statistics (NEW)
 │   └── indicators.py        # Indicator generation from variables
 ├── filtering/               # Statistical significance filtering
 │   ├── __init__.py
@@ -26,14 +38,14 @@ lib/survey_analyzer/
 │   ├── __init__.py
 │   ├── reader.py            # SPSS file reader (pyreadstat wrapper)
 │   └── metadata.py          # Metadata transformation utilities
-├── pspp/                    # PSPP integration
-│   ├── __init__.py
-│   ├── syntax.py            # PSPP syntax generators
-│   └── executor.py          # PSPP execution wrapper
 ├── reporting/               # Report generation
 │   ├── __init__.py
 │   ├── powerpoint.py        # PowerPoint presentation generator
 │   └── dashboard.py         # HTML dashboard generator
+├── specification/           # Table specification schema and validator
+│   ├── __init__.py
+│   ├── schema.py            # Data models for table specifications
+│   └── validator.py         # Specification validation
 └── examples/
     └── demo.py              # Demo and test script
 ```
@@ -58,320 +70,157 @@ result = calc.analyze_table(
     row_labels=["Male", "Female"],
     column_labels=["Yes", "No"]
 )
-
-print(f"χ² = {result.chi_square:.4f}")
-print(f"p = {result.p_value:.4f}")
-print(f"V = {result.cramers_v:.4f} ({result.interpretation})")
-print(f"Significant: {result.is_significant}")
+print(f"Chi-square: {result.chi_square:.4f}")
+print(f"p-value: {result.p_value:.4f}")
+print(f"Cramer's V: {result.cramers_v:.4f}")
 ```
 
-### 2. Indicator Generator (`analysis/indicators.py`)
+### 2. Transformation Engine (`analysis/transformation.py`) ✨ NEW
 
-Groups related variables into indicators for combined analysis:
-- Keyword-based grouping (sat_1, sat_2 → satisfaction indicator)
-- Label-based grouping (semantic similarity)
-- Manual grouping (predefined groups)
+Apply variable recoding and transformations using pandas:
+- Parse PSPP-style recoding rules: `(1 THRU 2=1) (3=2)`
+- Range mapping and value recoding
+- COMPUTE expressions for calculated variables
+- Batch transformation from indicator specifications
 
 ```python
-from survey_analyzer.analysis import IndicatorGenerator, IndicatorConfig, IndicatorType
+from survey_analyzer.analysis import TransformationEngine, apply_recode
 
-gen = IndicatorGenerator()
-config = IndicatorConfig(
-    type=IndicatorType.KEYWORD,
-    prefix="sat_",
-    min_variables=2
-)
-indicators = gen.generate(metadata, config)
+# Single variable recoding
+recoded = apply_recode(df['age'], "(1 THRU 2=1) (3=2) (4 THRU 5=3)")
 
-for ind in indicators:
-    print(f"{ind.name}: {ind.variables}")
+# Batch transformation
+engine = TransformationEngine()
+df_transformed = engine.apply_transformations(df, indicators)
 ```
 
-### 3. Significance Filter (`filtering/significance.py`)
+### 3. Cross-Tabulation Generator (`analysis/crosstab.py`) ✨ NEW
 
-Filters tables based on statistical significance criteria:
-- P-value threshold (default: p < 0.05)
-- Cramer's V threshold (default: V >= 0.1)
-- Validity requirement (excludes tests with violated assumptions)
+Generate cross-tabulation tables with statistical tests:
+- Cross-tabulation with pandas.crosstab()
+- Chi-square test via scipy.stats.chi2_contingency
+- Cramer's V effect size calculation
+- Weight variable support
+- Batch generation from indicator specifications
 
 ```python
-from survey_analyzer.filtering import SignificanceFilter, FilterCriteria
+from survey_analyzer.analysis import CrossTabGenerator, generate_crosstab
 
-criteria = FilterCriteria(
-    significance_level=0.05,
-    min_cramers_v=0.1,
-    require_valid=True
-)
-filter_obj = SignificanceFilter(criteria)
-filter_list = filter_obj.filter_tables(tables_with_stats)
+# Single table
+result = generate_crosstab(df, "gender", "satisfaction", weight_var="weight")
+print(f"p-value: {result['statistics']['p_value']:.4f}")
 
-print(f"Included: {filter_list.summary.included}/{filter_list.summary.total_tables}")
+# Batch generation
+generator = CrossTabGenerator()
+results = generator.generate_batch(df, table_pairs)
 ```
 
-### 4. SPSS Reader (`io/reader.py`)
+### 4. Indicator Generator (`analysis/indicators.py`)
 
-Reads SPSS (.sav) files using pyreadstat:
-- Reads data and metadata
-- Extracts variable labels
-- Extracts value labels
+Generate indicator groupings from SPSS metadata:
+- Keyword-based grouping
+- Label-based grouping
+- Manual groupings
+- LLM-based semantic grouping (placeholder)
 
-```python
-from survey_analyzer.io import SPSSReader
+### 5. Significance Filter (`filtering/significance.py`)
 
-reader = SPSSReader()
-df, metadata = reader.read("survey.sav")
-```
+Filter tables by statistical significance criteria:
+- P-value threshold filtering
+- Cramer's V minimum effect size
+- Table validity checking
+- Batch filtering with summary reports
 
-### 5. Metadata Transformer (`io/metadata.py`)
+### 6. SPSS I/O (`io/`)
 
-Transforms SPSS metadata between formats:
-- File-centered (pyreadstat format)
-- Variable-centered (easier lookups)
-- Filtered (business rules)
+Read SPSS (.sav) files and extract metadata:
+- SPSS file reading with pyreadstat
+- Metadata transformation to variable-centered format
+- Variable filtering by business rules
 
-```python
-from survey_analyzer.io import MetadataTransformer
+### 7. Reporting (`reporting/`)
 
-transformer = MetadataTransformer()
-new_metadata = transformer.to_variable_centered(metadata)
-filtered = transformer.filter_variables(
-    new_metadata,
-    include_patterns=[r"^q[0-9]+"],
-    min_categories=2
-)
-```
+Generate output reports:
+- PowerPoint presentations with tables and charts
+- Interactive HTML dashboards with Chart.js
 
-### 6. PSPP Syntax Generator (`pspp/syntax.py`)
+### 8. Table Specification (`specification/`)
 
-Generates PSPP syntax for data transformations:
+Schema and validator for table specification documents:
+- Pydantic data models
+- Validation rules
+- Error reporting
 
-**Recoding Syntax:**
-```python
-from survey_analyzer.pspp import RecodingSyntaxGenerator
+## Quick Start
 
-gen = RecodingSyntaxGenerator()
-syntax = gen.generate_syntax(recoding_rules, file_label="Age Recoding")
-print(syntax)
-# Output:
-# RECODE age (0 THRU 30 = 1) (31 THRU 50 = 2) (51 THRU HI = 3)
-#     INTO age_group.
-```
-
-**CTABLES Syntax:**
-```python
-from survey_analyzer.pspp import CTablesSyntaxGenerator
-
-gen = CTablesSyntaxGenerator()
-syntax = gen.generate_syntax(table_specifications)
-print(syntax)
-# Output:
-# CTABLES
-#     /VLABELS VARIABLES=gender satisfaction DISPLAY=DEFAULT
-#     /TABLE gender BY satisfaction
-#     /STATISTICS count('n') columnpct('Column %').
-```
-
-### 7. PSPP Executor (`pspp/executor.py`)
-
-Executes PSPP syntax files:
-
-```python
-from survey_analyzer.pspp import PSPPExecutor
-
-executor = PSPPExecutor()
-result = executor.execute_syntax(
-    syntax_file="recoding.sps",
-    input_file="original.sav",
-    output_file="recoded.sav"
-)
-
-if result.success:
-    print(f"Created {result.output_file}")
-else:
-    print(f"Error: {result.error_message}")
-```
-
-### 8. PowerPoint Generator (`reporting/powerpoint.py`)
-
-Generates PowerPoint presentations:
-
-```python
-from survey_analyzer.reporting import PowerPointGenerator
-
-gen = PowerPointGenerator()
-gen.create_presentation(
-    tables=filtered_tables,
-    statistics=statistical_summary,
-    title="Survey Analysis Results"
-)
-gen.save("output/report.pptx")
-```
-
-### 9. HTML Dashboard Generator (`reporting/dashboard.py`)
-
-Generates interactive HTML dashboards:
-- All tables with charts
-- Sidebar navigation
-- Significance highlighting
-- Interactive filtering
-- CSV export
-
-```python
-from survey_analyzer.reporting import HTMLDashboardGenerator
-
-gen = HTMLDashboardGenerator()
-html = gen.generate_dashboard(
-    cross_tables=cross_table_data,
-    statistics=statistical_summary,
-    filter_list=filter_results
-)
-gen.save("output/dashboard.html", html)
-```
-
-## Running the Demo
+### Installation
 
 ```bash
-cd /home/admin/workspaces/datachat/lib
-python3 -m survey_analyzer.examples.demo
+# From project root
+cd /home/admin/workspaces/datachat
+pip install -e ./survey_analyzer
+
+# Or install dependencies directly
+pip install pandas pyreadstat scipy numpy python-pptx
 ```
 
-Demo output shows:
-- Statistics calculation with Chi-square and Cramer's V
-- Filtering by significance criteria
-- PSPP syntax generation for recoding and CTABLES
-- PSPP executor availability check
-- PowerPoint generation capabilities
-- Indicator generation (keyword, auto-detect, manual)
-- HTML dashboard generation
-
-## Design Principles
-
-1. **Pure Python functions** - No LangGraph dependencies in library code
-2. **Plain data structures** - Accepts/returns dicts, lists, not state objects
-3. **Type hints** - Full type annotations for IDE support
-4. **Dataclasses** - Structured result objects
-5. **Convenience functions** - Both class-based and function-based APIs
-6. **Comprehensive logging** - Detailed logging for debugging
-7. **Error handling** - Clear error messages and validation
-
-## Mapping: LangGraph Nodes → Library Modules
-
-| Phase | LangGraph Nodes | Library Module | Status |
-|-------|----------------|----------------|--------|
-| 1. Extraction | Steps 1-3 | `io/reader.py`, `io/metadata.py` | ✅ Complete |
-| 2. Recoding | Steps 4-8 | `pspp/syntax.py` (RecodingSyntaxGenerator) | ✅ Complete |
-| 3. Indicators | Steps 9-11 | `analysis/indicators.py` | ✅ Complete |
-| 4. Tables | Steps 12-16 | `pspp/syntax.py` (CTablesSyntaxGenerator) | ✅ Complete |
-| 5. Statistics | Steps 17-18 | `analysis/statistics.py` | ✅ Complete |
-| 6. Filtering | Steps 19-20 | `filtering/significance.py` | ✅ Complete |
-| 7. PowerPoint | Step 21 | `reporting/powerpoint.py` | ✅ Complete |
-| 8. HTML Dashboard | Step 22 | `reporting/dashboard.py` | ✅ Complete |
-
-## Creating Skill Wrappers
-
-Each library module can be wrapped by a skill that:
-1. Calls the library function
-2. Manages LangGraph state updates
-3. Handles error conditions
-4. Provides progress feedback
-
-Example skill structure:
-```yaml
-name: spss-statistics
-description: Compute Chi-square and Cramer's V for cross-tables
-python_module: skills.spss_statistics
-entry_point: main
-```
+### Basic Usage
 
 ```python
-# skills/spss_statistics.py
-from survey_analyzer.analysis import StatisticsCalculator
-
-def main(state, config):
-    calc = StatisticsCalculator(**config)
-    result = calc.analyze_table(
-        state["counts"],
-        state["row_labels"],
-        state["column_labels"]
-    )
-    return {
-        "statistical_summary": result.to_dict(),
-        "current_step": "statistics_complete"
-    }
-```
-
-## Dependencies
-
-```
-# Core dependencies
-pyreadstat          # SPSS file reading
-numpy                # Statistical calculations
-scipy                # Chi-square test
-
-# PSPP integration (optional)
-pspp                 # PSPP CLI (system package)
-
-# Reporting (optional)
-python-pptx          # PowerPoint generation
-```
-
-## Complete Usage Example
-
-```python
-# Complete workflow using the library
-from survey_analyzer.io import SPSSReader, MetadataTransformer
-from survey_analyzer.analysis import StatisticsCalculator, IndicatorGenerator
-from survey_analyzer.filtering import SignificanceFilter
-from survey_analyzer.pspp import RecodingSyntaxGenerator, CTablesSyntaxGenerator, PSPPExecutor
-from survey_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
+import pandas as pd
+from survey_analyzer.io import SPSSReader
+from survey_analyzer.analysis import TransformationEngine, CrossTabGenerator
+from survey_analyzer.filtering import filter_significant
 
 # 1. Read SPSS file
 reader = SPSSReader()
 df, metadata = reader.read("survey.sav")
 
-# 2. Transform metadata
-transformer = MetadataTransformer()
-var_metadata = transformer.to_variable_centered(metadata)
+# 2. Apply transformations
+engine = TransformationEngine()
+indicators = [
+    {'indicator_code': 'age_group', 'source_variables': ['age'],
+     'transformation_rules': '(1 THRU 30=1) (31 THRU 50=2) (51 THRU HI=3)'}
+]
+df_transformed = engine.apply_transformations(df, indicators)
 
-# 3. Generate indicators
-ind_gen = IndicatorGenerator()
-indicators = ind_gen.generate(var_metadata)
+# 3. Generate cross-tabs with statistics
+generator = CrossTabGenerator()
+result = generator.generate(df_transformed, "gender", "satisfaction")
 
-# 4. Calculate statistics
-calc = StatisticsCalculator()
-result = calc.analyze_table(counts, row_labels, col_labels)
-
-# 5. Filter by significance
-filter_obj = SignificanceFilter()
-filter_list = filter_obj.filter_tables(tables_with_stats)
-
-# 6. Generate reports
-ppt_gen = PowerPointGenerator()
-ppt_gen.create_presentation(tables, statistics, "Survey Results")
-ppt_gen.save("report.pptx")
-
-dash_gen = HTMLDashboardGenerator()
-html = dash_gen.generate_dashboard(cross_tables, statistics, filter_list)
-dash_gen.save("dashboard.html", html)
+# 4. Filter by significance
+if result.statistics['p_value'] < 0.05:
+    print("Significant association found!")
 ```
 
-## Benefits of Library Extraction
+## Module Status
 
-1. **Reusability** - Functions can be called from anywhere, not just LangGraph
-2. **Testing** - Pure functions are easier to unit test
-3. **Documentation** - Clear API documentation with docstrings
-4. **Separation of concerns** - Business logic separate from workflow orchestration
-5. **Performance** - Can optimize library code independently of LangGraph
-6. **Maintenance** - Easier to update and extend functionality
+| Module | File | Status | Notes |
+|--------|------|--------|-------|
+| 1. I/O | `io/reader.py`, `io/metadata.py` | ✅ Complete | Read .sav files |
+| 2. Statistics | `analysis/statistics.py` | ✅ Complete | Chi-square, Cramer's V |
+| 3. Transformation | `analysis/transformation.py` | ✅ Complete | Recoding with pandas |
+| 4. Cross-Tabs | `analysis/crosstab.py` | ✅ Complete | Crosstabs with scipy |
+| 5. Filtering | `filtering/significance.py` | ✅ Complete | P-value filtering |
+| 6. PowerPoint | `reporting/powerpoint.py` | ✅ Complete | PPTX generation |
+| 7. HTML Dashboard | `reporting/dashboard.py` | ✅ Complete | Interactive HTML |
+| 8. Indicators | `analysis/indicators.py` | ✅ Complete | Variable grouping |
+| 9. Specification | `specification/` | ✅ Complete | Schema & validator |
 
-## Version History
+## Dependencies
 
-- **0.1.0** - Initial release with all 8 phases:
-  - Statistics Calculator (Chi-square, Cramer's V)
-  - Significance Filter
-  - SPSS Reader & Metadata Transformer
-  - PSPP Syntax Generators (Recoding, CTABLES)
-  - PSPP Executor
-  - PowerPoint Generator
-  - HTML Dashboard Generator
-  - Indicator Generator
+Core dependencies:
+- `pandas>=2.0.0` - Data manipulation
+- `pyreadstat>=1.2.0` - SPSS file reading
+- `scipy>=1.10.0` - Statistical tests
+- `numpy>=1.24.0` - Numerical operations
+- `python-pptx>=0.6.21` - PowerPoint generation
+
+Optional dev dependencies:
+- `pytest>=7.0.0` - Testing
+- `ruff>=0.1.0` - Linting
+- `mypy>=1.0.0` - Type checking
+
+## License
+
+MIT License - See LICENSE file for details

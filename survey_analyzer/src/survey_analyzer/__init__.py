@@ -18,12 +18,14 @@ Architecture:
     filtering/     - Statistical significance filtering
     reporting/     - Output generation (PowerPoint, HTML)
     specification/ - Table specification schema and validator
-    pspp/          - [DEPRECATED] PSPP syntax (to be removed - use analysis/)
+
+Pure Python Implementation (no PSPP dependency):
+    - TransformationEngine replaces PSPP RECODE
+    - CrossTabGenerator replaces PSPP CROSSTABS
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
-# Lazy imports to avoid circular dependencies
 # Import modules directly when needed:
 # from survey_analyzer.io import SPSSReader, MetadataTransformer
 # from survey_analyzer.analysis import TransformationEngine, CrossTabGenerator
@@ -37,12 +39,12 @@ __all__ = [
     # Analysis - Core Statistics
     "StatisticsCalculator",
     "chi_square_test",
-    # Analysis - Transformation (replaces PSPP)
+    # Analysis - Transformation
     "TransformationEngine",
     "TransformationRule",
     "apply_recode",
     "parse_transformation_rules",
-    # Analysis - Cross-Tabulation (replaces PSPP)
+    # Analysis - Cross-Tabulation
     "CrossTabGenerator",
     "CrosstabResult",
     "CrosstabConfig",
@@ -74,9 +76,4 @@ __all__ = [
     "TableSpecificationValidator",
     "validate_specification",
     "is_valid_specification",
-    # PSPP [DEPRECATED - use TransformationEngine, CrossTabGenerator instead]
-    "RecodingSyntaxGenerator",
-    "CTablesSyntaxGenerator",
-    "PSPPExecutor",
 ]
-
