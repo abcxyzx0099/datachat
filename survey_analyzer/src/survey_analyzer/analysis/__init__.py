@@ -8,6 +8,8 @@ Classes:
     IndicatorGenerator: Generate indicator groupings from variables
     TransformationEngine: Apply variable recoding and transformations (replaces PSPP)
     CrossTabGenerator: Generate cross-tabs with statistics (replaces PSPP)
+    CrosstabProcessor: Enhanced crosstab processor for all 4 scenarios
+    ScenarioDetector: Detect crosstab scenario type
 """
 
 from .statistics import StatisticsCalculator, chi_square_test
@@ -26,11 +28,23 @@ from .transformation import (
 )
 from .crosstab import (
     CrossTabGenerator,
-    CrosstabResult,
+    CrosstabResult as LegacyCrosstabResult,
     CrosstabConfig,
-    generate_crosstab,
+    generate_crosstab as legacy_generate_crosstab,
     generate_crosstabs_with_stats
 )
+from .scenario_detector import (
+    ScenarioDetector,
+    IndicatorSpec,
+    detect_scenario
+)
+from .crosstab_processor import (
+    CrosstabProcessor,
+    CrosstabResult,
+    generate_crosstab,
+    generate_crosstabs_batch
+)
+from . import processors
 
 __all__ = [
     # Statistics
@@ -47,10 +61,19 @@ __all__ = [
     "TransformationRule",
     "apply_recode",
     "parse_transformation_rules",
-    # Cross-tabulation (replaces PSPP CROSSTABS)
+    # Cross-tabulation (replaces PSPP CROSSTABS) - Legacy
     "CrossTabGenerator",
-    "CrosstabResult",
+    "LegacyCrosstabResult",
     "CrosstabConfig",
-    "generate_crosstab",
+    "legacy_generate_crosstab",
     "generate_crosstabs_with_stats",
+    # Enhanced crosstab processor - New
+    "CrosstabProcessor",
+    "CrosstabResult",
+    "ScenarioDetector",
+    "IndicatorSpec",
+    "detect_scenario",
+    "generate_crosstab",
+    "generate_crosstabs_batch",
+    "processors",
 ]

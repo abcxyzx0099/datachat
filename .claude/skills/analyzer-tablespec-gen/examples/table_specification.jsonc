@@ -82,7 +82,7 @@
       "transformation_rules": "(1 THRU 2=1) (3=2) (4 THRU 5=3)",
       "statistic_type": "categorical"
     },
-    // Indicator MultiSource - Computed index (IMPORTANT: scalar, not categorical!)
+    // Computed Index - ALWAYS scalar (has COMPUTE in transformation_rules)
     {
       "indicator_code": "INCOME_INDEX",
       "question_code": "S1",
