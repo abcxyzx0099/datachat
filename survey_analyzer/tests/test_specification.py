@@ -1,7 +1,7 @@
 """
 Tests for survey_analyzer.specification module.
 
-Tests table specification schema and validation.
+Tests table specification schema with new structure.
 """
 
 import pytest
@@ -14,251 +14,422 @@ import pytest
 class TestSpecificationEnums:
     """Test specification module enums."""
 
+    def test_variable_suffix_enum(self):
+        """Test VariableSuffix enum values."""
+        from survey_analyzer.specification import VariableSuffix
+        assert VariableSuffix.RAW.value == "_raw"
+        assert VariableSuffix.BIN.value == "_bin"
+        assert VariableSuffix.CAT.value == "_cat"
+        assert VariableSuffix.T2B.value == "_t2b"
+        assert VariableSuffix.B2B.value == "_b2b"
+        assert VariableSuffix.NPS.value == "_nps"
+        assert VariableSuffix.SCA.value == "_sca"
+        assert VariableSuffix.IDX.value == "_idx"
+        assert VariableSuffix.Z.value == "_z"
+        assert VariableSuffix.PCT.value == "_pct"
+
+    def test_question_type_enum(self):
+        """Test QuestionType enum values."""
+        from survey_analyzer.specification import QuestionType
+        assert QuestionType.SINGLE_CHOICE.value == "Single Choice"
+        assert QuestionType.MULTIPLE_CHOICE.value == "Multiple Choice"
+        assert QuestionType.MATRIX.value == "Matrix"
+        assert QuestionType.RATING_SCALE.value == "Rating Scale"
+        assert QuestionType.NUMERIC_INPUT.value == "Numeric Input"
+        assert QuestionType.OPEN_ENDED.value == "Open Ended"
+
+    def test_tabulation_type_enum(self):
+        """Test TabulationType enum values."""
+        from survey_analyzer.specification import TabulationType
+        assert TabulationType.CATEGORICAL.value == "categorical"
+        assert TabulationType.SCALAR.value == "scalar"
+
     def test_metric_type_enum(self):
         """Test MetricType enum values."""
         from survey_analyzer.specification import MetricType
-        assert MetricType.COUNT.value == "count"
-        assert MetricType.ROW_PERCENT.value == "row_percent"
-        assert MetricType.MEAN.value == "mean"
-
-    def test_aggregation_type_enum(self):
-        """Test AggregationType enum values."""
-        from survey_analyzer.specification import AggregationType
-        assert AggregationType.MEAN.value == "mean"
-        assert AggregationType.SUM.value == "sum"
-
-    def test_table_type_enum(self):
-        """Test TableType enum values."""
-        from survey_analyzer.specification import TableType
-        assert TableType.CROSSTAB.value == "crosstab"
-        assert TableType.FREQUENCY.value == "frequency"
-
-    def test_variable_source_enum(self):
-        """Test VariableSource enum values."""
-        from survey_analyzer.specification import VariableSource
-        assert VariableSource.RAW.value == "raw"
-        assert VariableSource.RECODED.value == "recoded"
+        assert MetricType.COLUMN_PERCENT.value == "column_percent"
+        assert MetricType.DESCRIPTIVE_STATISTICS.value == "descriptive_statistics"
 
 
 # ============================================================================
 # Schema Classes Tests
 # ============================================================================
 
-class TestTableSpecificationDocument:
-    """Test TableSpecificationDocument class."""
+class TestQuestionRef:
+    """Test QuestionRef class."""
 
-    def test_default_initialization(self):
-        """Test TableSpecificationDocument with default values."""
-        from survey_analyzer.specification import TableSpecificationDocument
-        spec = TableSpecificationDocument()
+    def test_question_ref_creation(self):
+        """Test QuestionRef creation."""
+        from survey_analyzer.specification import QuestionRef, QuestionType
+        ref = QuestionRef(
+            code="Q1",
+            label="Gender",
+            type=QuestionType.SINGLE_CHOICE
+        )
 
-        assert spec.version == "1.0"
-        assert spec.generated_at is not None
-        assert spec.tables == []
-        assert spec.indicators == []
+        assert ref.code == "Q1"
+        assert ref.label == "Gender"
+        assert ref.type == QuestionType.SINGLE_CHOICE
 
-    def test_initialization_with_values(self):
-        """Test TableSpecificationDocument with custom values."""
+    def test_question_ref_to_dict(self):
+        """Test QuestionRef.to_dict() method."""
+        from survey_analyzer.specification import QuestionRef, QuestionType
+        ref = QuestionRef(
+            code="Q1",
+            label="Gender",
+            type=QuestionType.SINGLE_CHOICE
+        )
+        ref_dict = ref.to_dict()
+
+        assert ref_dict["code"] == "Q1"
+        assert ref_dict["label"] == "Gender"
+        assert ref_dict["type"] == "Single Choice"
+
+    def test_question_ref_from_dict(self):
+        """Test QuestionRef.from_dict() method."""
+        from survey_analyzer.specification import QuestionRef
+        ref_dict = {
+            "code": "Q1",
+            "label": "Gender",
+            "type": "Single Choice"
+        }
+        ref = QuestionRef.from_dict(ref_dict)
+
+        assert ref.code == "Q1"
+        assert ref.label == "Gender"
+
+
+class TestBaseVariable:
+    """Test BaseVariable class."""
+
+    def test_base_variable_creation(self):
+        """Test BaseVariable creation."""
+        from survey_analyzer.specification import BaseVariable, VariableSuffix
+        var = BaseVariable(
+            name="Q1_GENDER_raw",
+            label="Gender (Raw)",
+            suffix=VariableSuffix.RAW
+        )
+
+        assert var.name == "Q1_GENDER_raw"
+        assert var.label == "Gender (Raw)"
+        assert var.suffix == VariableSuffix.RAW
+
+    def test_base_variable_with_values(self):
+        """Test BaseVariable with values mapping."""
+        from survey_analyzer.specification import BaseVariable, VariableSuffix
+        var = BaseVariable(
+            name="Q1_GENDER_cat",
+            label="Gender (Categorized)",
+            suffix=VariableSuffix.CAT,
+            values={"1": "Male", "2": "Female"}
+        )
+
+        assert var.values == {"1": "Male", "2": "Female"}
+
+    def test_base_variable_is_categorical(self):
+        """Test BaseVariable.is_categorical() method."""
+        from survey_analyzer.specification import BaseVariable, VariableSuffix
+        var_cat = BaseVariable(
+            name="Q1_GENDER_cat",
+            label="Gender",
+            suffix=VariableSuffix.CAT
+        )
+        var_sca = BaseVariable(
+            name="AGE_sca",
+            label="Age",
+            suffix=VariableSuffix.SCA
+        )
+
+        assert var_cat.is_categorical() is True
+        assert var_sca.is_categorical() is False
+
+    def test_base_variable_is_scalar(self):
+        """Test BaseVariable.is_scalar() method."""
+        from survey_analyzer.specification import BaseVariable, VariableSuffix
+        var_cat = BaseVariable(
+            name="Q1_GENDER_cat",
+            label="Gender",
+            suffix=VariableSuffix.CAT
+        )
+        var_sca = BaseVariable(
+            name="AGE_sca",
+            label="Age",
+            suffix=VariableSuffix.SCA
+        )
+
+        assert var_cat.is_scalar() is False
+        assert var_sca.is_scalar() is True
+
+
+class TestTabulationStats:
+    """Test TabulationStats class."""
+
+    def test_categorical_stats(self):
+        """Test TabulationStats for categorical type."""
+        from survey_analyzer.specification import TabulationStats, TabulationType, MetricType
+        stats = TabulationStats(
+            type=TabulationType.CATEGORICAL,
+            metric=MetricType.COLUMN_PERCENT
+        )
+
+        assert stats.type == TabulationType.CATEGORICAL
+        assert stats.metric == MetricType.COLUMN_PERCENT
+
+    def test_scalar_stats(self):
+        """Test TabulationStats for scalar type."""
+        from survey_analyzer.specification import TabulationStats, TabulationType, MetricType
+        stats = TabulationStats(
+            type=TabulationType.SCALAR,
+            metric=MetricType.DESCRIPTIVE_STATISTICS
+        )
+
+        assert stats.type == TabulationType.SCALAR
+        assert stats.metric == MetricType.DESCRIPTIVE_STATISTICS
+
+    def test_stats_with_explicit(self):
+        """Test TabulationStats with explicit values."""
+        from survey_analyzer.specification import TabulationStats, TabulationType, MetricType
+        stats = TabulationStats(
+            type=TabulationType.CATEGORICAL,
+            metric=MetricType.COLUMN_PERCENT,
+            explicit=["1", "2"]
+        )
+
+        assert stats.explicit == ["1", "2"]
+
+
+class TestIndicatorSpec:
+    """Test IndicatorSpec class."""
+
+    def test_indicator_creation(self):
+        """Test IndicatorSpec creation."""
         from survey_analyzer.specification import (
-            TableSpecificationDocument,
-            TableSpecification,
-            TableDimension,
-            TableMetric,
+            IndicatorSpec,
+            QuestionRef,
+            QuestionType,
+            BaseVariable,
+            VariableSuffix,
+            TabulationStats,
+            TabulationType,
             MetricType
         )
-
-        table = TableSpecification(
-            id="tab_001",
-            title="Test Table",
-            rows=TableDimension(variable="q1"),
-            columns=TableDimension(variable="gender"),
-            metrics=[TableMetric(MetricType.COUNT)]
+        indicator = IndicatorSpec(
+            indicator_code="Q1_GENDER",
+            indicator_label="Gender",
+            questionnaire_questions=[
+                QuestionRef(code="Q1", label="Gender", type=QuestionType.SINGLE_CHOICE)
+            ],
+            base_variables=[
+                BaseVariable(name="Q1_GENDER_raw", label="Gender (Raw)", suffix=VariableSuffix.RAW)
+            ],
+            tabulation_statistics=TabulationStats(
+                type=TabulationType.CATEGORICAL,
+                metric=MetricType.COLUMN_PERCENT
+            )
         )
 
-        spec = TableSpecificationDocument(
-            version="2.0",
-            source_file="test.sav",
-            tables=[table]
-        )
+        assert indicator.indicator_code == "Q1_GENDER"
+        assert len(indicator.questionnaire_questions) == 1
+        assert len(indicator.base_variables) == 1
 
-        assert spec.version == "2.0"
-        assert spec.source_file == "test.sav"
-        assert len(spec.tables) == 1
-
-    def test_to_dict_method(self):
-        """Test TableSpecificationDocument.to_dict() method."""
-        from survey_analyzer.specification import TableSpecificationDocument
-        spec = TableSpecificationDocument(version="1.0")
-        spec_dict = spec.to_dict()
-
-        assert "metadata" in spec_dict
-        assert spec_dict["metadata"]["version"] == "1.0"
-        assert "tables" in spec_dict
-        assert "output_settings" in spec_dict
-
-    def test_from_dict_method(self):
-        """Test TableSpecificationDocument.from_dict() method."""
-        from survey_analyzer.specification import TableSpecificationDocument
-
-        spec_dict = {
-            "metadata": {"version": "1.0", "source_file": "test.sav"},
-            "global_recodings": [],
-            "indicators": [],
-            "tables": [],
-            "output_settings": {
-                "significance_threshold": 0.05,
-                "min_cramers_v": 0.1,
-                "min_sample_size": 30,
-                "include_powerpoint": True,
-                "include_html_dashboard": True,
-                "include_csv_export": True,
-                "max_tables_ppt": 20,
-                "dashboard_title": "Survey Analysis Results",
-                "include_charts": True,
-                "chart_type": "heatmap",
-                "output_directory": "output"
-            },
-            "notes": None
-        }
-
-        spec = TableSpecificationDocument.from_dict(spec_dict)
-
-        assert spec.version == "1.0"
-        assert spec.source_file == "test.sav"
-
-
-class TestRecodingRule:
-    """Test RecodingRule class."""
-
-    def test_value_map_recoding(self):
-        """Test RecodingRule with value mappings."""
-        from survey_analyzer.specification import RecodingRule, RecodingType
-        rule = RecodingRule(
-            variable="q1",
-            type=RecodingType.VALUE_MAP,
-            value_mappings={"1": "Yes", "2": "No"}
-        )
-
-        assert rule.variable == "q1"
-        assert rule.type == RecodingType.VALUE_MAP
-        assert rule.value_mappings == {"1": "Yes", "2": "No"}
-
-    def test_range_map_recoding(self):
-        """Test RecodingRule with range mappings."""
+    def test_indicator_auto_detect_stats(self):
+        """Test IndicatorSpec auto-detects stats from base variable."""
         from survey_analyzer.specification import (
-            RecodingRule,
-            RecodingType,
-            RangeMapping
+            IndicatorSpec,
+            BaseVariable,
+            VariableSuffix
         )
-        rule = RecodingRule(
-            variable="age",
-            type=RecodingType.RANGE_MAP,
-            range_mappings=[
-                RangeMapping(min_value=0, max_value=30, recoded_value="Young"),
-                RangeMapping(min_value=31, max_value=50, recoded_value="Middle"),
-                RangeMapping(min_value=51, max_value=None, recoded_value="Senior"),
+        indicator = IndicatorSpec(
+            indicator_code="Q1_GENDER",
+            indicator_label="Gender",
+            base_variables=[
+                BaseVariable(name="Q1_GENDER_raw", label="Gender (Raw)", suffix=VariableSuffix.RAW)
             ]
         )
 
-        assert rule.variable == "age"
-        assert len(rule.range_mappings) == 3
+        # Should auto-detect categorical stats
+        assert indicator.tabulation_statistics is not None
+        assert indicator.tabulation_statistics.type.value == "categorical"
 
-    def test_recoding_to_dict(self):
-        """Test RecodingRule.to_dict() method."""
-        from survey_analyzer.specification import RecodingRule, RecodingType
-        rule = RecodingRule(
-            variable="q1",
-            type=RecodingType.VALUE_MAP,
-            value_mappings={"1": "Yes"}
-        )
-        rule_dict = rule.to_dict()
-
-        assert rule_dict["variable"] == "q1"
-        assert rule_dict["type"] == "value_map"
-
-
-class TestIndicator:
-    """Test Indicator class."""
-
-    def test_indicator_creation(self):
-        """Test Indicator class creation."""
+    def test_indicator_get_scenario_cat_single(self):
+        """Test get_scenario_type returns cat_single."""
         from survey_analyzer.specification import (
-            Indicator,
-            VariableRef,
-            VariableSource,
-            AggregationType
+            IndicatorSpec,
+            BaseVariable,
+            VariableSuffix
         )
-        indicator = Indicator(
-            id="ind_001",
-            name="Customer Satisfaction",
-            variables=[
-                VariableRef(name="q1", source=VariableSource.RAW),
-                VariableRef(name="q2", source=VariableSource.RAW),
+        indicator = IndicatorSpec(
+            indicator_code="Q1_GENDER",
+            indicator_label="Gender",
+            base_variables=[
+                BaseVariable(name="Q1_GENDER_raw", label="Gender (Raw)", suffix=VariableSuffix.RAW)
+            ]
+        )
+
+        assert indicator.get_scenario_type() == "cat_single"
+
+    def test_indicator_get_scenario_cat_multi(self):
+        """Test get_scenario_type returns cat_multi."""
+        from survey_analyzer.specification import (
+            IndicatorSpec,
+            BaseVariable,
+            VariableSuffix
+        )
+        indicator = IndicatorSpec(
+            indicator_code="BRAND_AWARENESS",
+            indicator_label="Brand Awareness",
+            base_variables=[
+                BaseVariable(name="BRAND_A_bin", label="Brand A", suffix=VariableSuffix.BIN),
+                BaseVariable(name="BRAND_B_bin", label="Brand B", suffix=VariableSuffix.BIN)
+            ]
+        )
+
+        assert indicator.get_scenario_type() == "cat_multi"
+
+    def test_indicator_get_scenario_scalar_single(self):
+        """Test get_scenario_type returns scalar_single."""
+        from survey_analyzer.specification import (
+            IndicatorSpec,
+            BaseVariable,
+            VariableSuffix
+        )
+        indicator = IndicatorSpec(
+            indicator_code="SAT_OVERALL",
+            indicator_label="Overall Satisfaction",
+            base_variables=[
+                BaseVariable(name="SAT_OVERALL_sca", label="Satisfaction", suffix=VariableSuffix.SCA)
+            ]
+        )
+
+        assert indicator.get_scenario_type() == "scalar_single"
+
+
+class TestTableSpecification:
+    """Test TableSpecification class."""
+
+    def test_spec_creation(self):
+        """Test TableSpecification creation."""
+        from survey_analyzer.specification import (
+            TableSpecification,
+            IndicatorSpec,
+            BaseVariable,
+            VariableSuffix
+        )
+        row_ind = IndicatorSpec(
+            indicator_code="Q2_SAT",
+            indicator_label="Satisfaction",
+            base_variables=[
+                BaseVariable(name="Q2_SAT_raw", label="Satisfaction", suffix=VariableSuffix.RAW)
+            ]
+        )
+        col_ind = IndicatorSpec(
+            indicator_code="Q1_GENDER",
+            indicator_label="Gender",
+            base_variables=[
+                BaseVariable(name="Q1_GENDER_raw", label="Gender", suffix=VariableSuffix.RAW)
+            ]
+        )
+
+        spec = TableSpecification(
+            metadata={"spec_id": "test_spec", "project_id": "test_project"},
+            filter_clause={},
+            row_indicators=[row_ind],
+            column_indicators=[col_ind]
+        )
+
+        assert len(spec.row_indicators) == 1
+        assert len(spec.column_indicators) == 1
+
+    def test_spec_validation(self):
+        """Test TableSpecification.validate() method."""
+        from survey_analyzer.specification import (
+            TableSpecification,
+            IndicatorSpec,
+            BaseVariable,
+            VariableSuffix,
+            TabulationStats,
+            TabulationType,
+            MetricType
+        )
+        row_ind = IndicatorSpec(
+            indicator_code="Q2_SAT",
+            indicator_label="Satisfaction",
+            base_variables=[
+                BaseVariable(name="Q2_SAT_raw", label="Satisfaction", suffix=VariableSuffix.RAW)
             ],
-            aggregation=AggregationType.MEAN
+            tabulation_statistics=TabulationStats(
+                type=TabulationType.CATEGORICAL,
+                metric=MetricType.COLUMN_PERCENT
+            )
+        )
+        col_ind = IndicatorSpec(
+            indicator_code="Q1_GENDER",
+            indicator_label="Gender",
+            base_variables=[
+                BaseVariable(name="Q1_GENDER_raw", label="Gender", suffix=VariableSuffix.RAW)
+            ],
+            tabulation_statistics=TabulationStats(
+                type=TabulationType.CATEGORICAL,
+                metric=MetricType.COLUMN_PERCENT
+            )
         )
 
-        assert indicator.id == "ind_001"
-        assert indicator.name == "Customer Satisfaction"
-        assert len(indicator.variables) == 2
+        spec = TableSpecification(
+            metadata={"spec_id": "test_spec", "project_id": "test_project"},
+            filter_clause={},
+            row_indicators=[row_ind],
+            column_indicators=[col_ind]
+        )
+
+        errors = spec.validate()
+        assert len(errors) == 0
+
+    def test_spec_get_indicator_by_code(self):
+        """Test get_indicator_by_code() method."""
+        from survey_analyzer.specification import (
+            TableSpecification,
+            IndicatorSpec,
+            BaseVariable,
+            VariableSuffix
+        )
+        row_ind = IndicatorSpec(
+            indicator_code="Q2_SAT",
+            indicator_label="Satisfaction",
+            base_variables=[
+                BaseVariable(name="Q2_SAT_raw", label="Satisfaction", suffix=VariableSuffix.RAW)
+            ]
+        )
+
+        spec = TableSpecification(
+            metadata={"spec_id": "test_spec"},
+            filter_clause={},
+            row_indicators=[row_ind],
+            column_indicators=[]
+        )
+
+        found = spec.get_indicator_by_code("Q2_SAT")
+        assert found is not None
+        assert found.indicator_code == "Q2_SAT"
+
+        not_found = spec.get_indicator_by_code("NONEXISTENT")
+        assert not_found is None
 
 
 # ============================================================================
-# Validation Function Tests
+# Convenience Functions Tests
 # ============================================================================
 
-class TestValidationFunctions:
-    """Test validation convenience functions."""
+class TestConvenienceFunctions:
+    """Test convenience functions."""
 
     def test_create_empty_spec(self):
         """Test create_empty_spec() function."""
-        from survey_analyzer.specification import create_empty_spec
-        spec = create_empty_spec(source_file="test.sav")
+        from survey_analyzer.specification import create_empty_spec, TableSpecification
+        spec = create_empty_spec()
 
-        assert spec.version == "1.0"
-        assert spec.source_file == "test.sav"
-
-    def test_validate_spec_structure_valid(self):
-        """Test validate_spec_structure() with valid spec."""
-        from survey_analyzer.specification import validate_spec_structure
-
-        valid_spec = {
-            "metadata": {"version": "1.0"},
-            "tables": [
-                {"id": "tab1", "title": "Table 1", "type": "crosstab",
-                 "rows": {"variable": "q1"}, "columns": {"variable": "q2"}}
-            ],
-            "output_settings": {"significance_threshold": 0.05}
-        }
-
-        errors = validate_spec_structure(valid_spec)
-        assert len(errors) == 0
-
-    def test_validate_spec_structure_missing_metadata(self):
-        """Test validate_spec_structure() with missing metadata."""
-        from survey_analyzer.specification import validate_spec_structure
-
-        invalid_spec = {
-            "tables": []
-        }
-
-        errors = validate_spec_structure(invalid_spec)
-        assert len(errors) > 0
-        assert any("metadata" in str(e) for e in errors)
-
-    def test_validate_spec_structure_invalid_significance(self):
-        """Test validate_spec_structure() with invalid significance threshold."""
-        from survey_analyzer.specification import validate_spec_structure
-
-        invalid_spec = {
-            "metadata": {"version": "1.0"},
-            "tables": [],
-            "output_settings": {"significance_threshold": 1.5}  # Invalid: > 1
-        }
-
-        errors = validate_spec_structure(invalid_spec)
-        assert len(errors) > 0
-        assert any("significance_threshold" in str(e) for e in errors)
+        assert isinstance(spec, TableSpecification)
+        assert "spec_id" in spec.metadata
 
 
 # ============================================================================
@@ -271,28 +442,32 @@ class TestSpecificationModule:
     def test_import_schema_classes(self):
         """Test schema classes can be imported."""
         from survey_analyzer.specification import (
-            TableSpecificationDocument,
             TableSpecification,
-            Indicator,
-            RecodingRule
+            IndicatorSpec,
+            BaseVariable,
+            QuestionRef,
+            TabulationStats
         )
-        assert TableSpecificationDocument is not None
         assert TableSpecification is not None
+        assert IndicatorSpec is not None
+        assert BaseVariable is not None
 
-    def test_import_validator_classes(self):
-        """Test validator classes can be imported."""
+    def test_import_enums(self):
+        """Test enums can be imported."""
         from survey_analyzer.specification import (
-            TableSpecificationValidator,
-            validate_specification,
-            is_valid_specification
+            VariableSuffix,
+            QuestionType,
+            TabulationType,
+            MetricType
         )
-        assert TableSpecificationValidator is not None
-        assert callable(validate_specification)
+        assert VariableSuffix is not None
+        assert QuestionType is not None
 
     def test_module_exports(self):
         """Test module exports expected classes."""
         from survey_analyzer import specification
         # Check key classes are accessible
-        assert hasattr(specification, "TableSpecificationDocument")
-        assert hasattr(specification, "validate_specification")
-        assert hasattr(specification, "create_empty_spec")
+        assert hasattr(specification, "TableSpecification")
+        assert hasattr(specification, "IndicatorSpec")
+        assert hasattr(specification, "BaseVariable")
+        assert hasattr(specification, "VariableSuffix")

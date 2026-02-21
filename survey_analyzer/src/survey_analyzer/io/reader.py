@@ -30,7 +30,7 @@ class SPSSReader:
     SPSS files and extracting both data and metadata.
 
     Attributes:
-        encoding: File encoding (default: 'UTF-8')
+        encoding: File encoding (default: None = auto-detect from SPSS file)
         apply_value_formats: Whether to convert values to labels (default: False)
 
     Example:
@@ -41,14 +41,14 @@ class SPSSReader:
 
     def __init__(
         self,
-        encoding: str = "UTF-8",
+        encoding: Optional[str] = None,
         apply_value_formats: bool = False,
     ):
         """
         Initialize the SPSS reader.
 
         Args:
-            encoding: File encoding for reading SPSS files
+            encoding: File encoding for reading SPSS files (None = auto-detect from file)
             apply_value_formats: If True, convert coded values to labels
         """
         if pyreadstat is None:

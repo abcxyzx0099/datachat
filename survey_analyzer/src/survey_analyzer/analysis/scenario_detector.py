@@ -8,38 +8,14 @@ Scenarios:
 - cat_multi: Multiple binary variables (Multiple Choice)
 - scalar_single: Single scalar variable
 - scalar_multi: Multiple scalar variables (Rating Scale)
+
+Uses the new schema structure from survey_analyzer.specification.schema.
 """
 
 import logging
 from typing import Dict, Any
-from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class IndicatorSpec:
-    """Indicator specification for crosstab generation."""
-    indicator_code: str
-    statistic_type: str  # "categorical" or "scalar"
-    source_variables: list[str]
-    question_type: str  # "Single Choice", "Multiple Choice", "Rating Scale", "Numeric Input"
-    transformation_rules: str | None
-    question_label: str = ""
-    question_description: str = ""
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "IndicatorSpec":
-        """Create IndicatorSpec from dictionary."""
-        return cls(
-            indicator_code=data.get("indicator_code", ""),
-            statistic_type=data.get("statistic_type", "categorical"),
-            source_variables=data.get("source_variables", []),
-            question_type=data.get("question_type", ""),
-            transformation_rules=data.get("transformation_rules"),
-            question_label=data.get("question_label", ""),
-            question_description=data.get("question_description", "")
-        )
 
 
 class ScenarioDetector:
@@ -52,12 +28,12 @@ class ScenarioDetector:
     SCALAR_MULTI = "scalar_multi"
 
     @staticmethod
-    def detect(indicator: IndicatorSpec) -> str:
+    def detect(indicator: Dict[str, Any]) -> str:
         """
         Detect the scenario type for an indicator.
 
         Args:
-            indicator: Indicator specification
+            indicator: Indicator specification dictionary with new schema structure
 
         Returns:
             One of: "cat_single", "cat_multi", "scalar_single", "scalar_multi"
@@ -68,8 +44,13 @@ class ScenarioDetector:
         - Scalar with 1 variable → scalar_single
         - Scalar with multiple variables → scalar_multi (Rating Scale)
         """
-        n_vars = len(indicator.source_variables)
-        stat_type = indicator.statistic_type.lower()
+        # Get tabulation_statistics.type
+        tab_stats = indicator.get("tabulation_statistics", {})
+        stat_type = tab_stats.get("type", "categorical").lower()
+
+        # Count base_variables
+        base_vars = indicator.get("base_variables", [])
+        n_vars = len(base_vars)
 
         if stat_type == "categorical":
             if n_vars > 1:
@@ -80,7 +61,7 @@ class ScenarioDetector:
                 return ScenarioDetector.SCALAR_MULTI
             return ScenarioDetector.SCALAR_SINGLE
         else:
-            logger.warning(f"Unknown statistic_type: {stat_type}, defaulting to cat_single")
+            logger.warning(f"Unknown tabulation_statistics.type: {stat_type}, defaulting to cat_single")
             return ScenarioDetector.CAT_SINGLE
 
     @staticmethod
@@ -89,13 +70,12 @@ class ScenarioDetector:
         Detect scenario type from dictionary.
 
         Args:
-            data: Indicator dictionary
+            data: Indicator dictionary with new schema structure
 
         Returns:
             Scenario type string
         """
-        indicator = IndicatorSpec.from_dict(data)
-        return ScenarioDetector.detect(indicator)
+        return ScenarioDetector.detect(data)
 
     @staticmethod
     def has_total_row(row_scenario: str) -> bool:
@@ -135,16 +115,14 @@ class ScenarioDetector:
         return "none"
 
 
-def detect_scenario(indicator: IndicatorSpec | Dict[str, Any]) -> str:
+def detect_scenario(indicator: Dict[str, Any]) -> str:
     """
     Convenience function to detect scenario type.
 
     Args:
-        indicator: IndicatorSpec or dictionary
+        indicator: Indicator dictionary with new schema structure
 
     Returns:
         Scenario type string
     """
-    if isinstance(indicator, dict):
-        return ScenarioDetector.detect_from_dict(indicator)
     return ScenarioDetector.detect(indicator)

@@ -35,7 +35,6 @@ from .crosstab import (
 )
 from .scenario_detector import (
     ScenarioDetector,
-    IndicatorSpec,
     detect_scenario
 )
 from .crosstab_processor import (
@@ -71,7 +70,6 @@ __all__ = [
     "CrosstabProcessor",
     "CrosstabResult",
     "ScenarioDetector",
-    "IndicatorSpec",
     "detect_scenario",
     "generate_crosstab",
     "generate_crosstabs_batch",

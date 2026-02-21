@@ -92,7 +92,7 @@ class TransformationEngine:
 
         Args:
             df: Input DataFrame
-            indicators: List of indicator dicts with transformation_rules
+            indicators: List of indicator dicts with base_variables (new schema)
 
         Returns:
             DataFrame with transformed variables
@@ -101,8 +101,10 @@ class TransformationEngine:
             >>> indicators = [
             ...     {
             ...         "indicator_code": "age_recoded",
-            ...         "source_variables": ["age"],
-            ...         "transformation_rules": "(1 THRU 2=1) (3=2)"
+            ...         "base_variables": [{
+            ...             "name": "age_recoded",
+            ...             "generation": "(1 THRU 2=1) (3=2)"
+            ...         }]
             ...     }
             ... ]
             >>> engine = TransformationEngine()
@@ -112,30 +114,35 @@ class TransformationEngine:
             df = df.copy()
 
         for indicator in indicators:
-            code = indicator.get('indicator_code')
-            source_vars = indicator.get('source_variables', [])
-            rules = indicator.get('transformation_rules')
+            base_vars = indicator.get('base_variables', [])
 
-            if not rules or rules.lower() == 'null':
-                # No transformation - use source as-is
-                if source_vars and len(source_vars) == 1:
-                    if code not in df.columns:
-                        df[code] = df[source_vars[0]]
-                continue
+            for base_var in base_vars:
+                target = base_var.get('name')
+                rules = base_var.get('generation')
 
-            # Parse and apply transformation
-            if source_vars:
-                source = source_vars[0]
-                target = code
+                if not rules or rules.lower() == 'null':
+                    # No transformation - variable should already exist or be raw
+                    continue
 
+                # Apply transformation
                 if rules.startswith('COMPUTE'):
                     # Computed variable
-                    df[target] = self._apply_compute(df, rules, source)
+                    df[target] = self._apply_compute(df, rules, target)
                 else:
-                    # Recoding rules
-                    df[target] = self._apply_recode(df[source], rules)
+                    # Recoding rules - need source variable
+                    # For RECODE, the source is typically the raw variable
+                    # Extract source from RECODE pattern: "RECODE source (rules)"
+                    if rules.startswith('RECODE'):
+                        parts = rules.split()
+                        if len(parts) >= 2:
+                            source = parts[1]
+                            df[target] = self._apply_recode(df[source], rules)
+                    else:
+                        # Direct recoding rules without RECODE keyword
+                        # Assume target is derived from indicator
+                        logger.warning(f"Ambiguous transformation rules for {target}: {rules}")
 
-                logger.debug(f"Applied transformation: {source} -> {target} ({rules})")
+                logger.debug(f"Applied transformation: {target} ({rules})")
 
         return df
 

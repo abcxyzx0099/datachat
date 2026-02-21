@@ -26,7 +26,7 @@ def cmd_data_read(args):
     """Read SPSS .sav file and output metadata."""
     from survey_analyzer.io import SPSSReader, MetadataTransformer
 
-    reader = SPSSReader(encoding=args.encoding or 'UTF-8')
+    reader = SPSSReader(encoding=args.encoding)
     data, meta = reader.read(args.sav_file)
 
     transformer = MetadataTransformer()
@@ -50,7 +50,6 @@ def cmd_data_filter(args):
     transformer = MetadataTransformer()
     filtered = transformer.filter_variables(
         metadata,
-        min_categories=args.min_categories,
         max_categories=args.max_categories
     )
 
@@ -189,7 +188,7 @@ def cmd_all_workflow(args):
     # Stage 1: Data Preparation
     if '1' not in skip_stages:
         print("\n[Stage 1: Data Preparation]")
-        reader = SPSSReader(encoding=args.encoding or 'UTF-8')
+        reader = SPSSReader(encoding=args.encoding)
         data, meta = reader.read(args.sav_file)
 
         transformer = MetadataTransformer()
@@ -282,14 +281,13 @@ def main():
 
     data_read = data_subparsers.add_parser('read', help='Read SPSS file and extract metadata')
     data_read.add_argument('--sav-file', required=True, help='Path to SPSS .sav file')
-    data_read.add_argument('--encoding', help='File encoding (default: UTF-8, try ISO-8859-1 for older files)')
+    data_read.add_argument('--encoding', help='File encoding (default: auto-detect from file)')
     data_read.add_argument('--output-file', help='Output metadata JSON file')
 
     data_filter = data_subparsers.add_parser('filter', help='Filter metadata by category count')
     data_filter.add_argument('--metadata-file', required=True, help='Path to metadata JSON')
     data_filter.add_argument('--output-file', help='Output filtered metadata')
-    data_filter.add_argument('--min-categories', type=int, default=2, help='Min categories')
-    data_filter.add_argument('--max-categories', type=int, default=10, help='Max categories')
+    data_filter.add_argument('--max-categories', type=int, default=30, help='Max categories (default: 30)')
 
     # Spec command
     spec_parser = subparsers.add_parser('spec', help='Specification operations')
@@ -338,7 +336,7 @@ def main():
     # All workflow command
     all_parser = subparsers.add_parser('all', help='Run complete 5-stage workflow')
     all_parser.add_argument('--sav-file', required=True, help='Path to SPSS .sav file')
-    all_parser.add_argument('--encoding', help='File encoding (default: UTF-8, try ISO-8859-1 for older files)')
+    all_parser.add_argument('--encoding', help='File encoding (default: auto-detect from file)')
     all_parser.add_argument('--output-dir', default='output', help='Output directory')
     all_parser.add_argument('--skip', help='Skip stages (e.g., "3,4")')
 

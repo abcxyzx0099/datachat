@@ -14,7 +14,6 @@ import numpy as np
 from survey_analyzer.analysis import (
     CrosstabProcessor,
     ScenarioDetector,
-    IndicatorSpec
 )
 
 
@@ -23,49 +22,49 @@ class TestScenarioDetector:
 
     def test_cat_single_detection(self):
         """Detect single categorical variable."""
-        indicator = IndicatorSpec(
-            indicator_code="Q1_GENDER",
-            statistic_type="categorical",
-            source_variables=["Q1_GENDER"],
-            question_type="Single Choice",
-            transformation_rules=None
-        )
+        indicator = {
+            "indicator_code": "Q1_GENDER",
+            "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+            "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
+        }
         scenario = ScenarioDetector.detect(indicator)
         assert scenario == ScenarioDetector.CAT_SINGLE
 
     def test_cat_multi_detection(self):
         """Detect multiple binary variables (Multiple Choice)."""
-        indicator = IndicatorSpec(
-            indicator_code="S1_BRAND_AWARENESS",
-            statistic_type="categorical",
-            source_variables=["S1_BRAND_A", "S1_BRAND_B", "S1_BRAND_C"],
-            question_type="Multiple Choice",
-            transformation_rules=None
-        )
+        indicator = {
+            "indicator_code": "S1_BRAND_AWARENESS",
+            "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+            "base_variables": [
+                {"name": "S1_BRAND_A", "suffix": "_bin"},
+                {"name": "S1_BRAND_B", "suffix": "_bin"},
+                {"name": "S1_BRAND_C", "suffix": "_bin"}
+            ]
+        }
         scenario = ScenarioDetector.detect(indicator)
         assert scenario == ScenarioDetector.CAT_MULTI
 
     def test_scalar_single_detection(self):
         """Detect single scalar variable."""
-        indicator = IndicatorSpec(
-            indicator_code="SAT_OVERALL",
-            statistic_type="scalar",
-            source_variables=["SAT_OVERALL"],
-            question_type="Numeric Input",
-            transformation_rules=None
-        )
+        indicator = {
+            "indicator_code": "SAT_OVERALL",
+            "tabulation_statistics": {"type": "scalar", "metric": "descriptive_statistics"},
+            "base_variables": [{"name": "SAT_OVERALL", "suffix": "_sca"}]
+        }
         scenario = ScenarioDetector.detect(indicator)
         assert scenario == ScenarioDetector.SCALAR_SINGLE
 
     def test_scalar_multi_detection(self):
         """Detect multiple scalar variables (Rating Scale)."""
-        indicator = IndicatorSpec(
-            indicator_code="D1_RATINGS",
-            statistic_type="scalar",
-            source_variables=["D1_QUALITY", "D1_PRICE", "D1_SERVICE"],
-            question_type="Rating Scale",
-            transformation_rules=None
-        )
+        indicator = {
+            "indicator_code": "D1_RATINGS",
+            "tabulation_statistics": {"type": "scalar", "metric": "descriptive_statistics"},
+            "base_variables": [
+                {"name": "D1_QUALITY", "suffix": "_sca"},
+                {"name": "D1_PRICE", "suffix": "_sca"},
+                {"name": "D1_SERVICE", "suffix": "_sca"}
+            ]
+        }
         scenario = ScenarioDetector.detect(indicator)
         assert scenario == ScenarioDetector.SCALAR_MULTI
 
@@ -118,18 +117,14 @@ class TestCrosstabProcessor:
         """Test Scenario 1: Single Categorical × Single Categorical."""
         row_indicator = {
             "indicator_code": "Q2_SATISFACTION",
-            "statistic_type": "categorical",
-            "source_variables": ["Q2_SATISFACTION"],
-            "question_type": "Single Choice",
-            "transformation_rules": None
+            "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+            "base_variables": [{"name": "Q2_SATISFACTION", "suffix": "_raw"}]
         }
 
         col_indicator = {
             "indicator_code": "Q1_GENDER",
-            "statistic_type": "categorical",
-            "source_variables": ["Q1_GENDER"],
-            "question_type": "Single Choice",
-            "transformation_rules": None
+            "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+            "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
         }
 
         result = processor.generate(sample_data, row_indicator, col_indicator)
@@ -166,18 +161,19 @@ class TestCrosstabProcessor:
         """Test Scenario 2: Multiple Binary × Single Categorical."""
         row_indicator = {
             "indicator_code": "S1_BRAND_AWARENESS",
-            "statistic_type": "categorical",
-            "source_variables": ["S1_BRAND_A", "S1_BRAND_B", "S1_BRAND_C", "S1_BRAND_D"],
-            "question_type": "Multiple Choice",
-            "transformation_rules": None
+            "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+            "base_variables": [
+                {"name": "S1_BRAND_A", "suffix": "_bin"},
+                {"name": "S1_BRAND_B", "suffix": "_bin"},
+                {"name": "S1_BRAND_C", "suffix": "_bin"},
+                {"name": "S1_BRAND_D", "suffix": "_bin"}
+            ]
         }
 
         col_indicator = {
             "indicator_code": "Q1_GENDER",
-            "statistic_type": "categorical",
-            "source_variables": ["Q1_GENDER"],
-            "question_type": "Single Choice",
-            "transformation_rules": None
+            "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+            "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
         }
 
         result = processor.generate(sample_data, row_indicator, col_indicator)
@@ -206,18 +202,14 @@ class TestCrosstabProcessor:
         """Test Scenario 3: Single Scalar × Single Categorical."""
         row_indicator = {
             "indicator_code": "SAT_OVERALL",
-            "statistic_type": "scalar",
-            "source_variables": ["SAT_OVERALL"],
-            "question_type": "Numeric Input",
-            "transformation_rules": None
+            "tabulation_statistics": {"type": "scalar", "metric": "descriptive_statistics"},
+            "base_variables": [{"name": "SAT_OVERALL", "suffix": "_sca"}]
         }
 
         col_indicator = {
             "indicator_code": "Q1_GENDER",
-            "statistic_type": "categorical",
-            "source_variables": ["Q1_GENDER"],
-            "question_type": "Single Choice",
-            "transformation_rules": None
+            "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+            "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
         }
 
         result = processor.generate(sample_data, row_indicator, col_indicator)
@@ -243,18 +235,20 @@ class TestCrosstabProcessor:
         """Test Scenario 4: Multiple Scalar × Single Categorical."""
         row_indicator = {
             "indicator_code": "D1_RATINGS",
-            "statistic_type": "scalar",
-            "source_variables": ["D1_QUALITY", "D1_PRICE", "D1_SERVICE", "D1_SELECTION", "D1_VALUE"],
-            "question_type": "Rating Scale",
-            "transformation_rules": None
+            "tabulation_statistics": {"type": "scalar", "metric": "descriptive_statistics"},
+            "base_variables": [
+                {"name": "D1_QUALITY", "suffix": "_sca"},
+                {"name": "D1_PRICE", "suffix": "_sca"},
+                {"name": "D1_SERVICE", "suffix": "_sca"},
+                {"name": "D1_SELECTION", "suffix": "_sca"},
+                {"name": "D1_VALUE", "suffix": "_sca"}
+            ]
         }
 
         col_indicator = {
             "indicator_code": "Q1_GENDER",
-            "statistic_type": "categorical",
-            "source_variables": ["Q1_GENDER"],
-            "question_type": "Single Choice",
-            "transformation_rules": None
+            "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+            "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
         }
 
         result = processor.generate(sample_data, row_indicator, col_indicator)
@@ -289,20 +283,16 @@ class TestCrosstabProcessor:
         row_indicators = [
             {
                 "indicator_code": "Q2_SATISFACTION",
-                "statistic_type": "categorical",
-                "source_variables": ["Q2_SATISFACTION"],
-                "question_type": "Single Choice",
-                "transformation_rules": None
+                "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+                "base_variables": [{"name": "Q2_SATISFACTION", "suffix": "_raw"}]
             }
         ]
 
         col_indicators = [
             {
                 "indicator_code": "Q1_GENDER",
-                "statistic_type": "categorical",
-                "source_variables": ["Q1_GENDER"],
-                "question_type": "Single Choice",
-                "transformation_rules": None
+                "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+                "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
             }
         ]
 

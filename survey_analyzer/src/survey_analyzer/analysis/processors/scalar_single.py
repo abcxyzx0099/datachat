@@ -49,20 +49,23 @@ class ScalarSingleProcessor:
         Returns:
             Crosstab result dictionary with statistics
         """
-        from ..scenario_detector import IndicatorSpec
+        # Get variable names from base_variables
+        row_base_vars = row_indicator.get("base_variables", [])
+        col_base_vars = col_indicator.get("base_variables", [])
 
-        row_spec = IndicatorSpec.from_dict(row_indicator)
-        col_spec = IndicatorSpec.from_dict(col_indicator)
+        if not row_base_vars or not col_base_vars:
+            raise ValueError("Row and column indicators must have base_variables")
 
-        scalar_var = row_spec.source_variables[0]
-        col_var = col_spec.source_variables[0]
+        scalar_var = row_base_vars[0]["name"]
+        col_var = col_base_vars[0]["name"]
 
-        # Apply column transformation if needed
-        if col_spec.transformation_rules and col_spec.transformation_rules.lower() != "null":
+        # Apply column transformation if needed (from generation field)
+        col_generation = col_base_vars[0].get("generation")
+        if col_generation and col_generation.lower() != "null":
             from ..transformation import TransformationEngine
             engine = TransformationEngine()
             df = df.copy()
-            df[col_var] = engine._apply_recode(df[col_var], col_spec.transformation_rules)
+            df[col_var] = engine._apply_recode(df[col_var], col_generation)
 
         # Calculate statistics for each column category
         statistics_by_col = self._calculate_statistics_by_category(

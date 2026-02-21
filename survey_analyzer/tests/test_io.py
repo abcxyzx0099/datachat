@@ -20,7 +20,7 @@ class TestSPSSReaderInstantiation:
         """Test SPSSReader with default parameters."""
         from survey_analyzer.io import SPSSReader
         reader = SPSSReader()
-        assert reader.encoding == "UTF-8"
+        assert reader.encoding is None  # Default is None (auto-detect)
         assert reader.apply_value_formats is False
 
     def test_custom_encoding(self):

@@ -285,13 +285,21 @@ def demo_transformation():
     indicators = [
         {
             'indicator_code': 'age_group',
-            'source_variables': ['age'],
-            'transformation_rules': '(1 THRU 30=1) (31 THRU 50=2) (51 THRU HI=3)'
+            'base_variables': [
+                {
+                    'name': 'age_group',
+                    'generation': 'RECODE age (1 THRU 30=1) (31 THRU 50=2) (51 THRU HI=3) INTO age_group'
+                }
+            ]
         },
         {
             'indicator_code': 'sat_group',
-            'source_variables': ['satisfaction'],
-            'transformation_rules': '(1 THRU 2=1) (3=2) (4 THRU 5=3)'
+            'base_variables': [
+                {
+                    'name': 'sat_group',
+                    'generation': 'RECODE satisfaction (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO sat_group'
+                }
+            ]
         }
     ]
 

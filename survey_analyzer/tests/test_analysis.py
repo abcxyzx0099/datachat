@@ -6,6 +6,7 @@ Tests statistics calculation and indicator generation.
 
 import pytest
 import numpy as np
+import pandas as pd
 
 
 # ============================================================================
@@ -165,6 +166,51 @@ class TestStatisticsCalculatorCramersV:
 
         # Should give V around 0.3-0.5 for strong association
         assert result.cramers_v >= 0.3
+
+
+class TestStatisticsCalculatorEdgeCases:
+    """Test edge cases for StatisticsCalculator."""
+
+    def test_analyze_table_single_row(self):
+        """Test table with only one row."""
+        from survey_analyzer.analysis import StatisticsCalculator
+        calc = StatisticsCalculator()
+
+        result = calc.analyze_table(
+            counts=[[10, 20, 30]],
+            row_labels=["A"],
+            column_labels=["X", "Y", "Z"]
+        )
+
+        # Single row tables should still be valid
+        assert result.is_valid is True
+
+    def test_analyze_table_single_column(self):
+        """Test table with only one column."""
+        from survey_analyzer.analysis import StatisticsCalculator
+        calc = StatisticsCalculator()
+
+        result = calc.analyze_table(
+            counts=[[10], [20], [30]],
+            row_labels=["A", "B", "C"],
+            column_labels=["X"]
+        )
+
+        # Single column tables should still be valid
+        assert result.is_valid is True
+
+    def test_interpretation_boundaries(self):
+        """Test Cramer's V interpretation boundaries."""
+        from survey_analyzer.analysis import StatisticsCalculator
+        calc = StatisticsCalculator()
+
+        # Test negligible interpretation (V < 0.1)
+        result1 = calc.analyze_table(
+            counts=[[100, 100], [100, 100]],
+            row_labels=["A", "B"],
+            column_labels=["X", "Y"]
+        )
+        assert result1.interpretation == "negligible"
 
 
 class TestChiSquareConvenienceFunction:

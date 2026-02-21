@@ -17,20 +17,20 @@ Architecture:
     analysis/      - Core analysis (statistics, transformation, crosstabs)
     filtering/     - Statistical significance filtering
     reporting/     - Output generation (PowerPoint, HTML)
-    specification/ - Table specification schema and validator
+    specification/ - Table specification schema
 
 Pure Python Implementation (no PSPP dependency):
     - TransformationEngine replaces PSPP RECODE
-    - CrossTabGenerator replaces PSPP CROSSTABS
+    - CrosstabProcessor replaces PSPP CROSSTABS
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 # Import modules directly when needed:
 # from survey_analyzer.io import SPSSReader, MetadataTransformer
-# from survey_analyzer.analysis import TransformationEngine, CrossTabGenerator
+# from survey_analyzer.analysis import TransformationEngine, CrosstabProcessor
 # from survey_analyzer.filtering import SignificanceFilter
-# from survey_analyzer.specification import TableSpecificationValidator
+# from survey_analyzer.specification import TableSpecification
 
 __all__ = [
     # I/O
@@ -44,12 +44,17 @@ __all__ = [
     "TransformationRule",
     "apply_recode",
     "parse_transformation_rules",
-    # Analysis - Cross-Tabulation
+    # Analysis - Cross-Tabulation (Legacy)
     "CrossTabGenerator",
     "CrosstabResult",
     "CrosstabConfig",
     "generate_crosstab",
     "generate_crosstabs_with_stats",
+    # Analysis - Cross-Tabulation (New)
+    "CrosstabProcessor",
+    "ScenarioDetector",
+    "generate_crosstab",
+    "generate_crosstabs_batch",
     # Analysis - Indicators
     "IndicatorGenerator",
     "IndicatorConfig",
@@ -67,13 +72,17 @@ __all__ = [
     "HTMLDashboardGenerator",
     "DashboardConfig",
     "create_dashboard",
-    # Specification
-    "TableSpecificationDocument",
+    # Specification (New Schema)
     "TableSpecification",
-    "OutputSettings",
-    "Indicator",
-    "RecodingRule",
-    "TableSpecificationValidator",
-    "validate_specification",
-    "is_valid_specification",
+    "IndicatorSpec",
+    "BaseVariable",
+    "QuestionRef",
+    "TabulationStats",
+    "VariableSuffix",
+    "QuestionType",
+    "TabulationType",
+    "MetricType",
+    "create_empty_spec",
+    "load_from_file",
+    "save_to_file",
 ]

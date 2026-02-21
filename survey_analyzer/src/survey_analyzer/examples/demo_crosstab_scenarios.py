@@ -101,18 +101,14 @@ def main():
 
     row_indicator = {
         "indicator_code": "Q2_SATISFACTION",
-        "statistic_type": "categorical",
-        "source_variables": ["Q2_SATISFACTION"],
-        "question_type": "Single Choice",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+        "base_variables": [{"name": "Q2_SATISFACTION", "suffix": "_raw"}]
     }
 
     col_indicator = {
         "indicator_code": "Q1_GENDER",
-        "statistic_type": "categorical",
-        "source_variables": ["Q1_GENDER"],
-        "question_type": "Single Choice",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+        "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
     }
 
     result = processor.generate(df, row_indicator, col_indicator)
@@ -132,18 +128,19 @@ def main():
 
     row_indicator = {
         "indicator_code": "S1_BRAND_AWARENESS",
-        "statistic_type": "categorical",
-        "source_variables": ["S1_BRAND_A", "S1_BRAND_B", "S1_BRAND_C", "S1_BRAND_D"],
-        "question_type": "Multiple Choice",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+        "base_variables": [
+            {"name": "S1_BRAND_A", "suffix": "_bin"},
+            {"name": "S1_BRAND_B", "suffix": "_bin"},
+            {"name": "S1_BRAND_C", "suffix": "_bin"},
+            {"name": "S1_BRAND_D", "suffix": "_bin"}
+        ]
     }
 
     col_indicator = {
         "indicator_code": "Q1_GENDER",
-        "statistic_type": "categorical",
-        "source_variables": ["Q1_GENDER"],
-        "question_type": "Single Choice",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+        "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
     }
 
     result = processor.generate(df, row_indicator, col_indicator)
@@ -161,18 +158,14 @@ def main():
 
     row_indicator = {
         "indicator_code": "SAT_OVERALL",
-        "statistic_type": "scalar",
-        "source_variables": ["SAT_OVERALL"],
-        "question_type": "Numeric Input",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "scalar", "metric": "descriptive_statistics"},
+        "base_variables": [{"name": "SAT_OVERALL", "suffix": "_sca"}]
     }
 
     col_indicator = {
         "indicator_code": "Q1_GENDER",
-        "statistic_type": "categorical",
-        "source_variables": ["Q1_GENDER"],
-        "question_type": "Single Choice",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+        "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
     }
 
     result = processor.generate(df, row_indicator, col_indicator)
@@ -190,18 +183,20 @@ def main():
 
     row_indicator = {
         "indicator_code": "D1_RATINGS",
-        "statistic_type": "scalar",
-        "source_variables": ["D1_QUALITY", "D1_PRICE", "D1_SERVICE", "D1_SELECTION", "D1_VALUE"],
-        "question_type": "Rating Scale",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "scalar", "metric": "descriptive_statistics"},
+        "base_variables": [
+            {"name": "D1_QUALITY", "suffix": "_sca"},
+            {"name": "D1_PRICE", "suffix": "_sca"},
+            {"name": "D1_SERVICE", "suffix": "_sca"},
+            {"name": "D1_SELECTION", "suffix": "_sca"},
+            {"name": "D1_VALUE", "suffix": "_sca"}
+        ]
     }
 
     col_indicator = {
         "indicator_code": "Q1_GENDER",
-        "statistic_type": "categorical",
-        "source_variables": ["Q1_GENDER"],
-        "question_type": "Single Choice",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+        "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
     }
 
     result = processor.generate(df, row_indicator, col_indicator)
@@ -220,18 +215,14 @@ def main():
     # Show JSON structure for Scenario 1
     row_indicator = {
         "indicator_code": "Q2_SATISFACTION",
-        "statistic_type": "categorical",
-        "source_variables": ["Q2_SATISFACTION"],
-        "question_type": "Single Choice",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+        "base_variables": [{"name": "Q2_SATISFACTION", "suffix": "_raw"}]
     }
 
     col_indicator = {
         "indicator_code": "Q1_GENDER",
-        "statistic_type": "categorical",
-        "source_variables": ["Q1_GENDER"],
-        "question_type": "Single Choice",
-        "transformation_rules": None
+        "tabulation_statistics": {"type": "categorical", "metric": "column_percent"},
+        "base_variables": [{"name": "Q1_GENDER", "suffix": "_raw"}]
     }
 
     result = processor.generate(df, row_indicator, col_indicator)

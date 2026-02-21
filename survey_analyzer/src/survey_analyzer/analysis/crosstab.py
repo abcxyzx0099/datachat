@@ -491,11 +491,23 @@ def generate_crosstabs_with_stats(
 
     Example:
         >>> row_indicators = [
-        ...     {'indicator_code': 'gender', 'source_variables': ['gender']},
-        ...     {'indicator_code': 'age', 'source_variables': ['age']}
+        ...     {
+        ...         'indicator_code': 'gender',
+        ...         'base_variables': [{'name': 'gender', 'suffix': '_raw'}],
+        ...         'tabulation_statistics': {'type': 'categorical', 'metric': 'column_percent'}
+        ...     },
+        ...     {
+        ...         'indicator_code': 'age',
+        ...         'base_variables': [{'name': 'age', 'suffix': '_sca'}],
+        ...         'tabulation_statistics': {'type': 'scalar', 'metric': 'descriptive_statistics'}
+        ...     }
         ... ]
         >>> col_indicators = [
-        ...     {'indicator_code': 'sat', 'source_variables': ['satisfaction']}
+        ...     {
+        ...         'indicator_code': 'sat',
+        ...         'base_variables': [{'name': 'satisfaction', 'suffix': '_raw'}],
+        ...         'tabulation_statistics': {'type': 'categorical', 'metric': 'column_percent'}
+        ...     }
         ... ]
         >>> results = generate_crosstabs_with_stats(df, row_indicators, col_indicators)
     """

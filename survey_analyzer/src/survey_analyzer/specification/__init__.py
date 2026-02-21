@@ -1,78 +1,58 @@
 """
 Specification Module
 
-Provides the consolidated table specification schema and validator.
+Provides the table specification schema for cross-tabulation analysis.
 
-The table specification is the primary AI-generated artifact that combines:
-- Indicator definitions
-- Recoding rules
-- Table specifications (dimensions, metrics, grouping rules)
-- Output settings
+The table specification is the primary AI-generated artifact that defines:
+- Row and column indicators
+- Base variables and their transformations
+- Tabulation statistics (categorical/scalar)
+- Filter clauses and weighting
 
 Classes:
-    TableSpecificationDocument: Root specification document
-    TableSpecification: Single table definition
-    Indicator: Indicator definition
-    RecodingRule: Variable recoding rules
-    TableSpecificationValidator: Validates specifications
+    TableSpecification: Root specification document
+    IndicatorSpec: Indicator definition with questionnaire questions and base variables
+    BaseVariable: Base variable with suffix, values, and generation rules
+    QuestionRef: Reference to a questionnaire question
+    TabulationStats: Statistics configuration (type, metric, explicit)
+    VariableSuffix: Semantic suffix types (_raw, _bin, _cat, _t2b, _b2b, _nps, _sca, _idx, _z, _pct)
+    QuestionType: Question types (Single Choice, Multiple Choice, Rating Scale, etc.)
+    TabulationType: Tabulation types (categorical, scalar)
+    MetricType: Metric types (column_percent, descriptive_statistics)
 """
 
 from .schema import (
     # Enums
+    VariableSuffix,
+    QuestionType,
+    TabulationType,
     MetricType,
-    AggregationType,
-    RecodingType,
-    TableType,
-    VariableSource,
     # Data classes
-    ValueMapping,
-    RangeMapping,
-    RecodingRule,
-    VariableRef,
-    Indicator,
-    TableDimension,
-    TableMetric,
+    QuestionRef,
+    BaseVariable,
+    TabulationStats,
+    IndicatorSpec,
     TableSpecification,
-    OutputSettings,
-    TableSpecificationDocument,
     # Convenience functions
     create_empty_spec,
-    validate_spec_structure,
-)
-
-from .validator import (
-    ValidationError,
-    ValidationResult,
-    TableSpecificationValidator,
-    validate_specification,
-    is_valid_specification,
+    load_from_file,
+    save_to_file,
 )
 
 __all__ = [
     # Enums
+    "VariableSuffix",
+    "QuestionType",
+    "TabulationType",
     "MetricType",
-    "AggregationType",
-    "RecodingType",
-    "TableType",
-    "VariableSource",
     # Data classes
-    "ValueMapping",
-    "RangeMapping",
-    "RecodingRule",
-    "VariableRef",
-    "Indicator",
-    "TableDimension",
-    "TableMetric",
+    "QuestionRef",
+    "BaseVariable",
+    "TabulationStats",
+    "IndicatorSpec",
     "TableSpecification",
-    "OutputSettings",
-    "TableSpecificationDocument",
-    # Schema functions
+    # Convenience functions
     "create_empty_spec",
-    "validate_spec_structure",
-    # Validator
-    "ValidationError",
-    "ValidationResult",
-    "TableSpecificationValidator",
-    "validate_specification",
-    "is_valid_specification",
+    "load_from_file",
+    "save_to_file",
 ]

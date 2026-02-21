@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
-from .scenario_detector import ScenarioDetector, IndicatorSpec
+from .scenario_detector import ScenarioDetector
 from .processors import (
     CategoricalSingleProcessor,
     CategoricalMultiProcessor,
@@ -35,8 +35,8 @@ class CrosstabResult:
 
     Attributes:
         table_id: Unique identifier for the table
-        row_indicator: Row indicator specification
-        column_indicator: Column indicator specification
+        row_indicator: Row indicator specification (dict with new schema)
+        column_indicator: Column indicator specification (dict with new schema)
         row_scenario: Detected row scenario type
         col_scenario: Detected column scenario type
         data: Formatted crosstab data
@@ -49,8 +49,8 @@ class CrosstabResult:
         error: Error message if invalid
     """
     table_id: str
-    row_indicator: IndicatorSpec
-    column_indicator: IndicatorSpec
+    row_indicator: Dict[str, Any]
+    column_indicator: Dict[str, Any]
     row_scenario: str
     col_scenario: str
     data: Dict[str, Any]
@@ -66,18 +66,8 @@ class CrosstabResult:
         """Convert to dictionary for JSON serialization."""
         return {
             "table_id": self.table_id,
-            "row_indicator": {
-                "indicator_code": self.row_indicator.indicator_code,
-                "statistic_type": self.row_indicator.statistic_type,
-                "source_variables": self.row_indicator.source_variables,
-                "question_type": self.row_indicator.question_type
-            },
-            "column_indicator": {
-                "indicator_code": self.column_indicator.indicator_code,
-                "statistic_type": self.column_indicator.statistic_type,
-                "source_variables": self.column_indicator.source_variables,
-                "question_type": self.column_indicator.question_type
-            },
+            "row_indicator": self.row_indicator,
+            "column_indicator": self.column_indicator,
             "row_scenario": self.row_scenario,
             "col_scenario": self.col_scenario,
             "data": self.data,
@@ -126,17 +116,15 @@ class CrosstabProcessor:
         Returns:
             CrosstabResult with formatted data
         """
-        # Create indicator specs
-        row_spec = IndicatorSpec.from_dict(row_indicator)
-        col_spec = IndicatorSpec.from_dict(col_indicator)
-
         # Generate table ID if not provided
         if table_id is None:
-            table_id = f"{row_spec.indicator_code}_x_{col_spec.indicator_code}"
+            row_code = row_indicator.get("indicator_code", "row")
+            col_code = col_indicator.get("indicator_code", "col")
+            table_id = f"{row_code}_x_{col_code}"
 
         # Detect scenarios
-        row_scenario = ScenarioDetector.detect(row_spec)
-        col_scenario = ScenarioDetector.detect(col_spec)
+        row_scenario = ScenarioDetector.detect(row_indicator)
+        col_scenario = ScenarioDetector.detect(col_indicator)
 
         logger.info(f"Generating crosstab: {table_id}")
         logger.info(f"  Row scenario: {row_scenario}, Column scenario: {col_scenario}")
@@ -162,8 +150,8 @@ class CrosstabProcessor:
             else:
                 return CrosstabResult(
                     table_id=table_id,
-                    row_indicator=row_spec,
-                    column_indicator=col_spec,
+                    row_indicator=row_indicator,
+                    column_indicator=col_indicator,
                     row_scenario=row_scenario,
                     col_scenario=col_scenario,
                     data={},
@@ -182,8 +170,8 @@ class CrosstabProcessor:
 
             return CrosstabResult(
                 table_id=table_id,
-                row_indicator=row_spec,
-                column_indicator=col_spec,
+                row_indicator=row_indicator,
+                column_indicator=col_indicator,
                 row_scenario=row_scenario,
                 col_scenario=col_scenario,
                 data=result_data["data"],
@@ -199,8 +187,8 @@ class CrosstabProcessor:
             logger.error(f"Error generating crosstab for {table_id}: {e}")
             return CrosstabResult(
                 table_id=table_id,
-                row_indicator=row_spec,
-                column_indicator=col_spec,
+                row_indicator=row_indicator,
+                column_indicator=col_indicator,
                 row_scenario=row_scenario,
                 col_scenario=col_scenario,
                 data={},
@@ -237,9 +225,9 @@ class CrosstabProcessor:
 
         for row_ind in row_indicators:
             for col_ind in col_indicators:
-                row_spec = IndicatorSpec.from_dict(row_ind)
-                col_spec = IndicatorSpec.from_dict(col_ind)
-                table_id = f"{row_spec.indicator_code}_x_{col_spec.indicator_code}"
+                row_code = row_ind.get("indicator_code", "row")
+                col_code = col_ind.get("indicator_code", "col")
+                table_id = f"{row_code}_x_{col_code}"
 
                 result = self.generate(df, row_ind, col_ind, weight_var, table_id)
                 results.append(result)
