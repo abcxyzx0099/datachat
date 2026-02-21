@@ -18,165 +18,566 @@
     // Raw - Direct SPSS variable, no transformation
     {
       "indicator_code": "Q1_GENDER_RAW",
-      "question_code": "Q1",
-      "question_description": "Gender",
-      "question_label": "请问您的性别是？(单选)",
-      "question_type": "Single Choice",
-      "source_variables": ["Q1_GENDER"],
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_label": "Gender - Raw data",
+      "questionnaire_questions": [
+        {
+          "code": "Q1",
+          "label": "Gender",
+          "type": "Single Choice"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "Q1_GENDER_raw",
+          "label": "Gender",
+          "suffix": "_raw",
+          "values": {
+            "1": "Male",
+            "2": "Female"
+          },
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     },
-    // Raw - Direct SPSS variable (scalar)
+    // Raw - Numeric scalar variable
     {
       "indicator_code": "S1_AGE",
-      "question_code": "S1",
-      "question_description": "Age",
-      "question_label": "请问您的年龄是？",
-      "question_type": "Numeric Input",
-      "source_variables": ["S1_AGE"],
-      "transformation_rules": null,
-      "statistic_type": "scalar"
+      "indicator_label": "Age - Numeric variable",
+      "questionnaire_questions": [
+        {
+          "code": "S1",
+          "label": "Age",
+          "type": "Numeric Input"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "S1_AGE_raw",
+          "label": "Age (numeric)",
+          "suffix": "_raw",
+          "values": null,
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "scalar",
+        "metric": "descriptive_statistics",
+        "explicit": null
+      }
     },
-    // Raw - Direct SPSS variable
+    // Binary - Awareness variable
     {
-      "indicator_code": "Q1_WORK_STATUS",
-      "question_code": "Q1",
-      "question_description": "Work status",
-      "question_label": "工作状态",
-      "question_type": "Single Choice",
-      "source_variables": ["Q1_WORK_STATUS"],
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_code": "Q1_BRAND_AWARENESS_BIN",
+      "indicator_label": "Brand awareness - Binary",
+      "questionnaire_questions": [
+        {
+          "code": "Q1",
+          "label": "Brand awareness",
+          "type": "Multiple Choice"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "Q1_BRAND_A_bin",
+          "label": "Brand A aware (Yes/No)",
+          "suffix": "_bin",
+          "values": {
+            "1": "Yes",
+            "0": "No"
+          },
+          "generation": null
+        },
+        {
+          "name": "Q1_BRAND_B_bin",
+          "label": "Brand B aware (Yes/No)",
+          "suffix": "_bin",
+          "values": {
+            "1": "Yes",
+            "0": "No"
+          },
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     },
-    // Categorical - Single choice variable
+    // Categorical - Recoded into groups
     {
-      "indicator_code": "Q5_SATISFACTION",
-      "question_code": "Q5",
-      "question_description": "Satisfaction",
-      "question_label": "请评价您对产品的满意度",
-      "question_type": "Rating Scale",
-      "source_variables": ["Q5_SATISFACTION"],
-      "explicit": ["1", "2", "3", "4", "5"],
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_code": "Q5_SATISFACTION_CAT",
+      "indicator_label": "Satisfaction - Categorical groups",
+      "questionnaire_questions": [
+        {
+          "code": "Q5",
+          "label": "Satisfaction",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "Q5_SATISFACTION_cat",
+          "label": "Satisfaction (grouped)",
+          "suffix": "_cat",
+          "values": {
+            "1": "Low",
+            "2": "Medium",
+            "3": "High"
+          },
+          "generation": "RECODE Q5_SATISFACTION (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO Q5_SATISFACTION_cat"
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     },
-    // Categorical Transform - With array-based recoding rules
+    // Top 2 Box - Highest categories combined
     {
-      "indicator_code": "Q5_SATISFACTION_RECODED",
-      "question_code": "Q5",
-      "question_description": "Satisfaction (recoded)",
-      "question_label": "满意度（重编码）",
-      "question_type": "Single Choice",
-      "source_variables": ["Q5_SATISFACTION"],
-      "transformation_rules": "(1 THRU 3=99) (4=100) (5=101)",
-      "statistic_type": "categorical"
+      "indicator_code": "Q5_SATISFACTION_T2B",
+      "indicator_label": "Satisfaction - Top 2 Box",
+      "questionnaire_questions": [
+        {
+          "code": "Q5",
+          "label": "Satisfaction",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "Q5_SATISFACTION_t2b",
+          "label": "Satisfaction (Top 2 Box)",
+          "suffix": "_t2b",
+          "values": {
+            "1": "Top 2 Box (Satisfied + Very Satisfied)",
+            "0": "Others"
+          },
+          "generation": "RECODE Q5_SATISFACTION (4 THRU 5=1) (ELSE=0) INTO Q5_SATISFACTION_t2b"
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     },
-    // Categorical Transform - With range-based recoding rules
+    // Bottom 2 Box - Lowest categories combined
     {
-      "indicator_code": "Q5_SATISFACTION_GROUPED",
-      "question_code": "Q5",
-      "question_description": "Satisfaction (grouped)",
-      "question_label": "满意度分组",
-      "question_type": "Single Choice",
-      "source_variables": ["Q5_SATISFACTION"],
-      "transformation_rules": "(1 THRU 2=1) (3=2) (4 THRU 5=3)",
-      "statistic_type": "categorical"
+      "indicator_code": "Q5_SATISFACTION_B2B",
+      "indicator_label": "Satisfaction - Bottom 2 Box",
+      "questionnaire_questions": [
+        {
+          "code": "Q5",
+          "label": "Satisfaction",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "Q5_SATISFACTION_b2b",
+          "label": "Satisfaction (Bottom 2 Box)",
+          "suffix": "_b2b",
+          "values": {
+            "1": "Bottom 2 Box (Dissatisfied + Very Dissatisfied)",
+            "0": "Others"
+          },
+          "generation": "RECODE Q5_SATISFACTION (1 THRU 2=1) (ELSE=0) INTO Q5_SATISFACTION_b2b"
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     },
-    // Computed Index - ALWAYS scalar (has COMPUTE in transformation_rules)
+    // NPS - Net Promoter Score categorization
     {
-      "indicator_code": "INCOME_INDEX",
-      "question_code": "S1",
-      "question_description": "Income index",
-      "question_label": "收入指数",
-      "question_type": "Numeric Input",
-      "source_variables": ["SALARY_MONTHLY", "BONUS_MONTHLY", "OTHER_INCOME"],
-      "transformation_rules": "COMPUTE INCOME_INDEX = SALARY_MONTHLY + BONUS_MONTHLY + OTHER_INCOME",
-      "statistic_type": "scalar"
+      "indicator_code": "Q6_NPS_CATEGORY",
+      "indicator_label": "NPS - Promoter/Passive/Detractor",
+      "questionnaire_questions": [
+        {
+          "code": "Q6",
+          "label": "Recommendation likelihood",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "Q6_NPS_nps",
+          "label": "NPS Category",
+          "suffix": "_nps",
+          "values": {
+            "3": "Promoter (9-10)",
+            "2": "Passive (7-8)",
+            "1": "Detractor (0-6)"
+          },
+          "generation": "RECODE Q6_RECOMMEND (9 THRU 10=3) (7 THRU 8=2) (0 THRU 6=1) INTO Q6_NPS_nps"
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     },
-    // Categorical Validation - With validation rules
+    // Index - Computed satisfaction index
     {
-      "indicator_code": "S1_INCOME_VALIDATED",
-      "question_code": "S1",
-      "question_description": "Income (validated)",
-      "question_label": "收入（验证）",
-      "question_type": "Single Choice",
-      "source_variables": ["S1_INCOME_MONTHLY"],
-      "transformation_rules": "SELECT IF NOT MISSING(S1_INCOME_MONTHLY) AND S1_INCOME_MONTHLY GT 0",
-      "statistic_type": "categorical"
+      "indicator_code": "SATISFACTION_INDEX",
+      "indicator_label": "Satisfaction index - Mean of all attributes",
+      "questionnaire_questions": [
+        {
+          "code": "Q5",
+          "label": "Satisfaction attributes",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "SATISFACTION_idx",
+          "label": "Satisfaction Index",
+          "suffix": "_idx",
+          "values": null,
+          "generation": "COMPUTE SATISFACTION_idx = MEAN(Q5A_PRODUCT, Q5B_SERVICE, Q5C_SUPPORT, Q5D_VALUE)"
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "scalar",
+        "metric": "descriptive_statistics",
+        "explicit": null
+      }
     },
-    // Scalar Transform - Numeric with recoding/grouping rules
+    // Z-score - Normalized score
     {
-      "indicator_code": "S1_AGE_GROUP",
-      "question_code": "S1",
-      "question_description": "Age (grouped)",
-      "question_label": "年龄分组",
-      "question_type": "Numeric Input",
-      "source_variables": ["S1_AGE"],
-      "transformation_rules": "(0 THRU 25=1) (26 THRU 35=2) (36 THRU 45=3) (46 THRU 60=4) (61 THRU 99=5)",
-      "statistic_type": "scalar"
+      "indicator_code": "D1_QUALITY_ZSCORE",
+      "indicator_label": "Quality rating - Z-score normalized",
+      "questionnaire_questions": [
+        {
+          "code": "D1",
+          "label": "Attribute ratings",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "D1_QUALITY_z",
+          "label": "Quality (Z-score)",
+          "suffix": "_z",
+          "values": null,
+          "generation": "COMPUTE D1_QUALITY_z = (D1_QUALITY - MEAN(D1_QUALITY)) / SD(D1_QUALITY)"
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "scalar",
+        "metric": "descriptive_statistics",
+        "explicit": null
+      }
+    },
+    // Percentile - Percentile rank
+    {
+      "indicator_code": "D1_PRICE_PERCENTILE",
+      "indicator_label": "Price rating - Percentile rank",
+      "questionnaire_questions": [
+        {
+          "code": "D1",
+          "label": "Price rating",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "D1_PRICE_pct",
+          "label": "Price (percentile)",
+          "suffix": "_pct",
+          "values": null,
+          "generation": "COMPUTE D1_PRICE_pct = RANK(D1_PRICE) / N * 100"
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "scalar",
+        "metric": "descriptive_statistics",
+        "explicit": null
+      }
+    },
+    // Multiple Base Variables - Rating scale attributes
+    {
+      "indicator_code": "D1_ATTRIBUTE_RATINGS",
+      "indicator_label": "Attribute ratings - All dimensions",
+      "questionnaire_questions": [
+        {
+          "code": "D1",
+          "label": "Attribute ratings",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "D1_QUALITY_raw",
+          "label": "Quality rating",
+          "suffix": "_raw",
+          "values": null,
+          "generation": null
+        },
+        {
+          "name": "D1_PRICE_raw",
+          "label": "Price rating",
+          "suffix": "_raw",
+          "values": null,
+          "generation": null
+        },
+        {
+          "name": "D1_SERVICE_raw",
+          "label": "Service rating",
+          "suffix": "_raw",
+          "values": null,
+          "generation": null
+        },
+        {
+          "name": "D1_SELECTION_raw",
+          "label": "Selection rating",
+          "suffix": "_raw",
+          "values": null,
+          "generation": null
+        },
+        {
+          "name": "D1_VALUE_raw",
+          "label": "Value rating",
+          "suffix": "_raw",
+          "values": null,
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "scalar",
+        "metric": "descriptive_statistics",
+        "explicit": null
+      }
+    },
+    // Multiple Related Questions - Composite satisfaction
+    {
+      "indicator_code": "SATISFACTION_COMPOSITE",
+      "indicator_label": "Satisfaction - Multiple dimensions",
+      "questionnaire_questions": [
+        {
+          "code": "Q5A",
+          "label": "Product Satisfaction",
+          "type": "Rating Scale"
+        },
+        {
+          "code": "Q5B",
+          "label": "Service Satisfaction",
+          "type": "Rating Scale"
+        },
+        {
+          "code": "Q5C",
+          "label": "Support Satisfaction",
+          "type": "Rating Scale"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "Q5A_SAT_t2b",
+          "label": "Product Satisfaction (Top 2 Box)",
+          "suffix": "_t2b",
+          "values": {
+            "1": "Top 2 Box",
+            "0": "Others"
+          },
+          "generation": "RECODE Q5A (4 THRU 5=1) (ELSE=0) INTO Q5A_SAT_t2b"
+        },
+        {
+          "name": "Q5B_SAT_t2b",
+          "label": "Service Satisfaction (Top 2 Box)",
+          "suffix": "_t2b",
+          "values": {
+            "1": "Top 2 Box",
+            "0": "Others"
+          },
+          "generation": "RECODE Q5B (4 THRU 5=1) (ELSE=0) INTO Q5B_SAT_t2b"
+        },
+        {
+          "name": "Q5C_SAT_t2b",
+          "label": "Support Satisfaction (Top 2 Box)",
+          "suffix": "_t2b",
+          "values": {
+            "1": "Top 2 Box",
+            "0": "Others"
+          },
+          "generation": "RECODE Q5C (4 THRU 5=1) (ELSE=0) INTO Q5C_SAT_t2b"
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     }
   ],
 
   "column_indicators": [
-    // Demographic - Simple demographic variable
+    // Demographic - Age group
     {
       "indicator_code": "AGE_GROUP",
-      "question_code": "S1",
-      "question_description": "Age group",
-      "question_label": "年龄分组",
-      "question_type": "Single Choice",
-      "source_variables": ["AGE_GROUP"],
-      "explicit": ["1", "2", "3", "4", "5"],
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_label": "Age group - Demographic banner",
+      "questionnaire_questions": [
+        {
+          "code": "S1",
+          "label": "Age group",
+          "type": "Single Choice"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "AGE_GROUP_raw",
+          "label": "Age group",
+          "suffix": "_raw",
+          "values": {
+            "1": "18-25",
+            "2": "26-35",
+            "3": "36-45",
+            "4": "46-60",
+            "5": "60+"
+          },
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2", "3", "4", "5"]
+      }
     },
-    // Demographic - Simple demographic variable
+    // Demographic - Gender
     {
       "indicator_code": "GENDER",
-      "question_code": "Q1",
-      "question_description": "Gender",
-      "question_label": "性别",
-      "question_type": "Single Choice",
-      "source_variables": ["GENDER"],
-      "explicit": ["1", "2"],
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_label": "Gender - Demographic banner",
+      "questionnaire_questions": [
+        {
+          "code": "Q1",
+          "label": "Gender",
+          "type": "Single Choice"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "GENDER_raw",
+          "label": "Gender",
+          "suffix": "_raw",
+          "values": {
+            "1": "Male",
+            "2": "Female"
+          },
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2"]
+      }
     },
-    // Demographic - Simple demographic variable
+    // Demographic - Region
     {
       "indicator_code": "REGION",
-      "question_code": "D1",
-      "question_description": "Region",
-      "question_label": "地区",
-      "question_type": "Single Choice",
-      "source_variables": ["REGION"],
-      "explicit": null,
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_label": "Region - Geographic location",
+      "questionnaire_questions": [
+        {
+          "code": "D1",
+          "label": "Region",
+          "type": "Single Choice"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "REGION_raw",
+          "label": "Region",
+          "suffix": "_raw",
+          "values": {
+            "1": "North",
+            "2": "South",
+            "3": "East",
+            "4": "West",
+            "5": "Central"
+          },
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     },
-    // Demographic - Simple demographic variable
+    // Demographic - Education
     {
       "indicator_code": "EDUCATION",
-      "question_code": "D2",
-      "question_description": "Education",
-      "question_label": "教育程度",
-      "question_type": "Single Choice",
-      "source_variables": ["EDUCATION"],
-      "explicit": ["1", "2", "3", "4", "5", "6"],
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_label": "Education - Educational attainment",
+      "questionnaire_questions": [
+        {
+          "code": "D2",
+          "label": "Education",
+          "type": "Single Choice"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "EDUCATION_raw",
+          "label": "Education level",
+          "suffix": "_raw",
+          "values": {
+            "1": "Primary or below",
+            "2": "Middle school",
+            "3": "High school",
+            "4": "College",
+            "5": "Bachelor",
+            "6": "Postgraduate"
+          },
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2", "3", "4", "5", "6"]
+      }
     },
-    // Demographic - Simple demographic variable
+    // Demographic - Income
     {
       "indicator_code": "INCOME",
-      "question_code": "S1",
-      "question_description": "Income",
-      "question_label": "收入",
-      "question_type": "Single Choice",
-      "source_variables": ["INCOME"],
-      "explicit": null,
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_label": "Income - Income level",
+      "questionnaire_questions": [
+        {
+          "code": "S1",
+          "label": "Income",
+          "type": "Single Choice"
+        }
+      ],
+      "base_variables": [
+        {
+          "name": "INCOME_raw",
+          "label": "Income",
+          "suffix": "_raw",
+          "values": {
+            "1": "Low",
+            "2": "Medium-Low",
+            "3": "Medium",
+            "4": "Medium-High",
+            "5": "High"
+          },
+          "generation": null
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
     }
   ]
 }

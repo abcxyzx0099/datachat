@@ -5,11 +5,46 @@ description: Stage 1: Data Preparation - Load SPSS (.sav) files and extract meta
 
 # Analyzer Data Preparation
 
-> **Stage 1: Data Preparation** - Load SPSS files and extract metadata using `survey_analyzer` library
+> **Stage 1: Data Preparation** - Load SPSS files and extract metadata using `survey_analyzer` CLI
 
 ## Overview
 
-This skill guides you through using the **`survey_analyzer` library** to prepare SPSS survey data for analysis. The library provides:
+This skill guides you through using the **`survey_analyzer` CLI** to prepare SPSS survey data for analysis. The CLI provides:
+
+| Command | Purpose |
+|---------|---------|
+| `python -m survey_analyzer data read` | Read SPSS file and extract metadata |
+| `python -m survey_analyzer data filter` | Filter variables by business rules |
+
+**Output**: `filtered_metadata.json` - Ready for Stage 2 (Table Specification)
+
+---
+
+## Quick Start
+
+### CLI Usage (Recommended)
+
+```bash
+# Read SPSS file and extract metadata (encoding auto-detected)
+python -m survey_analyzer data read \
+  --sav-file data/survey.sav \
+  --output-file output/metadata.json
+
+# Filter variables by category count
+python -m survey_analyzer data filter \
+  --metadata-file output/metadata.json \
+  --output-file output/filtered_metadata.json \
+  --max-categories 30
+```
+
+### Combined One-Liner
+
+```bash
+# Read and filter in one command (using output from read)
+python -m survey_analyzer data read \
+  --sav-file data/survey.sav \
+  --output-file output/filtered_metadata.json
+```
 
 | Component | Module | Purpose |
 |-----------|--------|---------|
@@ -37,8 +72,8 @@ from survey_analyzer.io import SPSSReader
 from survey_analyzer.io.metadata import MetadataTransformer
 import json
 
-# Step 1: Read SPSS file
-reader = SPSSReader(encoding="UTF-8")
+# Step 1: Read SPSS file (encoding auto-detected)
+reader = SPSSReader()
 df, metadata = reader.read("data/survey.sav")
 
 # Step 2: Transform to variable-centered format
@@ -48,7 +83,6 @@ variable_metadata = transformer.to_variable_centered(metadata)
 # Step 3: Filter variables by business rules
 filtered_metadata = transformer.filter_variables(
     variable_metadata,
-    min_categories=2,
     max_categories=30  # Per business rules
 )
 
@@ -79,11 +113,10 @@ with open("output/filtered_metadata.json", "w") as f:
 from survey_analyzer.io import SPSSReader
 
 reader = SPSSReader(
-    encoding="UTF-8",           # File encoding
     apply_value_formats=False   # Keep raw values
 )
 
-# Read file with data
+# Read file with data (encoding auto-detected from SPSS file)
 df, metadata = reader.read("survey.sav")
 
 # Read metadata only (faster for large files)
@@ -109,7 +142,6 @@ variable_metadata = transformer.to_variable_centered(metadata)
 # Filter variables by category count
 filtered = transformer.filter_variables(
     variable_metadata,
-    min_categories=2,      # Minimum categories
     max_categories=30,     # Maximum categories (business rules)
     include_patterns=[r"^q\d+"],  # Optional: regex include
     exclude_patterns=[r".*_other$"]  # Optional: regex exclude
@@ -178,7 +210,6 @@ def prepare_data(
     # Filter by business rules
     filtered = transformer.filter_variables(
         variable_metadata,
-        min_categories=2,
         max_categories=cardinality_threshold
     )
 
@@ -292,9 +323,10 @@ pip install pyreadstat pandas
 | Issue | Solution |
 |-------|----------|
 | `ImportError: pyreadstat` | Install with `pip install pyreadstat` |
-| `EncodingError` | Try different encoding: `SPSSReader(encoding="Latin-1")` |
 | Empty filtered_metadata | Adjust `max_categories` threshold |
 | No analysis variables | Check that variables have value labels |
+
+**Note:** Encoding is auto-detected from the SPSS file itself. No manual encoding specification needed.
 
 ---
 
