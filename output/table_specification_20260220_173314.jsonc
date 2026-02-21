@@ -1,0 +1,560 @@
+{
+  "metadata": {
+    "spec_id": "autosurvey_crosstab_20250220_150000",
+    "project_id": "proj_auto_survey_2024",
+    "dataset_id": "ds_real_data_national",
+    "description": "Auto-generated table specification from real-data.sav",
+    "generated_at": "2025-02-20T15:00:00",
+    "source_file": "real-data.sav",
+    "case_count": 13064
+  },
+  "filter_clause": {
+    "exclude_incomplete": true
+  },
+  "weight_indicator": null,
+  "row_indicators": {
+    "Q2A_USAGE": {
+      "indicator_label": "Q2A - 请问您要购买的新车通常将如何使用？",
+      "question_code": "Q2A",
+      "question_type": "Multiple Choice",
+      "base_variables": {
+        "variable_list": {
+          "Q2A_1_bin": "上/下班用",
+          "Q2A_2_bin": "和家庭成员/朋友/同事一起出外娱乐聚餐",
+          "Q2A_3_bin": "去购物",
+          "Q2A_4_bin": "去户外活动",
+          "Q2A_5_bin": "自己驾车兜风",
+          "Q2A_6_bin": "和家人/朋友/同事外出一日游",
+          "Q2A_7_bin": "回家乡探亲",
+          "Q2A_8_bin": "和家人/朋友/同事外出旅行(一天以上)",
+          "Q2A_9_bin": "给客户送货",
+          "Q2A_10_bin": "出席商务场合",
+          "Q2A_11_bin": "在路况不好的道路上行驶",
+          "Q2A_12_bin": "在没有道路的地方行驶"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "是",
+          "0": "否"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q2B_FREQUENCY": {
+      "indicator_label": "Q2B - 各项使用频率",
+      "question_code": "Q2B",
+      "question_type": "Rating Scale",
+      "base_variables": {
+        "variable_list": {
+          "Q2B_1_cat": "上/下班用 - 频率",
+          "Q2B_2_cat": "和家庭成员/朋友/同事一起出外娱乐聚餐 - 频率",
+          "Q2B_3_cat": "去购物 - 频率",
+          "Q2B_4_cat": "去户外活动 - 频率",
+          "Q2B_5_cat": "自己驾车兜风 - 频率",
+          "Q2B_6_cat": "和家人/朋友/同事外出一日游 - 频率",
+          "Q2B_7_cat": "回家乡探亲 - 频率",
+          "Q2B_8_cat": "和家人/朋友/同事外出旅行(一天以上) - 频率",
+          "Q2B_9_cat": "给客户送货 - 频率",
+          "Q2B_10_cat": "出席商务场合 - 频率",
+          "Q2B_11_cat": "在路况不好的道路上行驶 - 频率",
+          "Q2B_12_cat": "在没有道路的地方行驶 - 频率"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "几乎每天",
+          "2": "至少一周一次",
+          "3": "偶尔，大约一个月一次",
+          "4": "一年内总有一次",
+          "5": "一年甚至一次都没有"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q3X1": {
+      "indicator_label": "Q3X1 - 购车考虑因素",
+      "question_code": "Q3X1",
+      "question_type": "Rating Scale",
+      "base_variables": {
+        "variable_list": {
+          "Q3X1_cat": "购车考虑因素"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "非常不重要",
+          "2": "不重要",
+          "3": "一般",
+          "4": "重要",
+          "5": "非常重要"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q3X2": {
+      "indicator_label": "Q3X2 - 购车考虑因素",
+      "question_code": "Q3X2",
+      "question_type": "Rating Scale",
+      "base_variables": {
+        "variable_list": {
+          "Q3X2_cat": "购车考虑因素"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "非常不重要",
+          "2": "不重要",
+          "3": "一般",
+          "4": "重要",
+          "5": "非常重要"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q9X2_SATISFACTION": {
+      "indicator_label": "Q9X2 - 满意度评分",
+      "question_code": "Q9X2",
+      "question_type": "Rating Scale",
+      "base_variables": {
+        "variable_list": {
+          "Q9X2_1_cat": "满意度指标1",
+          "Q9X2_2_cat": "满意度指标2",
+          "Q9X2_3_cat": "满意度指标3",
+          "Q9X2_4_cat": "满意度指标4",
+          "Q9X2_5_cat": "满意度指标5",
+          "Q9X2_6_cat": "满意度指标6",
+          "Q9X2_7_cat": "满意度指标7"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "非常不满意",
+          "2": "不满意",
+          "3": "一般",
+          "4": "满意",
+          "5": "非常满意"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q10_ENGINE": {
+      "indicator_label": "Q10 - 排量偏好",
+      "question_code": "Q10",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "Q10_cat": "排量"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "1.0L",
+          "2": "1.2L",
+          "3": "1.4L",
+          "4": "1.5L",
+          "5": "1.6L",
+          "6": "1.8L",
+          "7": "2.0L",
+          "8": "2.4L",
+          "9": "2.5L",
+          "10": "2.8L",
+          "11": "3.0L",
+          "12": "3.5L",
+          "13": "4.0L",
+          "14": "1.0T",
+          "15": "1.2T",
+          "16": "1.3T",
+          "17": "1.4T",
+          "18": "1.5T",
+          "19": "1.6T",
+          "20": "1.8T",
+          "21": "2.0T",
+          "22": "2.4T",
+          "23": "2.5T"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q12": {
+      "indicator_label": "Q12 - 购车预算",
+      "question_code": "Q12",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "Q12_cat": "购车预算范围"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "10万以下",
+          "2": "10-15万",
+          "3": "15-20万",
+          "4": "20-30万",
+          "5": "30万以上"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q4_ATTRIBUTES": {
+      "indicator_label": "Q4 - 车辆属性重要性评价",
+      "question_code": "Q4",
+      "question_type": "Rating Scale",
+      "base_variables": {
+        "variable_list": {
+          "Q4X1A_1_cat": "属性1重要性",
+          "Q4X1A_2_cat": "属性2重要性",
+          "Q4X1A_3_cat": "属性3重要性",
+          "Q4X1A_4_cat": "属性4重要性",
+          "Q4X1A_5_cat": "属性5重要性",
+          "Q4X1A_6_cat": "属性6重要性",
+          "Q4X1B_7_cat": "属性7重要性",
+          "Q4X1B_8_cat": "属性8重要性",
+          "Q4X1B_9_cat": "属性9重要性",
+          "Q4X1B_10_cat": "属性10重要性",
+          "Q4X1B_11_cat": "属性11重要性",
+          "Q4X1B_12_cat": "属性12重要性"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "完全不重要",
+          "2": "不太重要",
+          "3": "一般",
+          "4": "比较重要",
+          "5": "非常重要"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    }
+  },
+  "column_indicators": {
+    "GENDER": {
+      "indicator_label": "S0 - 性别",
+      "question_code": "S0",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S0_cat": "性别"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "男",
+          "2": "女"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2"]
+      }
+    },
+    "CITY_TIER": {
+      "indicator_label": "S0XB1 - 城市级别",
+      "question_code": "S0XB1",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S0XB1_cat": "城市级别"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "一线城市",
+          "2": "二线城市",
+          "3": "三线城市",
+          "4": "四线城市",
+          "5": "五线城市",
+          "6": "六线城市"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2", "3", "4", "5", "6"]
+      }
+    },
+    "AGE": {
+      "indicator_label": "S1X1 - 年龄",
+      "question_code": "S1X1",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S1X1_cat": "年龄段"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "18岁以下",
+          "2": "18-25岁",
+          "3": "26-35岁",
+          "4": "36-45岁",
+          "5": "46-55岁",
+          "6": "56-60岁",
+          "7": "60岁以上"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["2", "3", "4", "5"]
+      }
+    },
+    "CAR_OWNERSHIP": {
+      "indicator_label": "S2 - 汽车拥有量",
+      "question_code": "S2",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S2_cat": "汽车拥有量"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "拥有 1 辆车",
+          "2": "拥有 2 辆车",
+          "3": "拥有 3 辆车",
+          "4": "拥有 4辆或以上的车",
+          "9": "没有"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2", "3", "4", "9"]
+      }
+    },
+    "FIRST_TIME_BUYER": {
+      "indicator_label": "S2A - 首购/再购",
+      "question_code": "S2A",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S2A_cat": "购车类型"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "首购者",
+          "2": "再购者"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2"]
+      }
+    },
+    "DECISION_MAKER": {
+      "indicator_label": "S3 - 决策者",
+      "question_code": "S3",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S3_cat": "是否为决策者"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "是",
+          "2": "否"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2"]
+      }
+    },
+    "VEHICLE_TYPE": {
+      "indicator_label": "S5X1C - 车型偏好",
+      "question_code": "S5X1C",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S5X1C_cat": "车型"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "三厢轿车",
+          "2": "跑车",
+          "3": "两厢轿车",
+          "4": "旅行车",
+          "5": "多功能车MPV",
+          "6": "多功能车MPV",
+          "7": "SUV - 2 排座",
+          "8": "SUV - 3 排座",
+          "9": "皮卡",
+          "10": "CDV",
+          "11": "商用/小面",
+          "12": "卡车",
+          "13": "其他"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2", "3", "4", "5", "7", "8"]
+      }
+    },
+    "ENGINE_TYPE": {
+      "indicator_label": "S6 - 引擎类型",
+      "question_code": "S6",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S6_cat": "引擎类型"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "汽油自然吸气引擎",
+          "2": "汽油涡轮增压引擎",
+          "3": "柴油引擎",
+          "4": "油电混合动力",
+          "5": "插电式混合动力",
+          "6": "100% 电动",
+          "7": "LPG或CNG",
+          "98": "其他"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2", "3", "4", "5", "6", "7"]
+      }
+    },
+    "REPLACEMENT_TYPE": {
+      "indicator_label": "S14 - 替换或增加",
+      "question_code": "S14",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "S14_cat": "购车类型"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "替代前一辆车",
+          "2": "增加一辆车"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2"]
+      }
+    },
+    "INCOME": {
+      "indicator_label": "F9X1 - 个人月收入",
+      "question_code": "F9X1",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "F9X1_cat": "收入范围"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "3,000元以下",
+          "2": "3,000-4,999元",
+          "3": "5,000-6,999元",
+          "4": "7,000-9,999元",
+          "5": "10,000-14,999元",
+          "6": "15,000-19,999元",
+          "7": "20,000-24,999元",
+          "8": "25,000-29,999 元",
+          "9": "30,000元及以上"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["2", "3", "4", "5", "6", "7", "8", "9"]
+      }
+    },
+    "EDUCATION": {
+      "indicator_label": "F8XA - 教育程度",
+      "question_code": "F8XA",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "F8XA_cat": "教育程度"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "初中或以下",
+          "2": "高中",
+          "3": "技校/中专",
+          "4": "大专",
+          "5": "本科或以上"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2", "3", "4", "5"]
+      }
+    },
+    "MARITAL_STATUS": {
+      "indicator_label": "F1 - 婚姻状况",
+      "question_code": "F1",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "F1_cat": "婚姻状况"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "未婚",
+          "2": "已婚"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2"]
+      }
+    },
+    "HOUSEHOLD_SIZE": {
+      "indicator_label": "F2X1 - 家庭成员数",
+      "question_code": "F2X1",
+      "question_type": "Single Choice",
+      "base_variables": {
+        "variable_list": {
+          "F2X1_cat": "家庭成员数"
+        },
+        "generation_rules": null,
+        "unified_values": {
+          "1": "1人",
+          "2": "2人",
+          "3": "3人",
+          "4": "4人",
+          "5": "5人",
+          "6": "6人及以上"
+        }
+      },
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": ["1", "2", "3", "4", "5", "6"]
+      }
+    }
+  }
+}

@@ -1,0 +1,1372 @@
+{
+  "metadata": {
+    "spec_id": "autosurvey_crosstab_20260220_140451",
+    "project_id": "proj_auto_survey_2024",
+    "dataset_id": "ds_real_data_national",
+    "description": "Auto-generated table specification from real-data.sav",
+    "generated_at": "2026-02-20T14:04:51.098497",
+    "source_file": "real-data.sav",
+    "case_count": 13064
+  },
+  "filter_clause": {
+    "exclude_incomplete": true
+  },
+  "weight_indicator": null,
+  "row_indicators": {
+    "Q10_RAW": {
+      "indicator_label": "Q10 - 1.0L",
+      "question_code": "Q10",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q10"
+          ],
+          "target": [
+            "Q10_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "1.0L",
+            "2.0": "1.2L",
+            "3.0": "1.4L",
+            "4.0": "1.5L",
+            "5.0": "1.6L",
+            "6.0": "1.8L",
+            "7.0": "2.0L",
+            "8.0": "2.4L",
+            "9.0": "2.5L",
+            "10.0": "2.8L",
+            "11.0": "3.0L",
+            "12.0": "3.5L",
+            "13.0": "4.0L",
+            "14.0": "1.0T",
+            "15.0": "1.2T",
+            "16.0": "1.3T",
+            "17.0": "1.4T",
+            "18.0": "1.5T",
+            "19.0": "1.6T",
+            "20.0": "1.8T",
+            "21.0": "2.0T",
+            "22.0": "2.4T",
+            "23.0": "2.5T",
+            "24.0": "2.8T",
+            "25.0": "3.0T",
+            "98.0": "其他, 请注明"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q12_RAW": {
+      "indicator_label": "Q12 - FWD",
+      "question_code": "Q12",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q12"
+          ],
+          "target": [
+            "Q12_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "前轮驱动 (FWD)",
+            "2.0": "后轮驱动 (RWD)",
+            "3.0": "全轮驱动 (AWD) – 偏向前轮驱动",
+            "4.0": "全轮驱动 (AWD) – 偏向后轮驱动",
+            "5.0": "全轮驱动 (AWD) – 偏向前轮驱动或偏向后轮驱动均可",
+            "6.0": "四轮驱动 (4WD)",
+            "7.0": "不知道",
+            "98.0": "其他,请注明"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q18X_RAW": {
+      "indicator_label": "Q18X - 完全不同意",
+      "question_code": "Q18X",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q18X"
+          ],
+          "target": [
+            "Q18X_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "完全不同意",
+            "2.0": "比较不同意",
+            "3.0": "不同意也不反对",
+            "4.0": "比较同意",
+            "5.0": "完全同意"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q18XA_RAW": {
+      "indicator_label": "Q18XA - 非常不重要",
+      "question_code": "Q18XA",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q18XA"
+          ],
+          "target": [
+            "Q18XA_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "非常不重要",
+            "2.0": "比较不重要",
+            "3.0": "不重要",
+            "4.0": "重要性一般",
+            "5.0": "重要",
+            "6.0": "比较重要",
+            "7.0": "非常重要"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q1X_RAW": {
+      "indicator_label": "Q1X - 一点也不重要",
+      "question_code": "Q1X",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q1X"
+          ],
+          "target": [
+            "Q1X_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "一点也不重要",
+            "2.0": "不是太重要",
+            "3.0": "一般",
+            "4.0": "有点重要",
+            "5.0": "很重要"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q20X_RAW": {
+      "indicator_label": "Q20X - 以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象",
+      "question_code": "Q20X",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q20X1_1",
+            "Q20X1_10",
+            "Q20X1_11",
+            "Q20X1_12",
+            "Q20X1_13",
+            "Q20X1_14",
+            "Q20X1_15",
+            "Q20X1_16",
+            "Q20X1_17",
+            "Q20X1_18",
+            "Q20X1_19",
+            "Q20X1_2",
+            "Q20X1_3",
+            "Q20X1_4",
+            "Q20X1_5",
+            "Q20X1_6",
+            "Q20X1_7",
+            "Q20X1_8",
+            "Q20X1_9",
+            "Q20X1_98"
+          ],
+          "target": [
+            "Q20X1_1_bin",
+            "Q20X1_10_bin",
+            "Q20X1_11_bin",
+            "Q20X1_12_bin",
+            "Q20X1_13_bin",
+            "Q20X1_14_bin",
+            "Q20X1_15_bin",
+            "Q20X1_16_bin",
+            "Q20X1_17_bin",
+            "Q20X1_18_bin",
+            "Q20X1_19_bin",
+            "Q20X1_2_bin",
+            "Q20X1_3_bin",
+            "Q20X1_4_bin",
+            "Q20X1_5_bin",
+            "Q20X1_6_bin",
+            "Q20X1_7_bin",
+            "Q20X1_8_bin",
+            "Q20X1_9_bin",
+            "Q20X1_98_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "粗犷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q25_RAW": {
+      "indicator_label": "Q25 - 1",
+      "question_code": "Q25",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q25"
+          ],
+          "target": [
+            "Q25_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "1",
+            "2.0": "2",
+            "3.0": "3",
+            "4.0": "4",
+            "5.0": "5"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q26_RAW": {
+      "indicator_label": "Q26 - 如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费",
+      "question_code": "Q26",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q26_1",
+            "Q26_2",
+            "Q26_3",
+            "Q26_4",
+            "Q26_5",
+            "Q26_6",
+            "Q26_7"
+          ],
+          "target": [
+            "Q26_1_bin",
+            "Q26_2_bin",
+            "Q26_3_bin",
+            "Q26_4_bin",
+            "Q26_5_bin",
+            "Q26_6_bin",
+            "Q26_7_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "睡觉 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q26X_RAW": {
+      "indicator_label": "Q26X - 为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选",
+      "question_code": "Q26X",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q26X1_1",
+            "Q26X1_2",
+            "Q26X1_3",
+            "Q26X1_4",
+            "Q26X1_98"
+          ],
+          "target": [
+            "Q26X1_1_bin",
+            "Q26X1_2_bin",
+            "Q26X1_3_bin",
+            "Q26X1_4_bin",
+            "Q26X1_98_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "出于安全考虑 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q27_RAW": {
+      "indicator_label": "Q27 - 一般来说，想起车联网，有人把以",
+      "question_code": "Q27",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q27_1",
+            "Q27_2",
+            "Q27_3",
+            "Q27_4",
+            "Q27_5",
+            "Q27_6",
+            "Q27_7",
+            "Q27_8",
+            "Q27_9"
+          ],
+          "target": [
+            "Q27_1_bin",
+            "Q27_2_bin",
+            "Q27_3_bin",
+            "Q27_4_bin",
+            "Q27_5_bin",
+            "Q27_6_bin",
+            "Q27_7_bin",
+            "Q27_8_bin",
+            "Q27_9_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "它使我的旅程更加安全（通过对潜在危险的自动警告） (一般来说，想起车联网，有人把以"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q28_RAW": {
+      "indicator_label": "Q28 - 一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）",
+      "question_code": "Q28",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q28_1",
+            "Q28_2",
+            "Q28_3",
+            "Q28_4",
+            "Q28_5",
+            "Q28_6",
+            "Q28_7"
+          ],
+          "target": [
+            "Q28_1_bin",
+            "Q28_2_bin",
+            "Q28_3_bin",
+            "Q28_4_bin",
+            "Q28_5_bin",
+            "Q28_6_bin",
+            "Q28_7_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "它使我的旅程更加安全 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q28X_RAW": {
+      "indicator_label": "Q28X - 你下一辆车为什么不考虑100%的电动车呢？（多选）",
+      "question_code": "Q28X",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q28X1_1",
+            "Q28X1_10",
+            "Q28X1_11",
+            "Q28X1_2",
+            "Q28X1_3",
+            "Q28X1_4",
+            "Q28X1_5",
+            "Q28X1_6",
+            "Q28X1_7",
+            "Q28X1_8",
+            "Q28X1_9",
+            "Q28X1_98"
+          ],
+          "target": [
+            "Q28X1_1_bin",
+            "Q28X1_10_bin",
+            "Q28X1_11_bin",
+            "Q28X1_2_bin",
+            "Q28X1_3_bin",
+            "Q28X1_4_bin",
+            "Q28X1_5_bin",
+            "Q28X1_6_bin",
+            "Q28X1_7_bin",
+            "Q28X1_8_bin",
+            "Q28X1_9_bin",
+            "Q28X1_98_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "电动车有里程数限制 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q29XA_RAW": {
+      "indicator_label": "Q29XA - 你在家的时候，一般使用哪一种场所的充电设施？（多选）",
+      "question_code": "Q29XA",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q29XA_1",
+            "Q29XA_2",
+            "Q29XA_3",
+            "Q29XA_4",
+            "Q29XA_5",
+            "Q29XA_6",
+            "Q29XA_7"
+          ],
+          "target": [
+            "Q29XA_1_bin",
+            "Q29XA_2_bin",
+            "Q29XA_3_bin",
+            "Q29XA_4_bin",
+            "Q29XA_5_bin",
+            "Q29XA_6_bin",
+            "Q29XA_7_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "在街上，路边 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q29XB_RAW": {
+      "indicator_label": "Q29XB - 上班的时候呢？（多选）",
+      "question_code": "Q29XB",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q29XB_1",
+            "Q29XB_2",
+            "Q29XB_3",
+            "Q29XB_4",
+            "Q29XB_5",
+            "Q29XB_6",
+            "Q29XB_7",
+            "Q29XB_8"
+          ],
+          "target": [
+            "Q29XB_1_bin",
+            "Q29XB_2_bin",
+            "Q29XB_3_bin",
+            "Q29XB_4_bin",
+            "Q29XB_5_bin",
+            "Q29XB_6_bin",
+            "Q29XB_7_bin",
+            "Q29XB_8_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "在街上，路边 (上班的时候呢？（多选）)"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q2A_RAW": {
+      "indicator_label": "Q2A - 请问您要购买的新车通常将如何使用？ (多选",
+      "question_code": "Q2A",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q2A_1",
+            "Q2A_10",
+            "Q2A_11",
+            "Q2A_12",
+            "Q2A_2",
+            "Q2A_3",
+            "Q2A_4",
+            "Q2A_5",
+            "Q2A_6",
+            "Q2A_7",
+            "Q2A_8",
+            "Q2A_9",
+            "Q2A_98"
+          ],
+          "target": [
+            "Q2A_1_bin",
+            "Q2A_10_bin",
+            "Q2A_11_bin",
+            "Q2A_12_bin",
+            "Q2A_2_bin",
+            "Q2A_3_bin",
+            "Q2A_4_bin",
+            "Q2A_5_bin",
+            "Q2A_6_bin",
+            "Q2A_7_bin",
+            "Q2A_8_bin",
+            "Q2A_9_bin",
+            "Q2A_98_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "上/下班用 (请问您要购买的新车通常将如何使用？ (多选))"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q2B_RAW": {
+      "indicator_label": "Q2B - 几乎每天",
+      "question_code": "Q2B",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q2B"
+          ],
+          "target": [
+            "Q2B_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "几乎每天",
+            "2.0": "至少一周一次",
+            "3.0": "偶尔，大约一个月一次",
+            "4.0": "一年内总有一次",
+            "5.0": "一年甚至一次都没有"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q30A_RAW": {
+      "indicator_label": "Q30A - 请问您使用过以下哪些移动出行的服务？（多选）",
+      "question_code": "Q30A",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q30A_1",
+            "Q30A_2",
+            "Q30A_3",
+            "Q30A_4",
+            "Q30A_99"
+          ],
+          "target": [
+            "Q30A_1_bin",
+            "Q30A_2_bin",
+            "Q30A_3_bin",
+            "Q30A_4_bin",
+            "Q30A_99_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "租车 (请问您使用过以下哪些移动出行的服务？（多选）)"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q30B_RAW": {
+      "indicator_label": "Q30B - 每周至少1次",
+      "question_code": "Q30B",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q30B"
+          ],
+          "target": [
+            "Q30B_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "每周至少1次",
+            "2.0": "每月至少1次",
+            "3.0": "每半年至少1次",
+            "4.0": "每年1次或更少"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q30CX_RAW": {
+      "indicator_label": "Q30CX - 请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？",
+      "question_code": "Q30CX",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q30CX1_1",
+            "Q30CX1_2",
+            "Q30CX1_3",
+            "Q30CX1_4",
+            "Q30CX1_5",
+            "Q30CX2_1",
+            "Q30CX2_2",
+            "Q30CX2_3",
+            "Q30CX2_4",
+            "Q30CX2_5",
+            "Q30CX3_1",
+            "Q30CX3_2",
+            "Q30CX3_3",
+            "Q30CX3_4",
+            "Q30CX3_5",
+            "Q30CX3_6",
+            "Q30CX3_7"
+          ],
+          "target": [
+            "Q30CX1_1_bin",
+            "Q30CX1_2_bin",
+            "Q30CX1_3_bin",
+            "Q30CX1_4_bin",
+            "Q30CX1_5_bin",
+            "Q30CX2_1_bin",
+            "Q30CX2_2_bin",
+            "Q30CX2_3_bin",
+            "Q30CX2_4_bin",
+            "Q30CX2_5_bin",
+            "Q30CX3_1_bin",
+            "Q30CX3_2_bin",
+            "Q30CX3_3_bin",
+            "Q30CX3_4_bin",
+            "Q30CX3_5_bin",
+            "Q30CX3_6_bin",
+            "Q30CX3_7_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "我还没有购买自己的车 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q31_RAW": {
+      "indicator_label": "Q31 - 以下是关于共享汽车的一些",
+      "question_code": "Q31",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q31_1",
+            "Q31_2",
+            "Q31_3",
+            "Q31_4",
+            "Q31_5",
+            "Q31_6"
+          ],
+          "target": [
+            "Q31_1_bin",
+            "Q31_2_bin",
+            "Q31_3_bin",
+            "Q31_4_bin",
+            "Q31_5_bin",
+            "Q31_6_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "我觉得会有越来越少的人买车，而是更多地使用汽车共享服务 (以下是关于共享汽车的一些"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q32_RAW": {
+      "indicator_label": "Q32 - 有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢",
+      "question_code": "Q32",
+      "question_type": "Multiple Choice",
+      "base_variables": [
+        {
+          "source": [
+            "Q32_1",
+            "Q32_2",
+            "Q32_3",
+            "Q32_4"
+          ],
+          "target": [
+            "Q32_1_bin",
+            "Q32_2_bin",
+            "Q32_3_bin",
+            "Q32_4_bin"
+          ],
+          "suffix": "_bin",
+          "generation": null,
+          "unified_values": {
+            "1.0": "我希望拥有属于自己的车辆 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q3X_RAW": {
+      "indicator_label": "Q3X - 1个",
+      "question_code": "Q3X",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q3X"
+          ],
+          "target": [
+            "Q3X_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "1个",
+            "2.0": "2个",
+            "3.0": "3个",
+            "4.0": "4个",
+            "5.0": "5个 或以上"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q4X_RAW": {
+      "indicator_label": "Q4X - 完全不相符",
+      "question_code": "Q4X",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q4X"
+          ],
+          "target": [
+            "Q4X_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "完全不相符",
+            "2.0": "不太相符",
+            "3.0": "一般",
+            "4.0": "有点相符",
+            "5.0": "非常相符"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q7X_RAW": {
+      "indicator_label": "Q7X - 完全不相符",
+      "question_code": "Q7X",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q7X"
+          ],
+          "target": [
+            "Q7X_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "完全不相符",
+            "2.0": "不太相符",
+            "3.0": "一般",
+            "4.0": "有点相符",
+            "5.0": "非常相符"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    },
+    "Q9X_RAW": {
+      "indicator_label": "Q9X - 汽油自然吸气引擎",
+      "question_code": "Q9X",
+      "question_type": "Matrix",
+      "base_variables": [
+        {
+          "source": [
+            "Q9X"
+          ],
+          "target": [
+            "Q9X_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "汽油自然吸气引擎",
+            "2.0": "汽油涡轮增压引擎",
+            "3.0": "柴油引擎",
+            "4.0": "油电混合动力(内燃机+电动机)",
+            "5.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料)，部分电动行驶",
+            "6.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程电动行驶",
+            "7.0": "LPG(液化石油气)或CNG(压缩天然气)"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": null
+      }
+    }
+  },
+  "column_indicators": {
+    "S0_DEMO": {
+      "indicator_label": "男",
+      "question_code": "S0",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "S0"
+          ],
+          "target": [
+            "S0_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "男",
+            "2.0": "女"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0"
+        ]
+      }
+    },
+    "S0XB1_DEMO": {
+      "indicator_label": "一线城市",
+      "question_code": "S0XB1",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "S0XB1"
+          ],
+          "target": [
+            "S0XB1_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "一线城市",
+            "2.0": "二线城市",
+            "3.0": "三线城市",
+            "4.0": "四线城市",
+            "5.0": "五线城市",
+            "6.0": "六线城市"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0",
+          "3.0",
+          "4.0",
+          "5.0",
+          "6.0"
+        ]
+      }
+    },
+    "S1X1_DEMO": {
+      "indicator_label": "18岁以下",
+      "question_code": "S1X1",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "S1X1"
+          ],
+          "target": [
+            "S1X1_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "18岁以下",
+            "2.0": "18-25岁",
+            "3.0": "26-35岁",
+            "4.0": "36-45岁",
+            "5.0": "46-55岁",
+            "6.0": "56-60岁",
+            "7.0": "60岁以上"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0",
+          "3.0",
+          "4.0",
+          "5.0",
+          "6.0",
+          "7.0"
+        ]
+      }
+    },
+    "S2_DEMO": {
+      "indicator_label": "拥有 1 辆车",
+      "question_code": "S2",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "S2"
+          ],
+          "target": [
+            "S2_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "拥有 1 辆车",
+            "2.0": "拥有 2 辆车",
+            "3.0": "拥有 3 辆车",
+            "4.0": "拥有 4辆或以上的车",
+            "9.0": "没有"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0",
+          "3.0",
+          "4.0",
+          "9.0"
+        ]
+      }
+    },
+    "S2A_DEMO": {
+      "indicator_label": "首购者",
+      "question_code": "S2A",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "S2A"
+          ],
+          "target": [
+            "S2A_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "首购者",
+            "2.0": "再购者"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0"
+        ]
+      }
+    },
+    "F1_DEMO": {
+      "indicator_label": "未婚",
+      "question_code": "F1",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "F1"
+          ],
+          "target": [
+            "F1_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "未婚",
+            "2.0": "已婚有孩",
+            "3.0": "已婚无孩",
+            "4.0": "其他"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0",
+          "3.0",
+          "4.0"
+        ]
+      }
+    },
+    "F2X1_DEMO": {
+      "indicator_label": "1个",
+      "question_code": "F2X1",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "F2X1"
+          ],
+          "target": [
+            "F2X1_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "1个",
+            "2.0": "2个",
+            "3.0": "3个",
+            "4.0": "4个",
+            "5.0": "5个",
+            "6.0": "6个",
+            "7.0": "7个",
+            "8.0": "7以上"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0",
+          "3.0",
+          "4.0",
+          "5.0",
+          "6.0",
+          "7.0",
+          "8.0"
+        ]
+      }
+    },
+    "F8XA_DEMO": {
+      "indicator_label": "初中及以下",
+      "question_code": "F8XA",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "F8XA"
+          ],
+          "target": [
+            "F8XA_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "初中及以下",
+            "2.0": "高中/中专/技校/职中",
+            "3.0": "大专",
+            "4.0": "本科/4年制大学",
+            "5.0": "研究生及以上"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0",
+          "3.0",
+          "4.0",
+          "5.0"
+        ]
+      }
+    },
+    "F9X1_DEMO": {
+      "indicator_label": "5,000元以下",
+      "question_code": "F9X1",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "F9X1"
+          ],
+          "target": [
+            "F9X1_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "5,000元以下",
+            "2.0": "5,000-7,999元",
+            "3.0": "8,000-9,999元",
+            "4.0": "10,000-13,999元",
+            "5.0": "14,000-19,999元",
+            "6.0": "20,000元或以上"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0",
+          "3.0",
+          "4.0",
+          "5.0",
+          "6.0"
+        ]
+      }
+    },
+    "F4_DEMO": {
+      "indicator_label": "不希望有孩子（丁克）",
+      "question_code": "F4",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "F4"
+          ],
+          "target": [
+            "F4_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "不希望有孩子（丁克）",
+            "2.0": "1个孩子",
+            "3.0": "2个孩子",
+            "4.0": "3个孩子",
+            "5.0": "4个孩子及以上",
+            "6.0": "不知道"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0",
+          "3.0",
+          "4.0",
+          "5.0",
+          "6.0"
+        ]
+      }
+    },
+    "S3_DEMO": {
+      "indicator_label": "是",
+      "question_code": "S3",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "S3"
+          ],
+          "target": [
+            "S3_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "是",
+            "2.0": "否"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0"
+        ]
+      }
+    },
+    "SAMPLE_DEMO": {
+      "indicator_label": "随机样本",
+      "question_code": "SAMPLE",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "SAMPLE"
+          ],
+          "target": [
+            "SAMPLE_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "随机样本",
+            "2.0": "追加样本"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0"
+        ]
+      }
+    },
+    "DEVICE_INFO_DEMO": {
+      "indicator_label": "PC端",
+      "question_code": "DEVICE",
+      "question_type": "Single Choice",
+      "base_variables": [
+        {
+          "source": [
+            "DEVICE_INFO"
+          ],
+          "target": [
+            "DEVICE_INFO_cat"
+          ],
+          "suffix": "_cat",
+          "generation": null,
+          "unified_values": {
+            "1.0": "PC端",
+            "2.0": "移动端"
+          }
+        }
+      ],
+      "tabulation_statistics": {
+        "type": "categorical",
+        "metric": "column_percent",
+        "explicit": [
+          "1.0",
+          "2.0"
+        ]
+      }
+    }
+  }
+}

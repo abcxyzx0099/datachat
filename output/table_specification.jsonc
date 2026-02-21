@@ -1,0 +1,1265 @@
+{
+  "metadata": {
+    "spec_id": "crosstab_2024_consumer_survey_complete",
+    "project_id": "proj_2024_china_consumer_insights",
+    "dataset_id": "ds_q1_2024_national_survey",
+    "description": "Complete cross-tabulation analysis for market research survey - all variables included"
+  },
+  "filter_clause": {
+    "age_min": 18,
+    "age_max": 65,
+    "exclude_incomplete": true
+  },
+  "weight_indicator": null,
+  "row_indicators": [
+    {
+      "indicator_code": "F2X1",
+      "question_code": "F2X1",
+      "question_description": "labels343",
+      "question_label": "labels343",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "F2X1A"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "F2X2",
+      "question_code": "F2X2",
+      "question_description": "那他们与你的关系是？（多选）",
+      "question_label": "那他们与你的关系是？（多选）",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "F2X2A_1",
+        "F2X2A_2",
+        "F2X2A_3",
+        "F2X2A_4",
+        "F2X2A_5",
+        "F2X2A_6",
+        "F2X2A_98",
+        "F2X2_1",
+        "F2X2_2",
+        "F2X2_3",
+        "F2X2_4",
+        "F2X2_5",
+        "F2X2_6",
+        "F2X2_7",
+        "F2X2_98"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "F3X1",
+      "question_code": "F3X1",
+      "question_description": "labels351",
+      "question_label": "labels351",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "F3X1"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "F4",
+      "question_code": "F4",
+      "question_description": "labels352",
+      "question_label": "labels352",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "F4"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "F5B",
+      "question_code": "F5B",
+      "question_description": "labels353",
+      "question_label": "labels353",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "F5B"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "F6",
+      "question_code": "F6",
+      "question_description": "labels354",
+      "question_label": "labels354",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "F6"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q10",
+      "question_code": "Q10",
+      "question_description": "labels105",
+      "question_label": "labels105",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q10"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q12",
+      "question_code": "Q12",
+      "question_description": "labels106",
+      "question_label": "labels106",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "Q12"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q18X1",
+      "question_code": "Q18X1",
+      "question_description": "labels198",
+      "question_label": "labels198",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q18X1_1",
+        "Q18X1_2",
+        "Q18X1_3",
+        "Q18X1_4"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q18X2",
+      "question_code": "Q18X2",
+      "question_description": "labels207",
+      "question_label": "labels207",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q18X2_10",
+        "Q18X2_11",
+        "Q18X2_12",
+        "Q18X2_13",
+        "Q18X2_14",
+        "Q18X2_5",
+        "Q18X2_6",
+        "Q18X2_7",
+        "Q18X2_8",
+        "Q18X2_9"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q18X3",
+      "question_code": "Q18X3",
+      "question_description": "labels212",
+      "question_label": "labels212",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q18X3_15",
+        "Q18X3_16",
+        "Q18X3_17"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q18XA",
+      "question_code": "Q18XA",
+      "question_description": "labels215",
+      "question_label": "labels215",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "Q18XA"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q1X1",
+      "question_code": "Q1X1",
+      "question_description": "labels135",
+      "question_label": "labels135",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q1X1A_1",
+        "Q1X1A_2",
+        "Q1X1A_3",
+        "Q1X1A_4",
+        "Q1X1A_5",
+        "Q1X1A_6",
+        "Q1X1B_10",
+        "Q1X1B_11",
+        "Q1X1B_12",
+        "Q1X1B_7",
+        "Q1X1B_8",
+        "Q1X1B_9",
+        "Q1X1C_13",
+        "Q1X1C_14",
+        "Q1X1C_15",
+        "Q1X1C_16",
+        "Q1X1C_17",
+        "Q1X1C_18",
+        "Q1X1D_19",
+        "Q1X1D_20",
+        "Q1X1D_21",
+        "Q1X1D_22",
+        "Q1X1D_23",
+        "Q1X1D_24",
+        "Q1X1E_25",
+        "Q1X1E_26",
+        "Q1X1E_27",
+        "Q1X1E_28",
+        "Q1X1E_29",
+        "Q1X1E_30"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q1X2",
+      "question_code": "Q1X2",
+      "question_description": "labels165",
+      "question_label": "labels165",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q1X2_31",
+        "Q1X2_32"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q20X1",
+      "question_code": "Q20X1",
+      "question_description": "labels216",
+      "question_label": "labels216",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q20X1_1",
+        "Q20X1_10",
+        "Q20X1_11",
+        "Q20X1_12",
+        "Q20X1_13",
+        "Q20X1_14",
+        "Q20X1_15",
+        "Q20X1_16",
+        "Q20X1_17",
+        "Q20X1_18",
+        "Q20X1_19",
+        "Q20X1_2",
+        "Q20X1_3",
+        "Q20X1_4",
+        "Q20X1_5",
+        "Q20X1_6",
+        "Q20X1_7",
+        "Q20X1_8",
+        "Q20X1_9",
+        "Q20X1_98"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q25",
+      "question_code": "Q25",
+      "question_description": "labels236",
+      "question_label": "labels236",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q25_1",
+        "Q25_2",
+        "Q25_3",
+        "Q25_4",
+        "Q25_5"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q26",
+      "question_code": "Q26",
+      "question_description": "labels241",
+      "question_label": "labels241",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q26_1",
+        "Q26_2",
+        "Q26_3",
+        "Q26_4",
+        "Q26_5",
+        "Q26_6",
+        "Q26_7"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q26X1",
+      "question_code": "Q26X1",
+      "question_description": "为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选)",
+      "question_label": "为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选)",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q26X1_1",
+        "Q26X1_2",
+        "Q26X1_3",
+        "Q26X1_4",
+        "Q26X1_98"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q27",
+      "question_code": "Q27",
+      "question_description": "labels253",
+      "question_label": "labels253",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q27_1",
+        "Q27_2",
+        "Q27_3",
+        "Q27_4",
+        "Q27_5",
+        "Q27_6",
+        "Q27_7",
+        "Q27_8",
+        "Q27_9"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q28",
+      "question_code": "Q28",
+      "question_description": "一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）",
+      "question_label": "一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q28_1",
+        "Q28_2",
+        "Q28_3",
+        "Q28_4",
+        "Q28_5",
+        "Q28_6",
+        "Q28_7"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q28X1",
+      "question_code": "Q28X1",
+      "question_description": "你下一辆车为什么不考虑100%的电动车呢？（多选）",
+      "question_label": "你下一辆车为什么不考虑100%的电动车呢？（多选）",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q28X1_1",
+        "Q28X1_10",
+        "Q28X1_11",
+        "Q28X1_2",
+        "Q28X1_3",
+        "Q28X1_4",
+        "Q28X1_5",
+        "Q28X1_6",
+        "Q28X1_7",
+        "Q28X1_8",
+        "Q28X1_9",
+        "Q28X1_98"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q29XA",
+      "question_code": "Q29XA",
+      "question_description": "你在家的时候，一般使用哪一种场所的充电设施？（多选）",
+      "question_label": "你在家的时候，一般使用哪一种场所的充电设施？（多选）",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q29XA_1",
+        "Q29XA_2",
+        "Q29XA_3",
+        "Q29XA_4",
+        "Q29XA_5",
+        "Q29XA_6",
+        "Q29XA_7"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q29XB",
+      "question_code": "Q29XB",
+      "question_description": "上班的时候呢？（多选）",
+      "question_label": "上班的时候呢？（多选）",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q29XB_1",
+        "Q29XB_2",
+        "Q29XB_3",
+        "Q29XB_4",
+        "Q29XB_5",
+        "Q29XB_6",
+        "Q29XB_7",
+        "Q29XB_8"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q2A",
+      "question_code": "Q2A",
+      "question_description": "请问您要购买的新车通常将如何使用？ (多选)",
+      "question_label": "请问您要购买的新车通常将如何使用？ (多选)",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q2A_1",
+        "Q2A_10",
+        "Q2A_11",
+        "Q2A_12",
+        "Q2A_2",
+        "Q2A_3",
+        "Q2A_4",
+        "Q2A_5",
+        "Q2A_6",
+        "Q2A_7",
+        "Q2A_8",
+        "Q2A_9",
+        "Q2A_98"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q2B",
+      "question_code": "Q2B",
+      "question_description": "labels81",
+      "question_label": "labels81",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q2B_1",
+        "Q2B_10",
+        "Q2B_11",
+        "Q2B_12",
+        "Q2B_2",
+        "Q2B_3",
+        "Q2B_4",
+        "Q2B_5",
+        "Q2B_6",
+        "Q2B_7",
+        "Q2B_8",
+        "Q2B_9",
+        "Q2B_98"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q30A",
+      "question_code": "Q30A",
+      "question_description": "请问您使用过以下哪些移动出行的服务？（多选）",
+      "question_label": "请问您使用过以下哪些移动出行的服务？（多选）",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q30A_1",
+        "Q30A_2",
+        "Q30A_3",
+        "Q30A_4",
+        "Q30A_99"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q30B",
+      "question_code": "Q30B",
+      "question_description": "labels302",
+      "question_label": "labels302",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q30B_1",
+        "Q30B_2",
+        "Q30B_3",
+        "Q30B_4"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q30C",
+      "question_code": "Q30C",
+      "question_description": "labels306",
+      "question_label": "labels306",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q30CX1_1",
+        "Q30CX1_2",
+        "Q30CX1_3",
+        "Q30CX1_4",
+        "Q30CX1_5",
+        "Q30CX2_1",
+        "Q30CX2_2",
+        "Q30CX2_3",
+        "Q30CX2_4",
+        "Q30CX2_5",
+        "Q30CX3_1",
+        "Q30CX3_2",
+        "Q30CX3_3",
+        "Q30CX3_4",
+        "Q30CX3_5",
+        "Q30CX3_6",
+        "Q30CX3_7"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q31",
+      "question_code": "Q31",
+      "question_description": "labels323",
+      "question_label": "labels323",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q31_1",
+        "Q31_2",
+        "Q31_3",
+        "Q31_4",
+        "Q31_5",
+        "Q31_6"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q32",
+      "question_code": "Q32",
+      "question_description": "labels329",
+      "question_label": "labels329",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q32_1",
+        "Q32_2",
+        "Q32_3",
+        "Q32_4"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q3X1",
+      "question_code": "Q3X1",
+      "question_description": "labels94",
+      "question_label": "labels94",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "Q3X1"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q3X2",
+      "question_code": "Q3X2",
+      "question_description": "labels95",
+      "question_label": "labels95",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "Q3X2"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q4X1",
+      "question_code": "Q4X1",
+      "question_description": "labels107",
+      "question_label": "labels107",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q4X1A_1",
+        "Q4X1A_2",
+        "Q4X1A_3",
+        "Q4X1A_4",
+        "Q4X1A_5",
+        "Q4X1A_6",
+        "Q4X1B_10",
+        "Q4X1B_11",
+        "Q4X1B_12",
+        "Q4X1B_7",
+        "Q4X1B_8",
+        "Q4X1B_9",
+        "Q4X1C_13",
+        "Q4X1C_14",
+        "Q4X1C_15",
+        "Q4X1C_16"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q4X2",
+      "question_code": "Q4X2",
+      "question_description": "labels123",
+      "question_label": "labels123",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q4X2_17",
+        "Q4X2_18",
+        "Q4X2_19",
+        "Q4X2_20",
+        "Q4X2_21",
+        "Q4X2_22"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q4X3",
+      "question_code": "Q4X3",
+      "question_description": "labels129",
+      "question_label": "labels129",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q4X3_23",
+        "Q4X3_24",
+        "Q4X3_25",
+        "Q4X3_26",
+        "Q4X3_27",
+        "Q4X3_28"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q7X1",
+      "question_code": "Q7X1",
+      "question_description": "labels174",
+      "question_label": "labels174",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q7X1_1",
+        "Q7X1_2",
+        "Q7X1_3",
+        "Q7X1_4",
+        "Q7X1_5",
+        "Q7X1_6"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q7X2",
+      "question_code": "Q7X2",
+      "question_description": "labels183",
+      "question_label": "labels183",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q7X2_10",
+        "Q7X2_11",
+        "Q7X2_12",
+        "Q7X2_7",
+        "Q7X2_8",
+        "Q7X2_9"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q7X3",
+      "question_code": "Q7X3",
+      "question_description": "labels186",
+      "question_label": "labels186",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q7X3_13",
+        "Q7X3_14",
+        "Q7X3_15",
+        "Q7X3_16",
+        "Q7X3_17",
+        "Q7X3_18"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q7X4",
+      "question_code": "Q7X4",
+      "question_description": "labels192",
+      "question_label": "labels192",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q7X4_19",
+        "Q7X4_20",
+        "Q7X4_21",
+        "Q7X4_22",
+        "Q7X4_23",
+        "Q7X4_24"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q7X5",
+      "question_code": "Q7X5",
+      "question_description": "labels167",
+      "question_label": "labels167",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q7X5_25",
+        "Q7X5_26",
+        "Q7X5_27",
+        "Q7X5_28",
+        "Q7X5_29",
+        "Q7X5_30",
+        "Q7X5_31"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q9X2",
+      "question_code": "Q9X2",
+      "question_description": "内燃机+电动机，但需要充电插头进行充电，作为附加燃料",
+      "question_label": "内燃机+电动机，但需要充电插头进行充电，作为附加燃料",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "Q9X2A",
+        "Q9X2AHIDE",
+        "Q9X2_1",
+        "Q9X2_2",
+        "Q9X2_3",
+        "Q9X2_4",
+        "Q9X2_5",
+        "Q9X2_6",
+        "Q9X2_7"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "Q9X3",
+      "question_code": "Q9X3",
+      "question_description": "labels269",
+      "question_label": "labels269",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "Q9X3"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S0XD",
+      "question_code": "S0XD",
+      "question_description": "请问在未来2年内，您或您家庭是否打算购买以下产品？(多选)",
+      "question_label": "请问在未来2年内，您或您家庭是否打算购买以下产品？(多选)",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "S0XD_1",
+        "S0XD_2",
+        "S0XD_3",
+        "S0XD_4",
+        "S0XD_5",
+        "S0XD_6",
+        "S0XD_7"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S14",
+      "question_code": "S14",
+      "question_description": "labels36",
+      "question_label": "labels36",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S14"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S15X1",
+      "question_code": "S15X1",
+      "question_description": "labels37",
+      "question_label": "labels37",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "S15X1A",
+        "S15X1B"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S17XA",
+      "question_code": "S17XA",
+      "question_description": "labels40",
+      "question_label": "labels40",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "S17XA_1",
+        "S17XA_10",
+        "S17XA_11",
+        "S17XA_12",
+        "S17XA_13",
+        "S17XA_2",
+        "S17XA_3",
+        "S17XA_4",
+        "S17XA_5",
+        "S17XA_6",
+        "S17XA_7",
+        "S17XA_8",
+        "S17XA_9"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S17XB",
+      "question_code": "S17XB",
+      "question_description": "labels53",
+      "question_label": "labels53",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "S17XB"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S18H",
+      "question_code": "S18H",
+      "question_description": "labels57",
+      "question_label": "labels57",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "S18HIDE"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S18X99",
+      "question_code": "S18X99",
+      "question_description": "labels54",
+      "question_label": "labels54",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S18X99_99"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S19A",
+      "question_code": "S19A",
+      "question_description": "labels59",
+      "question_label": "在国外生产的，价格一般比国内生产的贵",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S19AX3"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S19B",
+      "question_code": "S19B",
+      "question_description": "labels63",
+      "question_label": "在国外生产的，价格一般比国内生产的贵",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S19BX3"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S19XB",
+      "question_code": "S19XB",
+      "question_description": "labels60",
+      "question_label": "labels60",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S19XB"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S20",
+      "question_code": "S20",
+      "question_description": "labels64",
+      "question_label": "labels64",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S20"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S21",
+      "question_code": "S21",
+      "question_description": "labels65",
+      "question_label": "labels65",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S21"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S22",
+      "question_code": "S22",
+      "question_description": "labels66",
+      "question_label": "labels66",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S22"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S23",
+      "question_code": "S23",
+      "question_description": "labels67",
+      "question_label": "labels67",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S23"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S5X1",
+      "question_code": "S5X1",
+      "question_description": "labels29",
+      "question_label": "labels29",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "S5X1C",
+        "S5X1E"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S5X2",
+      "question_code": "S5X2",
+      "question_description": "labels31",
+      "question_label": "labels31",
+      "question_type": "Multiple Choice",
+      "source_variables": [
+        "S5X2"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S6",
+      "question_code": "S6",
+      "question_description": "labels32",
+      "question_label": "内燃机+电动机，但需要充电插头进行充电，作为附加燃料",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S6"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S7",
+      "question_code": "S7",
+      "question_description": "labels33",
+      "question_label": "labels33",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S7"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S8",
+      "question_code": "S8",
+      "question_description": "labels34",
+      "question_label": "labels34",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S8"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S9",
+      "question_code": "S9",
+      "question_description": "labels35",
+      "question_label": "labels35",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S9"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    }
+  ],
+  "column_indicators": [
+    {
+      "indicator_code": "F1",
+      "question_code": "F1",
+      "question_description": "labels333",
+      "question_label": "labels333",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "F1"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "F2X1",
+      "question_code": "F2X1",
+      "question_description": "labels334",
+      "question_label": "labels334",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "F2X1"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "F8XA",
+      "question_code": "F8XA",
+      "question_description": "labels355",
+      "question_label": "labels355",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "F8XA"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "F9X1",
+      "question_code": "F9X1",
+      "question_description": "labels356",
+      "question_label": "labels356",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "F9X1"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S0",
+      "question_code": "S0",
+      "question_description": "labels2",
+      "question_label": "labels2",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S0"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S0XB1",
+      "question_code": "S0XB1",
+      "question_description": "labels5",
+      "question_label": "labels5",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S0XB1"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S0XC",
+      "question_code": "S0XC",
+      "question_description": "labels6",
+      "question_label": "labels6",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S0XC"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S16",
+      "question_code": "S16",
+      "question_description": "labels39",
+      "question_label": "labels39",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S16"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S1X1",
+      "question_code": "S1X1",
+      "question_description": "labels14",
+      "question_label": "labels14",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S1X1"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S2",
+      "question_code": "S2",
+      "question_description": "labels15",
+      "question_label": "labels15",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S2"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S2A",
+      "question_code": "S2A",
+      "question_description": "labels16",
+      "question_label": "labels16",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S2A"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S3",
+      "question_code": "S3",
+      "question_description": "labels17",
+      "question_label": "labels17",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S3"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S4_1",
+      "question_code": "S4_1",
+      "question_description": "labels18",
+      "question_label": "请问您或您家人是否在以下行业工作？(多选)",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S4_1"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S4_2",
+      "question_code": "S4_2",
+      "question_description": "labels19",
+      "question_label": "请问您或您家人是否在以下行业工作？(多选)",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S4_2"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S4_3",
+      "question_code": "S4_3",
+      "question_description": "labels20",
+      "question_label": "labels20",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S4_3"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S4_4",
+      "question_code": "S4_4",
+      "question_description": "labels21",
+      "question_label": "labels21",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S4_4"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S4_5",
+      "question_code": "S4_5",
+      "question_description": "labels22",
+      "question_label": "请问您或您家人是否在以下行业工作？(多选)",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S4_5"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S4_6",
+      "question_code": "S4_6",
+      "question_description": "labels23",
+      "question_label": "请问您或您家人是否在以下行业工作？(多选)",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S4_6"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S4_7",
+      "question_code": "S4_7",
+      "question_description": "labels24",
+      "question_label": "请问您或您家人是否在以下行业工作？(多选)",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S4_7"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    },
+    {
+      "indicator_code": "S4_8",
+      "question_code": "S4_8",
+      "question_description": "labels25",
+      "question_label": "请问您或您家人是否在以下行业工作？(多选)",
+      "question_type": "Single Choice",
+      "source_variables": [
+        "S4_8"
+      ],
+      "transformation_rules": null,
+      "statistic_type": "categorical"
+    }
+  ]
+}
