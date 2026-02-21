@@ -19,13 +19,13 @@ This document describes the simplified workflow design for the Survey Analysis &
 
 ### 1.1 Purpose
 
-Design and implement an automated workflow for market research survey data analysis and visualization using a **Python library** orchestrated by **Claude Code Skills**. The system processes PSPP survey data, applies AI-orchestrated transformations, generates indicators, performs statistical analysis, and produces outputs in PowerPoint and HTML formats.
+Design and implement an automated workflow for market research survey data analysis and visualization using a **Python library** orchestrated by **Claude Code Skills**. The system processes SPSS (.sav) survey data, applies AI-orchestrated transformations, generates indicators, performs statistical analysis, and produces outputs in PowerPoint and HTML formats.
 
 ### 1.2 Scope
 
 | Aspect | Description |
 |--------|-------------|
-| **Input** | PSPP (.sav) survey data files |
+| **Input** | SPSS (.sav) survey data files |
 | **Processing** | AI-orchestrated recoding, transformation, and indicator generation |
 | **Output** | PowerPoint presentations, HTML dashboards with visualizations |
 | **Target** | Market research industry professionals |
@@ -58,11 +58,10 @@ Design and implement an automated workflow for market research survey data analy
 │  (Pure Python: Data Processing & Computation)                    │
 ├─────────────────────────────────────────────────────────────────────────┤
 │ specification/  │ Schema & validator for table_specification.json      │
-│ io/             │ SPSS file I/O and metadata handling                │
-│ pspp/            │ PSPP syntax generation and execution                     │
-│ analysis/         │ Statistics and indicators                              │
-│ filtering/        │ Significance filtering                                  │
-│ reporting/        │ PowerPoint and HTML generation                       │
+│ io/             │ SPSS file I/O (pyreadstat) and metadata handling      │
+│ analysis/       │ Transformation engine, crosstabs, and indicators      │
+│ filtering/      │ Significance filtering                                  │
+│ reporting/      │ PowerPoint and HTML generation                       │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -118,16 +117,15 @@ flowchart TD
         tableSpec[("table_specification.jsonc")]:::artifactStyle
     end
 
-    %% STAGE 3: PSPP Syntax & Execution
+    %% STAGE 3: Cross-Table Generation
     subgraph STAGE3[" "]
         direction TB
-        stage3_label["**STAGE 3: PSPP Syntax & Execution**"]:::stageLabelStyle
+        stage3_label["**STAGE 3: Cross-Table Generation**"]:::stageLabelStyle
 
-        S7["Step 7<br/>Generate PSPP Syntax<br/>from JSONC"]:::processingGreen
-        S8["Step 8<br/>Execute PSPP Syntax"]:::processingGreen
-        S9["Step 9<br/>Export Cross-Tables to CSV"]:::processingGreen
-        syntax[("analysis.sps")]:::artifactStyle
-        crosstabs[("cross_tables.csv")]:::artifactStyle
+        S7["Step 7<br/>Apply Transformations<br/>(Recoding, Computing)"]:::processingGreen
+        S8["Step 8<br/>Generate Cross-Tables<br/>& Statistics"]:::processingGreen
+        S9["Step 9<br/>Export Results to JSON/CSV"]:::processingGreen
+        crosstabs[("cross_tables.json<br/>cross_tables.csv")]:::artifactStyle
     end
 
     %% STAGE 4: Statistical Analysis
@@ -160,8 +158,7 @@ flowchart TD
     S6 -->|Approve| tableSpec
     S6 -.->|Reject| S4
 
-    tableSpec ==> S7 --> syntax
-    syntax ==> S8 --> S9 --> crosstabs
+    tableSpec ==> S7 --> S8 --> S9 --> crosstabs
 
     crosstabs ==> S10 --> S11 --> results
 
@@ -179,7 +176,7 @@ flowchart TD
 | Color | Meaning | Examples |
 |-------|---------|----------|
 | 🔵 **Blue** | AI-Orchestrated Processing (Skill generates artifact) | Step 4 |
-| 🟢 **Green** | Deterministic Processing (Python library, PSPP, scipy) | Steps 1-3, 7-13 |
+| 🟢 **Green** | Deterministic Processing (Python library, pandas, scipy) | Steps 1-3, 7-13 |
 | 🟠 **Orange** | Validation (Python checks syntax/references) | Step 5 |
 | 🟣 **Purple** | Review (Human validates semantic quality) | Step 6 |
 | 🟡 **Yellow** | Data Artifacts (Files and outputs) | `.sav`, `.csv`, `.json`, `.pptx`, `.html` |
@@ -195,8 +192,8 @@ flowchart TD
 |-------|--------|-------------|-------|--------|
 | **1** | 1-3 | Load data, extract/transform/filter metadata | .sav file | `filtered_metadata.json` |
 | **2** | 4-6 | Generate, validate, review table specification (AI-orchestrated) | `filtered_metadata.json` + `table-specification.xlsx` | `table_specification.jsonc` |
-| **3** | 7-9 | Generate PSPP syntax, execute, export cross-tables | `table_specification.jsonc` | `.sps` + `cross_tables.csv` |
-| **4** | 10-11 | Statistical analysis and significance filtering | `cross_tables.csv` | `filtered_tables.json`, `statistical_summary.json` |
+| **3** | 7-9 | Apply transformations, generate cross-tables with statistics | `table_specification.jsonc` | `cross_tables.json`, `cross_tables.csv` |
+| **4** | 10-11 | Statistical analysis and significance filtering | `cross_tables.json` | `filtered_tables.json`, `statistical_summary.json` |
 | **5** | 12-13 | Generate PowerPoint and HTML dashboard | Filtered results | `presentation.pptx`, `dashboard.html` |
 
 ---
@@ -264,12 +261,12 @@ The **table_specification.jsonc** is a consolidated artifact generated from `fil
 | `question_label` | Full Chinese question text | filtered_metadata.json |
 | `question_type` | Single Choice, Multiple Choice, Matrix, etc. | Excel Question Type dropdown |
 | `source_variables` | Real SPSS variable names | Mapped from question_code + metadata |
-| `transformation_rules` | PSPP recoding syntax | Excel Transformation Rules column |
+| `transformation_rules` | SPSS-compatible recoding syntax (parsed by Python) | Excel Transformation Rules column |
 | `statistic_type` | categorical or scalar | Excel Statistic Type column |
 
 ### 4.3 Transformation Rules Format
 
-The `transformation_rules` field uses **PSPP/SPSS syntax**:
+The `transformation_rules` field uses **SPSS-compatible syntax** (parsed and applied by pure Python):
 
 | Format | Example | Description |
 |--------|---------|-------------|
@@ -283,9 +280,9 @@ The `transformation_rules` field uses **PSPP/SPSS syntax**:
 "transformation_rules": "(1 THRU 2=1) (3=2) (4 THRU 5=3)"
 ```
 
-Generates PSPP syntax:
-```pspp
-RECODE source_var (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO target_var.
+Applied by `TransformationEngine` using pandas:
+```python
+# Parsed and applied as: series.map({1: 1, 2: 1, 3: 2, 4: 3, 5: 3})
 ```
 
 ---
@@ -323,36 +320,36 @@ RECODE source_var (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO target_var.
 **Why AI Agent?**
 - Requires intelligent interpretation of user selections from Excel
 - Mapping question codes (Q1, S1) to real variable names from metadata
-- Understanding transformation rule descriptions and converting to PSPP syntax
-- Validating semantic correctness of the specification
+- Understanding transformation rule descriptions and validating semantic correctness
+- Generating consolidated table_specification.jsonc from multiple sources
 
 **Feedback Loop:** If validation fails or review rejects, regenerate from Step 4.
 
-### Stage 3: PSPP Syntax Generation & Execution (Steps 7-9)
+### Stage 3: Cross-Table Generation (Steps 7-9)
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 7 | `stage3-crosstabs` | `survey_analyzer.pspp.SyntaxGenerator` | Generate PSPP syntax from JSONC | Deterministic |
-| 8 | `stage3-crosstabs` | `survey_analyzer.pspp.PSPPExecutor` | Execute PSPP syntax | Deterministic |
-| 9 | `stage3-crosstabs` | `survey_analyzer.pspp.CrosstabsExporter` | Export cross-tables to CSV | Deterministic |
+| 7 | `stage3-crosstabs` | `survey_analyzer.analysis.transformation.TransformationEngine` | Apply recoding and transformations | Deterministic |
+| 8 | `stage3-crosstabs` | `survey_analyzer.analysis.crosstab.CrossTabGenerator` | Generate cross-tables with statistics | Deterministic |
+| 9 | `stage3-crosstabs` | Exporter module | Export cross-tables to JSON/CSV | Deterministic |
 
 **Skill:** `stage3-crosstabs` handles all Stage 3 operations.
 
 **Input:** `table_specification.jsonc`
 
-**Outputs:** `analysis.sps` (PSPP syntax), `cross_tables.csv`
+**Outputs:** `cross_tables.json`, `cross_tables.csv`
 
 **Why Direct Programming?**
-- Deterministic conversion from JSONC to PSPP syntax
-- Straightforward PSPP execution
+- Deterministic transformation and crosstab generation using pandas
+- Chi-square test and Cramer's V calculation using scipy
 - No AI interpretation needed
 
 ### Stage 4: Statistical Analysis (Steps 10-11)
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 10 | `stage4-statistics` | `survey_analyzer.analysis.StatisticsCalculator` | Calculate statistics | Deterministic |
-| 11 | `stage4-statistics` | `survey_analyzer.filtering.SignificanceFilter` | Filter significant tables | Deterministic |
+| 10 | `stage4-statistics` | `survey_analyzer.analysis.statistics` | Calculate statistics (chi-square, Cramer's V) | Deterministic |
+| 11 | `stage4-statistics` | `survey_analyzer.filtering.significance` | Filter significant tables by p-value | Deterministic |
 
 **Skill:** `stage4-statistics` handles all Stage 4 operations.
 
@@ -362,8 +359,8 @@ RECODE source_var (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO target_var.
 
 | Step | Skill | Module | Purpose | Type |
 |------|--------|---------|------|
-| 12 | `stage5-reports` | `survey_analyzer.reporting.PowerPointGenerator` | Create .pptx | Deterministic |
-| 13 | `stage5-reports` | `survey_analyzer.reporting.HTMLDashboardGenerator` | Create .html | Deterministic |
+| 12 | `stage5-reports` | `survey_analyzer.reporting.powerpoint` | Create .pptx | Deterministic |
+| 13 | `stage5-reports` | `survey_analyzer.reporting.dashboard` | Create .html | Deterministic |
 
 **Skill:** `stage5-reports` handles all Stage 5 operations.
 
@@ -381,7 +378,7 @@ RECODE source_var (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO target_var.
 | **question_label** | Full Chinese question text from `filtered_metadata.json` |
 | **question_description** | Concise English label from Excel |
 | **question_type** | Single Choice, Multiple Choice, Matrix, Numeric Input, Rating Scale (dropdown in Excel) |
-| **transformation_rules** | PSPP/SPSS syntax string (e.g., "(1 THRU 3=99) (4=100)") |
+| **transformation_rules** | SPSS-compatible recoding syntax (parsed by Python) |
 | **statistic_type** | `categorical` (column percent) or `scalar` (mean, median, min, max) |
 | **AI-orchestrated step** | Workflow step where Skill uses AI to generate content (Stage 2) |
 | **Deterministic processing** | Pure Python functions with predictable outputs (Stages 1, 3, 4, 5) |
