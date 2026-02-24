@@ -1,3538 +1,3142 @@
 {
-  "file_info": {
-    "path": "/home/admin/workspaces/datachat/data/real-data.sav",
-    "name": "real-data.sav",
-    "case_count": 13064,
-    "file_label": "",
-    "file_name": "real-data.sav",
-    "encoding_used": "auto-detected"
-  },
-  "variables": {
-    "DEVICE_INFO": {
-      "label": "labels0",
-      "value_labels": {
-        "1.0": "PC端",
-        "2.0": "移动端"
-      },
-      "variable_type": "categorical"
-    },
-    "SAMPLE": {
-      "label": "labels1",
-      "value_labels": {
-        "1.0": "随机样本",
-        "2.0": "追加样本"
-      },
-      "variable_type": "categorical"
-    },
-    "S0": {
-      "label": "labels2",
-      "value_labels": {
-        "1.0": "男",
-        "2.0": "女"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XB1": {
-      "label": "labels5",
-      "value_labels": {
-        "1.0": "一线城市",
-        "2.0": "二线城市",
-        "3.0": "三线城市",
-        "4.0": "四线城市",
-        "5.0": "五线城市",
-        "6.0": "六线城市"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XC": {
-      "label": "labels6",
-      "value_labels": {
-        "1.0": "本地居民,一直在这里居住",
-        "2.0": "外地人，但在本市居住超过3年以上",
-        "3.0": "外地人，但在本市居住不满3年"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XD_1": {
-      "label": "labels7",
-      "value_labels": {
-        "1.0": "汽车 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XD_2": {
-      "label": "labels8",
-      "value_labels": {
-        "1.0": "空调 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XD_3": {
-      "label": "labels9",
-      "value_labels": {
-        "1.0": "三门或对开门冰箱 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XD_4": {
-      "label": "labels10",
-      "value_labels": {
-        "1.0": "平板电脑 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XD_5": {
-      "label": "labels11",
-      "value_labels": {
-        "1.0": "台式电脑/笔记本电脑 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XD_6": {
-      "label": "labels12",
-      "value_labels": {
-        "1.0": "家用健身器材(例如: 跑步机) (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选)"
-      },
-      "variable_type": "categorical"
-    },
-    "S0XD_7": {
-      "label": "labels13",
-      "value_labels": {
-        "1.0": "以上均无购买意向 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S1X1": {
-      "label": "labels14",
-      "value_labels": {
-        "1.0": "18岁以下",
-        "2.0": "18-25岁",
-        "3.0": "26-35岁",
-        "4.0": "36-45岁",
-        "5.0": "46-55岁",
-        "6.0": "56-60岁",
-        "7.0": "60岁以上"
-      },
-      "variable_type": "categorical"
-    },
-    "S2": {
-      "label": "labels15",
-      "value_labels": {
-        "1.0": "拥有 1 辆车",
-        "2.0": "拥有 2 辆车",
-        "3.0": "拥有 3 辆车",
-        "4.0": "拥有 4辆或以上的车",
-        "9.0": "没有"
-      },
-      "variable_type": "categorical"
-    },
-    "S2A": {
-      "label": "labels16",
-      "value_labels": {
-        "1.0": "首购者",
-        "2.0": "再购者"
-      },
-      "variable_type": "categorical"
-    },
-    "S3": {
-      "label": "labels17",
-      "value_labels": {
-        "1.0": "是",
-        "2.0": "否"
-      },
-      "variable_type": "categorical"
-    },
-    "S4_1": {
-      "label": "labels18",
-      "value_labels": {
-        "1.0": "广告，媒体或公共关系公司或部门  (请问您或您家人是否在以下行业工作？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S4_2": {
-      "label": "labels19",
-      "value_labels": {
-        "1.0": "市场或市场研究公司或部门  (请问您或您家人是否在以下行业工作？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S4_3": {
-      "label": "labels20",
-      "value_labels": {
-        "1.0": "汽车行业（包括销售、制造、设计或维修/服务）  (请问您或您家人是否在以下行业工作？("
-      },
-      "variable_type": "categorical"
-    },
-    "S4_4": {
-      "label": "labels21",
-      "value_labels": {
-        "1.0": "媒体工作：电视、电台、杂志、报纸、期刊等 (请问您或您家人是否在以下行业工作？(多选"
-      },
-      "variable_type": "categorical"
-    },
-    "S4_5": {
-      "label": "labels22",
-      "value_labels": {
-        "1.0": "专业司机（如出租车司机、卡车司机等) (请问您或您家人是否在以下行业工作？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S4_6": {
-      "label": "labels23",
-      "value_labels": {
-        "1.0": "制药厂或药房 (请问您或您家人是否在以下行业工作？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S4_7": {
-      "label": "labels24",
-      "value_labels": {
-        "1.0": "包装食品生产商或供应商 (请问您或您家人是否在以下行业工作？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S4_8": {
-      "label": "labels25",
-      "value_labels": {
-        "1.0": "以上均无 (请问您或您家人是否在以下行业工作？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "S5X1C": {
-      "label": "labels29",
-      "value_labels": {
-        "1.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-1.png\" width=150/></center><center><b>三厢轿车</b",
-        "2.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-2.png\"width=150/></center><center><b>跑车</b></cent",
-        "3.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-3.png\"width=150/></center><center><b>两厢轿车</b>",
-        "4.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-4.png\"width=150/></center><center><b>旅行车</b></c",
-        "5.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-5.png\"width=150/></center><center><b>多功能车MPV",
-        "6.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-6.png\"width=150/></center><center><b>多功能车MPV",
-        "7.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-7.png\"width=150/></center><center><b>SUV - 2 排座</",
-        "8.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-8.png\"width=150/></center><center><b>SUV - 3 排座</",
-        "9.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-9.png\"width=150/></center><center><b>皮卡</b></cent",
-        "10.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-13.png\"width=150/></center><center><b>CDV</b></center",
-        "11.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-11.png\"width=150/></center><center><b>商用/小面",
-        "12.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-12.png\"width=150/></center><center><b>卡车</b></cen",
-        "13.0": "其他"
-      },
-      "variable_type": "categorical"
-    },
-    "S5X1E": {
-      "label": "labels30",
-      "value_labels": {
-        "1.0": "国产的 (在国内生产的)",
-        "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
-      },
-      "variable_type": "categorical"
-    },
-    "S5X2": {
-      "label": "labels31",
-      "value_labels": {
-        "1.0": "2021年",
-        "2.0": "2020年",
-        "3.0": "2019年",
-        "4.0": "2018年",
-        "5.0": "2017年",
-        "6.0": "2016年",
-        "7.0": "2015年",
-        "8.0": "2014年",
-        "9.0": "2013年",
-        "10.0": "2012年",
-        "11.0": "2011年",
-        "12.0": "2010年",
-        "13.0": "2010年以前"
-      },
-      "variable_type": "categorical"
-    },
-    "S6": {
-      "label": "labels32",
-      "value_labels": {
-        "1.0": "汽油自然吸气引擎",
-        "2.0": "汽油涡轮增压引擎",
-        "3.0": "柴油引擎",
-        "4.0": "油电混合动力(内燃机+电动机)",
-        "5.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料),部分用电驱动",
-        "6.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程用电驱动",
-        "7.0": "LPG(液化石油气)或CNG(压缩天然气)",
-        "98.0": "其他"
-      },
-      "variable_type": "categorical"
-    },
-    "S7": {
-      "label": "labels33",
-      "value_labels": {
-        "1.0": "一排",
-        "2.0": "两排",
-        "3.0": "三排"
-      },
-      "variable_type": "categorical"
-    },
-    "S8": {
-      "label": "labels34",
-      "value_labels": {
-        "1.0": "仅仅/大部分我自己",
-        "2.0": "我自己与家庭成员的使用时间差不多",
-        "3.0": "不是我自己"
-      },
-      "variable_type": "categorical"
-    },
-    "S9": {
-      "label": "labels35",
-      "value_labels": {
-        "1.0": "主要的决策者",
-        "2.0": "与他人共同决策",
-        "3.0": "我只提供参考意见，但不是决策者",
-        "4.0": "不参与决策"
-      },
-      "variable_type": "categorical"
-    },
-    "S14": {
-      "label": "labels36",
-      "value_labels": {
-        "1.0": "是替代前一辆车的，我家原来的车就不用了",
-        "2.0": "是再增加一辆，我家原来的车继续使用"
-      },
-      "variable_type": "categorical"
-    },
-    "S15X1A": {
-      "label": "labels37",
-      "value_labels": {
-        "1.0": "近1个月内",
-        "2.0": "2-3个月内",
-        "3.0": "4-6个月内",
-        "4.0": "6个月后"
-      },
-      "variable_type": "categorical"
-    },
-    "S15X1B": {
-      "label": "labels38",
-      "value_labels": {
-        "1.0": "半年内",
-        "2.0": "一年内",
-        "3.0": "二年内"
-      },
-      "variable_type": "categorical"
-    },
-    "S16": {
-      "label": "labels39",
-      "value_labels": {
-        "1.0": "新车",
-        "2.0": "二手车",
-        "3.0": "两者都有可能"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_1": {
-      "label": "labels40",
-      "value_labels": {
-        "1.0": "三厢轿车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_2": {
-      "label": "labels41",
-      "value_labels": {
-        "1.0": "跑车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_3": {
-      "label": "labels42",
-      "value_labels": {
-        "1.0": "两厢轿车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_4": {
-      "label": "labels43",
-      "value_labels": {
-        "1.0": "旅行车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_5": {
-      "label": "labels44",
-      "value_labels": {
-        "1.0": "多功能车MPV - 2 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_6": {
-      "label": "labels45",
-      "value_labels": {
-        "1.0": "多功能车MPV - 3 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_7": {
-      "label": "labels46",
-      "value_labels": {
-        "1.0": "SUV - 2 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_8": {
-      "label": "labels47",
-      "value_labels": {
-        "1.0": "SUV - 3 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_9": {
-      "label": "labels48",
-      "value_labels": {
-        "1.0": "皮卡 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_10": {
-      "label": "labels49",
-      "value_labels": {
-        "1.0": "CDV (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 ("
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_11": {
-      "label": "labels50",
-      "value_labels": {
-        "1.0": "商用/小面包车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_12": {
-      "label": "labels51",
-      "value_labels": {
-        "1.0": "卡车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XA_13": {
-      "label": "labels52",
-      "value_labels": {
-        "1.0": "其他 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类"
-      },
-      "variable_type": "categorical"
-    },
-    "S17XB": {
-      "label": "labels53",
-      "value_labels": {
-        "1.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-1.png\" width=150/></center><center><b>三厢轿车</b",
-        "2.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-2.png\"width=150/></center><center><b>跑车</b></cent",
-        "3.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-3.png\"width=150/></center><center><b>两厢轿车</b>",
-        "4.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-4.png\"width=150/></center><center><b>旅行车</b></c",
-        "5.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-5.png\"width=150/></center><center><b>多功能车MPV",
-        "6.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-6.png\"width=150/></center><center><b>多功能车MPV",
-        "7.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-7.png\"width=150/></center><center><b>SUV - 2 排座</",
-        "8.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-8.png\"width=150/></center><center><b>SUV - 3 排座</",
-        "9.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-9.png\"width=150/></center><center><b>皮卡</b></cent",
-        "10.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-13.png\"width=150/></center><center><b>CDV</b></center",
-        "11.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-11.png\"width=150/></center><center><b>商用/小面",
-        "12.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-12.png\"width=150/></center><center><b>卡车</b></cen",
-        "13.0": "其他"
-      },
-      "variable_type": "categorical"
-    },
-    "S18X99_99": {
-      "label": "labels54",
-      "value_labels": {
-        "1.0": "还没有具体预算 ()"
-      },
-      "variable_type": "categorical"
-    },
-    "S18HIDE": {
-      "label": "labels57",
-      "value_labels": {
-        "1.0": "3万元以下（含3万）",
-        "2.0": "3-5万元（含5万）",
-        "3.0": "5-10万元（含10万）",
-        "4.0": "10-15万元（含15万）",
-        "5.0": "15-20万元（含20万）",
-        "6.0": "20-25万元（含25万）",
-        "7.0": "25-30万元（含30万）",
-        "8.0": "30-40万元（含40万）",
-        "9.0": "40-50万元（含50万）",
-        "10.0": "50-70万元（含70万）",
-        "11.0": "70-100万元（含100万）",
-        "12.0": "100万元以上",
-        "99.0": "还没有具体预算"
-      },
-      "variable_type": "categorical"
-    },
-    "S19AX3": {
-      "label": "labels59",
-      "value_labels": {
-        "1.0": "国产的 (在国内生产的)",
-        "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
-      },
-      "variable_type": "categorical"
-    },
-    "S19XB": {
-      "label": "labels60",
-      "value_labels": {
-        "1.0": "有",
-        "2.0": "没有"
-      },
-      "variable_type": "categorical"
-    },
-    "S19BX3": {
-      "label": "labels63",
-      "value_labels": {
-        "1.0": "国产的 (在国内生产的)",
-        "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
-      },
-      "variable_type": "categorical"
-    },
-    "S20": {
-      "label": "labels64",
-      "value_labels": {
-        "1.0": "仅仅/大部分我自己",
-        "2.0": "我自己与家庭成员的使用时间差不多",
-        "3.0": "不是我自己"
-      },
-      "variable_type": "categorical"
-    },
-    "S21": {
-      "label": "labels65",
-      "value_labels": {
-        "1.0": "自己的",
-        "2.0": "公司的"
-      },
-      "variable_type": "categorical"
-    },
-    "S22": {
-      "label": "labels66",
-      "value_labels": {
-        "1.0": "主要的决策者",
-        "2.0": "与他人共同决策",
-        "3.0": "我只提供参考意见，但不是决策者",
-        "4.0": "不参与决策"
-      },
-      "variable_type": "categorical"
-    },
-    "S23": {
-      "label": "labels67",
-      "value_labels": {
-        "1.0": "5,000元以下",
-        "2.0": "5,000-7,999元",
-        "3.0": "8,000-9,999元",
-        "4.0": "10,000-13,999元",
-        "5.0": "14,000-19,999元",
-        "6.0": "20,000-24,999元",
-        "7.0": "25,000-29,999 元",
-        "8.0": "30,000元及以上"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_1": {
-      "label": "labels68",
-      "value_labels": {
-        "1.0": "上/下班用 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_2": {
-      "label": "labels69",
-      "value_labels": {
-        "1.0": "和家庭成员/朋友/同事一起出外娱乐聚餐 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_3": {
-      "label": "labels70",
-      "value_labels": {
-        "1.0": "去购物 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_4": {
-      "label": "labels71",
-      "value_labels": {
-        "1.0": "去户外活动 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_5": {
-      "label": "labels72",
-      "value_labels": {
-        "1.0": "自己驾车兜风 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_6": {
-      "label": "labels73",
-      "value_labels": {
-        "1.0": "和家人/朋友/同事外出一日游 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_7": {
-      "label": "labels74",
-      "value_labels": {
-        "1.0": "回家乡探亲 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_8": {
-      "label": "labels75",
-      "value_labels": {
-        "1.0": "和家人/朋友/同事外出旅行(一天以上) (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_9": {
-      "label": "labels76",
-      "value_labels": {
-        "1.0": "给客户送货 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_10": {
-      "label": "labels77",
-      "value_labels": {
-        "1.0": "出席商务场合 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_11": {
-      "label": "labels78",
-      "value_labels": {
-        "1.0": "在路况不好的道路上行驶（例如没有经过铺装的道路、石子路、泥路等） (请问您要购买的"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_12": {
-      "label": "labels79",
-      "value_labels": {
-        "1.0": "在没有道路的地方行驶（例如：山坡、河边等） (请问您要购买的新车通常将如何使用？ ("
-      },
-      "variable_type": "categorical"
-    },
-    "Q2A_98": {
-      "label": "labels80",
-      "value_labels": {
-        "1.0": "其它, 请注明 (请问您要购买的新车通常将如何使用？ (多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_1": {
-      "label": "labels81",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_2": {
-      "label": "labels82",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_3": {
-      "label": "labels83",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_4": {
-      "label": "labels84",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_5": {
-      "label": "labels85",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_6": {
-      "label": "labels86",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_7": {
-      "label": "labels87",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_8": {
-      "label": "labels88",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_9": {
-      "label": "labels89",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_10": {
-      "label": "labels90",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_11": {
-      "label": "labels91",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_12": {
-      "label": "labels92",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q2B_98": {
-      "label": "labels93",
-      "value_labels": {
-        "1.0": "几乎每天",
-        "2.0": "至少一周一次",
-        "3.0": "偶尔，大约一个月一次",
-        "4.0": "一年内总有一次",
-        "5.0": "一年甚至一次都没有"
-      },
-      "variable_type": "categorical"
-    },
-    "Q3X1": {
-      "label": "labels94",
-      "value_labels": {
-        "1.0": "1个",
-        "2.0": "2个",
-        "3.0": "3个",
-        "4.0": "4个",
-        "5.0": "5个 或以上"
-      },
-      "variable_type": "categorical"
-    },
-    "Q3X2": {
-      "label": "labels95",
-      "value_labels": {
-        "1.0": "1个",
-        "2.0": "2个",
-        "3.0": "3个",
-        "4.0": "4个",
-        "5.0": "5个",
-        "6.0": "6个",
-        "7.0": "7个及以上"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2_1": {
-      "label": "labels96",
-      "value_labels": {
-        "1.0": "汽油自然吸气引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2_2": {
-      "label": "labels97",
-      "value_labels": {
-        "1.0": "汽油涡轮增压引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2_3": {
-      "label": "labels98",
-      "value_labels": {
-        "1.0": "柴油引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2_4": {
-      "label": "labels99",
-      "value_labels": {
-        "1.0": "油电混合动力(内燃机+电动机) (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2_5": {
-      "label": "labels100",
-      "value_labels": {
-        "1.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料)，部分电动行驶"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2_6": {
-      "label": "labels101",
-      "value_labels": {
-        "1.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程电动行驶 (请问对于将来的车辆，您会"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2_7": {
-      "label": "labels102",
-      "value_labels": {
-        "1.0": "LPG(液化石油气)或CNG(压缩天然气) (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2AHIDE": {
-      "label": "labels103",
-      "value_labels": {
-        "1.0": "汽油自然吸气引擎",
-        "2.0": "汽油涡轮增压引擎",
-        "3.0": "柴油引擎",
-        "4.0": "油电混合动力(内燃机+电动机)",
-        "5.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料)，部分电动行驶",
-        "6.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程电动行驶",
-        "7.0": "LPG(液化石油气)或CNG(压缩天然气)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X2A": {
-      "label": "labels104",
-      "value_labels": {
-        "1.0": "汽油自然吸气引擎",
-        "2.0": "汽油涡轮增压引擎",
-        "3.0": "柴油引擎",
-        "4.0": "油电混合动力(内燃机+电动机)",
-        "5.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料)，部分电动行驶",
-        "6.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程电动行驶",
-        "7.0": "LPG(液化石油气)或CNG(压缩天然气)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q10": {
-      "label": "labels105",
-      "value_labels": {
-        "1.0": "1.0L",
-        "2.0": "1.2L",
-        "3.0": "1.4L",
-        "4.0": "1.5L",
-        "5.0": "1.6L",
-        "6.0": "1.8L",
-        "7.0": "2.0L",
-        "8.0": "2.4L",
-        "9.0": "2.5L",
-        "10.0": "2.8L",
-        "11.0": "3.0L",
-        "12.0": "3.5L",
-        "13.0": "4.0L",
-        "14.0": "1.0T",
-        "15.0": "1.2T",
-        "16.0": "1.3T",
-        "17.0": "1.4T",
-        "18.0": "1.5T",
-        "19.0": "1.6T",
-        "20.0": "1.8T",
-        "21.0": "2.0T",
-        "22.0": "2.4T",
-        "23.0": "2.5T",
-        "24.0": "2.8T",
-        "25.0": "3.0T",
-        "98.0": "其他, 请注明"
-      },
-      "variable_type": "categorical"
-    },
-    "Q12": {
-      "label": "labels106",
-      "value_labels": {
-        "1.0": "前轮驱动 (FWD)",
-        "2.0": "后轮驱动 (RWD)",
-        "3.0": "全轮驱动 (AWD) – 偏向前轮驱动",
-        "4.0": "全轮驱动 (AWD) – 偏向后轮驱动",
-        "5.0": "全轮驱动 (AWD) – 偏向前轮驱动或偏向后轮驱动均可",
-        "6.0": "四轮驱动 (4WD)",
-        "7.0": "不知道",
-        "98.0": "其他,请注明"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1A_1": {
-      "label": "labels107",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1A_2": {
-      "label": "labels108",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1A_3": {
-      "label": "labels109",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1A_4": {
-      "label": "labels110",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1A_5": {
-      "label": "labels111",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1A_6": {
-      "label": "labels112",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1B_7": {
-      "label": "labels113",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1B_8": {
-      "label": "labels114",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1B_9": {
-      "label": "labels115",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1B_10": {
-      "label": "labels116",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1B_11": {
-      "label": "labels117",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1B_12": {
-      "label": "labels118",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1C_13": {
-      "label": "labels119",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1C_14": {
-      "label": "labels120",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1C_15": {
-      "label": "labels121",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X1C_16": {
-      "label": "labels122",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X2_17": {
-      "label": "labels123",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X2_18": {
-      "label": "labels124",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X2_19": {
-      "label": "labels125",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X2_20": {
-      "label": "labels126",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X2_21": {
-      "label": "labels127",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X2_22": {
-      "label": "labels128",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X3_23": {
-      "label": "labels129",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X3_24": {
-      "label": "labels130",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X3_25": {
-      "label": "labels131",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X3_26": {
-      "label": "labels132",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X3_27": {
-      "label": "labels133",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q4X3_28": {
-      "label": "labels134",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1A_1": {
-      "label": "labels135",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1A_2": {
-      "label": "labels136",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1A_3": {
-      "label": "labels137",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1A_4": {
-      "label": "labels138",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1A_5": {
-      "label": "labels139",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1A_6": {
-      "label": "labels140",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1B_7": {
-      "label": "labels141",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1B_8": {
-      "label": "labels142",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1B_9": {
-      "label": "labels143",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1B_10": {
-      "label": "labels144",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1B_11": {
-      "label": "labels145",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1B_12": {
-      "label": "labels146",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1C_13": {
-      "label": "labels147",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1C_14": {
-      "label": "labels148",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1C_15": {
-      "label": "labels149",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1C_16": {
-      "label": "labels150",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1C_17": {
-      "label": "labels151",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1C_18": {
-      "label": "labels152",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1D_19": {
-      "label": "labels153",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1D_20": {
-      "label": "labels154",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1D_21": {
-      "label": "labels155",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1D_22": {
-      "label": "labels156",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1D_23": {
-      "label": "labels157",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1D_24": {
-      "label": "labels158",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1E_25": {
-      "label": "labels159",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1E_26": {
-      "label": "labels160",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1E_27": {
-      "label": "labels161",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1E_28": {
-      "label": "labels162",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1E_29": {
-      "label": "labels163",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X1E_30": {
-      "label": "labels164",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X2_31": {
-      "label": "labels165",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q1X2_32": {
-      "label": "labels166",
-      "value_labels": {
-        "1.0": "一点也不重要",
-        "2.0": "不是太重要",
-        "3.0": "一般",
-        "4.0": "有点重要",
-        "5.0": "很重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X5_25": {
-      "label": "labels167",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X5_26": {
-      "label": "labels168",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X5_27": {
-      "label": "labels169",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X5_28": {
-      "label": "labels170",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X5_29": {
-      "label": "labels171",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X5_30": {
-      "label": "labels172",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X5_31": {
-      "label": "labels173",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X1_1": {
-      "label": "labels174",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X1_2": {
-      "label": "labels175",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X1_3": {
-      "label": "labels176",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X1_4": {
-      "label": "labels177",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X1_5": {
-      "label": "labels178",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X1_6": {
-      "label": "labels179",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X2_7": {
-      "label": "labels180",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X2_8": {
-      "label": "labels181",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X2_9": {
-      "label": "labels182",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X2_10": {
-      "label": "labels183",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X2_11": {
-      "label": "labels184",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X2_12": {
-      "label": "labels185",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X3_13": {
-      "label": "labels186",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X3_14": {
-      "label": "labels187",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X3_15": {
-      "label": "labels188",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X3_16": {
-      "label": "labels189",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X3_17": {
-      "label": "labels190",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X3_18": {
-      "label": "labels191",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X4_19": {
-      "label": "labels192",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X4_20": {
-      "label": "labels193",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X4_21": {
-      "label": "labels194",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X4_22": {
-      "label": "labels195",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X4_23": {
-      "label": "labels196",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q7X4_24": {
-      "label": "labels197",
-      "value_labels": {
-        "1.0": "完全不相符",
-        "2.0": "不太相符",
-        "3.0": "一般",
-        "4.0": "有点相符",
-        "5.0": "非常相符"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X1_1": {
-      "label": "labels198",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X1_2": {
-      "label": "labels199",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X1_3": {
-      "label": "labels200",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X1_4": {
-      "label": "labels201",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_5": {
-      "label": "labels202",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_6": {
-      "label": "labels203",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_7": {
-      "label": "labels204",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_8": {
-      "label": "labels205",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_9": {
-      "label": "labels206",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_10": {
-      "label": "labels207",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_11": {
-      "label": "labels208",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_12": {
-      "label": "labels209",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_13": {
-      "label": "labels210",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X2_14": {
-      "label": "labels211",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X3_15": {
-      "label": "labels212",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X3_16": {
-      "label": "labels213",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18X3_17": {
-      "label": "labels214",
-      "value_labels": {
-        "1.0": "完全不同意",
-        "2.0": "比较不同意",
-        "3.0": "不同意也不反对",
-        "4.0": "比较同意",
-        "5.0": "完全同意"
-      },
-      "variable_type": "categorical"
-    },
-    "Q18XA": {
-      "label": "labels215",
-      "value_labels": {
-        "1.0": "非常不重要",
-        "2.0": "比较不重要",
-        "3.0": "不重要",
-        "4.0": "重要性一般",
-        "5.0": "重要",
-        "6.0": "比较重要",
-        "7.0": "非常重要"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_1": {
-      "label": "labels216",
-      "value_labels": {
-        "1.0": "粗犷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_2": {
-      "label": "labels217",
-      "value_labels": {
-        "1.0": "成熟稳重的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_3": {
-      "label": "labels218",
-      "value_labels": {
-        "1.0": "休闲的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_4": {
-      "label": "labels219",
-      "value_labels": {
-        "1.0": "运动的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_5": {
-      "label": "labels220",
-      "value_labels": {
-        "1.0": "有女性魅力的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_6": {
-      "label": "labels221",
-      "value_labels": {
-        "1.0": "高雅有品位的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_7": {
-      "label": "labels222",
-      "value_labels": {
-        "1.0": "灵活敏捷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_8": {
-      "label": "labels223",
-      "value_labels": {
-        "1.0": "有活力的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_9": {
-      "label": "labels224",
-      "value_labels": {
-        "1.0": "简洁利落的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_10": {
-      "label": "labels225",
-      "value_labels": {
-        "1.0": "动感的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_11": {
-      "label": "labels226",
-      "value_labels": {
-        "1.0": "进取的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_12": {
-      "label": "labels227",
-      "value_labels": {
-        "1.0": "酷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_13": {
-      "label": "labels228",
-      "value_labels": {
-        "1.0": "高品质的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_14": {
-      "label": "labels229",
-      "value_labels": {
-        "1.0": "令人兴奋的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_15": {
-      "label": "labels230",
-      "value_labels": {
-        "1.0": "年轻的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_16": {
-      "label": "labels231",
-      "value_labels": {
-        "1.0": "对环境友好的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_17": {
-      "label": "labels232",
-      "value_labels": {
-        "1.0": "创新的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_18": {
-      "label": "labels233",
-      "value_labels": {
-        "1.0": "引领潮流的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_19": {
-      "label": "labels234",
-      "value_labels": {
-        "1.0": "有乐趣的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形"
-      },
-      "variable_type": "categorical"
-    },
-    "Q20X1_98": {
-      "label": "labels235",
-      "value_labels": {
-        "1.0": "其他，请注明 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽"
-      },
-      "variable_type": "categorical"
-    },
-    "Q25_1": {
-      "label": "labels236",
-      "value_labels": {
-        "1.0": "1",
-        "2.0": "2",
-        "3.0": "3",
-        "4.0": "4",
-        "5.0": "5"
-      },
-      "variable_type": "categorical"
-    },
-    "Q25_2": {
-      "label": "labels237",
-      "value_labels": {
-        "1.0": "1",
-        "2.0": "2",
-        "3.0": "3",
-        "4.0": "4",
-        "5.0": "5"
-      },
-      "variable_type": "categorical"
-    },
-    "Q25_3": {
-      "label": "labels238",
-      "value_labels": {
-        "1.0": "1",
-        "2.0": "2",
-        "3.0": "3",
-        "4.0": "4",
-        "5.0": "5"
-      },
-      "variable_type": "categorical"
-    },
-    "Q25_4": {
-      "label": "labels239",
-      "value_labels": {
-        "1.0": "1",
-        "2.0": "2",
-        "3.0": "3",
-        "4.0": "4",
-        "5.0": "5"
-      },
-      "variable_type": "categorical"
-    },
-    "Q25_5": {
-      "label": "labels240",
-      "value_labels": {
-        "1.0": "1",
-        "2.0": "2",
-        "3.0": "3",
-        "4.0": "4",
-        "5.0": "5"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26_1": {
-      "label": "labels241",
-      "value_labels": {
-        "1.0": "睡觉 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26_2": {
-      "label": "labels242",
-      "value_labels": {
-        "1.0": "工作 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26_3": {
-      "label": "labels243",
-      "value_labels": {
-        "1.0": "放松，做一些您今天已经可以在开车的过程中做的事情（例如，听音乐） (如果您的汽车将"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26_4": {
-      "label": "labels244",
-      "value_labels": {
-        "1.0": "放松，做一些您今天不能在开车的过程中做的事情（例如，看报纸或看书，看电影，打游戏"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26_6": {
-      "label": "labels245",
-      "value_labels": {
-        "1.0": "连接我的个人物品，或者是与家人朋友通过电话或者微信联系 (如果您的汽车将是完全自动"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26_5": {
-      "label": "labels246",
-      "value_labels": {
-        "1.0": "什么都不做，享受当下的时间 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26_7": {
-      "label": "labels247",
-      "value_labels": {
-        "1.0": "一点都不感兴趣，我会一直关注驾驶情况，不会让车子自动驾驶 (如果您的汽车将是完全自"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26X1_1": {
-      "label": "labels248",
-      "value_labels": {
-        "1.0": "出于安全考虑 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26X1_2": {
-      "label": "labels249",
-      "value_labels": {
-        "1.0": "我想自己掌握控制权 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26X1_3": {
-      "label": "labels250",
-      "value_labels": {
-        "1.0": "我喜欢开车 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26X1_4": {
-      "label": "labels251",
-      "value_labels": {
-        "1.0": "现阶段自动驾驶模式不够成熟，不能为我带来实质性的好处 (为什么你对自动驾驶完全不感"
-      },
-      "variable_type": "categorical"
-    },
-    "Q26X1_98": {
-      "label": "labels252",
-      "value_labels": {
-        "1.0": "其他原因，请注明 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_1": {
-      "label": "labels253",
-      "value_labels": {
-        "1.0": "它使我的旅程更加安全（通过对潜在危险的自动警告） (一般来说，想起车联网，有人把以"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_2": {
-      "label": "labels254",
-      "value_labels": {
-        "1.0": "通过监控一些指标（如油耗等）我可以调整驾驶习惯 (一般来说，想起车联网，有人把以下"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_3": {
-      "label": "labels255",
-      "value_labels": {
-        "1.0": "由于汽车娱乐和媒体服务更好了，我的驾驶乐趣增加了 (一般来说，想起车联网，有人把以"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_4": {
-      "label": "labels256",
-      "value_labels": {
-        "1.0": "由于互联网导航和实时交通信息，我能够准确地知道我在哪里，我要去哪里，什么时候到达"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_5": {
-      "label": "labels257",
-      "value_labels": {
-        "1.0": "车联网让我知道什么时候我的车需要保养，什么时候出故障，让我觉得很轻松 (一般来说，"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_6": {
-      "label": "labels258",
-      "value_labels": {
-        "1.0": "它可以让我在开车时，随时连接到我的物品、家人和朋友 (一般来说，想起车联网，有人把"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_7": {
-      "label": "labels259",
-      "value_labels": {
-        "1.0": "它可以协助我停车 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_8": {
-      "label": "labels260",
-      "value_labels": {
-        "1.0": "它可以让我避免粗心驾驶 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主"
-      },
-      "variable_type": "categorical"
-    },
-    "Q27_9": {
-      "label": "labels261",
-      "value_labels": {
-        "1.0": "以上均不赞同 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28_1": {
-      "label": "labels262",
-      "value_labels": {
-        "1.0": "它使我的旅程更加安全 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28_2": {
-      "label": "labels263",
-      "value_labels": {
-        "1.0": "它使我的旅程更加有趣 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28_3": {
-      "label": "labels264",
-      "value_labels": {
-        "1.0": "它让我的旅程更加轻松 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28_4": {
-      "label": "labels265",
-      "value_labels": {
-        "1.0": "它让我的时间更有效率 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28_5": {
-      "label": "labels266",
-      "value_labels": {
-        "1.0": "它让我有时间更好的陪伴家人 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28_6": {
-      "label": "labels267",
-      "value_labels": {
-        "1.0": "它让我的车内空间更加灵活 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28_7": {
-      "label": "labels268",
-      "value_labels": {
-        "1.0": "其它，请注明 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q9X3": {
-      "label": "labels269",
-      "value_labels": {
-        "1.0": "100以下",
-        "2.0": "100-199",
-        "3.0": "200-299",
-        "4.0": "300-399",
-        "5.0": "400-499",
-        "6.0": "500-599",
-        "7.0": "600-699",
-        "8.0": "700-799",
-        "9.0": "800及以上"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_1": {
-      "label": "labels270",
-      "value_labels": {
-        "1.0": "电动车有里程数限制 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_2": {
-      "label": "labels271",
-      "value_labels": {
-        "1.0": "充电时间太长 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_3": {
-      "label": "labels272",
-      "value_labels": {
-        "1.0": "充电桩难找 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_4": {
-      "label": "labels273",
-      "value_labels": {
-        "1.0": "在家里安装充电桩太复杂或者太贵 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_5": {
-      "label": "labels274",
-      "value_labels": {
-        "1.0": "电池的部分组成对环境有害 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_6": {
-      "label": "labels275",
-      "value_labels": {
-        "1.0": "电动车太贵、补贴低 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_7": {
-      "label": "labels276",
-      "value_labels": {
-        "1.0": "电动车让我感觉不安全 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_8": {
-      "label": "labels277",
-      "value_labels": {
-        "1.0": "电动车的科技不够成熟 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_9": {
-      "label": "labels278",
-      "value_labels": {
-        "1.0": "身边很少人使用电动车 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_10": {
-      "label": "labels279",
-      "value_labels": {
-        "1.0": "较低的二手价值 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_11": {
-      "label": "labels280",
-      "value_labels": {
-        "1.0": "电动车的车型较少 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q28X1_98": {
-      "label": "labels281",
-      "value_labels": {
-        "1.0": "其他原因，请注明 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XA_1": {
-      "label": "labels282",
-      "value_labels": {
-        "1.0": "在街上，路边 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XA_2": {
-      "label": "labels283",
-      "value_labels": {
-        "1.0": "在私人封闭的车库 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XA_3": {
-      "label": "labels284",
-      "value_labels": {
-        "1.0": "在私人的驾驶区域，花园 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XA_4": {
-      "label": "labels285",
-      "value_labels": {
-        "1.0": "公共的露天停车场 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XA_5": {
-      "label": "labels286",
-      "value_labels": {
-        "1.0": "公共的非露天停车场 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XA_6": {
-      "label": "labels287",
-      "value_labels": {
-        "1.0": "加油站 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XA_7": {
-      "label": "labels288",
-      "value_labels": {
-        "1.0": "公共充电站 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XB_1": {
-      "label": "labels289",
-      "value_labels": {
-        "1.0": "在街上，路边 (上班的时候呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XB_2": {
-      "label": "labels290",
-      "value_labels": {
-        "1.0": "在私人封闭的车库 (上班的时候呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XB_3": {
-      "label": "labels291",
-      "value_labels": {
-        "1.0": "在私人的驾驶区域，花园 (上班的时候呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XB_4": {
-      "label": "labels292",
-      "value_labels": {
-        "1.0": "公共的露天停车场 (上班的时候呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XB_5": {
-      "label": "labels293",
-      "value_labels": {
-        "1.0": "公共的非露天停车场 (上班的时候呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XB_6": {
-      "label": "labels294",
-      "value_labels": {
-        "1.0": "加油站 (上班的时候呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XB_7": {
-      "label": "labels295",
-      "value_labels": {
-        "1.0": "公共充电站 (上班的时候呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q29XB_8": {
-      "label": "labels296",
-      "value_labels": {
-        "1.0": "我不开车上班 (上班的时候呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30A_1": {
-      "label": "labels297",
-      "value_labels": {
-        "1.0": "租车 (请问您使用过以下哪些移动出行的服务？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30A_2": {
-      "label": "labels298",
-      "value_labels": {
-        "1.0": "网约车，例如滴滴 (请问您使用过以下哪些移动出行的服务？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30A_3": {
-      "label": "labels299",
-      "value_labels": {
-        "1.0": "共享汽车，例如car to go (请问您使用过以下哪些移动出行的服务？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30A_4": {
-      "label": "labels300",
-      "value_labels": {
-        "1.0": "出租车 (请问您使用过以下哪些移动出行的服务？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30A_99": {
-      "label": "labels301",
-      "value_labels": {
-        "1.0": "以上都没有 (请问您使用过以下哪些移动出行的服务？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30B_1": {
-      "label": "labels302",
-      "value_labels": {
-        "1.0": "每周至少1次",
-        "2.0": "每月至少1次",
-        "3.0": "每半年至少1次",
-        "4.0": "每年1次或更少"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30B_2": {
-      "label": "labels303",
-      "value_labels": {
-        "1.0": "每周至少1次",
-        "2.0": "每月至少1次",
-        "3.0": "每半年至少1次",
-        "4.0": "每年1次或更少"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30B_3": {
-      "label": "labels304",
-      "value_labels": {
-        "1.0": "每周至少1次",
-        "2.0": "每月至少1次",
-        "3.0": "每半年至少1次",
-        "4.0": "每年1次或更少"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30B_4": {
-      "label": "labels305",
-      "value_labels": {
-        "1.0": "每周至少1次",
-        "2.0": "每月至少1次",
-        "3.0": "每半年至少1次",
-        "4.0": "每年1次或更少"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX1_1": {
-      "label": "labels306",
-      "value_labels": {
-        "1.0": "我还没有购买自己的车 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX1_2": {
-      "label": "labels307",
-      "value_labels": {
-        "1.0": "要去的地方停车不方便 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX1_3": {
-      "label": "labels308",
-      "value_labels": {
-        "1.0": "要去的地方搭乘公共交通不方便 (请问您使用出租车或网约车（滴滴）出行服务的主要原因"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX1_4": {
-      "label": "labels309",
-      "value_labels": {
-        "1.0": "和搭乘公共交通相比，更节省时间 (请问您使用出租车或网约车（滴滴）出行服务的主要原"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX1_5": {
-      "label": "labels310",
-      "value_labels": {
-        "1.0": "其它，请注明 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX2_1": {
-      "label": "labels311",
-      "value_labels": {
-        "1.0": "我还没有购买自己的车 (请问您使用租车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX2_2": {
-      "label": "labels312",
-      "value_labels": {
-        "1.0": "去外地城市，自己租车驾驶更方便 (请问您使用租车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX2_3": {
-      "label": "labels313",
-      "value_labels": {
-        "1.0": "可以让我有机会体验驾驶不同的车 (请问您使用租车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX2_4": {
-      "label": "labels314",
-      "value_labels": {
-        "1.0": "和公共交通相比，有私人空间，私密性更好 (请问您使用租车出行服务的主要原因是什么？"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX2_5": {
-      "label": "labels315",
-      "value_labels": {
-        "1.0": "其它，请注明 (请问您使用租车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX3_1": {
-      "label": "labels316",
-      "value_labels": {
-        "1.0": "我还没有购买自己的车 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX3_2": {
-      "label": "labels317",
-      "value_labels": {
-        "1.0": "节能环保 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX3_3": {
-      "label": "labels318",
-      "value_labels": {
-        "1.0": "中短途接驳，灵活便捷 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX3_4": {
-      "label": "labels319",
-      "value_labels": {
-        "1.0": "成本更低 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX3_5": {
-      "label": "labels320",
-      "value_labels": {
-        "1.0": "可以让我有机会体验驾驶不同的车 (请问您使用共享汽车出行服务的主要原因是什么？（复"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX3_6": {
-      "label": "labels321",
-      "value_labels": {
-        "1.0": "和公共交通相比，有私人空间，私密性更好 (请问您使用共享汽车出行服务的主要原因是什"
-      },
-      "variable_type": "categorical"
-    },
-    "Q30CX3_7": {
-      "label": "labels322",
-      "value_labels": {
-        "1.0": "其它，请注明 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q31_1": {
-      "label": "labels323",
-      "value_labels": {
-        "1.0": "我觉得会有越来越少的人买车，而是更多地使用汽车共享服务 (以下是关于共享汽车的一些"
-      },
-      "variable_type": "categorical"
-    },
-    "Q31_2": {
-      "label": "labels324",
-      "value_labels": {
-        "1.0": "我依赖汽车共享服务通勤 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选"
-      },
-      "variable_type": "categorical"
-    },
-    "Q31_3": {
-      "label": "labels325",
-      "value_labels": {
-        "1.0": "我相信汽车共享在未来会成为一种趋势 (以下是关于共享汽车的一些看法，请问您同意哪些"
-      },
-      "variable_type": "categorical"
-    },
-    "Q31_4": {
-      "label": "labels326",
-      "value_labels": {
-        "1.0": "汽车共享将会越来越便宜 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选"
-      },
-      "variable_type": "categorical"
-    },
-    "Q31_5": {
-      "label": "labels327",
-      "value_labels": {
-        "1.0": "我认为以后我们买的汽车都可以共享使用 (以下是关于共享汽车的一些看法，请问您同意哪"
-      },
-      "variable_type": "categorical"
-    },
-    "Q31_6": {
-      "label": "labels328",
-      "value_labels": {
-        "1.0": "均不同意以上观点 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "Q32_1": {
-      "label": "labels329",
-      "value_labels": {
-        "1.0": "我希望拥有属于自己的车辆 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢"
-      },
-      "variable_type": "categorical"
-    },
-    "Q32_2": {
-      "label": "labels330",
-      "value_labels": {
-        "1.0": "自己有车更方便，更灵活 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？"
-      },
-      "variable_type": "categorical"
-    },
-    "Q32_3": {
-      "label": "labels331",
-      "value_labels": {
-        "1.0": "用自己的车更放心 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？（多选"
-      },
-      "variable_type": "categorical"
-    },
-    "Q32_4": {
-      "label": "labels332",
-      "value_labels": {
-        "1.0": "其它，请注明 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F1": {
-      "label": "labels333",
-      "value_labels": {
-        "1.0": "未婚",
-        "2.0": "已婚有孩",
-        "3.0": "已婚无孩",
-        "4.0": "其他"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X1": {
-      "label": "labels334",
-      "value_labels": {
-        "1.0": "1个",
-        "2.0": "2个",
-        "3.0": "3个",
-        "4.0": "4个",
-        "5.0": "5个",
-        "6.0": "6个",
-        "7.0": "7个",
-        "8.0": "7以上"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2_1": {
-      "label": "labels335",
-      "value_labels": {
-        "1.0": "配偶 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2_2": {
-      "label": "labels336",
-      "value_labels": {
-        "1.0": "男/女朋友 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2_3": {
-      "label": "labels337",
-      "value_labels": {
-        "1.0": "父/母亲 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2_4": {
-      "label": "labels338",
-      "value_labels": {
-        "1.0": "外祖父母/外祖父母 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2_5": {
-      "label": "labels339",
-      "value_labels": {
-        "1.0": "兄弟/姐妹 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2_6": {
-      "label": "labels340",
-      "value_labels": {
-        "1.0": "自己孩子 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2_7": {
-      "label": "labels341",
-      "value_labels": {
-        "1.0": "亲戚 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2_98": {
-      "label": "labels342",
-      "value_labels": {
-        "1.0": "其他，请注明 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X1A": {
-      "label": "labels343",
-      "value_labels": {
-        "1.0": "1个",
-        "2.0": "2个",
-        "3.0": "3个",
-        "4.0": "4个",
-        "5.0": "5个",
-        "6.0": "6个",
-        "7.0": "7个",
-        "8.0": "7以上"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2A_1": {
-      "label": "labels344",
-      "value_labels": {
-        "1.0": "配偶 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2A_2": {
-      "label": "labels345",
-      "value_labels": {
-        "1.0": "父/母亲 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2A_3": {
-      "label": "labels346",
-      "value_labels": {
-        "1.0": "外祖父母/外祖父母 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2A_4": {
-      "label": "labels347",
-      "value_labels": {
-        "1.0": "兄弟/姐妹 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2A_5": {
-      "label": "labels348",
-      "value_labels": {
-        "1.0": "自己孩子 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2A_6": {
-      "label": "labels349",
-      "value_labels": {
-        "1.0": "亲戚 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F2X2A_98": {
-      "label": "labels350",
-      "value_labels": {
-        "1.0": "其他，请注明 (那他们与你的关系是？（多选）)"
-      },
-      "variable_type": "categorical"
-    },
-    "F3X1": {
-      "label": "labels351",
-      "value_labels": {
-        "1.0": "0",
-        "2.0": "1",
-        "3.0": "2",
-        "4.0": "3 个或以上"
-      },
-      "variable_type": "categorical"
-    },
-    "F4": {
-      "label": "labels352",
-      "value_labels": {
-        "1.0": "不希望有孩子（丁克）",
-        "2.0": "1个孩子",
-        "3.0": "2个孩子",
-        "4.0": "3个孩子",
-        "5.0": "4个孩子及以上",
-        "6.0": "不知道"
-      },
-      "variable_type": "categorical"
-    },
-    "F5B": {
-      "label": "labels353",
-      "value_labels": {
-        "1.0": "拥有带产权的固定停车位",
-        "2.0": "租赁无产权的停车位，为固定停车位",
-        "3.0": "租赁无产权的停车位，为不固定的停车位",
-        "4.0": "目前没有购买/租赁的停车位"
-      },
-      "variable_type": "categorical"
-    },
-    "F6": {
-      "label": "labels354",
-      "value_labels": {
-        "2.0": "员工不少于10人",
-        "3.0": "员工少于10人，例如拥有一个小生意，小商店，小农场等",
-        "4.0": "自营专业人士，例如医生、律师、建筑师、会计等",
-        "5.0": "手工业者（建筑工人、水暖工、电工、油漆工等）",
-        "7.0": "高级职员/专业人士/公司总监/高级经理",
-        "8.0": "经理/初级管理人员",
-        "9.0": "公共服务/私人服务行业人员-医疗，教育，警察，军队等",
-        "10.0": "普通员工",
-        "11.0": "体力劳动者",
-        "13.0": "家庭主妇（夫）",
-        "14.0": "公务人员",
-        "15.0": "学生",
-        "16.0": "无业/失业人员",
-        "98.0": "其他，请注明"
-      },
-      "variable_type": "categorical"
-    },
-    "F8XA": {
-      "label": "labels355",
-      "value_labels": {
-        "1.0": "初中及以下",
-        "2.0": "高中/中专/技校/职中",
-        "3.0": "大专",
-        "4.0": "本科/4年制大学",
-        "5.0": "研究生及以上"
-      },
-      "variable_type": "categorical"
-    },
-    "F9X1": {
-      "label": "labels356",
-      "value_labels": {
-        "1.0": "5,000元以下",
-        "2.0": "5,000-7,999元",
-        "3.0": "8,000-9,999元",
-        "4.0": "10,000-13,999元",
-        "5.0": "14,000-19,999元",
-        "6.0": "20,000元或以上"
-      },
-      "variable_type": "categorical"
+  "DEVICE_INFO": {
+    "variable_name": "DEVICE_INFO",
+    "variable_label": "DEVICE_INFO",
+    "value_labels": {
+      "1.0": "PC端",
+      "2.0": "移动端"
     }
   },
-  "variable_names": [
-    "DEVICE_INFO",
-    "SAMPLE",
-    "S0",
-    "S0XB1",
-    "S0XC",
-    "S0XD_1",
-    "S0XD_2",
-    "S0XD_3",
-    "S0XD_4",
-    "S0XD_5",
-    "S0XD_6",
-    "S0XD_7",
-    "S1X1",
-    "S2",
-    "S2A",
-    "S3",
-    "S4_1",
-    "S4_2",
-    "S4_3",
-    "S4_4",
-    "S4_5",
-    "S4_6",
-    "S4_7",
-    "S4_8",
-    "S5X1C",
-    "S5X1E",
-    "S5X2",
-    "S6",
-    "S7",
-    "S8",
-    "S9",
-    "S14",
-    "S15X1A",
-    "S15X1B",
-    "S16",
-    "S17XA_1",
-    "S17XA_2",
-    "S17XA_3",
-    "S17XA_4",
-    "S17XA_5",
-    "S17XA_6",
-    "S17XA_7",
-    "S17XA_8",
-    "S17XA_9",
-    "S17XA_10",
-    "S17XA_11",
-    "S17XA_12",
-    "S17XA_13",
-    "S17XB",
-    "S18X99_99",
-    "S18HIDE",
-    "S19AX3",
-    "S19XB",
-    "S19BX3",
-    "S20",
-    "S21",
-    "S22",
-    "S23",
-    "Q2A_1",
-    "Q2A_2",
-    "Q2A_3",
-    "Q2A_4",
-    "Q2A_5",
-    "Q2A_6",
-    "Q2A_7",
-    "Q2A_8",
-    "Q2A_9",
-    "Q2A_10",
-    "Q2A_11",
-    "Q2A_12",
-    "Q2A_98",
-    "Q2B_1",
-    "Q2B_2",
-    "Q2B_3",
-    "Q2B_4",
-    "Q2B_5",
-    "Q2B_6",
-    "Q2B_7",
-    "Q2B_8",
-    "Q2B_9",
-    "Q2B_10",
-    "Q2B_11",
-    "Q2B_12",
-    "Q2B_98",
-    "Q3X1",
-    "Q3X2",
-    "Q9X2_1",
-    "Q9X2_2",
-    "Q9X2_3",
-    "Q9X2_4",
-    "Q9X2_5",
-    "Q9X2_6",
-    "Q9X2_7",
-    "Q9X2AHIDE",
-    "Q9X2A",
-    "Q10",
-    "Q12",
-    "Q4X1A_1",
-    "Q4X1A_2",
-    "Q4X1A_3",
-    "Q4X1A_4",
-    "Q4X1A_5",
-    "Q4X1A_6",
-    "Q4X1B_7",
-    "Q4X1B_8",
-    "Q4X1B_9",
-    "Q4X1B_10",
-    "Q4X1B_11",
-    "Q4X1B_12",
-    "Q4X1C_13",
-    "Q4X1C_14",
-    "Q4X1C_15",
-    "Q4X1C_16",
-    "Q4X2_17",
-    "Q4X2_18",
-    "Q4X2_19",
-    "Q4X2_20",
-    "Q4X2_21",
-    "Q4X2_22",
-    "Q4X3_23",
-    "Q4X3_24",
-    "Q4X3_25",
-    "Q4X3_26",
-    "Q4X3_27",
-    "Q4X3_28",
-    "Q1X1A_1",
-    "Q1X1A_2",
-    "Q1X1A_3",
-    "Q1X1A_4",
-    "Q1X1A_5",
-    "Q1X1A_6",
-    "Q1X1B_7",
-    "Q1X1B_8",
-    "Q1X1B_9",
-    "Q1X1B_10",
-    "Q1X1B_11",
-    "Q1X1B_12",
-    "Q1X1C_13",
-    "Q1X1C_14",
-    "Q1X1C_15",
-    "Q1X1C_16",
-    "Q1X1C_17",
-    "Q1X1C_18",
-    "Q1X1D_19",
-    "Q1X1D_20",
-    "Q1X1D_21",
-    "Q1X1D_22",
-    "Q1X1D_23",
-    "Q1X1D_24",
-    "Q1X1E_25",
-    "Q1X1E_26",
-    "Q1X1E_27",
-    "Q1X1E_28",
-    "Q1X1E_29",
-    "Q1X1E_30",
-    "Q1X2_31",
-    "Q1X2_32",
-    "Q7X5_25",
-    "Q7X5_26",
-    "Q7X5_27",
-    "Q7X5_28",
-    "Q7X5_29",
-    "Q7X5_30",
-    "Q7X5_31",
-    "Q7X1_1",
-    "Q7X1_2",
-    "Q7X1_3",
-    "Q7X1_4",
-    "Q7X1_5",
-    "Q7X1_6",
-    "Q7X2_7",
-    "Q7X2_8",
-    "Q7X2_9",
-    "Q7X2_10",
-    "Q7X2_11",
-    "Q7X2_12",
-    "Q7X3_13",
-    "Q7X3_14",
-    "Q7X3_15",
-    "Q7X3_16",
-    "Q7X3_17",
-    "Q7X3_18",
-    "Q7X4_19",
-    "Q7X4_20",
-    "Q7X4_21",
-    "Q7X4_22",
-    "Q7X4_23",
-    "Q7X4_24",
-    "Q18X1_1",
-    "Q18X1_2",
-    "Q18X1_3",
-    "Q18X1_4",
-    "Q18X2_5",
-    "Q18X2_6",
-    "Q18X2_7",
-    "Q18X2_8",
-    "Q18X2_9",
-    "Q18X2_10",
-    "Q18X2_11",
-    "Q18X2_12",
-    "Q18X2_13",
-    "Q18X2_14",
-    "Q18X3_15",
-    "Q18X3_16",
-    "Q18X3_17",
-    "Q18XA",
-    "Q20X1_1",
-    "Q20X1_2",
-    "Q20X1_3",
-    "Q20X1_4",
-    "Q20X1_5",
-    "Q20X1_6",
-    "Q20X1_7",
-    "Q20X1_8",
-    "Q20X1_9",
-    "Q20X1_10",
-    "Q20X1_11",
-    "Q20X1_12",
-    "Q20X1_13",
-    "Q20X1_14",
-    "Q20X1_15",
-    "Q20X1_16",
-    "Q20X1_17",
-    "Q20X1_18",
-    "Q20X1_19",
-    "Q20X1_98",
-    "Q25_1",
-    "Q25_2",
-    "Q25_3",
-    "Q25_4",
-    "Q25_5",
-    "Q26_1",
-    "Q26_2",
-    "Q26_3",
-    "Q26_4",
-    "Q26_6",
-    "Q26_5",
-    "Q26_7",
-    "Q26X1_1",
-    "Q26X1_2",
-    "Q26X1_3",
-    "Q26X1_4",
-    "Q26X1_98",
-    "Q27_1",
-    "Q27_2",
-    "Q27_3",
-    "Q27_4",
-    "Q27_5",
-    "Q27_6",
-    "Q27_7",
-    "Q27_8",
-    "Q27_9",
-    "Q28_1",
-    "Q28_2",
-    "Q28_3",
-    "Q28_4",
-    "Q28_5",
-    "Q28_6",
-    "Q28_7",
-    "Q9X3",
-    "Q28X1_1",
-    "Q28X1_2",
-    "Q28X1_3",
-    "Q28X1_4",
-    "Q28X1_5",
-    "Q28X1_6",
-    "Q28X1_7",
-    "Q28X1_8",
-    "Q28X1_9",
-    "Q28X1_10",
-    "Q28X1_11",
-    "Q28X1_98",
-    "Q29XA_1",
-    "Q29XA_2",
-    "Q29XA_3",
-    "Q29XA_4",
-    "Q29XA_5",
-    "Q29XA_6",
-    "Q29XA_7",
-    "Q29XB_1",
-    "Q29XB_2",
-    "Q29XB_3",
-    "Q29XB_4",
-    "Q29XB_5",
-    "Q29XB_6",
-    "Q29XB_7",
-    "Q29XB_8",
-    "Q30A_1",
-    "Q30A_2",
-    "Q30A_3",
-    "Q30A_4",
-    "Q30A_99",
-    "Q30B_1",
-    "Q30B_2",
-    "Q30B_3",
-    "Q30B_4",
-    "Q30CX1_1",
-    "Q30CX1_2",
-    "Q30CX1_3",
-    "Q30CX1_4",
-    "Q30CX1_5",
-    "Q30CX2_1",
-    "Q30CX2_2",
-    "Q30CX2_3",
-    "Q30CX2_4",
-    "Q30CX2_5",
-    "Q30CX3_1",
-    "Q30CX3_2",
-    "Q30CX3_3",
-    "Q30CX3_4",
-    "Q30CX3_5",
-    "Q30CX3_6",
-    "Q30CX3_7",
-    "Q31_1",
-    "Q31_2",
-    "Q31_3",
-    "Q31_4",
-    "Q31_5",
-    "Q31_6",
-    "Q32_1",
-    "Q32_2",
-    "Q32_3",
-    "Q32_4",
-    "F1",
-    "F2X1",
-    "F2X2_1",
-    "F2X2_2",
-    "F2X2_3",
-    "F2X2_4",
-    "F2X2_5",
-    "F2X2_6",
-    "F2X2_7",
-    "F2X2_98",
-    "F2X1A",
-    "F2X2A_1",
-    "F2X2A_2",
-    "F2X2A_3",
-    "F2X2A_4",
-    "F2X2A_5",
-    "F2X2A_6",
-    "F2X2A_98",
-    "F3X1",
-    "F4",
-    "F5B",
-    "F6",
-    "F8XA",
-    "F9X1"
-  ],
-  "summary": {
-    "total_variables": 357,
-    "filtered_variables": 347,
-    "analysis_variables": 347
+  "SAMPLE": {
+    "variable_name": "SAMPLE",
+    "variable_label": "sample",
+    "value_labels": {
+      "1.0": "随机样本",
+      "2.0": "追加样本"
+    }
+  },
+  "S0": {
+    "variable_name": "S0",
+    "variable_label": "请问您的性别是？(单选)",
+    "value_labels": {
+      "1.0": "男",
+      "2.0": "女"
+    }
+  },
+  "S0XB1": {
+    "variable_name": "S0XB1",
+    "variable_label": "S0XB1",
+    "value_labels": {
+      "1.0": "一线城市",
+      "2.0": "二线城市",
+      "3.0": "三线城市",
+      "4.0": "四线城市",
+      "5.0": "五线城市",
+      "6.0": "六线城市"
+    }
+  },
+  "S0XC": {
+    "variable_name": "S0XC",
+    "variable_label": "请问以下哪个选项最符合您目前的居住情况？(单选)",
+    "value_labels": {
+      "1.0": "本地居民,一直在这里居住",
+      "2.0": "外地人，但在本市居住超过3年以上",
+      "3.0": "外地人，但在本市居住不满3年"
+    }
+  },
+  "S0XD_1": {
+    "variable_name": "S0XD_1",
+    "variable_label": "汽车 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))",
+    "value_labels": {
+      "1.0": "汽车 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
+    }
+  },
+  "S0XD_2": {
+    "variable_name": "S0XD_2",
+    "variable_label": "空调 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))",
+    "value_labels": {
+      "1.0": "空调 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
+    }
+  },
+  "S0XD_3": {
+    "variable_name": "S0XD_3",
+    "variable_label": "三门或对开门冰箱 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))",
+    "value_labels": {
+      "1.0": "三门或对开门冰箱 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
+    }
+  },
+  "S0XD_4": {
+    "variable_name": "S0XD_4",
+    "variable_label": "平板电脑 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))",
+    "value_labels": {
+      "1.0": "平板电脑 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
+    }
+  },
+  "S0XD_5": {
+    "variable_name": "S0XD_5",
+    "variable_label": "台式电脑/笔记本电脑 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))",
+    "value_labels": {
+      "1.0": "台式电脑/笔记本电脑 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
+    }
+  },
+  "S0XD_6": {
+    "variable_name": "S0XD_6",
+    "variable_label": "家用健身器材(例如: 跑步机) (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))",
+    "value_labels": {
+      "1.0": "家用健身器材(例如: 跑步机) (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选)"
+    }
+  },
+  "S0XD_7": {
+    "variable_name": "S0XD_7",
+    "variable_label": "以上均无购买意向 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))",
+    "value_labels": {
+      "1.0": "以上均无购买意向 (请问在未来2年内，您或您家庭是否打算购买以下产品？(多选))"
+    }
+  },
+  "S1X1": {
+    "variable_name": "S1X1",
+    "variable_label": "S1X1",
+    "value_labels": {
+      "1.0": "18岁以下",
+      "2.0": "18-25岁",
+      "3.0": "26-35岁",
+      "4.0": "36-45岁",
+      "5.0": "46-55岁",
+      "6.0": "56-60岁",
+      "7.0": "60岁以上"
+    }
+  },
+  "S2": {
+    "variable_name": "S2",
+    "variable_label": "请问您家目前拥有几辆车呢？（单选）(这里指的是私家车，不包括卡车、皮卡、面包车等商用车)　",
+    "value_labels": {
+      "1.0": "拥有 1 辆车",
+      "2.0": "拥有 2 辆车",
+      "3.0": "拥有 3 辆车",
+      "4.0": "拥有 4辆或以上的车",
+      "9.0": "没有"
+    }
+  },
+  "S2A": {
+    "variable_name": "S2A",
+    "variable_label": "S2A",
+    "value_labels": {
+      "1.0": "首购者",
+      "2.0": "再购者"
+    }
+  },
+  "S3": {
+    "variable_name": "S3",
+    "variable_label": "请问您是否有驾照。（单选）",
+    "value_labels": {
+      "1.0": "是",
+      "2.0": "否"
+    }
+  },
+  "S4_1": {
+    "variable_name": "S4_1",
+    "variable_label": "广告，媒体或公共关系公司或部门  (请问您或您家人是否在以下行业工作？(多选))",
+    "value_labels": {
+      "1.0": "广告，媒体或公共关系公司或部门  (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  "S4_2": {
+    "variable_name": "S4_2",
+    "variable_label": "市场或市场研究公司或部门  (请问您或您家人是否在以下行业工作？(多选))",
+    "value_labels": {
+      "1.0": "市场或市场研究公司或部门  (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  "S4_3": {
+    "variable_name": "S4_3",
+    "variable_label": "汽车行业（包括销售、制造、设计或维修/服务）  (请问您或您家人是否在以下行业工作？(多选))",
+    "value_labels": {
+      "1.0": "汽车行业（包括销售、制造、设计或维修/服务）  (请问您或您家人是否在以下行业工作？("
+    }
+  },
+  "S4_4": {
+    "variable_name": "S4_4",
+    "variable_label": "媒体工作：电视、电台、杂志、报纸、期刊等 (请问您或您家人是否在以下行业工作？(多选))",
+    "value_labels": {
+      "1.0": "媒体工作：电视、电台、杂志、报纸、期刊等 (请问您或您家人是否在以下行业工作？(多选"
+    }
+  },
+  "S4_5": {
+    "variable_name": "S4_5",
+    "variable_label": "专业司机（如出租车司机、卡车司机等) (请问您或您家人是否在以下行业工作？(多选))",
+    "value_labels": {
+      "1.0": "专业司机（如出租车司机、卡车司机等) (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  "S4_6": {
+    "variable_name": "S4_6",
+    "variable_label": "制药厂或药房 (请问您或您家人是否在以下行业工作？(多选))",
+    "value_labels": {
+      "1.0": "制药厂或药房 (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  "S4_7": {
+    "variable_name": "S4_7",
+    "variable_label": "包装食品生产商或供应商 (请问您或您家人是否在以下行业工作？(多选))",
+    "value_labels": {
+      "1.0": "包装食品生产商或供应商 (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  "S4_8": {
+    "variable_name": "S4_8",
+    "variable_label": "以上均无 (请问您或您家人是否在以下行业工作？(多选))",
+    "value_labels": {
+      "1.0": "以上均无 (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  "S5X1C": {
+    "variable_name": "S5X1C",
+    "variable_label": "对于您提到的这辆^f('S5x1b').toBoolean()?f('S5x1b'):f('S5x1bOE_'+f('S5x1bOE').value()+'_other')^,请问它是什么车身类型？（单选）",
+    "value_labels": {
+      "1.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-1.png\" width=150/></center><center><b>三厢轿车</b",
+      "2.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-2.png\"width=150/></center><center><b>跑车</b></cent",
+      "3.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-3.png\"width=150/></center><center><b>两厢轿车</b>",
+      "4.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-4.png\"width=150/></center><center><b>旅行车</b></c",
+      "5.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-5.png\"width=150/></center><center><b>多功能车MPV",
+      "6.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-6.png\"width=150/></center><center><b>多功能车MPV",
+      "7.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-7.png\"width=150/></center><center><b>SUV - 2 排座</",
+      "8.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-8.png\"width=150/></center><center><b>SUV - 3 排座</",
+      "9.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-9.png\"width=150/></center><center><b>皮卡</b></cent",
+      "10.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-13.png\"width=150/></center><center><b>CDV</b></center",
+      "11.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-11.png\"width=150/></center><center><b>商用/小面",
+      "12.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-12.png\"width=150/></center><center><b>卡车</b></cen",
+      "13.0": "其他"
+    }
+  },
+  "S5X1E": {
+    "variable_name": "S5X1E",
+    "variable_label": "对于您提到的这辆^f('S5x1a')^^f('S5x1b').toBoolean()?f('S5x1b'):f('S5x1bOE_'+f('S5x1bOE').value()+'_other')^，请问它是国产的还是进口的？(单选)",
+    "value_labels": {
+      "1.0": "国产的 (在国内生产的)",
+      "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
+    }
+  },
+  "S5X2": {
+    "variable_name": "S5X2",
+    "variable_label": "请问您于哪一年购买了现有的这辆车？(单选)",
+    "value_labels": {
+      "1.0": "2021年",
+      "2.0": "2020年",
+      "3.0": "2019年",
+      "4.0": "2018年",
+      "5.0": "2017年",
+      "6.0": "2016年",
+      "7.0": "2015年",
+      "8.0": "2014年",
+      "9.0": "2013年",
+      "10.0": "2012年",
+      "11.0": "2011年",
+      "12.0": "2010年",
+      "13.0": "2010年以前"
+    }
+  },
+  "S6": {
+    "variable_name": "S6",
+    "variable_label": "您这辆^f('S5x1b').toBoolean()?f('S5x1b'):f('S5x1bOE_'+f('S5x1bOE').value()+'_other')^的引擎类型是什么？ (单选)",
+    "value_labels": {
+      "1.0": "汽油自然吸气引擎",
+      "2.0": "汽油涡轮增压引擎",
+      "3.0": "柴油引擎",
+      "4.0": "油电混合动力(内燃机+电动机)",
+      "5.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料),部分用电驱动",
+      "6.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程用电驱动",
+      "7.0": "LPG(液化石油气)或CNG(压缩天然气)",
+      "98.0": "其他"
+    }
+  },
+  "S7": {
+    "variable_name": "S7",
+    "variable_label": "您这辆^f('S5x1b')^有几排座椅？ [单选]",
+    "value_labels": {
+      "1.0": "一排",
+      "2.0": "两排",
+      "3.0": "三排"
+    }
+  },
+  "S8": {
+    "variable_name": "S8",
+    "variable_label": "对于这辆车，谁是主要的驾驶者？(单选)　",
+    "value_labels": {
+      "1.0": "仅仅/大部分我自己",
+      "2.0": "我自己与家庭成员的使用时间差不多",
+      "3.0": "不是我自己"
+    }
+  },
+  "S9": {
+    "variable_name": "S9",
+    "variable_label": "买这辆车的时候，你扮演的角色是怎样的？（单选）　",
+    "value_labels": {
+      "1.0": "主要的决策者",
+      "2.0": "与他人共同决策",
+      "3.0": "我只提供参考意见，但不是决策者",
+      "4.0": "不参与决策"
+    }
+  },
+  "S14": {
+    "variable_name": "S14",
+    "variable_label": "那么您准备购买的下一辆车是更换还是添置？（单选）",
+    "value_labels": {
+      "1.0": "是替代前一辆车的，我家原来的车就不用了",
+      "2.0": "是再增加一辆，我家原来的车继续使用"
+    }
+  },
+  "S15X1A": {
+    "variable_name": "S15X1A",
+    "variable_label": "您刚刚提到，您将在两年内买车，请问您计划什么时候购买第一辆新车？(单选)",
+    "value_labels": {
+      "1.0": "近1个月内",
+      "2.0": "2-3个月内",
+      "3.0": "4-6个月内",
+      "4.0": "6个月后"
+    }
+  },
+  "S15X1B": {
+    "variable_name": "S15X1B",
+    "variable_label": "您刚刚提到，您将在两年内买车，请问您计划什么时候购买下一辆新车？(单选)",
+    "value_labels": {
+      "1.0": "半年内",
+      "2.0": "一年内",
+      "3.0": "二年内"
+    }
+  },
+  "S16": {
+    "variable_name": "S16",
+    "variable_label": "您准备在将来买一辆新车还是二手车？(单选)",
+    "value_labels": {
+      "1.0": "新车",
+      "2.0": "二手车",
+      "3.0": "两者都有可能"
+    }
+  },
+  "S17XA_1": {
+    "variable_name": "S17XA_1",
+    "variable_label": "三厢轿车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "三厢轿车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车"
+    }
+  },
+  "S17XA_2": {
+    "variable_name": "S17XA_2",
+    "variable_label": "跑车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "跑车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类"
+    }
+  },
+  "S17XA_3": {
+    "variable_name": "S17XA_3",
+    "variable_label": "两厢轿车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "两厢轿车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车"
+    }
+  },
+  "S17XA_4": {
+    "variable_name": "S17XA_4",
+    "variable_label": "旅行车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "旅行车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身"
+    }
+  },
+  "S17XA_5": {
+    "variable_name": "S17XA_5",
+    "variable_label": "多功能车MPV - 2 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "多功能车MPV - 2 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过"
+    }
+  },
+  "S17XA_6": {
+    "variable_name": "S17XA_6",
+    "variable_label": "多功能车MPV - 3 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "多功能车MPV - 3 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过"
+    }
+  },
+  "S17XA_7": {
+    "variable_name": "S17XA_7",
+    "variable_label": "SUV - 2 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "SUV - 2 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车"
+    }
+  },
+  "S17XA_8": {
+    "variable_name": "S17XA_8",
+    "variable_label": "SUV - 3 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "SUV - 3 排座 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车"
+    }
+  },
+  "S17XA_9": {
+    "variable_name": "S17XA_9",
+    "variable_label": "皮卡 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "皮卡 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类"
+    }
+  },
+  "S17XA_10": {
+    "variable_name": "S17XA_10",
+    "variable_label": "CDV (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "CDV (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 ("
+    }
+  },
+  "S17XA_11": {
+    "variable_name": "S17XA_11",
+    "variable_label": "商用/小面包车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "商用/小面包车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所"
+    }
+  },
+  "S17XA_12": {
+    "variable_name": "S17XA_12",
+    "variable_label": "卡车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "卡车 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类"
+    }
+  },
+  "S17XA_13": {
+    "variable_name": "S17XA_13",
+    "variable_label": "其他 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类型 (多选) )",
+    "value_labels": {
+      "1.0": "其他 (对于要购买的下辆车，您考虑购买什么车身类型的呢? 请选择您考虑过的所有车身类"
+    }
+  },
+  "S17XB": {
+    "variable_name": "S17XB",
+    "variable_label": "根据您的预算，生活方式等实际情况, 对于要购买的下辆车，您最希望购买什么车身类型的呢? 请选择您最想购买的车身类型 (单选)",
+    "value_labels": {
+      "1.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-1.png\" width=150/></center><center><b>三厢轿车</b",
+      "2.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-2.png\"width=150/></center><center><b>跑车</b></cent",
+      "3.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-3.png\"width=150/></center><center><b>两厢轿车</b>",
+      "4.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-4.png\"width=150/></center><center><b>旅行车</b></c",
+      "5.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-5.png\"width=150/></center><center><b>多功能车MPV",
+      "6.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-6.png\"width=150/></center><center><b>多功能车MPV",
+      "7.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-7.png\"width=150/></center><center><b>SUV - 2 排座</",
+      "8.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-8.png\"width=150/></center><center><b>SUV - 3 排座</",
+      "9.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-9.png\"width=150/></center><center><b>皮卡</b></cent",
+      "10.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-13.png\"width=150/></center><center><b>CDV</b></center",
+      "11.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-11.png\"width=150/></center><center><b>商用/小面",
+      "12.0": "<center><img src=\"https://researchfile.surpassdata.com/1210560/S17-12.png\"width=150/></center><center><b>卡车</b></cen",
+      "13.0": "其他"
+    }
+  },
+  "S18X99_99": {
+    "variable_name": "S18X99_99",
+    "variable_label": "还没有具体预算 ()",
+    "value_labels": {
+      "1.0": "还没有具体预算 ()"
+    }
+  },
+  "S18HIDE": {
+    "variable_name": "S18HIDE",
+    "variable_label": "自动圈选预算范围",
+    "value_labels": {
+      "1.0": "3万元以下（含3万）",
+      "2.0": "3-5万元（含5万）",
+      "3.0": "5-10万元（含10万）",
+      "4.0": "10-15万元（含15万）",
+      "5.0": "15-20万元（含20万）",
+      "6.0": "20-25万元（含25万）",
+      "7.0": "25-30万元（含30万）",
+      "8.0": "30-40万元（含40万）",
+      "9.0": "40-50万元（含50万）",
+      "10.0": "50-70万元（含70万）",
+      "11.0": "70-100万元（含100万）",
+      "12.0": "100万元以上",
+      "99.0": "还没有具体预算"
+    }
+  },
+  "S19AX3": {
+    "variable_name": "S19AX3",
+    "variable_label": "请问您考虑的该车型是国产的还是进口的？（单选）",
+    "value_labels": {
+      "1.0": "国产的 (在国内生产的)",
+      "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
+    }
+  },
+  "S19XB": {
+    "variable_name": "S19XB",
+    "variable_label": "请问您还有其他考虑中的品牌和车型吗? (单选)",
+    "value_labels": {
+      "1.0": "有",
+      "2.0": "没有"
+    }
+  },
+  "S19BX3": {
+    "variable_name": "S19BX3",
+    "variable_label": "请问您考虑的该车型是国产的还是进口的？（单选）",
+    "value_labels": {
+      "1.0": "国产的 (在国内生产的)",
+      "2.0": "进口的 (在国外生产的，价格一般比国内生产的贵)"
+    }
+  },
+  "S20": {
+    "variable_name": "S20",
+    "variable_label": "您打算购买的新车主要的驾驶者会是谁？（单选）",
+    "value_labels": {
+      "1.0": "仅仅/大部分我自己",
+      "2.0": "我自己与家庭成员的使用时间差不多",
+      "3.0": "不是我自己"
+    }
+  },
+  "S21": {
+    "variable_name": "S21",
+    "variable_label": "您打算购买的新车是自己的还是公司的？（单选）",
+    "value_labels": {
+      "1.0": "自己的",
+      "2.0": "公司的"
+    }
+  },
+  "S22": {
+    "variable_name": "S22",
+    "variable_label": "对于要购买的新车，您在购买过程中的作用如何呢？（单选）",
+    "value_labels": {
+      "1.0": "主要的决策者",
+      "2.0": "与他人共同决策",
+      "3.0": "我只提供参考意见，但不是决策者",
+      "4.0": "不参与决策"
+    }
+  },
+  "S23": {
+    "variable_name": "S23",
+    "variable_label": "请从列表上选择您的家庭月收入。请包括工资、奖金、房租等所有收入。(单选)",
+    "value_labels": {
+      "1.0": "5,000元以下",
+      "2.0": "5,000-7,999元",
+      "3.0": "8,000-9,999元",
+      "4.0": "10,000-13,999元",
+      "5.0": "14,000-19,999元",
+      "6.0": "20,000-24,999元",
+      "7.0": "25,000-29,999 元",
+      "8.0": "30,000元及以上"
+    }
+  },
+  "Q2A_1": {
+    "variable_name": "Q2A_1",
+    "variable_label": "上/下班用 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "上/下班用 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_2": {
+    "variable_name": "Q2A_2",
+    "variable_label": "和家庭成员/朋友/同事一起出外娱乐聚餐 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "和家庭成员/朋友/同事一起出外娱乐聚餐 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_3": {
+    "variable_name": "Q2A_3",
+    "variable_label": "去购物 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "去购物 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_4": {
+    "variable_name": "Q2A_4",
+    "variable_label": "去户外活动 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "去户外活动 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_5": {
+    "variable_name": "Q2A_5",
+    "variable_label": "自己驾车兜风 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "自己驾车兜风 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_6": {
+    "variable_name": "Q2A_6",
+    "variable_label": "和家人/朋友/同事外出一日游 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "和家人/朋友/同事外出一日游 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_7": {
+    "variable_name": "Q2A_7",
+    "variable_label": "回家乡探亲 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "回家乡探亲 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_8": {
+    "variable_name": "Q2A_8",
+    "variable_label": "和家人/朋友/同事外出旅行(一天以上) (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "和家人/朋友/同事外出旅行(一天以上) (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_9": {
+    "variable_name": "Q2A_9",
+    "variable_label": "给客户送货 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "给客户送货 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_10": {
+    "variable_name": "Q2A_10",
+    "variable_label": "出席商务场合 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "出席商务场合 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2A_11": {
+    "variable_name": "Q2A_11",
+    "variable_label": "在路况不好的道路上行驶（例如没有经过铺装的道路、石子路、泥路等） (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "在路况不好的道路上行驶（例如没有经过铺装的道路、石子路、泥路等） (请问您要购买的"
+    }
+  },
+  "Q2A_12": {
+    "variable_name": "Q2A_12",
+    "variable_label": "在没有道路的地方行驶（例如：山坡、河边等） (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "在没有道路的地方行驶（例如：山坡、河边等） (请问您要购买的新车通常将如何使用？ ("
+    }
+  },
+  "Q2A_98": {
+    "variable_name": "Q2A_98",
+    "variable_label": "其它, 请注明 (请问您要购买的新车通常将如何使用？ (多选))",
+    "value_labels": {
+      "1.0": "其它, 请注明 (请问您要购买的新车通常将如何使用？ (多选))"
+    }
+  },
+  "Q2B_1": {
+    "variable_name": "Q2B_1",
+    "variable_label": "上/下班用 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_2": {
+    "variable_name": "Q2B_2",
+    "variable_label": "和家庭成员/朋友/同事一起出外娱乐聚餐 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_3": {
+    "variable_name": "Q2B_3",
+    "variable_label": "去购物 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_4": {
+    "variable_name": "Q2B_4",
+    "variable_label": "去户外活动 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_5": {
+    "variable_name": "Q2B_5",
+    "variable_label": "自己驾车兜风 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_6": {
+    "variable_name": "Q2B_6",
+    "variable_label": "和家人/朋友/同事外出一日游 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_7": {
+    "variable_name": "Q2B_7",
+    "variable_label": "回家乡探亲 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_8": {
+    "variable_name": "Q2B_8",
+    "variable_label": "和家人/朋友/同事外出旅行(一天以上) (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_9": {
+    "variable_name": "Q2B_9",
+    "variable_label": "给客户送货 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_10": {
+    "variable_name": "Q2B_10",
+    "variable_label": "出席商务场合 (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_11": {
+    "variable_name": "Q2B_11",
+    "variable_label": "在路况不好的道路上行驶（例如没有经过铺装的道路、石子路、泥路等） (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_12": {
+    "variable_name": "Q2B_12",
+    "variable_label": "在没有道路的地方行驶（例如：山坡、河边等） (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q2B_98": {
+    "variable_name": "Q2B_98",
+    "variable_label": "^f('Q2a_98_other')^ (请问您要购买的新车用于您刚刚提及的那些用途的频率如何呢？ (每行单选))",
+    "value_labels": {
+      "1.0": "几乎每天",
+      "2.0": "至少一周一次",
+      "3.0": "偶尔，大约一个月一次",
+      "4.0": "一年内总有一次",
+      "5.0": "一年甚至一次都没有"
+    }
+  },
+  "Q3X1": {
+    "variable_name": "Q3X1",
+    "variable_label": "在您购买了这辆新车以后，您觉得包括您在内通常会有多少人坐这辆车呢？（单选）",
+    "value_labels": {
+      "1.0": "1个",
+      "2.0": "2个",
+      "3.0": "3个",
+      "4.0": "4个",
+      "5.0": "5个 或以上"
+    }
+  },
+  "Q3X2": {
+    "variable_name": "Q3X2",
+    "variable_label": "在您购买了这辆新车以后，您觉得包括您在内最多的时候会有多少人坐呢？（单选）",
+    "value_labels": {
+      "1.0": "1个",
+      "2.0": "2个",
+      "3.0": "3个",
+      "4.0": "4个",
+      "5.0": "5个",
+      "6.0": "6个",
+      "7.0": "7个及以上"
+    }
+  },
+  "Q9X2_1": {
+    "variable_name": "Q9X2_1",
+    "variable_label": "汽油自然吸气引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)",
+    "value_labels": {
+      "1.0": "汽油自然吸气引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)"
+    }
+  },
+  "Q9X2_2": {
+    "variable_name": "Q9X2_2",
+    "variable_label": "汽油涡轮增压引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)",
+    "value_labels": {
+      "1.0": "汽油涡轮增压引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)"
+    }
+  },
+  "Q9X2_3": {
+    "variable_name": "Q9X2_3",
+    "variable_label": "柴油引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)",
+    "value_labels": {
+      "1.0": "柴油引擎 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)"
+    }
+  },
+  "Q9X2_4": {
+    "variable_name": "Q9X2_4",
+    "variable_label": "油电混合动力(内燃机+电动机) (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)",
+    "value_labels": {
+      "1.0": "油电混合动力(内燃机+电动机) (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选"
+    }
+  },
+  "Q9X2_5": {
+    "variable_name": "Q9X2_5",
+    "variable_label": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料)，部分电动行驶 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)",
+    "value_labels": {
+      "1.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料)，部分电动行驶"
+    }
+  },
+  "Q9X2_6": {
+    "variable_name": "Q9X2_6",
+    "variable_label": "100% 电动 (使用电池，需要充电插头进行充电)，全程电动行驶 (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)",
+    "value_labels": {
+      "1.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程电动行驶 (请问对于将来的车辆，您会"
+    }
+  },
+  "Q9X2_7": {
+    "variable_name": "Q9X2_7",
+    "variable_label": "LPG(液化石油气)或CNG(压缩天然气) (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多选）)",
+    "value_labels": {
+      "1.0": "LPG(液化石油气)或CNG(压缩天然气) (请问对于将来的车辆，您会考虑以下哪些引擎类型？（多"
+    }
+  },
+  "Q9X2AHIDE": {
+    "variable_name": "Q9X2AHIDE",
+    "variable_label": "其中，最可能购买的是？（单选）",
+    "value_labels": {
+      "1.0": "汽油自然吸气引擎",
+      "2.0": "汽油涡轮增压引擎",
+      "3.0": "柴油引擎",
+      "4.0": "油电混合动力(内燃机+电动机)",
+      "5.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料)，部分电动行驶",
+      "6.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程电动行驶",
+      "7.0": "LPG(液化石油气)或CNG(压缩天然气)"
+    }
+  },
+  "Q9X2A": {
+    "variable_name": "Q9X2A",
+    "variable_label": "其中，最可能购买的是？（单选）",
+    "value_labels": {
+      "1.0": "汽油自然吸气引擎",
+      "2.0": "汽油涡轮增压引擎",
+      "3.0": "柴油引擎",
+      "4.0": "油电混合动力(内燃机+电动机)",
+      "5.0": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料)，部分电动行驶",
+      "6.0": "100% 电动 (使用电池，需要充电插头进行充电)，全程电动行驶",
+      "7.0": "LPG(液化石油气)或CNG(压缩天然气)"
+    }
+  },
+  "Q12": {
+    "variable_name": "Q12",
+    "variable_label": "您希望下一辆车的驱动类型是什么样的呢？（单选）",
+    "value_labels": {
+      "1.0": "前轮驱动 (FWD)",
+      "2.0": "后轮驱动 (RWD)",
+      "3.0": "全轮驱动 (AWD) – 偏向前轮驱动",
+      "4.0": "全轮驱动 (AWD) – 偏向后轮驱动",
+      "5.0": "全轮驱动 (AWD) – 偏向前轮驱动或偏向后轮驱动均可",
+      "6.0": "四轮驱动 (4WD)",
+      "7.0": "不知道",
+      "98.0": "其他,请注明"
+    }
+  },
+  "Q4X1A_1": {
+    "variable_name": "Q4X1A_1",
+    "variable_label": "能让别人羡慕我 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1A_2": {
+    "variable_name": "Q4X1A_2",
+    "variable_label": "可以伴随我冒险 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1A_3": {
+    "variable_name": "Q4X1A_3",
+    "variable_label": "可以满足我一直渴望的刺激感 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1A_4": {
+    "variable_name": "Q4X1A_4",
+    "variable_label": "是成熟的，被认可的品牌 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1A_5": {
+    "variable_name": "Q4X1A_5",
+    "variable_label": "可以显示我很有品味 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1A_6": {
+    "variable_name": "Q4X1A_6",
+    "variable_label": "可以展现我的个性 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1B_7": {
+    "variable_name": "Q4X1B_7",
+    "variable_label": "可以让我感觉年轻 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1B_8": {
+    "variable_name": "Q4X1B_8",
+    "variable_label": "可以让家人感受舒适和被关心 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1B_9": {
+    "variable_name": "Q4X1B_9",
+    "variable_label": "让我从每日的压力中逃离 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1B_10": {
+    "variable_name": "Q4X1B_10",
+    "variable_label": "当我驾驶时，我想拥有一种对各种情况的掌控感 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1B_11": {
+    "variable_name": "Q4X1B_11",
+    "variable_label": "可以让我的生活变得更简单 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1B_12": {
+    "variable_name": "Q4X1B_12",
+    "variable_label": "让我感觉对环境负责和关注 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1C_13": {
+    "variable_name": "Q4X1C_13",
+    "variable_label": "让我感觉放松 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1C_14": {
+    "variable_name": "Q4X1C_14",
+    "variable_label": "可以展现我的实力和权力 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1C_15": {
+    "variable_name": "Q4X1C_15",
+    "variable_label": "让我有驾驶乐趣 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X1C_16": {
+    "variable_name": "Q4X1C_16",
+    "variable_label": "能让别人知道自己对环境保护的贡献 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) 我想要这样一辆车，___",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X2_17": {
+    "variable_name": "Q4X2_17",
+    "variable_label": "车只是一个可以帮助出行的交通工具  (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X2_18": {
+    "variable_name": "Q4X2_18",
+    "variable_label": "相比驾驶者，我更喜欢成为一名乘客 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X2_19": {
+    "variable_name": "Q4X2_19",
+    "variable_label": "拥有自己的车对我而言是重要的 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X2_20": {
+    "variable_name": "Q4X2_20",
+    "variable_label": "让别人感觉我很懂车 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X2_21": {
+    "variable_name": "Q4X2_21",
+    "variable_label": "我认为本土品牌车与合资品牌车质量相当 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X2_22": {
+    "variable_name": "Q4X2_22",
+    "variable_label": "豪华品牌的产品值得更高的价格 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X3_23": {
+    "variable_name": "Q4X3_23",
+    "variable_label": "能让我感到富有激情 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X3_24": {
+    "variable_name": "Q4X3_24",
+    "variable_label": "它不同于常规的产品或品牌 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X3_25": {
+    "variable_name": "Q4X3_25",
+    "variable_label": "能让我感到富有新鲜感 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X3_26": {
+    "variable_name": "Q4X3_26",
+    "variable_label": "它的设计看上去焕然一新 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X3_27": {
+    "variable_name": "Q4X3_27",
+    "variable_label": "它拥有创新的功能、配置、技术和体验 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q4X3_28": {
+    "variable_name": "Q4X3_28",
+    "variable_label": "让我感到兴奋 (请想象您在买新车时，以下的这些语句与您的情况是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (请画圈每行单选) )",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q1X1A_1": {
+    "variable_name": "Q1X1A_1",
+    "variable_label": "可运载大件物品 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1A_2": {
+    "variable_name": "Q1X1A_2",
+    "variable_label": "上/下车方便 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1A_3": {
+    "variable_name": "Q1X1A_3",
+    "variable_label": "容易操控 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1A_4": {
+    "variable_name": "Q1X1A_4",
+    "variable_label": "可以越野 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1A_5": {
+    "variable_name": "Q1X1A_5",
+    "variable_label": "在碰撞中，提供出色的安全保障 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1A_6": {
+    "variable_name": "Q1X1A_6",
+    "variable_label": "有优秀的加速性能 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1B_7": {
+    "variable_name": "Q1X1B_7",
+    "variable_label": "我喜欢有灵活驾驶体验的车 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1B_8": {
+    "variable_name": "Q1X1B_8",
+    "variable_label": "车内安静 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1B_9": {
+    "variable_name": "Q1X1B_9",
+    "variable_label": "所有功能特点都很直观，易于使用 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1B_10": {
+    "variable_name": "Q1X1B_10",
+    "variable_label": "故障少，容易维护保养 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，___",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1B_11": {
+    "variable_name": "Q1X1B_11",
+    "variable_label": "驾乘舒适 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1B_12": {
+    "variable_name": "Q1X1B_12",
+    "variable_label": "有最低的购车价格 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1C_13": {
+    "variable_name": "Q1X1C_13",
+    "variable_label": "使用成本低 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1C_14": {
+    "variable_name": "Q1X1C_14",
+    "variable_label": "二手售卖价格高 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1C_15": {
+    "variable_name": "Q1X1C_15",
+    "variable_label": "拥有多种座椅配置（如：座位可以折叠，滑动，拆除，增加落脚空间等） (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每?",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1C_16": {
+    "variable_name": "Q1X1C_16",
+    "variable_label": "能够宽敞舒适的乘坐7个成年人 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一?",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1C_17": {
+    "variable_name": "Q1X1C_17",
+    "variable_label": "能够宽敞舒适的乘坐4或5个成年人 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样?",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1C_18": {
+    "variable_name": "Q1X1C_18",
+    "variable_label": "（车辆）可以按照我想要的方式进行定制化 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1D_19": {
+    "variable_name": "Q1X1D_19",
+    "variable_label": "可净化车厢内的空气 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1D_20": {
+    "variable_name": "Q1X1D_20",
+    "variable_label": "有自动驾驶功能 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1D_21": {
+    "variable_name": "Q1X1D_21",
+    "variable_label": "有最新的车载互联功能 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，___",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1D_22": {
+    "variable_name": "Q1X1D_22",
+    "variable_label": "有最先进的科技 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1D_23": {
+    "variable_name": "Q1X1D_23",
+    "variable_label": "提供高的驾驶位置 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1D_24": {
+    "variable_name": "Q1X1D_24",
+    "variable_label": "能给后排座椅乘客提供好的视野 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1E_25": {
+    "variable_name": "Q1X1E_25",
+    "variable_label": "内饰经久耐用 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。)",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1E_26": {
+    "variable_name": "Q1X1E_26",
+    "variable_label": "有高品质的材质和质地 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，___",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1E_27": {
+    "variable_name": "Q1X1E_27",
+    "variable_label": "有突出的外观设计 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1E_28": {
+    "variable_name": "Q1X1E_28",
+    "variable_label": "有仅满足基本需求的配件即可，不要有额外的配件 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单?",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1E_29": {
+    "variable_name": "Q1X1E_29",
+    "variable_label": "在驾驶过程中，可让我享受各种娱乐，如音乐、视频、游戏 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打?",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X1E_30": {
+    "variable_name": "Q1X1E_30",
+    "variable_label": "有独特的内饰设计 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，______。",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X2_31": {
+    "variable_name": "Q1X2_31",
+    "variable_label": "有驾驶辅助功能，例如停车辅助，预防碰撞等 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选）",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q1X2_32": {
+    "variable_name": "Q1X2_32",
+    "variable_label": "可方便的在车内照顾孩子 (请问当您决定购买新车时，以下各项对您的重要程度如何？请给以下各项因素选择一个您认为最合适的答案。（请给每一行的表述打分,每行单选） 我想要这样一辆车，",
+    "value_labels": {
+      "1.0": "一点也不重要",
+      "2.0": "不是太重要",
+      "3.0": "一般",
+      "4.0": "有点重要",
+      "5.0": "很重要"
+    }
+  },
+  "Q7X5_25": {
+    "variable_name": "Q7X5_25",
+    "variable_label": "对我而言，一直保持与外界的联系是重要的 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X5_26": {
+    "variable_name": "Q7X5_26",
+    "variable_label": "社会地位对我而言是最重要的 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X5_27": {
+    "variable_name": "Q7X5_27",
+    "variable_label": "经济上的成功对我而言是重要的 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X5_28": {
+    "variable_name": "Q7X5_28",
+    "variable_label": "与他人保持和谐是非常重要的 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X5_29": {
+    "variable_name": "Q7X5_29",
+    "variable_label": "自我奖赏是我的动力 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X5_30": {
+    "variable_name": "Q7X5_30",
+    "variable_label": "我的家庭比我个人更重要 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X5_31": {
+    "variable_name": "Q7X5_31",
+    "variable_label": "我在任何时候都想引领潮流 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X1_1": {
+    "variable_name": "Q7X1_1",
+    "variable_label": "我想自由地展现我的个性 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X1_2": {
+    "variable_name": "Q7X1_2",
+    "variable_label": "对我而言，与家庭和朋友在一起的时间比我自己的私人时间更重要 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X1_3": {
+    "variable_name": "Q7X1_3",
+    "variable_label": "我总是看到事物光明的一面 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X1_4": {
+    "variable_name": "Q7X1_4",
+    "variable_label": "我通常是朋友中首先尝试新科技产品的人 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X1_5": {
+    "variable_name": "Q7X1_5",
+    "variable_label": "我对工作和生活的平衡很在意 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X1_6": {
+    "variable_name": "Q7X1_6",
+    "variable_label": "我认为凡事只要我用心都能做到 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X2_7": {
+    "variable_name": "Q7X2_7",
+    "variable_label": "我不喜欢受到规则的约束 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X2_8": {
+    "variable_name": "Q7X2_8",
+    "variable_label": "在目前的社会中，我是感觉安心的 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X2_9": {
+    "variable_name": "Q7X2_9",
+    "variable_label": "我认为在生活中务实很重要  (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X2_10": {
+    "variable_name": "Q7X2_10",
+    "variable_label": "我非常渴望获得新知识 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X2_11": {
+    "variable_name": "Q7X2_11",
+    "variable_label": "我想有新的体验，尝试新的事物 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X2_12": {
+    "variable_name": "Q7X2_12",
+    "variable_label": "比起购买产品与服务，我更愿意与他人共享物品或服务 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X3_13": {
+    "variable_name": "Q7X3_13",
+    "variable_label": "我努力通过日常行动减少对环境的影响 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X3_14": {
+    "variable_name": "Q7X3_14",
+    "variable_label": "我是一个谨慎的人 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X3_15": {
+    "variable_name": "Q7X3_15",
+    "variable_label": "我很重视属于自己的空间和时间 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X3_16": {
+    "variable_name": "Q7X3_16",
+    "variable_label": "我认为精神健康与身体健康同样重要 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X3_17": {
+    "variable_name": "Q7X3_17",
+    "variable_label": "我希望可以一直掌控自己的生活 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X3_18": {
+    "variable_name": "Q7X3_18",
+    "variable_label": "我想要最好的 (以下的这些语句与您的价值观是否相符呢？对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X4_19": {
+    "variable_name": "Q7X4_19",
+    "variable_label": "比起担心未来的生活，我更想享受当下，过闲适的生活 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X4_20": {
+    "variable_name": "Q7X4_20",
+    "variable_label": "相比买东西，我更喜欢在体验上花钱 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X4_21": {
+    "variable_name": "Q7X4_21",
+    "variable_label": "能归属于有某种共同特征的朋友圈子对我很重要 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X4_22": {
+    "variable_name": "Q7X4_22",
+    "variable_label": "成功的职业生涯对我很重要 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X4_23": {
+    "variable_name": "Q7X4_23",
+    "variable_label": "我去做别人认同的事情对我来说很重要 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q7X4_24": {
+    "variable_name": "Q7X4_24",
+    "variable_label": "我认为传统文化应该受到更多尊重 (以下的这些语句与您的价值观是否相符呢？ 对下面的每一点，选择您认为最适合的一个答案。 (每行单选))",
+    "value_labels": {
+      "1.0": "完全不相符",
+      "2.0": "不太相符",
+      "3.0": "一般",
+      "4.0": "有点相符",
+      "5.0": "非常相符"
+    }
+  },
+  "Q18X1_1": {
+    "variable_name": "Q18X1_1",
+    "variable_label": "我想要一辆车让我有极致的驾驶乐趣 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X1_2": {
+    "variable_name": "Q18X1_2",
+    "variable_label": "我愿意尝试新的体验和冒险 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X1_3": {
+    "variable_name": "Q18X1_3",
+    "variable_label": "决定人生成功的要素是运气而非努力工作 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X1_4": {
+    "variable_name": "Q18X1_4",
+    "variable_label": "我想在这个世界留下我的印记 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_5": {
+    "variable_name": "Q18X2_5",
+    "variable_label": "人们觉得我是个害羞的人 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_6": {
+    "variable_name": "Q18X2_6",
+    "variable_label": "我喜欢逃避问题而不是面对问题 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_7": {
+    "variable_name": "Q18X2_7",
+    "variable_label": "对我而言，认识新的人和交新朋友很难 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_8": {
+    "variable_name": "Q18X2_8",
+    "variable_label": "我宁可购买一辆较低价格的新车，而不愿意购买一辆原本价格较高的二手车 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_9": {
+    "variable_name": "Q18X2_9",
+    "variable_label": "车应该让我感觉像自己的私人空间 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_10": {
+    "variable_name": "Q18X2_10",
+    "variable_label": "我是一个随遇而安的人，不会时刻鞭策自己向前进 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_11": {
+    "variable_name": "Q18X2_11",
+    "variable_label": "对我来说电子支付很方便 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_12": {
+    "variable_name": "Q18X2_12",
+    "variable_label": "我想要一辆与众不同的车 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_13": {
+    "variable_name": "Q18X2_13",
+    "variable_label": "我想要一辆能让家人感到安心和关爱的车。 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X2_14": {
+    "variable_name": "Q18X2_14",
+    "variable_label": "我想要新的体验并尝试新的事物 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X3_15": {
+    "variable_name": "Q18X3_15",
+    "variable_label": "我认为其他人的需求比我自己的重要 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X3_16": {
+    "variable_name": "Q18X3_16",
+    "variable_label": "我认为大型企业有责任提供环保、健康的产品 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18X3_17": {
+    "variable_name": "Q18X3_17",
+    "variable_label": "健康的生活对我而言是最重要的 (以下这些表述你有多大程度上赞同或不赞同。（每行单选）)",
+    "value_labels": {
+      "1.0": "完全不同意",
+      "2.0": "比较不同意",
+      "3.0": "不同意也不反对",
+      "4.0": "比较同意",
+      "5.0": "完全同意"
+    }
+  },
+  "Q18XA": {
+    "variable_name": "Q18XA",
+    "variable_label": "请想想您的个人价值观并给“智慧”的重要性程度打分。",
+    "value_labels": {
+      "1.0": "非常不重要",
+      "2.0": "比较不重要",
+      "3.0": "不重要",
+      "4.0": "重要性一般",
+      "5.0": "重要",
+      "6.0": "比较重要",
+      "7.0": "非常重要"
+    }
+  },
+  "Q20X1_1": {
+    "variable_name": "Q20X1_1",
+    "variable_label": "粗犷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "粗犷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
+    }
+  },
+  "Q20X1_2": {
+    "variable_name": "Q20X1_2",
+    "variable_label": "成熟稳重的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "成熟稳重的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
+    }
+  },
+  "Q20X1_3": {
+    "variable_name": "Q20X1_3",
+    "variable_label": "休闲的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "休闲的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
+    }
+  },
+  "Q20X1_4": {
+    "variable_name": "Q20X1_4",
+    "variable_label": "运动的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "运动的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
+    }
+  },
+  "Q20X1_5": {
+    "variable_name": "Q20X1_5",
+    "variable_label": "有女性魅力的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "有女性魅力的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽"
+    }
+  },
+  "Q20X1_6": {
+    "variable_name": "Q20X1_6",
+    "variable_label": "高雅有品位的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "高雅有品位的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽"
+    }
+  },
+  "Q20X1_7": {
+    "variable_name": "Q20X1_7",
+    "variable_label": "灵活敏捷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "灵活敏捷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
+    }
+  },
+  "Q20X1_8": {
+    "variable_name": "Q20X1_8",
+    "variable_label": "有活力的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "有活力的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形"
+    }
+  },
+  "Q20X1_9": {
+    "variable_name": "Q20X1_9",
+    "variable_label": "简洁利落的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "简洁利落的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
+    }
+  },
+  "Q20X1_10": {
+    "variable_name": "Q20X1_10",
+    "variable_label": "动感的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "动感的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
+    }
+  },
+  "Q20X1_11": {
+    "variable_name": "Q20X1_11",
+    "variable_label": "进取的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "进取的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
+    }
+  },
+  "Q20X1_12": {
+    "variable_name": "Q20X1_12",
+    "variable_label": "酷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "酷的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是"
+    }
+  },
+  "Q20X1_13": {
+    "variable_name": "Q20X1_13",
+    "variable_label": "高品质的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "高品质的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形"
+    }
+  },
+  "Q20X1_14": {
+    "variable_name": "Q20X1_14",
+    "variable_label": "令人兴奋的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "令人兴奋的 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
+    }
+  },
+  "Q20X1_15": {
+    "variable_name": "Q20X1_15",
+    "variable_label": "年轻的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "年轻的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
+    }
+  },
+  "Q20X1_16": {
+    "variable_name": "Q20X1_16",
+    "variable_label": "对环境友好的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "对环境友好的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽"
+    }
+  },
+  "Q20X1_17": {
+    "variable_name": "Q20X1_17",
+    "variable_label": "创新的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "创新的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象"
+    }
+  },
+  "Q20X1_18": {
+    "variable_name": "Q20X1_18",
+    "variable_label": "引领潮流的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "引领潮流的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车"
+    }
+  },
+  "Q20X1_19": {
+    "variable_name": "Q20X1_19",
+    "variable_label": "有乐趣的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "有乐趣的  (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形"
+    }
+  },
+  "Q20X1_98": {
+    "variable_name": "Q20X1_98",
+    "variable_label": "其他，请注明 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽车形象是如何的？（多选）)",
+    "value_labels": {
+      "1.0": "其他，请注明 (以下是一些人们常常用来描述汽车设计的表达。您希望您下一辆理想中的汽"
+    }
+  },
+  "Q25_1": {
+    "variable_name": "Q25_1",
+    "variable_label": "我更依赖汽车厂家的设备（如嵌入式导航系统） (以下是一些表述相反的观点，对于每行的两个表述，请选择您更倾向的观点和倾向的程度。)",
+    "value_labels": {
+      "1.0": "1",
+      "2.0": "2",
+      "3.0": "3",
+      "4.0": "4",
+      "5.0": "5"
+    }
+  },
+  "Q25_2": {
+    "variable_name": "Q25_2",
+    "variable_label": "我愿意让车联网监测我的活动，让我生活更轻松 (以下是一些表述相反的观点，对于每行的两个表述，请选择您更倾向的观点和倾向的程度。)",
+    "value_labels": {
+      "1.0": "1",
+      "2.0": "2",
+      "3.0": "3",
+      "4.0": "4",
+      "5.0": "5"
+    }
+  },
+  "Q25_3": {
+    "variable_name": "Q25_3",
+    "variable_label": "自动驾驶汽车会比我自己驾驶更安全和高效 (以下是一些表述相反的观点，对于每行的两个表述，请选择您更倾向的观点和倾向的程度。)",
+    "value_labels": {
+      "1.0": "1",
+      "2.0": "2",
+      "3.0": "3",
+      "4.0": "4",
+      "5.0": "5"
+    }
+  },
+  "Q25_4": {
+    "variable_name": "Q25_4",
+    "variable_label": "我更相信汽车厂家提供的产品和服务（如车载导航，保留个人信息和数据等） (以下是一些表述相反的观点，对于每行的两个表述，请选择您更倾向的观点和倾向的程度。)",
+    "value_labels": {
+      "1.0": "1",
+      "2.0": "2",
+      "3.0": "3",
+      "4.0": "4",
+      "5.0": "5"
+    }
+  },
+  "Q25_5": {
+    "variable_name": "Q25_5",
+    "variable_label": "我愿意共享驾驶信息并相信汽车厂家或第三方公司能保证数据安全性 (以下是一些表述相反的观点，对于每行的两个表述，请选择您更倾向的观点和倾向的程度。)",
+    "value_labels": {
+      "1.0": "1",
+      "2.0": "2",
+      "3.0": "3",
+      "4.0": "4",
+      "5.0": "5"
+    }
+  },
+  "Q26_1": {
+    "variable_name": "Q26_1",
+    "variable_label": "睡觉 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费吹灰之力（从A点到B点）到达，您想如何打发在汽车上的时间呢？ （多选）)",
+    "value_labels": {
+      "1.0": "睡觉 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费"
+    }
+  },
+  "Q26_2": {
+    "variable_name": "Q26_2",
+    "variable_label": "工作 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费吹灰之力（从A点到B点）到达，您想如何打发在汽车上的时间呢？ （多选）)",
+    "value_labels": {
+      "1.0": "工作 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费"
+    }
+  },
+  "Q26_3": {
+    "variable_name": "Q26_3",
+    "variable_label": "放松，做一些您今天已经可以在开车的过程中做的事情（例如，听音乐） (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费吹灰之力（从A点到B点）到达，您想",
+    "value_labels": {
+      "1.0": "放松，做一些您今天已经可以在开车的过程中做的事情（例如，听音乐） (如果您的汽车将"
+    }
+  },
+  "Q26_4": {
+    "variable_name": "Q26_4",
+    "variable_label": "放松，做一些您今天不能在开车的过程中做的事情（例如，看报纸或看书，看电影，打游戏） (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费吹灰之力（从A?",
+    "value_labels": {
+      "1.0": "放松，做一些您今天不能在开车的过程中做的事情（例如，看报纸或看书，看电影，打游戏"
+    }
+  },
+  "Q26_6": {
+    "variable_name": "Q26_6",
+    "variable_label": "连接我的个人物品，或者是与家人朋友通过电话或者微信联系 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费吹灰之力（从A点到B点）到达，您想如何打发在",
+    "value_labels": {
+      "1.0": "连接我的个人物品，或者是与家人朋友通过电话或者微信联系 (如果您的汽车将是完全自动"
+    }
+  },
+  "Q26_5": {
+    "variable_name": "Q26_5",
+    "variable_label": "什么都不做，享受当下的时间 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费吹灰之力（从A点到B点）到达，您想如何打发在汽车上的时间呢？ （多选）)",
+    "value_labels": {
+      "1.0": "什么都不做，享受当下的时间 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入"
+    }
+  },
+  "Q26_7": {
+    "variable_name": "Q26_7",
+    "variable_label": "一点都不感兴趣，我会一直关注驾驶情况，不会让车子自动驾驶 (如果您的汽车将是完全自动驾驶的，这意味着只需要您输入目的地，它能够使您不费吹灰之力（从A点到B点）到达，您想如何打发",
+    "value_labels": {
+      "1.0": "一点都不感兴趣，我会一直关注驾驶情况，不会让车子自动驾驶 (如果您的汽车将是完全自"
+    }
+  },
+  "Q26X1_1": {
+    "variable_name": "Q26X1_1",
+    "variable_label": "出于安全考虑 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))",
+    "value_labels": {
+      "1.0": "出于安全考虑 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
+    }
+  },
+  "Q26X1_2": {
+    "variable_name": "Q26X1_2",
+    "variable_label": "我想自己掌握控制权 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))",
+    "value_labels": {
+      "1.0": "我想自己掌握控制权 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
+    }
+  },
+  "Q26X1_3": {
+    "variable_name": "Q26X1_3",
+    "variable_label": "我喜欢开车 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))",
+    "value_labels": {
+      "1.0": "我喜欢开车 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
+    }
+  },
+  "Q26X1_4": {
+    "variable_name": "Q26X1_4",
+    "variable_label": "现阶段自动驾驶模式不够成熟，不能为我带来实质性的好处 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))",
+    "value_labels": {
+      "1.0": "现阶段自动驾驶模式不够成熟，不能为我带来实质性的好处 (为什么你对自动驾驶完全不感"
+    }
+  },
+  "Q26X1_98": {
+    "variable_name": "Q26X1_98",
+    "variable_label": "其他原因，请注明 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))",
+    "value_labels": {
+      "1.0": "其他原因，请注明 (为什么你对自动驾驶完全不感兴趣且不会尝试呢？(多选))"
+    }
+  },
+  "Q27_1": {
+    "variable_name": "Q27_1",
+    "variable_label": "它使我的旅程更加安全（通过对潜在危险的自动警告） (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？（多选） 车联网指的是：车辆与互联?",
+    "value_labels": {
+      "1.0": "它使我的旅程更加安全（通过对潜在危险的自动警告） (一般来说，想起车联网，有人把以"
+    }
+  },
+  "Q27_2": {
+    "variable_name": "Q27_2",
+    "variable_label": "通过监控一些指标（如油耗等）我可以调整驾驶习惯 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？（多选） 车联网指的是：车辆与互联网?",
+    "value_labels": {
+      "1.0": "通过监控一些指标（如油耗等）我可以调整驾驶习惯 (一般来说，想起车联网，有人把以下"
+    }
+  },
+  "Q27_3": {
+    "variable_name": "Q27_3",
+    "variable_label": "由于汽车娱乐和媒体服务更好了，我的驾驶乐趣增加了 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？（多选） 车联网指的是：车辆与互联?",
+    "value_labels": {
+      "1.0": "由于汽车娱乐和媒体服务更好了，我的驾驶乐趣增加了 (一般来说，想起车联网，有人把以"
+    }
+  },
+  "Q27_4": {
+    "variable_name": "Q27_4",
+    "variable_label": "由于互联网导航和实时交通信息，我能够准确地知道我在哪里，我要去哪里，什么时候到达  (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？?",
+    "value_labels": {
+      "1.0": "由于互联网导航和实时交通信息，我能够准确地知道我在哪里，我要去哪里，什么时候到达"
+    }
+  },
+  "Q27_5": {
+    "variable_name": "Q27_5",
+    "variable_label": "车联网让我知道什么时候我的车需要保养，什么时候出故障，让我觉得很轻松 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？（多选） 车联?",
+    "value_labels": {
+      "1.0": "车联网让我知道什么时候我的车需要保养，什么时候出故障，让我觉得很轻松 (一般来说，"
+    }
+  },
+  "Q27_6": {
+    "variable_name": "Q27_6",
+    "variable_label": "它可以让我在开车时，随时连接到我的物品、家人和朋友 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？（多选） 车联网指的是：车辆与互?",
+    "value_labels": {
+      "1.0": "它可以让我在开车时，随时连接到我的物品、家人和朋友 (一般来说，想起车联网，有人把"
+    }
+  },
+  "Q27_7": {
+    "variable_name": "Q27_7",
+    "variable_label": "它可以协助我停车 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？（多选） 车联网指的是：车辆与互联网连接应用程序和服务，如实时路线?",
+    "value_labels": {
+      "1.0": "它可以协助我停车 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点"
+    }
+  },
+  "Q27_8": {
+    "variable_name": "Q27_8",
+    "variable_label": "它可以让我避免粗心驾驶 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？（多选） 车联网指的是：车辆与互联网连接应用程序和服务，如实?",
+    "value_labels": {
+      "1.0": "它可以让我避免粗心驾驶 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主"
+    }
+  },
+  "Q27_9": {
+    "variable_name": "Q27_9",
+    "variable_label": "以上均不赞同 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以下哪个表述您比较赞同？（多选） 车联网指的是：车辆与互联网连接应用程序和服务，如实时路线或停?",
+    "value_labels": {
+      "1.0": "以上均不赞同 (一般来说，想起车联网，有人把以下几个方面描述为车联网的主要优点。以"
+    }
+  },
+  "Q28_1": {
+    "variable_name": "Q28_1",
+    "variable_label": "它使我的旅程更加安全 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)",
+    "value_labels": {
+      "1.0": "它使我的旅程更加安全 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
+    }
+  },
+  "Q28_2": {
+    "variable_name": "Q28_2",
+    "variable_label": "它使我的旅程更加有趣 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)",
+    "value_labels": {
+      "1.0": "它使我的旅程更加有趣 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
+    }
+  },
+  "Q28_3": {
+    "variable_name": "Q28_3",
+    "variable_label": "它让我的旅程更加轻松 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)",
+    "value_labels": {
+      "1.0": "它让我的旅程更加轻松 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
+    }
+  },
+  "Q28_4": {
+    "variable_name": "Q28_4",
+    "variable_label": "它让我的时间更有效率 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)",
+    "value_labels": {
+      "1.0": "它让我的时间更有效率 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
+    }
+  },
+  "Q28_5": {
+    "variable_name": "Q28_5",
+    "variable_label": "它让我有时间更好的陪伴家人 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)",
+    "value_labels": {
+      "1.0": "它让我有时间更好的陪伴家人 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多"
+    }
+  },
+  "Q28_6": {
+    "variable_name": "Q28_6",
+    "variable_label": "它让我的车内空间更加灵活 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)",
+    "value_labels": {
+      "1.0": "它让我的车内空间更加灵活 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选"
+    }
+  },
+  "Q28_7": {
+    "variable_name": "Q28_7",
+    "variable_label": "其它，请注明 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)",
+    "value_labels": {
+      "1.0": "其它，请注明 (一般来说，提到自动驾驶，以下哪个表述您比较赞同？（多选）)"
+    }
+  },
+  "Q9X3": {
+    "variable_name": "Q9X3",
+    "variable_label": "纯电动车每天最短的行驶里程有多少公里时（充满电后，中途不充电），您可以接受纯电动车作为您未来的车辆？(单选)",
+    "value_labels": {
+      "1.0": "100以下",
+      "2.0": "100-199",
+      "3.0": "200-299",
+      "4.0": "300-399",
+      "5.0": "400-499",
+      "6.0": "500-599",
+      "7.0": "600-699",
+      "8.0": "700-799",
+      "9.0": "800及以上"
+    }
+  },
+  "Q28X1_1": {
+    "variable_name": "Q28X1_1",
+    "variable_label": "电动车有里程数限制 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "电动车有里程数限制 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_2": {
+    "variable_name": "Q28X1_2",
+    "variable_label": "充电时间太长 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "充电时间太长 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_3": {
+    "variable_name": "Q28X1_3",
+    "variable_label": "充电桩难找 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "充电桩难找 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_4": {
+    "variable_name": "Q28X1_4",
+    "variable_label": "在家里安装充电桩太复杂或者太贵 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "在家里安装充电桩太复杂或者太贵 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_5": {
+    "variable_name": "Q28X1_5",
+    "variable_label": "电池的部分组成对环境有害 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "电池的部分组成对环境有害 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_6": {
+    "variable_name": "Q28X1_6",
+    "variable_label": "电动车太贵、补贴低 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "电动车太贵、补贴低 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_7": {
+    "variable_name": "Q28X1_7",
+    "variable_label": "电动车让我感觉不安全 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "电动车让我感觉不安全 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_8": {
+    "variable_name": "Q28X1_8",
+    "variable_label": "电动车的科技不够成熟 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "电动车的科技不够成熟 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_9": {
+    "variable_name": "Q28X1_9",
+    "variable_label": "身边很少人使用电动车 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "身边很少人使用电动车 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_10": {
+    "variable_name": "Q28X1_10",
+    "variable_label": "较低的二手价值 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "较低的二手价值 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_11": {
+    "variable_name": "Q28X1_11",
+    "variable_label": "电动车的车型较少 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "电动车的车型较少 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q28X1_98": {
+    "variable_name": "Q28X1_98",
+    "variable_label": "其他原因，请注明 (你下一辆车为什么不考虑100%的电动车呢？（多选）)",
+    "value_labels": {
+      "1.0": "其他原因，请注明 (你下一辆车为什么不考虑100%的电动车呢？（多选）)"
+    }
+  },
+  "Q29XA_1": {
+    "variable_name": "Q29XA_1",
+    "variable_label": "在街上，路边 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)",
+    "value_labels": {
+      "1.0": "在街上，路边 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
+    }
+  },
+  "Q29XA_2": {
+    "variable_name": "Q29XA_2",
+    "variable_label": "在私人封闭的车库 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)",
+    "value_labels": {
+      "1.0": "在私人封闭的车库 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
+    }
+  },
+  "Q29XA_3": {
+    "variable_name": "Q29XA_3",
+    "variable_label": "在私人的驾驶区域，花园 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)",
+    "value_labels": {
+      "1.0": "在私人的驾驶区域，花园 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
+    }
+  },
+  "Q29XA_4": {
+    "variable_name": "Q29XA_4",
+    "variable_label": "公共的露天停车场 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)",
+    "value_labels": {
+      "1.0": "公共的露天停车场 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
+    }
+  },
+  "Q29XA_5": {
+    "variable_name": "Q29XA_5",
+    "variable_label": "公共的非露天停车场 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)",
+    "value_labels": {
+      "1.0": "公共的非露天停车场 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
+    }
+  },
+  "Q29XA_6": {
+    "variable_name": "Q29XA_6",
+    "variable_label": "加油站 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)",
+    "value_labels": {
+      "1.0": "加油站 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
+    }
+  },
+  "Q29XA_7": {
+    "variable_name": "Q29XA_7",
+    "variable_label": "公共充电站 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)",
+    "value_labels": {
+      "1.0": "公共充电站 (你在家的时候，一般使用哪一种场所的充电设施？（多选）)"
+    }
+  },
+  "Q29XB_1": {
+    "variable_name": "Q29XB_1",
+    "variable_label": "在街上，路边 (上班的时候呢？（多选）)",
+    "value_labels": {
+      "1.0": "在街上，路边 (上班的时候呢？（多选）)"
+    }
+  },
+  "Q29XB_2": {
+    "variable_name": "Q29XB_2",
+    "variable_label": "在私人封闭的车库 (上班的时候呢？（多选）)",
+    "value_labels": {
+      "1.0": "在私人封闭的车库 (上班的时候呢？（多选）)"
+    }
+  },
+  "Q29XB_3": {
+    "variable_name": "Q29XB_3",
+    "variable_label": "在私人的驾驶区域，花园 (上班的时候呢？（多选）)",
+    "value_labels": {
+      "1.0": "在私人的驾驶区域，花园 (上班的时候呢？（多选）)"
+    }
+  },
+  "Q29XB_4": {
+    "variable_name": "Q29XB_4",
+    "variable_label": "公共的露天停车场 (上班的时候呢？（多选）)",
+    "value_labels": {
+      "1.0": "公共的露天停车场 (上班的时候呢？（多选）)"
+    }
+  },
+  "Q29XB_5": {
+    "variable_name": "Q29XB_5",
+    "variable_label": "公共的非露天停车场 (上班的时候呢？（多选）)",
+    "value_labels": {
+      "1.0": "公共的非露天停车场 (上班的时候呢？（多选）)"
+    }
+  },
+  "Q29XB_6": {
+    "variable_name": "Q29XB_6",
+    "variable_label": "加油站 (上班的时候呢？（多选）)",
+    "value_labels": {
+      "1.0": "加油站 (上班的时候呢？（多选）)"
+    }
+  },
+  "Q29XB_7": {
+    "variable_name": "Q29XB_7",
+    "variable_label": "公共充电站 (上班的时候呢？（多选）)",
+    "value_labels": {
+      "1.0": "公共充电站 (上班的时候呢？（多选）)"
+    }
+  },
+  "Q29XB_8": {
+    "variable_name": "Q29XB_8",
+    "variable_label": "我不开车上班 (上班的时候呢？（多选）)",
+    "value_labels": {
+      "1.0": "我不开车上班 (上班的时候呢？（多选）)"
+    }
+  },
+  "Q30A_1": {
+    "variable_name": "Q30A_1",
+    "variable_label": "租车 (请问您使用过以下哪些移动出行的服务？（多选）)",
+    "value_labels": {
+      "1.0": "租车 (请问您使用过以下哪些移动出行的服务？（多选）)"
+    }
+  },
+  "Q30A_2": {
+    "variable_name": "Q30A_2",
+    "variable_label": "网约车，例如滴滴 (请问您使用过以下哪些移动出行的服务？（多选）)",
+    "value_labels": {
+      "1.0": "网约车，例如滴滴 (请问您使用过以下哪些移动出行的服务？（多选）)"
+    }
+  },
+  "Q30A_3": {
+    "variable_name": "Q30A_3",
+    "variable_label": "共享汽车，例如car to go (请问您使用过以下哪些移动出行的服务？（多选）)",
+    "value_labels": {
+      "1.0": "共享汽车，例如car to go (请问您使用过以下哪些移动出行的服务？（多选）)"
+    }
+  },
+  "Q30A_4": {
+    "variable_name": "Q30A_4",
+    "variable_label": "出租车 (请问您使用过以下哪些移动出行的服务？（多选）)",
+    "value_labels": {
+      "1.0": "出租车 (请问您使用过以下哪些移动出行的服务？（多选）)"
+    }
+  },
+  "Q30A_99": {
+    "variable_name": "Q30A_99",
+    "variable_label": "以上都没有 (请问您使用过以下哪些移动出行的服务？（多选）)",
+    "value_labels": {
+      "1.0": "以上都没有 (请问您使用过以下哪些移动出行的服务？（多选）)"
+    }
+  },
+  "Q30B_1": {
+    "variable_name": "Q30B_1",
+    "variable_label": "租车 (请问您使用以下移动出行服务的频率分别是什么？（每行单选）)",
+    "value_labels": {
+      "1.0": "每周至少1次",
+      "2.0": "每月至少1次",
+      "3.0": "每半年至少1次",
+      "4.0": "每年1次或更少"
+    }
+  },
+  "Q30B_2": {
+    "variable_name": "Q30B_2",
+    "variable_label": "网约车，例如滴滴 (请问您使用以下移动出行服务的频率分别是什么？（每行单选）)",
+    "value_labels": {
+      "1.0": "每周至少1次",
+      "2.0": "每月至少1次",
+      "3.0": "每半年至少1次",
+      "4.0": "每年1次或更少"
+    }
+  },
+  "Q30B_3": {
+    "variable_name": "Q30B_3",
+    "variable_label": "共享汽车，例如car to go (请问您使用以下移动出行服务的频率分别是什么？（每行单选）)",
+    "value_labels": {
+      "1.0": "每周至少1次",
+      "2.0": "每月至少1次",
+      "3.0": "每半年至少1次",
+      "4.0": "每年1次或更少"
+    }
+  },
+  "Q30B_4": {
+    "variable_name": "Q30B_4",
+    "variable_label": "出租车 (请问您使用以下移动出行服务的频率分别是什么？（每行单选）)",
+    "value_labels": {
+      "1.0": "每周至少1次",
+      "2.0": "每月至少1次",
+      "3.0": "每半年至少1次",
+      "4.0": "每年1次或更少"
+    }
+  },
+  "Q30CX1_1": {
+    "variable_name": "Q30CX1_1",
+    "variable_label": "我还没有购买自己的车 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "我还没有购买自己的车 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？"
+    }
+  },
+  "Q30CX1_2": {
+    "variable_name": "Q30CX1_2",
+    "variable_label": "要去的地方停车不方便 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "要去的地方停车不方便 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？"
+    }
+  },
+  "Q30CX1_3": {
+    "variable_name": "Q30CX1_3",
+    "variable_label": "要去的地方搭乘公共交通不方便 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "要去的地方搭乘公共交通不方便 (请问您使用出租车或网约车（滴滴）出行服务的主要原因"
+    }
+  },
+  "Q30CX1_4": {
+    "variable_name": "Q30CX1_4",
+    "variable_label": "和搭乘公共交通相比，更节省时间 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "和搭乘公共交通相比，更节省时间 (请问您使用出租车或网约车（滴滴）出行服务的主要原"
+    }
+  },
+  "Q30CX1_5": {
+    "variable_name": "Q30CX1_5",
+    "variable_label": "其它，请注明 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "其它，请注明 (请问您使用出租车或网约车（滴滴）出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX2_1": {
+    "variable_name": "Q30CX2_1",
+    "variable_label": "我还没有购买自己的车 (请问您使用租车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "我还没有购买自己的车 (请问您使用租车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX2_2": {
+    "variable_name": "Q30CX2_2",
+    "variable_label": "去外地城市，自己租车驾驶更方便 (请问您使用租车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "去外地城市，自己租车驾驶更方便 (请问您使用租车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX2_3": {
+    "variable_name": "Q30CX2_3",
+    "variable_label": "可以让我有机会体验驾驶不同的车 (请问您使用租车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "可以让我有机会体验驾驶不同的车 (请问您使用租车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX2_4": {
+    "variable_name": "Q30CX2_4",
+    "variable_label": "和公共交通相比，有私人空间，私密性更好 (请问您使用租车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "和公共交通相比，有私人空间，私密性更好 (请问您使用租车出行服务的主要原因是什么？"
+    }
+  },
+  "Q30CX2_5": {
+    "variable_name": "Q30CX2_5",
+    "variable_label": "其它，请注明 (请问您使用租车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "其它，请注明 (请问您使用租车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX3_1": {
+    "variable_name": "Q30CX3_1",
+    "variable_label": "我还没有购买自己的车 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "我还没有购买自己的车 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX3_2": {
+    "variable_name": "Q30CX3_2",
+    "variable_label": "节能环保 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "节能环保 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX3_3": {
+    "variable_name": "Q30CX3_3",
+    "variable_label": "中短途接驳，灵活便捷 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "中短途接驳，灵活便捷 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX3_4": {
+    "variable_name": "Q30CX3_4",
+    "variable_label": "成本更低 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "成本更低 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q30CX3_5": {
+    "variable_name": "Q30CX3_5",
+    "variable_label": "可以让我有机会体验驾驶不同的车 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "可以让我有机会体验驾驶不同的车 (请问您使用共享汽车出行服务的主要原因是什么？（复"
+    }
+  },
+  "Q30CX3_6": {
+    "variable_name": "Q30CX3_6",
+    "variable_label": "和公共交通相比，有私人空间，私密性更好 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "和公共交通相比，有私人空间，私密性更好 (请问您使用共享汽车出行服务的主要原因是什"
+    }
+  },
+  "Q30CX3_7": {
+    "variable_name": "Q30CX3_7",
+    "variable_label": "其它，请注明 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)",
+    "value_labels": {
+      "1.0": "其它，请注明 (请问您使用共享汽车出行服务的主要原因是什么？（复选）)"
+    }
+  },
+  "Q31_1": {
+    "variable_name": "Q31_1",
+    "variable_label": "我觉得会有越来越少的人买车，而是更多地使用汽车共享服务 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选）)",
+    "value_labels": {
+      "1.0": "我觉得会有越来越少的人买车，而是更多地使用汽车共享服务 (以下是关于共享汽车的一些"
+    }
+  },
+  "Q31_2": {
+    "variable_name": "Q31_2",
+    "variable_label": "我依赖汽车共享服务通勤 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选）)",
+    "value_labels": {
+      "1.0": "我依赖汽车共享服务通勤 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选"
+    }
+  },
+  "Q31_3": {
+    "variable_name": "Q31_3",
+    "variable_label": "我相信汽车共享在未来会成为一种趋势 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选）)",
+    "value_labels": {
+      "1.0": "我相信汽车共享在未来会成为一种趋势 (以下是关于共享汽车的一些看法，请问您同意哪些"
+    }
+  },
+  "Q31_4": {
+    "variable_name": "Q31_4",
+    "variable_label": "汽车共享将会越来越便宜 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选）)",
+    "value_labels": {
+      "1.0": "汽车共享将会越来越便宜 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选"
+    }
+  },
+  "Q31_5": {
+    "variable_name": "Q31_5",
+    "variable_label": "我认为以后我们买的汽车都可以共享使用 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选）)",
+    "value_labels": {
+      "1.0": "我认为以后我们买的汽车都可以共享使用 (以下是关于共享汽车的一些看法，请问您同意哪"
+    }
+  },
+  "Q31_6": {
+    "variable_name": "Q31_6",
+    "variable_label": "均不同意以上观点 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选）)",
+    "value_labels": {
+      "1.0": "均不同意以上观点 (以下是关于共享汽车的一些看法，请问您同意哪些看法？（多选）)"
+    }
+  },
+  "Q32_1": {
+    "variable_name": "Q32_1",
+    "variable_label": "我希望拥有属于自己的车辆 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？（多选）)",
+    "value_labels": {
+      "1.0": "我希望拥有属于自己的车辆 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢"
+    }
+  },
+  "Q32_2": {
+    "variable_name": "Q32_2",
+    "variable_label": "自己有车更方便，更灵活 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？（多选）)",
+    "value_labels": {
+      "1.0": "自己有车更方便，更灵活 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？"
+    }
+  },
+  "Q32_3": {
+    "variable_name": "Q32_3",
+    "variable_label": "用自己的车更放心 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？（多选）)",
+    "value_labels": {
+      "1.0": "用自己的车更放心 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？（多选"
+    }
+  },
+  "Q32_4": {
+    "variable_name": "Q32_4",
+    "variable_label": "其它，请注明 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？（多选）)",
+    "value_labels": {
+      "1.0": "其它，请注明 (有了新型的出行服务，请问您为什么依旧想要购买一辆新车呢？（多选）)"
+    }
+  },
+  "F1": {
+    "variable_name": "F1",
+    "variable_label": "请问您的婚姻状况? (单选)",
+    "value_labels": {
+      "1.0": "未婚",
+      "2.0": "已婚有孩",
+      "3.0": "已婚无孩",
+      "4.0": "其他"
+    }
+  },
+  "F2X1": {
+    "variable_name": "F2X1",
+    "variable_label": "包括您在内，有多少人住在您家里呢(保姆/员工除外)？ （单选）",
+    "value_labels": {
+      "1.0": "1个",
+      "2.0": "2个",
+      "3.0": "3个",
+      "4.0": "4个",
+      "5.0": "5个",
+      "6.0": "6个",
+      "7.0": "7个",
+      "8.0": "7以上"
+    }
+  },
+  "F2X2_1": {
+    "variable_name": "F2X2_1",
+    "variable_label": "配偶 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "配偶 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2_2": {
+    "variable_name": "F2X2_2",
+    "variable_label": "男/女朋友 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "男/女朋友 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2_3": {
+    "variable_name": "F2X2_3",
+    "variable_label": "父/母亲 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "父/母亲 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2_4": {
+    "variable_name": "F2X2_4",
+    "variable_label": "外祖父母/外祖父母 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "外祖父母/外祖父母 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2_5": {
+    "variable_name": "F2X2_5",
+    "variable_label": "兄弟/姐妹 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "兄弟/姐妹 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2_6": {
+    "variable_name": "F2X2_6",
+    "variable_label": "自己孩子 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "自己孩子 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2_7": {
+    "variable_name": "F2X2_7",
+    "variable_label": "亲戚 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "亲戚 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2_98": {
+    "variable_name": "F2X2_98",
+    "variable_label": "其他，请注明 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "其他，请注明 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X1A": {
+    "variable_name": "F2X1A",
+    "variable_label": "不包括您，保姆或员工在内，和你住在一个城市里的家人有多少？（单选）",
+    "value_labels": {
+      "1.0": "1个",
+      "2.0": "2个",
+      "3.0": "3个",
+      "4.0": "4个",
+      "5.0": "5个",
+      "6.0": "6个",
+      "7.0": "7个",
+      "8.0": "7以上"
+    }
+  },
+  "F2X2A_1": {
+    "variable_name": "F2X2A_1",
+    "variable_label": "配偶 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "配偶 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2A_2": {
+    "variable_name": "F2X2A_2",
+    "variable_label": "父/母亲 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "父/母亲 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2A_3": {
+    "variable_name": "F2X2A_3",
+    "variable_label": "外祖父母/外祖父母 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "外祖父母/外祖父母 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2A_4": {
+    "variable_name": "F2X2A_4",
+    "variable_label": "兄弟/姐妹 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "兄弟/姐妹 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2A_5": {
+    "variable_name": "F2X2A_5",
+    "variable_label": "自己孩子 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "自己孩子 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2A_6": {
+    "variable_name": "F2X2A_6",
+    "variable_label": "亲戚 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "亲戚 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F2X2A_98": {
+    "variable_name": "F2X2A_98",
+    "variable_label": "其他，请注明 (那他们与你的关系是？（多选）)",
+    "value_labels": {
+      "1.0": "其他，请注明 (那他们与你的关系是？（多选）)"
+    }
+  },
+  "F3X1": {
+    "variable_name": "F3X1",
+    "variable_label": "请问您家里有几个18岁以下的孩子?（单选）",
+    "value_labels": {
+      "1.0": "0",
+      "2.0": "1",
+      "3.0": "2",
+      "4.0": "3 个或以上"
+    }
+  },
+  "F4": {
+    "variable_name": "F4",
+    "variable_label": "您希望有多少个孩子？ (单选)",
+    "value_labels": {
+      "1.0": "不希望有孩子（丁克）",
+      "2.0": "1个孩子",
+      "3.0": "2个孩子",
+      "4.0": "3个孩子",
+      "5.0": "4个孩子及以上",
+      "6.0": "不知道"
+    }
+  },
+  "F5B": {
+    "variable_name": "F5B",
+    "variable_label": "在您目前的住所，下列哪个描述您的停车位最贴切？(单选)",
+    "value_labels": {
+      "1.0": "拥有带产权的固定停车位",
+      "2.0": "租赁无产权的停车位，为固定停车位",
+      "3.0": "租赁无产权的停车位，为不固定的停车位",
+      "4.0": "目前没有购买/租赁的停车位"
+    }
+  },
+  "F6": {
+    "variable_name": "F6",
+    "variable_label": "请问您的职业和职位？（单选）",
+    "value_labels": {
+      "2.0": "员工不少于10人",
+      "3.0": "员工少于10人，例如拥有一个小生意，小商店，小农场等",
+      "4.0": "自营专业人士，例如医生、律师、建筑师、会计等",
+      "5.0": "手工业者（建筑工人、水暖工、电工、油漆工等）",
+      "7.0": "高级职员/专业人士/公司总监/高级经理",
+      "8.0": "经理/初级管理人员",
+      "9.0": "公共服务/私人服务行业人员-医疗，教育，警察，军队等",
+      "10.0": "普通员工",
+      "11.0": "体力劳动者",
+      "13.0": "家庭主妇（夫）",
+      "14.0": "公务人员",
+      "15.0": "学生",
+      "16.0": "无业/失业人员",
+      "98.0": "其他，请注明"
+    }
+  },
+  "F8XA": {
+    "variable_name": "F8XA",
+    "variable_label": "请问您的最高学历。（单选）",
+    "value_labels": {
+      "1.0": "初中及以下",
+      "2.0": "高中/中专/技校/职中",
+      "3.0": "大专",
+      "4.0": "本科/4年制大学",
+      "5.0": "研究生及以上"
+    }
+  },
+  "F9X1": {
+    "variable_name": "F9X1",
+    "variable_label": "请问您的个人月收入？(单选)",
+    "value_labels": {
+      "1.0": "5,000元以下",
+      "2.0": "5,000-7,999元",
+      "3.0": "8,000-9,999元",
+      "4.0": "10,000-13,999元",
+      "5.0": "14,000-19,999元",
+      "6.0": "20,000元或以上"
+    }
   }
 }

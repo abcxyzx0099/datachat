@@ -14,6 +14,8 @@ Example:
 import logging
 from typing import Dict, Any, List, Optional
 
+from survey_analyzer.constants import DEFAULT_MAX_CATEGORIES
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +31,7 @@ class MetadataTransformer:
     Example:
         >>> transformer = MetadataTransformer()
         >>> new_metadata = transformer.to_variable_centered(metadata)
-        >>> print(new_metadata["q1"]["label"])
+        >>> print(new_metadata["q1"]["variable_label"])
         'Question 1: Satisfaction'
     """
 
@@ -49,9 +51,9 @@ class MetadataTransformer:
         Output format (variable-centered):
             {
                 "q1": {
-                    "label": "Satisfaction",
-                    "value_labels": {"1": "Yes", "2": "No"},
-                    "variable_type": "numeric"
+                    "variable_name": "q1",
+                    "variable_label": "Satisfaction",
+                    "value_labels": {"1": "Yes", "2": "No"}
                 },
                 "q2": {...}
             }
@@ -66,7 +68,7 @@ class MetadataTransformer:
             >>> transformer = MetadataTransformer()
             >>> new_metadata = transformer.to_variable_centered(metadata)
             >>> for var_name, var_info in new_metadata.items():
-            ...     print(f"{var_name}: {var_info['label']}")
+            ...     print(f"{var_name}: {var_info['variable_label']}")
         """
         new_metadata = {}
         variable_labels = metadata.get("variable_labels", {})
@@ -75,20 +77,18 @@ class MetadataTransformer:
         # Process each variable
         for var_name, label in variable_labels.items():
             new_metadata[var_name] = {
-                "label": label,
+                "variable_name": var_name,
+                "variable_label": label,
                 "value_labels": value_labels.get(var_name, {}),
-                "variable_type": self._infer_variable_type(
-                    var_name, value_labels.get(var_name, {})
-                ),
             }
 
         # Add variables without labels (unlabeled numeric columns)
         for var_name in metadata.get("variable_types", {}):
             if var_name not in new_metadata:
                 new_metadata[var_name] = {
-                    "label": var_name,  # Use variable name as label
+                    "variable_name": var_name,
+                    "variable_label": var_name,  # Use variable name as label
                     "value_labels": {},
-                    "variable_type": "numeric",
                 }
 
         logger.info(
@@ -103,7 +103,7 @@ class MetadataTransformer:
         metadata: Dict[str, Any],
         include_patterns: Optional[List[str]] = None,
         exclude_patterns: Optional[List[str]] = None,
-        max_categories: int = 30,
+        max_categories: int = DEFAULT_MAX_CATEGORIES,
         filter_other_text: bool = True,
     ) -> Dict[str, Any]:
         """
@@ -118,7 +118,7 @@ class MetadataTransformer:
             metadata: Variable-centered metadata
             include_patterns: List of regex patterns - variables must match one
             exclude_patterns: List of regex patterns - exclude if matched
-            max_categories: Maximum number of value categories (default: 30 per business rules)
+            max_categories: Maximum number of value categories (default from DEFAULT_MAX_CATEGORIES)
             filter_other_text: Whether to filter "other" text fields (default: True)
 
         Returns:

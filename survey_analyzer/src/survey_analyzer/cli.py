@@ -14,12 +14,25 @@ Commands:
     stats      - Calculate chi-square tests
     reporting  - Generate PowerPoint and HTML
     all        - Run complete 5-stage workflow
+
+Examples:
+  spss-analyzer data prep --sav-file survey.sav
+  spss-analyzer data read --sav-file survey.sav
+  spss-analyzer data filter --metadata-file metadata.json
+  spss-analyzer spec tables --metadata-file metadata.json
+  spss-analyzer analysis indicators --spec-file spec.json
+  spss-analyzer stats test --crosstabs-file cross_tables.json
+  spss-analyzer reporting ppt --tables-file filtered_tables.json
+  spss-analyzer reporting html --tables-file filtered_tables.json
+  spss-analyzer all --sav-file survey.sav --output-dir output/
 """
 
 import sys
 import argparse
 import json
 from pathlib import Path
+
+from survey_analyzer.constants import DEFAULT_MAX_CATEGORIES
 
 
 def cmd_data_read(args):
@@ -33,11 +46,11 @@ def cmd_data_read(args):
     metadata_dict = transformer.to_variable_centered(meta)
 
     if args.output_file:
-        with open(args.output_file, 'w') as f:
-            json.dump(metadata_dict, f, indent=2)
+        with open(args.output_file, 'w', encoding='utf-8') as f:
+            json.dump(metadata_dict, f, indent=2, ensure_ascii=False)
         print(f"Saved metadata to: {args.output_file}")
     else:
-        print(json.dumps(metadata_dict, indent=2))
+        print(json.dumps(metadata_dict, indent=2, ensure_ascii=False))
 
 
 def cmd_data_filter(args):
@@ -54,9 +67,57 @@ def cmd_data_filter(args):
     )
 
     output_file = args.output_file or args.metadata_file.replace('.json', '_filtered.json')
-    with open(output_file, 'w') as f:
-        json.dump(filtered, f, indent=2)
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(filtered, f, indent=2, ensure_ascii=False)
     print(f"Saved filtered metadata to: {output_file}")
+
+
+def cmd_data_prep(args):
+    """Read SPSS file and filter metadata in one command."""
+    from survey_analyzer.io import SPSSReader, MetadataTransformer
+    import subprocess
+
+    print(f"\n[Stage 1: Data Preparation]")
+    print(f"  Reading: {args.sav_file}")
+
+    # Step 0: Backup existing file if it exists
+    output_file = args.output_file or 'output/filtered_metadata.json'
+    output_path = Path(output_file)
+
+    if output_path.exists():
+        # Create timestamped backup
+        timestamp = subprocess.check_output(['date', '+%Y%m%d_%H%M%S']).decode().strip()
+        backup_path = output_path.parent / f"{output_path.stem}_{timestamp}{output_path.suffix}"
+        subprocess.run(['cp', str(output_path), str(backup_path)])
+        print(f"  ✓ Backed up existing file to: {backup_path.name}")
+
+    # Step 1: Read SPSS file
+    reader = SPSSReader(encoding=args.encoding)
+    data, meta = reader.read(args.sav_file)
+    var_count = len(meta.get('variable_labels', {}))
+    print(f"  Loaded: {len(data)} rows, {var_count} variables")
+
+    # Step 2: Transform to variable-centered format
+    transformer = MetadataTransformer()
+    metadata_dict = transformer.to_variable_centered(meta)
+    print(f"  Transformed: {len(metadata_dict)} variables")
+
+    # Step 3: Filter by business rules
+    filtered_metadata = transformer.filter_variables(
+        metadata_dict,
+        max_categories=args.max_categories
+    )
+    print(f"  Filtered: {len(filtered_metadata)} variables (max_categories={args.max_categories})")
+
+    # Step 4: Save output
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(filtered_metadata, f, indent=2, ensure_ascii=False)
+
+    print(f"\n  ✓ Saved: {output_path}")
+    print(f"  ✓ Variables: {len(filtered_metadata)}")
+    print(f"  ✓ Ready for Stage 2: Table Specification\n")
 
 
 def cmd_spec_tables(args):
@@ -196,8 +257,8 @@ def cmd_all_workflow(args):
         filtered_metadata = transformer.filter_variables(metadata_dict)
 
         metadata_file = output_path / "filtered_metadata.json"
-        with open(metadata_file, 'w') as f:
-            json.dump(filtered_metadata, f, indent=2)
+        with open(metadata_file, 'w', encoding='utf-8') as f:
+            json.dump(filtered_metadata, f, indent=2, ensure_ascii=False)
         print(f"Saved: {metadata_file}")
 
     # Stage 2: Table Specification
@@ -211,8 +272,8 @@ def cmd_all_workflow(args):
         spec_dict = spec.to_dict()
 
         spec_file = output_path / "table_specification.json"
-        with open(spec_file, 'w') as f:
-            json.dump(spec_dict, f, indent=2)
+        with open(spec_file, 'w', encoding='utf-8') as f:
+            json.dump(spec_dict, f, indent=2, ensure_ascii=False)
         print(f"Saved: {spec_file}")
         print("NOTE: Use AI/skills to generate full table specifications")
 
@@ -276,7 +337,7 @@ def main():
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
 
     # Data command
-    data_parser = subparsers.add_parser('data', help='Data operations (read, filter)')
+    data_parser = subparsers.add_parser('data', help='Data operations (read, filter, prep)')
     data_subparsers = data_parser.add_subparsers(dest='subcommand')
 
     data_read = data_subparsers.add_parser('read', help='Read SPSS file and extract metadata')
@@ -287,7 +348,15 @@ def main():
     data_filter = data_subparsers.add_parser('filter', help='Filter metadata by category count')
     data_filter.add_argument('--metadata-file', required=True, help='Path to metadata JSON')
     data_filter.add_argument('--output-file', help='Output filtered metadata')
-    data_filter.add_argument('--max-categories', type=int, default=30, help='Max categories (default: 30)')
+    data_filter.add_argument('--max-categories', type=int, default=DEFAULT_MAX_CATEGORIES,
+                           help=f'Max categories (default: {DEFAULT_MAX_CATEGORIES})')
+
+    data_prep = data_subparsers.add_parser('prep', help='Read and filter metadata in one command (Stage 1 complete)')
+    data_prep.add_argument('--sav-file', required=True, help='Path to SPSS .sav file')
+    data_prep.add_argument('--encoding', help='File encoding (default: auto-detect from file)')
+    data_prep.add_argument('--output-file', help='Output filtered metadata JSON file')
+    data_prep.add_argument('--max-categories', type=int, default=DEFAULT_MAX_CATEGORIES,
+                           help=f'Max categories (default: {DEFAULT_MAX_CATEGORIES})')
 
     # Spec command
     spec_parser = subparsers.add_parser('spec', help='Specification operations')
@@ -352,6 +421,8 @@ def main():
             cmd_data_read(args)
         elif args.subcommand == 'filter':
             cmd_data_filter(args)
+        elif args.subcommand == 'prep':
+            cmd_data_prep(args)
         else:
             data_subparsers.choices['read'].print_help()
     elif args.command == 'spec':

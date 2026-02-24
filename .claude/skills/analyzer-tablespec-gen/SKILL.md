@@ -98,6 +98,44 @@ This skill follows a **two-mode workflow**:
 4. Extract proper question labels (see Label Extraction Guidelines below)
 5. Use the `Write` tool to directly create `output/table_specification.jsonc`
 
+## Why Pure AI Approach (No Scripts)
+
+### The Philosophy
+
+This skill uses **pure AI intelligence** instead of programming/scripts for important reasons:
+
+| Benefit | Why It Matters |
+|---------|----------------|
+| **Semantic Understanding** | AI reads the actual question text (e.g., "请问您的性别？") and understands it's a demographic question. Scripts only see patterns like "S0" and may fail with different naming. |
+| **Works With Any Survey** | No hardcoded patterns. Whether variables are named Q1, QUESTION_1, var_001, or 使用场景, AI analyzes content, not names. |
+| **Intelligent Grouping** | AI recognizes that Q2A_1 through Q2A_12 share the same question stem ("请问您要购买的新车通常将如何使用？") and groups them appropriately. |
+| **No Technical Debt** | Scripts in `temp/` create throwaway code that clutters the project. AI reasoning leaves no artifacts. |
+| **Explainable Decisions** | AI can articulate why it made each choice. Scripts are black boxes. |
+| **Adapts to Feedback** | If user says "that's wrong," AI adjusts immediately. Scripts need to be rewritten. |
+
+### The Trap to Avoid
+
+**When processing 300+ variables, AI is tempted to:**
+- Write a Python script "just this once"
+- Use Bash for "reliable" processing
+- Create "helper" functions
+
+**Don't do it.** The script will:
+- ❌ Use brittle patterns (`if var.startswith('Q')`)
+- ❌ Fail with edge cases (Q99, Q_oth, "Other" fields)
+- ❌ Create technical debt (temp/ scripts to maintain)
+- ❌ Not understand semantic meaning
+
+### The Right Approach
+
+**Use your intelligence:**
+1. Read the metadata with the `Read` tool
+2. Analyze variable content (labels, values, patterns)
+3. Make decisions based on meaning, not naming
+4. Write the output directly with the `Write` tool
+
+**Remember**: This skill works with ANY SPSS survey, not just ones following specific naming conventions. That flexibility comes from AI intelligence, not code.
+
 ## Backup Step
 
 **⚠️ IMPORTANT: Always backup existing specification before overwriting**
@@ -154,103 +192,69 @@ cp output/table_specification.jsonc output/table_specification_$(date +%Y%m%d_%H
 
 ## Specification Structure
 
-The generated `table_specification.jsonc` contains:
+The generated `table_specification.jsonc` uses a **simplified structure**.
+
+### Minimal Example
 
 ```jsonc
 {
   "metadata": {
-    "spec_id": "crosstab_2024_consumer_survey_001",
-    "project_id": "proj_2024_china_consumer_insights",
-    "dataset_id": "ds_q1_2024_national_survey",
-    "description": "Cross-tabulation analysis for market research survey"
+    "spec_id": "example_spec_001",
+    "project_id": "proj_example",
+    "dataset_id": "ds_example",
+    "description": "Example table specification"
   },
-  "filter_clause": {
-    "age_min": 18,
-    "age_max": 65,
-    "exclude_incomplete": true
-  },
-  "weight_indicator": "weight1",
+  "filter_clause": {"exclude_incomplete": true},
+  "weight_indicator": null,
   "row_indicators": [
     {
-      "indicator_code": "Q5_SATISFACTION",
-      "indicator_label": "Satisfaction",
-      "question_code": "Q5",
-      "question_type": "Rating Scale",
+      "indicator_code": "Q1_GENDER",
+      "indicator_label": "Gender",
+      "question_code": "Q1",
+      "question_type": "Single Choice",
       "tabulation_type": "categorical",
       "tabulation_metric": "column_percent",
-      "base_variables": {
-        "Q5_SAT_cat": "Satisfaction (grouped)",
-        "Q5_SAT_t2b": "Satisfaction (Top 2 Box)",
-        "Q5_SAT_b2b": "Satisfaction (Bottom 2 Box)"
-      },
-      "base_variables_transformations": {
-        "Q5_SAT_cat": "RECODE Q5_SAT (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO Q5_SAT_cat",
-        "Q5_SAT_t2b": "RECODE Q5_SAT (4 THRU 5=1) (ELSE=0) INTO Q5_SAT_t2b",
-        "Q5_SAT_b2b": "RECODE Q5_SAT (1 THRU 2=1) (ELSE=0) INTO Q5_SAT_b2b"
-      },
-      "base_variables_value_labels": {
-        "1": "Very Dissatisfied",
-        "2": "Dissatisfied",
-        "3": "Neutral",
-        "4": "Satisfied",
-        "5": "Very Satisfied"
-      }
+      "base_variables": {"Q1_cat": "Gender"},
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {"1": "Male", "2": "Female"}
     }
   ],
   "column_indicators": [
     {
       "indicator_code": "AGE_GROUP",
-      "indicator_label": "Age group - Demographic banner",
+      "indicator_label": "Age group",
       "question_code": "S1",
       "question_type": "Single Choice",
       "tabulation_type": "categorical",
       "tabulation_metric": "column_percent",
-      "base_variables": {
-        "S1_AGE_cat": "Age group"
-      },
+      "base_variables": {"S1_cat": "Age group"},
       "base_variables_transformations": null,
-      "base_variables_value_labels": {
-        "1": "18-25",
-        "2": "26-35",
-        "3": "36-45",
-        "4": "46-60",
-        "5": "60+"
-      }
+      "base_variables_value_labels": {"1": "18-25", "2": "26-35", "3": "36-45"}
     }
   ]
 }
 ```
 
-**IMPORTANT: New Structure - Arrays with indicator_code as Field**
+### Complete Examples
 
-- `row_indicators` and `column_indicators` are **arrays** (not dictionaries)
-  - Each element is an indicator object with all fields
+**For comprehensive examples covering all indicator types, see:**
 
-- `indicator_code` is a **field inside each indicator object** (parallel with other fields)
-  - Used as the unique identifier for the indicator
+- [examples/table_specification.jsonc](examples/table_specification.jsonc) - Complete reference with 7 row indicator types and 11 demographic columns
+- [output/table_specification.jsonc](output/table_specification.jsonc) - Latest generated specification
 
-- **Three parallel fields** at the indicator level:
-  - **`base_variables`**: Dictionary of `{variable_name: label}`
-    - Key = target variable name (with suffix, e.g., "Q5_SAT_cat", "Q5_SAT_t2b")
-    - Value = variable label (human-readable description)
-  - **`base_variables_transformations`**: Dictionary of `{variable_name: SPSS_syntax}`
-    - Key = target variable name
-    - Value = Full SPSS RECODE syntax: `"RECODE source_var (rules) INTO target_var"`
-    - Source variable has no suffix (e.g., "Q5_SAT", not "Q5_SAT_raw")
-    - For raw variables: `null` or omitted
-  - **`base_variables_value_labels`**: Dictionary of shared value labels `{code: label}`
-    - Applies to all variables in this indicator
-    - Can be `null` for scalar variables
+**Key fields at the indicator level:**
 
-**Transformation Format**:
-- Full SPSS syntax: `RECODE source_var (rules) INTO target_var`
-- Example: `"RECODE Q5_SAT (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO Q5_SAT_cat"`
-- Source variable = original (no suffix like `_raw`)
-- Target variable = after `INTO` (with suffix)
-
-**Note**: For raw variables (no transformation), `generation_rules` is `null`.
-
-See [examples/table_specification.jsonc](examples/table_specification.jsonc) for complete reference.
+| Field | Description |
+|-------|-------------|
+| `indicator_code` | Unique identifier for this indicator |
+| `indicator_label` | Human-readable description (Chinese question text) |
+| `question_code` | Question identifier (e.g., "Q1", "S1") |
+| `question_type` | Single Choice, Multiple Choice, Rating Scale, etc. |
+| `base_variables` | Dictionary of variable names to labels |
+| `base_variables_transformations` | SPSS transformation syntax or `null` |
+| `base_variables_value_labels` | Value labels mapping for all variables |
+| `tabulation_type` | `categorical` or `scalar` |
+| `tabulation_metric` | `column_percent` or `descriptive_statistics` |
 
 ## Field Descriptions
 
@@ -258,89 +262,90 @@ See [examples/table_specification.jsonc](examples/table_specification.jsonc) for
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `metadata` | Object | Project identification metadata (nested) |
+| `filter_clause` | Object | Data filtering rules |
+| `weight_indicator` | String/null | Weight variable name or `null` |
 | `row_indicators` | Array | List of row indicator objects |
 | `column_indicators` | Array | List of column indicator objects |
+
+### metadata (Object)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `spec_id` | String | Unique specification identifier |
+| `project_id` | String | Project identifier |
+| `dataset_id` | String | Dataset identifier |
+| `description` | String | Human-readable description |
+| `generated_at` | String | ISO timestamp of generation |
+| `source_file` | String | Original SPSS filename |
+| `case_count` | Number | Number of cases in dataset |
 
 ### Indicator Object (Element in row_indicators/column_indicators arrays)
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `indicator_code` | String | Unique identifier for the indicator |
-| `indicator_label` | String | Human-readable label for the indicator |
-| `question_code` | String | SPSS variable identifier for the related question |
+| `indicator_label` | String | Human-readable label (Chinese question text) |
+| `question_code` | String | Question identifier (e.g., "Q1", "S1") |
 | `question_type` | String | Question type: Single Choice, Multiple Choice, Matrix, Rating Scale, Numeric Input, etc. |
-| `tabulation_type` | String | Type of variable: `categorical` or `scalar` |
-| `tabulation_metric` | String | Metric to compute: `column_percent` or `descriptive_statistics` |
-| `base_variables` | Dictionary | `{variable_name: label}` - Target variable names to labels |
-| `base_variables_transformations` | Dictionary/null | `{variable_name: SPSS_syntax}` - Full RECODE/COMPUTE syntax |
-| `base_variables_value_labels` | Dictionary/null | `{code: label}` - Shared value labels |
+| `tabulation_type` | String | `categorical` or `scalar` |
+| `tabulation_metric` | String | `column_percent` or `descriptive_statistics` |
+| `base_variables` | Object | Dictionary of variable names to labels |
+| `base_variables_transformations` | String/null | SPSS transformation syntax or `null` |
+| `base_variables_value_labels` | Object | Value labels mapping for all variables |
 
 ### base_variables (Dictionary)
 
-| Key | Value | Description |
-|-----|-------|-------------|
-| Variable name (with suffix) | Variable label | Target variable → human-readable description |
+Dictionary of variable names to labels:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| Key | String | Variable name (with suffix, e.g., "Q2A_1_bin") |
+| Value | String | Human-readable variable label |
 
 Example:
 ```jsonc
 "base_variables": {
-  "Q5_SAT_cat": "Satisfaction (grouped)",
-  "Q5_SAT_t2b": "Satisfaction (Top 2 Box)"
+  "Q2A_1_bin": "上/下班用",
+  "Q2A_2_bin": "和家庭成员/朋友/同事一起出外娱乐聚餐",
+  "Q2A_3_bin": "去购物"
 }
 ```
 
-### base_variables_transformations (Dictionary or null)
+### base_variables_transformations
 
-| Key | Value | Description |
-|-----|-------|-------------|
-| Variable name (with suffix) | SPSS syntax | Full SPSS syntax: `RECODE source_var (rules) INTO target_var` |
+SPSS transformation syntax or `null`:
 
-**Format**: `RECODE source_variable (recoding_rules) INTO target_variable`
-- Source variable = original (no suffix like `_raw`)
-- Target variable = after `INTO` (with suffix)
-- For raw variables: `null` or omitted
+| Value | Description |
+|-------|-------------|
+| `null` | No transformation (raw variables) |
+| String | SPSS transformation rules |
+
+### base_variables_value_labels (Object)
+
+Value labels mapping shared across all base variables:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| Key | String | Numeric value as string |
+| Value | String | Human-readable value label |
 
 Example:
 ```jsonc
-"base_variables_transformations": {
-  "Q5_SAT_cat": "RECODE Q5_SAT (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO Q5_SAT_cat",
-  "Q5_SAT_t2b": "RECODE Q5_SAT (4 THRU 5=1) (ELSE=0) INTO Q5_SAT_t2b"
+"base_variables_value_labels": {
+  "1": "是",
+  "0": "否"
 }
 ```
 
-### base_variables_value_labels (Dictionary or null)
+## Tabulation Type Determination Rules
 
-Shared value labels that apply to all variables in this indicator:
+**CRITICAL**: The `tabulation_type` field determines how Stage 3 processes the indicator.
 
-| Format | Description |
-|--------|-------------|
-| `{code: label}` | Dictionary mapping response codes to labels |
-| Example | `{"1": "Very Dissatisfied", "2": "Dissatisfied", ...}` |
-| Scalar variables | `null` (no value labels for continuous variables) |
+### Rule 1: Determine by question_type
 
-### tabulation_statistics (Object)
-
-| Field | Description | Source |
-|-------|-------------|--------|
-| `type` | Type of base variable: `categorical` or `scalar` | Determined by rules below |
-| `metric` | Metric to compute: `column_percent` or `descriptive_statistics` | Determined by `tabulation_statistics.type` |
-| `explicit` | Array of category values to include (column indicators only) | Excel Explicit Values column |
-
-## Tabulation Statistics Type Determination Rules
-
-**CRITICAL**: The `tabulation_statistics.type` field determines how Stage 3 processes the indicator. Use these rules:
-
-### Rule 1: Check generation Field First
-
-| generation Content | tabulation_statistics.type | Reason |
-|-------------------|----------------|--------|
-| Contains `COMPUTE` | **`scalar`** | Computed values are numeric/scalar |
-| Null or recoding rules `(x=y)` | Determined by type | See Rule 2 |
-
-### Rule 2: Determine by question_type (when no COMPUTE)
-
-| question_type | base_variables count | tabulation_statistics.type | Stage 3 Scenario |
-|---------------|---------------------|----------------|------------------|
+| question_type | base_variables count | tabulation_type | Stage 3 Scenario |
+|---------------|---------------------|------------------|------------------|
 | **Single Choice** | 1 | `categorical` | cat_single (column %) |
 | **Multiple Choice** | > 1 (binary variables) | `categorical` | cat_multi (% of Yes) |
 | **Matrix** | 1 | `categorical` | cat_single (column %) |
@@ -348,28 +353,19 @@ Shared value labels that apply to all variables in this indicator:
 | **Rating Scale** | 1 | `categorical` | cat_single (column %) |
 | **Rating Scale** | > 1 (attributes) | `scalar` | scalar_multi (mean per attribute) |
 
-### Rule 3: Special Cases
+### Rule 2: Tabulation Type Metric Mapping
 
-| Scenario | tabulation_statistics.type | Explanation |
-|----------|----------------|-------------|
-| Multiple base vars with COMPUTE | `scalar` | Computed index = single scalar value |
-| Multiple binary vars (no COMPUTE) | `categorical` | True multiple choice (% of Yes) |
-| Rating scale with means needed | `scalar` | Each attribute gets mean statistics |
-| Rating scale with column % needed | `categorical` | Show column percentages instead |
-
-### Tabulation Statistics Metric Mapping
-
-| tabulation_statistics.type | tabulation_statistics.metric | Description |
-|----------------|------------------|-------------|
+| tabulation_type | tabulation_metric | Description |
+|------------------|-------------------|-------------|
 | `categorical` | `column_percent` | Column percentage for each category |
 | `scalar` | `descriptive_statistics` | Mean, median, std_dev, min, max |
 
-## Generation Field Format
+## base_variables_transformations Format
 
-The `generation` field in each `base_variable` uses **SPSS-compatible syntax**:
+The `base_variables_transformations` field uses **SPSS-compatible syntax**:
 
-| Scenario | generation Value | Example |
-|----------|------------------|---------|
+| Scenario | base_variables_transformations Value | Example |
+|----------|--------------------------------------|---------|
 | Raw variable (no transformation) | `null` | Raw SPSS variable used directly |
 | Recode | `RECODE source (old=new) INTO target` | `"RECODE Q5_SAT (1 THRU 2=1) (3=2) INTO Q5_SAT_cat"` |
 | Compute | `COMPUTE target = expression` | `"COMPUTE INCOME_INDEX = SALARY + BONUS + OTHER"` |
@@ -377,110 +373,23 @@ The `generation` field in each `base_variable` uses **SPSS-compatible syntax**:
 
 **Note**: The transformation rule is self-documenting - it shows source, operation, and target variable.
 
-### Examples
+### Complete Examples
 
-```jsonc
-// Example 1: Single raw variable (most common case)
-"Q1_GENDER": {
-  "indicator_label": "Gender indicator",
-  "question_code": "Q1",
-  "question_type": "Single Choice",
-  "base_variables": {
-    "Q1_GENDER_cat": "Gender"
-  },
-  "base_variables_transformations": null,
-  "base_variables_value_labels": {
-    "1": "Male",
-    "2": "Female"
-  },
-  "tabulation_statistics": {"type": "categorical", "metric": "column_percent", "explicit": null}
-}
+**For comprehensive examples covering all indicator types, see:**
 
-// Example 2: Multiple variables with transformations (common case)
-"Q5_SATISFACTION": {
-  "indicator_label": "Satisfaction",
-  "question_code": "Q5",
-  "question_type": "Rating Scale",
-  "base_variables": {
-    "Q5_SAT_cat": "Satisfaction (grouped into 3 categories)",
-    "Q5_SAT_t2b": "Satisfaction (Top 2 Box)",
-    "Q5_SAT_b2b": "Satisfaction (Bottom 2 Box)"
-  },
-  "base_variables_transformations": {
-    "Q5_SAT_cat": "RECODE Q5_SAT (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO Q5_SAT_cat",
-    "Q5_SAT_t2b": "RECODE Q5_SAT (4 THRU 5=1) (ELSE=0) INTO Q5_SAT_t2b",
-    "Q5_SAT_b2b": "RECODE Q5_SAT (1 THRU 2=1) (ELSE=0) INTO Q5_SAT_b2b"
-  },
-  "base_variables_value_labels": {
-    "1": "Very Dissatisfied",
-    "2": "Dissatisfied",
-    "3": "Neutral",
-    "4": "Satisfied",
-    "5": "Very Satisfied"
-  },
-  "tabulation_statistics": {"type": "categorical", "metric": "column_percent", "explicit": null}
-}
+| File | Description |
+|------|-------------|
+| [examples/table_specification.jsonc](examples/table_specification.jsonc) | Complete reference with 7 row indicator types and 11 demographic columns |
+| [output/table_specification.jsonc](output/table_specification.jsonc) | Latest generated specification from actual data |
 
-// Example 3: Multiple choice (multiple _bin variables from same source)
-"Q10_BRANDS": {
-  "indicator_label": "Brand awareness",
-  "question_code": "Q10",
-  "question_type": "Multiple Choice",
-  "base_variables": {
-    "Q10_1_bin": "Brand A",
-    "Q10_2_bin": "Brand B",
-    "Q10_3_bin": "Brand C"
-  },
-  "base_variables_transformations": null,
-  "base_variables_value_labels": {
-    "1": "Yes",
-    "0": "No"
-  },
-  "tabulation_statistics": {"type": "categorical", "metric": "column_percent", "explicit": null}
-}
-
-// Example 4: Scalar variable (no value labels)
-"S1_AGE": {
-  "indicator_label": "Age - Continuous",
-  "question_code": "S1",
-  "question_type": "Numeric Input",
-  "base_variables": {
-    "S1_AGE_sca": "Age (years)"
-  },
-  "base_variables_transformations": null,
-  "base_variables_value_labels": null,
-  "tabulation_statistics": {"type": "scalar", "metric": "descriptive_statistics", "explicit": null}
-}
-```
-
-**Key Points:**
-- `base_variables`: dictionary of {variable_name: label}
-- `base_variables_transformations`: dictionary of {variable_name: SPSS_syntax} or `null` for raw
-  - Full SPSS syntax: `RECODE source_var (rules) INTO target_var`
-  - Source variable has no suffix (e.g., "Q5_SAT", not "Q5_SAT_raw")
-- `base_variables_value_labels`: shared value labels dictionary or `null` for scalar
-"S1_AGE": {
-  "indicator_label": "Age - Continuous",
-  "question_code": "S1",
-  "question_type": "Numeric Input",
-  "base_variables": {
-    "variable_list": {
-      "S1_AGE_sca": "Age (years)"
-    },
-    "generation_rules": null,
-    "unified_values": null
-  },
-  "tabulation_statistics": {"type": "scalar", "metric": "descriptive_statistics", "explicit": null}
-}
-```
-
-**Key Points:**
-- `base_variables` has three sections: `variable_list`, `generation_rules`, `unified_values`
-- `variable_list`: dictionary of {variable_name: label}
-- `generation_rules`: dictionary of {variable_name: SPSS_syntax} or `null` for raw
-  - Full SPSS syntax: `RECODE source_var (rules) INTO target_var`
-  - Source variable has no suffix (e.g., "Q5_SAT", not "Q5_SAT_raw")
-- `unified_values`: shared value labels dictionary or `null` for scalar
+**Indicator types covered in examples:**
+- Single Choice (e.g., Gender, Age, City Tier)
+- Multiple Choice (e.g., Usage scenarios with _bin variables)
+- Rating Scale - Single Variable (e.g., Satisfaction factor)
+- Rating Scale - Multiple Attributes (e.g., Satisfaction dimensions)
+- Frequency Scale (e.g., Usage frequency)
+- Multi-Item Scale (e.g., Attribute importance ratings)
+- Budget/Purchase Range (e.g., Purchase budget)
 
 ## Suffix Field
 
@@ -512,20 +421,17 @@ The suffix is derived from the variable name in `base_variables` and indicates t
 | Satisfaction index | `_idx` | `SATISFACTION_idx` |
 | Z-scored rating | `_z` | `D1_QUALITY_z` |
 
-### Generation Rules by Suffix
+### Transformation Rules by Suffix
 
-| Suffix | Typical `generation_rules` Value (in generation_rules dict) |
+The suffix in variable names indicates the transformation type. For `base_variables_transformations`:
+
+| Suffix | Typical `base_variables_transformations` Value |
 |--------|------------------------------|
-| `_raw` | `null` (no transformation - variable used directly) |
-| `_bin` | `null` (binary variables are typically raw) or `"RECODE Q10_1 (1=1) (ELSE=0) INTO Q10_1_bin"` |
-| `_cat` | `"RECODE Q5_SAT (1 THRU 2=1) (3=2) (4 THRU 5=3) INTO Q5_SAT_cat"` |
-| `_t2b` | `"RECODE Q5_SAT (4 THRU 5=1) (ELSE=0) INTO Q5_SAT_t2b"` |
-| `_b2b` | `"RECODE Q5_SAT (1 THRU 2=1) (ELSE=0) INTO Q5_SAT_b2b"` |
-| `_nps` | `"RECODE Q_REC (9 THRU 10=3) (7 THRU 8=2) (0 THRU 6=1) INTO Q_REC_nps"` |
+| `_cat` | `null` (most common - raw category) or `"RECODE Q5_SAT (1 THRU 2=1) (3=2) (4 THRU 5=3)"` |
+| `_bin` | `null` (binary variables are typically raw) |
 | `_sca` | `null` (numeric variable - no transformation) |
-| `_idx` | `"COMPUTE SATISFACTION_idx = MEAN(Q5_SAT, Q6_SAT, Q7_SAT)"` |
-| `_z` | `"COMPUTE D1_SCORE_z = (D1_SCORE - MEAN(D1_SCORE)) / SD(D1_SCORE)"` |
-| `_pct` | `"COMPUTE D1_SCORE_pct = RANK(D1_SCORE) / N * 100"` |
+
+**Note**: In the simplified structure, `base_variables_transformations` applies to all variables in the indicator. For most cases, use `null` (raw variables).
 
 **Note**: Source variables in transformations do NOT have `_raw` suffix. Use base name like `Q5_SAT`, not `Q5_SAT_raw`.
 
@@ -676,8 +582,8 @@ Q26_3: "放松 (如果您的汽车将是完全自动驾驶的...)"
 
 1. **Structure validation**: JSON schema check
 2. **Reference validation**: Variables exist in metadata
-3. **Business logic validation**: Generation rules are valid
-4. **Statistics type validation**: Correct `tabulation_statistics.type` assignment
+3. **Business logic validation**: Transformation rules are valid
+4. **Statistics type validation**: Correct `tabulation_type` assignment
 
 ## Output Format
 

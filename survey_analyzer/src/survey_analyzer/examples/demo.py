@@ -464,15 +464,15 @@ def demo_indicators():
 
     # Sample metadata
     metadata = {
-        "sat_1": {"label": "Satisfaction with product quality", "value_labels": {"1": "Very Dissatisfied", "5": "Very Satisfied"}},
-        "sat_2": {"label": "Satisfaction with service quality", "value_labels": {"1": "Very Dissatisfied", "5": "Very Satisfied"}},
-        "sat_3": {"label": "Overall satisfaction", "value_labels": {"1": "Very Dissatisfied", "5": "Very Satisfied"}},
-        "loy_1": {"label": "Likelihood to recommend", "value_labels": {"1": "Very Unlikely", "5": "Very Likely"}},
-        "loy_2": {"label": "Likelihood to repurchase", "value_labels": {"1": "Very Unlikely", "5": "Very Likely"}},
-        "age": {"label": "Age group", "value_labels": {"1": "18-30", "2": "31-50", "3": "51+"}},
-        "gender": {"label": "Gender", "value_labels": {"1": "Male", "2": "Female"}},
-        "brand_a": {"label": "Brand A preference", "value_labels": {"1": "Yes", "2": "No"}},
-        "brand_b": {"label": "Brand B preference", "value_labels": {"1": "Yes", "2": "No"}},
+        "sat_1": {"variable_name": "sat_1", "variable_label": "Satisfaction with product quality", "value_labels": {"1": "Very Dissatisfied", "5": "Very Satisfied"}},
+        "sat_2": {"variable_name": "sat_2", "variable_label": "Satisfaction with service quality", "value_labels": {"1": "Very Dissatisfied", "5": "Very Satisfied"}},
+        "sat_3": {"variable_name": "sat_3", "variable_label": "Overall satisfaction", "value_labels": {"1": "Very Dissatisfied", "5": "Very Satisfied"}},
+        "loy_1": {"variable_name": "loy_1", "variable_label": "Likelihood to recommend", "value_labels": {"1": "Very Unlikely", "5": "Very Likely"}},
+        "loy_2": {"variable_name": "loy_2", "variable_label": "Likelihood to repurchase", "value_labels": {"1": "Very Unlikely", "5": "Very Likely"}},
+        "age": {"variable_name": "age", "variable_label": "Age group", "value_labels": {"1": "18-30", "2": "31-50", "3": "51+"}},
+        "gender": {"variable_name": "gender", "variable_label": "Gender", "value_labels": {"1": "Male", "2": "Female"}},
+        "brand_a": {"variable_name": "brand_a", "variable_label": "Brand A preference", "value_labels": {"1": "Yes", "2": "No"}},
+        "brand_b": {"variable_name": "brand_b", "variable_label": "Brand B preference", "value_labels": {"1": "Yes", "2": "No"}},
     }
 
     print("Sample metadata:")

@@ -108,8 +108,8 @@ class SPSSReader:
                 metadataonly=metadata_only,
             )
 
-            # Build metadata dictionary
-            metadata = self._build_metadata(meta, file_path)
+            # Build metadata dictionary (pass df for column name mapping)
+            metadata = self._build_metadata(meta, file_path, df)
 
             logger.info(
                 f"Successfully read SPSS file: "
@@ -126,6 +126,7 @@ class SPSSReader:
         self,
         meta: Any,
         file_path: Path,
+        df: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """
         Build standardized metadata dictionary from pyreadstat metadata.
@@ -133,6 +134,7 @@ class SPSSReader:
         Args:
             meta: pyreadstat metadata object
             file_path: Path to the source file
+            df: DataFrame (for column name mapping)
 
         Returns:
             Standardized metadata dictionary
@@ -146,9 +148,30 @@ class SPSSReader:
                 str(code): label for code, label in labels.items()
             }
 
-        # Handle different pyreadstat versions
-        # variable_labels in older versions, variable_to_label in newer versions
-        var_labels = getattr(meta, 'variable_to_label', None) or getattr(meta, 'variable_labels', None)
+        # Get column labels - these contain the actual question text
+        # column_labels is a list where index corresponds to column position
+        var_labels = {}
+        if hasattr(meta, 'column_labels') and meta.column_labels and df is not None:
+            # Map column_labels to variable names using dataframe columns
+            column_names = df.columns.tolist()
+            for i, label in enumerate(meta.column_labels):
+                if i < len(column_names):
+                    var_name = column_names[i]
+                    # Use the label if it's not "None", otherwise use variable name
+                    var_labels[var_name] = label if label and str(label).lower() != "none" else var_name
+        elif hasattr(meta, 'column_labels') and meta.column_labels:
+            # No dataframe available, use value_labels keys
+            var_names = list(variable_value_labels.keys())
+            if len(meta.column_labels) == len(var_names):
+                for i, label in enumerate(meta.column_labels):
+                    if i < len(var_names):
+                        var_labels[var_names[i]] = label if label and str(label).lower() != "none" else var_names[i]
+
+        # Fallback to old method if column_labels didn't work
+        if not var_labels:
+            # Handle different pyreadstat versions
+            # variable_labels in older versions, variable_to_label in newer versions
+            var_labels = getattr(meta, 'variable_to_label', None) or getattr(meta, 'variable_labels', None) or {}
 
         # Get variable types if available
         variable_types = {}
@@ -184,13 +207,13 @@ class SPSSReader:
 
         Returns:
             Dictionary with variable info:
-                - label: Variable label
+                - variable_name: Variable name
+                - variable_label: Variable label
                 - value_labels: Dict of value labels
-                - type: Variable type
         """
         return {
-            "name": variable_name,
-            "label": metadata["variable_labels"].get(variable_name, ""),
+            "variable_name": variable_name,
+            "variable_label": metadata["variable_labels"].get(variable_name, ""),
             "value_labels": metadata["value_labels"].get(variable_name, {}),
         }
 

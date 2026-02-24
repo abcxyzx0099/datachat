@@ -1,14 +1,81 @@
-# Claude Agent SDK: Tools and allowed_tools Guide
+# Tools Guide: Tools, Skills, and Tasks
 
-**Category**: Guide
-**Layer**: Agent
-**Granularity**: Low
-**Stage**: Development
-**Runtime**: Backend
+**Part of**: Claude Programming Guide Skill
+
+Complete guide for understanding and configuring tools, skills, and tasks in Claude Agent SDK.
 
 ---
 
-## Overview
+## Concepts Overview
+
+Understanding the distinction between these three concepts in Claude Code and the Agent SDK.
+
+### Tools
+
+Low-level functions that Claude can use directly.
+
+| Tool | Purpose |
+|------|---------|
+| `Read` | Read file contents |
+| `Write` | Create new files |
+| `Edit` | Modify existing files |
+| `Bash` | Run shell commands |
+| `Grep` | Search file contents |
+| `Glob` | Find files by pattern |
+
+**Controlled by:** `tools` parameter (presets) and `allowed_tools` parameter (specific tools) in `ClaudeAgentOptions`
+
+### Skills
+
+Higher-level commands invoked by name in the prompt.
+
+| Skill | Example |
+|-------|---------|
+| `/task-execution` | Executes task documents |
+| `/commit` | Creates git commits |
+| `/docs-audit` | Reviews documentation |
+
+**NOT controlled by** `tools` parameter. Skills are enabled via `setting_sources=["project"]` + `cwd`.
+
+**How skills work:**
+1. Invoked by name in prompt text: `/task-execution`
+2. Claude Code CLI intercepts and routes to skill handler
+3. Skill internally uses tools to complete its work
+
+```
+Prompt: "/task-execution Execute task at: task-xxx.md"
+   ↓
+CLI routes to /task-execution skill
+   ↓
+Skill uses Read, Write, Edit tools to complete task
+```
+
+### Tasks
+
+Markdown document files containing task specifications.
+
+- Format: `task-YYYYMMDD-HHMMSS-description.md`
+- Location: `{project_workspace}/task-monitor/ad-hoc/pending/` or `{project_workspace}/task-monitor/planned/pending/`
+- Read and executed by the `/task-execution` skill
+
+**NOT a tool** - just a data file.
+
+### Quick Summary
+
+| Concept | In `tools` parameter? | How invoked |
+|---------|---------------------|-------------|
+| **Tools** | YES | Configured in `ClaudeAgentOptions` |
+| **Skills** | NO | By name in prompt (`/skill-name`) |
+| **Tasks** | NO | File path passed to `/task-execution` |
+
+**Key Point**: When using `tools={"type": "preset", "preset": "claude_code"}`:
+- You enable **all low-level tools** (Read, Write, Bash, etc.)
+- Skills are invoked separately via **prompt text**
+- Tasks are executed by the `/task-execution` skill using those tools
+
+---
+
+## Tools Configuration
 
 The Claude Agent SDK provides two parameters for controlling what tools an agent can use:
 
@@ -17,11 +84,7 @@ The Claude Agent SDK provides two parameters for controlling what tools an agent
 | `tools` | `list[str] \| ToolsPreset \| None` | `None` | Enable tool groups via preset |
 | `allowed_tools` | `list[str]` | `[]` (empty list) | Explicitly allow specific tools |
 
----
-
-## Default Values Explained
-
-### When You Create Options Without Parameters
+### Default Values Explained
 
 ```python
 options = ClaudeAgentOptions()  # No parameters set
@@ -78,9 +141,13 @@ async for message in query(
 | **File Operations** | `Read`, `Write`, `Edit`, `Glob` |
 | **Search** | `Grep` |
 | **Execution** | `Bash`, `BashOutput`, `KillBash` |
-| **AI** | `Task`, `Skill`, `AskUserQuestion` |
 | **External** | `WebSearch`, `WebFetch` |
 | **Other** | `NotebookEdit`, `TodoWrite`, `ExitPlanMode`, `ListMcpResources`, `ReadMcpResource` |
+
+**Important Notes:**
+- `Task` is NOT included in the `claude_code` preset - must be added explicitly via `allowed_tools=["Task"]`
+- `Skill` is NOT a tool - skills are enabled via `setting_sources=["project"]` and `cwd`, not via `allowed_tools`
+- `AskUserQuestion` is NOT included in the `claude_code` preset - must be added explicitly via `allowed_tools`
 
 ---
 
@@ -120,10 +187,10 @@ options = ClaudeAgentOptions(
     allowed_tools=["Task"]
 )
 
-# Enable skills
+# Enable skills (via setting_sources, NOT allowed_tools)
 options = ClaudeAgentOptions(
-    allowed_tools=["Skill"],
-    setting_sources=["project"]
+    setting_sources=["project"],
+    cwd="/path/to/project"  # Location of .claude/skills/
 )
 ```
 
@@ -177,9 +244,8 @@ options = ClaudeAgentOptions(
 
 ```python
 options = ClaudeAgentOptions(
-    allowed_tools=["Skill"],
-    setting_sources=["project"],
-    cwd="/path/to/project"
+    setting_sources=["project"],  # Load skills from .claude/skills/
+    cwd="/path/to/project"         # Skills directory location
 )
 ```
 
@@ -200,7 +266,7 @@ my_server = create_sdk_mcp_server(
 options = ClaudeAgentOptions(
     tools={"type": "preset", "preset": "claude_code"},
     mcp_servers={"my_server": my_server},
-    allowed_tools=["Skill", "mcp__my_server__my_tool"]
+    allowed_tools=["mcp__my_server__my_tool"]
 )
 ```
 
@@ -221,7 +287,6 @@ options = ClaudeAgentOptions(
 | `BashOutput` | Get background process output | `bash_id` | Process output |
 | `KillBash` | Stop background process | `shell_id` | Success message |
 | `Task` | Launch subagent | `description`, `prompt`, `subagent_type` | Agent result |
-| `Skill` | Invoke filesystem skill | (varies by skill) | Skill output |
 | `AskUserQuestion` | Prompt user for input | `questions` array | User answers |
 | `WebSearch` | Search the web | `query` | Search results |
 | `WebFetch` | Fetch web content | `url`, `prompt` | Analyzed content |
@@ -324,10 +389,10 @@ ClaudeAgentOptions(
     agents={...}
 )
 
-# SKILLS ONLY
+# SKILLS ONLY (skills enabled via setting_sources, not allowed_tools)
 ClaudeAgentOptions(
-    allowed_tools=["Skill"],
-    setting_sources=["project"]
+    setting_sources=["project"],
+    cwd="/path/to/project"
 )
 
 # CUSTOM MCP TOOLS
@@ -346,7 +411,7 @@ ClaudeAgentOptions(
 | Full development environment | `tools={"type": "preset", "preset": "claude_code"}` |
 | Production with restrictions | `allowed_tools=["specific", "tools"]` |
 | Subagent delegation | `allowed_tools=["Task"]` + `agents={...}` |
-| AI-powered skills | `allowed_tools=["Skill"]` + `setting_sources=["project"]` |
+| AI-powered skills | `setting_sources=["project"]` + `cwd` (skills are NOT tools) |
 | Custom operations | `mcp_servers={...}` + `allowed_tools=["mcp__*"]` |
 
 **Key Principle**: Both parameters default to **no tools**. You must explicitly enable tools to give the agent capabilities beyond text processing.

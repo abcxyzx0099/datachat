@@ -13,10 +13,50 @@ This skill guides you through using the **`survey_analyzer` CLI** to prepare SPS
 
 | Command | Purpose |
 |---------|---------|
+| `python -m survey_analyzer.data prep` | Read and filter in one command (RECOMMENDED) |
 | `python -m survey_analyzer data read` | Read SPSS file and extract metadata |
 | `python -m survey_analyzer data filter` | Filter variables by business rules |
 
 **Output**: `filtered_metadata.json` - Ready for Stage 2 (Table Specification)
+
+---
+
+## Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CHECK INPUT FILE                             │
+├─────────────────────────────────────────────────────────────────┤
+│  Check data/ directory for:                                       │
+│  • real-data.sav or survey.sav (SPSS data file)                  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+        ┌─────────────────────────────────────────┐
+        │ SPSS file FOUND?                        │
+        └─────────────────────────────────────────┘
+           │ YES                      │ NO
+           ↓                          ↓
+    Continue              ❌ STOP: "SPSS file not found"
+                              ↓
+        ┌─────────────────────────────────────────┐
+        │ BACKUP existing metadata?               │
+├─────────────────────────────────────────────────────────────────┤
+│  If filtered_metadata.json exists:                                  │
+│  • Create backup: filtered_metadata_YYYYMMDD_HHMMSS.json          │
+│  • Preserves history of all metadata versions                        │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+        ┌─────────────────────────────────────────┐
+        │ Run data prep command                   │
+        │ • Read SPSS file                        │
+        │ • Transform metadata                    │
+        │ • Filter variables                      │
+        └─────────────────────────────────────────┘
+                              ↓
+        ┌─────────────────────────────────────────┐
+        │ OUTPUT: filtered_metadata.json          │
+        └─────────────────────────────────────────┘
+```
 
 ---
 
@@ -37,11 +77,11 @@ python -m survey_analyzer data filter \
   --max-categories 30
 ```
 
-### Combined One-Liner
+### Combined One-Liner (Recommended)
 
 ```bash
-# Read and filter in one command (using output from read)
-python -m survey_analyzer data read \
+# Read and filter in one command (RECOMMENDED)
+python -m survey_analyzer.data prep \
   --sav-file data/survey.sav \
   --output-file output/filtered_metadata.json
 ```
@@ -52,6 +92,29 @@ python -m survey_analyzer data read \
 | **MetadataTransformer** | `survey_analyzer.io.metadata` | Transform and filter variables |
 
 **Output**: `filtered_metadata.json` - Ready for Stage 2 (Table Specification)
+
+---
+
+## Backup Step
+
+**⚠️ IMPORTANT: Always backup existing metadata before overwriting**
+
+When `output/filtered_metadata.json` already exists:
+
+1. **Create backup** with timestamp: `filtered_metadata_YYYYMMDD_HHMMSS.json`
+2. **Location**: Same directory as the original (`output/`)
+3. **Purpose**: Preserve history - never lose previous work
+
+**Backup command:**
+```bash
+# Use Bash tool to create backup
+cp output/filtered_metadata.json output/filtered_metadata_$(date +%Y%m%d_%H%M%S).json
+```
+
+**Backup file format:**
+- `filtered_metadata_20260220_143052.json`
+- `filtered_metadata_20260221_091234.json`
+- etc.
 
 ---
 
@@ -263,15 +326,15 @@ if __name__ == "__main__":
   },
   "variables": {
     "q1": {
-      "label": "Question 1: Satisfaction",
+      "variable_name": "q1",
+      "variable_label": "Question 1: Satisfaction",
       "value_labels": {
         "1": "Very Dissatisfied",
         "2": "Somewhat Dissatisfied",
         "3": "Neutral",
         "4": "Somewhat Satisfied",
         "5": "Very Satisfied"
-      },
-      "variable_type": "ordinal"
+      }
     }
   },
   "variable_names": ["q1", "q2", "q3", "gender", "age"],

@@ -206,43 +206,55 @@ The **table_specification.jsonc** is a consolidated artifact generated from `fil
 
 ```jsonc
 {
-  "spec_id": "crosstab_2024_consumer_survey_001",
-  "project_id": "proj_2024_china_consumer_insights",
-  "dataset_id": "ds_q1_2024_national_survey",
-  "description": "Cross-tabulation analysis for market research survey",
-
+  "metadata": {
+    "spec_id": "autosurvey_crosstab_20250220_152000",
+    "project_id": "proj_auto_survey_2024",
+    "dataset_id": "ds_real_data_national",
+    "description": "Auto-generated table specification from real-data.sav",
+    "generated_at": "2025-02-20T15:20:00",
+    "source_file": "real-data.sav",
+    "case_count": 13064
+  },
   "filter_clause": {
-    "age_min": 18,
-    "age_max": 65,
     "exclude_incomplete": true
   },
-
-  "weight_indicator": "weight1",
-
+  "weight_indicator": null,
   "row_indicators": [
     {
-      "indicator_code": "Q1_GENDER_RAW",
-      "question_code": "Q1",
-      "question_description": "Gender",
-      "question_label": "请问您的性别是？(单选)",
-      "question_type": "Single Choice",
-      "source_variables": ["Q1_GENDER"],
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "indicator_code": "Q2A_USAGE",
+      "indicator_label": "Q2A - 请问您要购买的新车通常将如何使用？",
+      "question_code": "Q2A",
+      "question_type": "Multiple Choice",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "Q2A_1_bin": "上/下班用",
+        "Q2A_2_bin": "和家庭成员/朋友/同事一起出外娱乐聚餐",
+        "Q2A_3_bin": "去购物"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "是",
+        "0": "否"
+      }
     }
   ],
-
   "column_indicators": [
     {
       "indicator_code": "GENDER",
-      "question_code": "Q1",
-      "question_description": "Gender",
-      "question_label": "性别",
+      "indicator_label": "S0 - 性别",
+      "question_code": "S0",
       "question_type": "Single Choice",
-      "source_variables": ["GENDER"],
-      "explicit": ["1", "2"],
-      "transformation_rules": null,
-      "statistic_type": "categorical"
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "S0_cat": "性别"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "男",
+        "2": "女"
+      }
     }
   ]
 }
@@ -252,21 +264,29 @@ The **table_specification.jsonc** is a consolidated artifact generated from `fil
 
 | Field | Description | Source |
 |-------|-------------|--------|
-| `spec_id`, `project_id`, `dataset_id` | Project identification | Excel Metadata sheet |
-| `filter_clause` | Data filtering rules | Excel Metadata sheet |
-| `weight_indicator` | Weight variable name | Excel Weight Indicator sheet |
+| `metadata` | Nested object containing project identification | Generated |
+| `metadata.spec_id` | Unique specification identifier | Generated |
+| `metadata.project_id` | Project identifier | Excel Metadata sheet |
+| `metadata.dataset_id` | Dataset identifier | Excel Metadata sheet |
+| `metadata.description` | Human-readable description | Excel Metadata sheet |
+| `metadata.generated_at` | ISO timestamp of generation | Generated |
+| `metadata.source_file` | Original SPSS filename | From Stage 1 |
+| `metadata.case_count` | Number of cases in dataset | From Stage 1 |
+| `filter_clause` | Data filtering rules (e.g., `exclude_incomplete`) | Excel Metadata sheet |
+| `weight_indicator` | Weight variable name or `null` | Excel Weight Indicator sheet |
 | `indicator_code` | Internal variable identifier | Generated |
+| `indicator_label` | Full Chinese question text | filtered_metadata.json |
 | `question_code` | SPSS variable prefix (Q1, S1, D1) | Excel Question Code column |
-| `question_description` | Concise English label | Excel Question Description column |
-| `question_label` | Full Chinese question text | filtered_metadata.json |
-| `question_type` | Single Choice, Multiple Choice, Matrix, etc. | Excel Question Type dropdown |
-| `source_variables` | Real SPSS variable names | Mapped from question_code + metadata |
-| `transformation_rules` | SPSS-compatible recoding syntax (parsed by Python) | Excel Transformation Rules column |
-| `statistic_type` | categorical or scalar | Excel Statistic Type column |
+| `question_type` | Single Choice, Multiple Choice, Matrix, Rating Scale, etc. | Excel Question Type dropdown |
+| `tabulation_type` | `categorical` or `scalar` | Excel Statistic Type column |
+| `tabulation_metric` | `column_percent` or `descriptive_statistics` | Derived from type |
+| `base_variables` | Dictionary of variable names to labels | Generated from metadata |
+| `base_variables_transformations` | SPSS transformation syntax or `null` | Excel Transformation Rules column |
+| `base_variables_value_labels` | Value labels mapping (`{"1": "Yes", "0": "No"}`) | filtered_metadata.json |
 
 ### 4.3 Transformation Rules Format
 
-The `transformation_rules` field uses **SPSS-compatible syntax** (parsed and applied by pure Python):
+The `base_variables_transformations` field uses **SPSS-compatible syntax** (parsed and applied by pure Python):
 
 | Format | Example | Description |
 |--------|---------|-------------|
@@ -277,7 +297,7 @@ The `transformation_rules` field uses **SPSS-compatible syntax** (parsed and app
 
 **Example:**
 ```jsonc
-"transformation_rules": "(1 THRU 2=1) (3=2) (4 THRU 5=3)"
+"base_variables_transformations": "(1 THRU 2=1) (3=2) (4 THRU 5=3)"
 ```
 
 Applied by `TransformationEngine` using pandas:
