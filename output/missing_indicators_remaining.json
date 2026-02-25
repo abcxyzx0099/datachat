@@ -1,0 +1,423 @@
+[
+  {
+    "indicator_code": "S17XB",
+    "indicator_label": "根据您的预算，生活方式等实际情况, 对于要购买的下辆车，您最希望购买什么车身类型的呢? 请选择您最想购买的车身类型 (单选)",
+    "question_code": "S17",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S17XB": "S17XB"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "三厢轿车",
+      "2": "跑车",
+      "3": "两厢轿车",
+      "4": "旅行车",
+      "5": "多功能车MPV",
+      "6": "多功能车MPV",
+      "7": "SUV - 2 排座",
+      "8": "SUV - 3 排座",
+      "9": "皮卡",
+      "10": "CDV",
+      "11": "商用/小面",
+      "12": "卡车",
+      "13": "其他"
+    }
+  },
+  {
+    "indicator_code": "S18HIDE",
+    "indicator_label": "自动圈选预算范围",
+    "question_code": "S18",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S18HIDE": "S18HIDE"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "3万元以下（含3万）",
+      "2": "3-5万元（含5万）",
+      "3": "5-10万元（含10万）",
+      "4": "10-15万元（含15万）",
+      "5": "15-20万元（含20万）",
+      "6": "20-25万元（含25万）",
+      "7": "25-30万元（含30万）",
+      "8": "30-40万元（含40万）",
+      "9": "40-50万元（含50万）",
+      "10": "50-70万元（含70万）",
+      "11": "70-100万元（含100万）",
+      "12": "100万元以上",
+      "99": "还没有具体预算"
+    }
+  },
+  {
+    "indicator_code": "S18X99_99",
+    "indicator_label": "还没有具体预算 ()",
+    "question_code": "S18",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S18X99_99": "S18X99_99"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "还没有具体预算 ()"
+    }
+  },
+  {
+    "indicator_code": "S19AX3",
+    "indicator_label": "请问您考虑的该车型是国产的还是进口的？（单选）",
+    "question_code": "S19A",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S19AX3": "S19AX3"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "国产的 (在国内生产的)",
+      "2": "进口的 (在国外生产的，价格一般比国内生产的贵)"
+    }
+  },
+  {
+    "indicator_code": "S1X1",
+    "indicator_label": "S1X1",
+    "question_code": "S1",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S1X1": "S1X1"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "18岁以下",
+      "2": "18-25岁",
+      "3": "26-35岁",
+      "4": "36-45岁",
+      "5": "46-55岁",
+      "6": "56-60岁",
+      "7": "60岁以上"
+    }
+  },
+  {
+    "indicator_code": "S2",
+    "indicator_label": "请问您家目前拥有几辆车呢？（单选）(这里指的是私家车，不包括卡车、皮卡、面包车等商用车)　",
+    "question_code": "S2",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S2": "S2"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "拥有 1 辆车",
+      "2": "拥有 2 辆车",
+      "3": "拥有 3 辆车",
+      "4": "拥有 4辆或以上的车",
+      "9": "没有"
+    }
+  },
+  {
+    "indicator_code": "S2A",
+    "indicator_label": "S2A",
+    "question_code": "S2A",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S2A": "S2A"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "首购者",
+      "2": "再购者"
+    }
+  },
+  {
+    "indicator_code": "S3",
+    "indicator_label": "请问您是否有驾照。（单选）",
+    "question_code": "S3",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S3": "S3"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "是",
+      "2": "否"
+    }
+  },
+  {
+    "indicator_code": "S4_1",
+    "indicator_label": "广告，媒体或公共关系公司或部门  (请问您或您家人是否在以下行业工作？(多选))",
+    "question_code": "S4",
+    "question_type": "Multiple Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S4_1": "S4_1"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "广告，媒体或公共关系公司或部门  (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  {
+    "indicator_code": "S4_2",
+    "indicator_label": "市场或市场研究公司或部门  (请问您或您家人是否在以下行业工作？(多选))",
+    "question_code": "S4",
+    "question_type": "Multiple Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S4_2": "S4_2"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "市场或市场研究公司或部门  (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  {
+    "indicator_code": "S4_3",
+    "indicator_label": "汽车行业（包括销售、制造、设计或维修/服务）  (请问您或您家人是否在以下行业工作？(多选))",
+    "question_code": "S4",
+    "question_type": "Multiple Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S4_3": "S4_3"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "汽车行业（包括销售、制造、设计或维修/服务）  (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  {
+    "indicator_code": "S4_4",
+    "indicator_label": "媒体工作：电视、电台、杂志、报纸、期刊等 (请问您或您家人是否在以下行业工作？(多选))",
+    "question_code": "S4",
+    "question_type": "Multiple Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S4_4": "S4_4"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "媒体工作：电视、电台、杂志、报纸、期刊等 (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  {
+    "indicator_code": "S4_5",
+    "indicator_label": "专业司机（如出租车司机、卡车司机等) (请问您或您家人是否在以下行业工作？(多选))",
+    "question_code": "S4",
+    "question_type": "Multiple Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S4_5": "S4_5"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "专业司机（如出租车司机、卡车司机等) (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  {
+    "indicator_code": "S4_6",
+    "indicator_label": "制药厂或药房 (请问您或您家人是否在以下行业工作？(多选))",
+    "question_code": "S4",
+    "question_type": "Multiple Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S4_6": "S4_6"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "制药厂或药房 (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  {
+    "indicator_code": "S4_7",
+    "indicator_label": "包装食品生产商或供应商 (请问您或您家人是否在以下行业工作？(多选))",
+    "question_code": "S4",
+    "question_type": "Multiple Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S4_7": "S4_7"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "包装食品生产商或供应商 (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  {
+    "indicator_code": "S4_8",
+    "indicator_label": "以上均无 (请问您或您家人是否在以下行业工作？(多选))",
+    "question_code": "S4",
+    "question_type": "Multiple Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S4_8": "S4_8"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "以上均无 (请问您或您家人是否在以下行业工作？(多选))"
+    }
+  },
+  {
+    "indicator_code": "S5X1C",
+    "indicator_label": "对于您提到的这辆^f('S5x1b').toBoolean()?f('S5x1b'):f('S5x1bOE_'+f('S5x1bOE').value()+'_other')^,请问它是什么车身类型？（单选）",
+    "question_code": "S5X1C",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S5X1C": "S5X1C"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "三厢轿车",
+      "2": "跑车",
+      "3": "两厢轿车",
+      "4": "旅行车",
+      "5": "多功能车MPV",
+      "6": "多功能车MPV",
+      "7": "SUV - 2 排座",
+      "8": "SUV - 3 排座",
+      "9": "皮卡",
+      "10": "CDV",
+      "11": "商用/小面",
+      "12": "卡车",
+      "13": "其他"
+    }
+  },
+  {
+    "indicator_code": "S5X1E",
+    "indicator_label": "对于您提到的这辆^f('S5x1a')^^f('S5x1b').toBoolean()?f('S5x1b'):f('S5x1bOE_'+f('S5x1bOE').value()+'_other')^，请问它是国产的还是进口的？(单选)",
+    "question_code": "S5X1E",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S5X1E": "S5X1E"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "国产的 (在国内生产的)",
+      "2": "进口的 (在国外生产的，价格一般比国内生产的贵)"
+    }
+  },
+  {
+    "indicator_code": "S5X2",
+    "indicator_label": "请问您于哪一年购买了现有的这辆车？(单选)",
+    "question_code": "S5X2",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S5X2": "S5X2"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "2021年",
+      "2": "2020年",
+      "3": "2019年",
+      "4": "2018年",
+      "5": "2017年",
+      "6": "2016年",
+      "7": "2015年",
+      "8": "2014年",
+      "9": "2013年",
+      "10": "2012年",
+      "11": "2011年",
+      "12": "2010年",
+      "13": "2010年以前"
+    }
+  },
+  {
+    "indicator_code": "S6",
+    "indicator_label": "您这辆^f('S5x1b').toBoolean()?f('S5x1b'):f('S5x1bOE_'+f('S5x1bOE').value()+'_other')^的引擎类型是什么？ (单选)",
+    "question_code": "S6",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S6": "S6"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "汽油自然吸气引擎",
+      "2": "汽油涡轮增压引擎",
+      "3": "柴油引擎",
+      "4": "油电混合动力(内燃机+电动机)",
+      "5": "插电式混合动力(内燃机+电动机，但需要充电插头进行充电，作为附加燃料),部分用电驱动",
+      "6": "100% 电动 (使用电池，需要充电插头进行充电)，全程用电驱动",
+      "7": "LPG(液化石油气)或CNG(压缩天然气)",
+      "98": "其他"
+    }
+  },
+  {
+    "indicator_code": "S7",
+    "indicator_label": "您这辆^f('S5x1b')^有几排座椅？ [单选]",
+    "question_code": "S7",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S7": "S7"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "一排",
+      "2": "两排",
+      "3": "三排"
+    }
+  },
+  {
+    "indicator_code": "S8",
+    "indicator_label": "对于这辆车，谁是主要的驾驶者？(单选)　",
+    "question_code": "S8",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S8": "S8"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "仅仅/大部分我自己",
+      "2": "我自己与家庭成员的使用时间差不多",
+      "3": "不是我自己"
+    }
+  },
+  {
+    "indicator_code": "S9",
+    "indicator_label": "买这辆车的时候，你扮演的角色是怎样的？（单选）　",
+    "question_code": "S9",
+    "question_type": "Single Choice",
+    "tabulation_type": "categorical",
+    "tabulation_metric": "column_percent",
+    "base_variables": {
+      "S9": "S9"
+    },
+    "base_variables_transformations": null,
+    "base_variables_value_labels": {
+      "1": "主要的决策者",
+      "2": "与他人共同决策",
+      "3": "我只提供参考意见，但不是决策者",
+      "4": "不参与决策"
+    }
+  }
+]
