@@ -1,10 +1,10 @@
 ---
 name: analyzer-crosstabs
-description: 'Stage 3: Cross-Tabulation Generation - Applies transformations, generates cross-tables for all 4 scenarios (categorical single/multi, scalar single/multi) with chi-square and Cramer''s V statistics. Use when table specification is ready and cross-tabulation with statistics is needed.'
+description: 'Stage 5: Cross-Tabulation Generation - Applies transformations, generates cross-tables for all 4 scenarios (categorical single/multi, scalar single/multi) with chi-square and Cramer''s V statistics. Use when table specification is ready and cross-tabulation with statistics is needed.'
 license: Apache-2.0
 ---
 
-# Stage 3: Cross-Tabulation Generation
+# Stage 5: Cross-Tabulation Generation
 
 Applies transformations, generates cross-tabulations for all 4 indicator scenarios with statistics.
 
@@ -18,7 +18,7 @@ Executes **Steps 7-9** of the workflow:
 ## When to Use
 
 Use this skill when:
-- Table specification is approved (Stage 2)
+- Table specification is approved (Stage 4)
 - Need to generate cross-tabulations for any indicator type
 - Calculate chi-square and Cramer's V statistics (for categorical × categorical)
 - Prepare data for significance filtering
@@ -54,14 +54,14 @@ Assistant: [Step 7] Applying transformations...
 
            Saved: cross_tables_with_stats.json
 
-           Stage 3 complete!
+           Stage 5 complete!
 ```
 
 ## Input
 
 | Input | Required | Description |
 |--------|-----------|-------------|
-| `--spec-file` | Yes | Path to table_specification.jsonc from Stage 2 |
+| `--spec-file` | Yes | Path to table_specification.jsonc from Stage 4 |
 | `--metadata-file` | Yes | Path to filtered_metadata.json from Stage 1 |
 | `--output-dir` | No | Output directory (default: output/) |
 
@@ -239,7 +239,7 @@ def export_results(tables, output_dir):
 ```python
 #!/usr/bin/env python3
 """
-Stage 3: Cross-Tabulation Generation
+Stage 5: Cross-Tabulation Generation
 Pure Python implementation using CrosstabProcessor.
 """
 
@@ -256,7 +256,7 @@ def stage3_crosstabs(
     output_dir: str = "output/"
 ):
     """
-    Execute Stage 3: Cross-tabulation with statistics.
+    Execute Stage 5: Cross-tabulation with statistics.
 
     Args:
         spec_file: Path to table_specification.jsonc
@@ -412,18 +412,18 @@ def apply_filter_clause(df, filter_clause):
 ## Data Flow
 
 ```
-Stage 2 Specification (table_specification.jsonc)
+Stage 4 Specification (table_specification.jsonc)
     ├─ questionnaire_questions[] (code, label, type)
     ├─ base_variables[] (name, label, suffix, values, generation)
     └─ tabulation_statistics{} (type, metric, explicit)
     ↓
 Stage 1 Metadata (filtered_metadata.json)
     ↓
-Stage 3 Crosstabs (CrosstabProcessor with 4 scenarios)
+Stage 5 Crosstabs (CrosstabProcessor with 4 scenarios)
     ↓
 cross_tables_with_stats.json
     ↓
-Stage 4 Statistics (filtering by p-value)
+Stage 6 Statistics (filtering by p-value)
 ```
 
 ## Error Handling
@@ -470,4 +470,4 @@ Stage 4 Statistics (filtering by p-value)
 
 ## Next Stage
 
-After Stage 3 completes, proceed to **Stage 4: Statistical Filtering** (`analyzer-statistics`)
+After Stage 5 completes, proceed to **Stage 6: Statistical Filtering** (`analyzer-statistics`)

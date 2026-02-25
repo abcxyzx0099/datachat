@@ -1,10 +1,10 @@
 ---
 name: stage4-statistics
-description: 'Stage 4: Statistical Filtering - Filters tables by significance (p-value) and generates summary report. Statistics are calculated in Stage 3. Use when cross-tables with statistics are ready and filtering is needed.'
+description: 'Stage 6: Statistical Filtering - Filters tables by significance (p-value) and generates summary report. Statistics are calculated in Stage 5. Use when cross-tables with statistics are ready and filtering is needed.'
 license: Apache-2.0
 ---
 
-# Stage 4: Statistical Filtering
+# Stage 6: Statistical Filtering
 
 Filters tables by significance and generates summary report.
 
@@ -14,12 +14,12 @@ Executes **Steps 10-11** of the workflow:
 - Step 10: Filter tables by p-value < 0.05
 - Step 11: Generate statistical summary report
 
-**Note:** Chi-square and Cramer's V statistics are calculated in **Stage 3**. This stage only filters and summarizes results.
+**Note:** Chi-square and Cramer's V statistics are calculated in **Stage 5**. This stage only filters and summarizes results.
 
 ## When to Use
 
 Use this skill when:
-- Cross-tables with statistics are computed (Stage 3)
+- Cross-tables with statistics are computed (Stage 5)
 - Need to filter tables for reporting
 - Preparing data for presentation generation
 - Generating statistical summary
@@ -48,14 +48,14 @@ Assistant: [Step 10] Filtering by significance...
            Saved: statistical_summary.json
            Saved: filtered_tables.json
 
-           Stage 4 complete!
+           Stage 6 complete!
 ```
 
 ## Input
 
 | Input | Required | Description |
 |--------|-----------|-------------|
-| `--crosstabs-file` | Yes | Path to cross_tables_with_stats.json from Stage 3 |
+| `--crosstabs-file` | Yes | Path to cross_tables_with_stats.json from Stage 5 |
 | `--threshold` | No | Significance threshold (default: 0.05) |
 | `--output-dir` | No | Output directory (default: output/) |
 
@@ -186,7 +186,7 @@ def generate_summary_report(summary_stats: Dict) -> Dict:
 ```python
 #!/usr/bin/env python3
 """
-Stage 4: Statistical Filtering
+Stage 6: Statistical Filtering
 Filters tables by significance and generates summary.
 """
 
@@ -199,7 +199,7 @@ def stage4_filtering(
     threshold: float = 0.05
 ):
     """
-    Execute Stage 4: Statistical filtering.
+    Execute Stage 6: Statistical filtering.
 
     Args:
         crosstabs_file: Path to cross_tables_with_stats.json
@@ -303,12 +303,12 @@ def stage4_filtering(
 ## Data Flow
 
 ```
-Stage 3 Crosstabs (with statistics)
+Stage 5 Crosstabs (with statistics)
     ↓ (cross_tables_with_stats.json)
-Stage 4 Filtering
+Stage 6 Filtering
     ↓ (filtered_tables.json)
     ↓ (statistical_summary.json)
-Stage 5 Reports
+Stage 7 Reports
 ```
 
 ## Error Handling
@@ -321,4 +321,4 @@ Stage 5 Reports
 
 ## Next Stage
 
-After Stage 4 completes, proceed to **Stage 5: Reporting** (`stage5-reports`)
+After Stage 6 completes, proceed to **Stage 7: Reporting** (`analyzer-reports`)

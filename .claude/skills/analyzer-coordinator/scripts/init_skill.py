@@ -62,7 +62,7 @@ def main():
         readme.write_text(
             f"# {skill_dir.name} Skill\n\n"
             f"\n"
-            f"This skill coordinates the 5-stage survey analysis workflow.\n\n"
+            f"This skill coordinates the 7-stage survey analysis workflow.\n\n"
             f"## Usage\n\n"
             f"```bash\n"
             f"  survey-coordinator --sav-file data/survey.sav --output-dir output/\n"

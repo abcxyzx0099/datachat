@@ -57,30 +57,43 @@ Design and implement an automated workflow for market research survey data analy
 │                    survey_analyzer Library                        │
 │  (Pure Python: Data Processing & Computation)                    │
 ├─────────────────────────────────────────────────────────────────────────┤
-│ specification/  │ Schema & validator for table_specification.json      │
-│ io/             │ SPSS file I/O (pyreadstat) and metadata handling      │
-│ analysis/       │ Transformation engine, crosstabs, and indicators      │
-│ filtering/      │ Significance filtering                                  │
-│ reporting/      │ PowerPoint and HTML generation                       │
+│ indicators/         │ Indicator generation (Stage 3)                    │
+│   ├── generator.py    │   - Batch processing with checkpointing        │
+│   ├── batch_processor.py │   - No is_row/is_column fields (added later)   │
+│   ├── system_prompt.md  │   - Few-shot examples for LLM                 │
+│   ├── user_prompt.md    │   - Prompts for indicator generation         │
+│   └── examples.jsonc    │   - Example indicators for reference          │
+│                                                                              │
+│ tablespec/           │ Table specification (Stage 4) - LLM classification │
+│   ├── tablespec.py     │   - Classifies indicators (is_row/is_column)    │
+│   ├── system_prompt.md  │   - Prompts for classification               │
+│   └── user_prompt.md    │   - Builds table_specification.jsonc         │
+│                                                                              │
+│ io/                 │ SPSS file I/O and metadata handling               │
+│ analysis/           │ Transformation engine and crosstab generation      │
+│ filtering/          │ Significance filtering                           │
+│ reporting/          │ PowerPoint and HTML generation                    │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 2.2 Skill Responsibilities
 
 | Skill | Stage | Purpose | Type |
-|--------|---------|-----------|------|
-| **stage1-data-prep** | 1 | Load .sav, extract/filter metadata | Deterministic |
-| **stage2-spec-gen** | 2 | Generate/validate table specification (AI-orchestrated) | AI |
-| **stage3-crosstabs** | 3 | Recoding, indicators, cross-tables | Deterministic |
-| **stage4-statistics** | 4 | Statistical analysis, filtering | Deterministic |
-| **stage5-reports** | 5 | PowerPoint, HTML dashboard | Deterministic |
-| **survey-coordinator** | All | Orchestrate complete 5-stage pipeline | Coordinator |
+|--------|-------|-----------|------|
+| **analyzer-data-prep** | 1 | Load .sav, extract/filter metadata | Deterministic |
+| **analyzer-question-extraction** | 2 | Extract question codes, group variables | Deterministic |
+| **analyzer-indicator-generation** | 3 | Generate indicators (batch, AI-orchestrated) | AI |
+| **analyzer-tablespec** | 4 | Classify indicators + build table spec (AI) | AI |
+| **analyzer-crosstabs** | 5 | Recoding, crosstabs with statistics | Deterministic |
+| **analyzer-statistics** | 6 | Statistical analysis, filtering | Deterministic |
+| **analyzer-reports** | 7 | PowerPoint, HTML dashboard | Deterministic |
+| **analyzer-coordinator** | All | Orchestrate complete pipeline | Coordinator |
 
 ---
 
 ## 3. Data Flow
 
-The workflow consists of **13 steps** organized into **5 stages**:
+The workflow consists of **7 stages** with clear separation of concerns:
 
 ### 3.1 Workflow Diagram
 
@@ -105,43 +118,58 @@ flowchart TD
         metadata[("filtered_metadata")]:::artifactStyle
     end
 
-    %% STAGE 2: Table Specification
+    %% STAGE 2: Question Extraction
     subgraph STAGE2[" "]
         direction TB
-        stage2_label["**STAGE 2: Table Specification**"]:::stageLabelStyle
+        stage2_label["**STAGE 2: Question Extraction**"]:::stageLabelStyle
 
-        excel[("table-specification.xlsx")]:::artifactStyle
-        S4["Step 4<br/>Generate Table Specification<br/>(Skill: AI-orchestrated)"]:::processingBlue
-        S5["Step 5<br/>Validate Specification"]:::processingOrange
-        S6["Step 6<br/>Review & Approve"]:::processingPurple
+        S4["Step 4<br/>Extract Question Codes<br/>& Group Variables"]:::processingGreen
+        questions[("questions.json")]:::artifactStyle
+    end
+
+    %% STAGE 3: Indicator Generation
+    subgraph STAGE3[" "]
+        direction TB
+        stage3_label["**STAGE 3: Indicator Generation**"]:::stageLabelStyle
+
+        S5["Step 5<br/>Generate Indicators<br/>(Question by Question - AI)"]:::processingBlue
+        indicators[("indicators.json")]:::artifactStyle
+    end
+
+    %% STAGE 4: Table Specification (Combined)
+    subgraph STAGE4[" "]
+        direction TB
+        stage4_label["**STAGE 4: Table Specification**"]:::stageLabelStyle
+
+        S6["Step 6<br/>LLM Classify Indicators<br/>(is_row/is_column)"]:::processingBlue
+        S7["Step 7<br/>Build Specification<br/>(row_indicators/column_indicators)"]:::processingGreen
         tableSpec[("table_specification.jsonc")]:::artifactStyle
     end
 
-    %% STAGE 3: Cross-Table Generation
-    subgraph STAGE3[" "]
+    %% STAGE 5: Cross-Table Generation
+    subgraph STAGE5[" "]
         direction TB
-        stage3_label["**STAGE 3: Cross-Table Generation**"]:::stageLabelStyle
+        stage5_label["**STAGE 5: Cross-Table Generation**"]:::stageLabelStyle
 
-        S7["Step 7<br/>Apply Transformations<br/>(Recoding, Computing)"]:::processingGreen
-        S8["Step 8<br/>Generate Cross-Tables<br/>& Statistics"]:::processingGreen
-        S9["Step 9<br/>Export Results to JSON/CSV"]:::processingGreen
-        crosstabs[("cross_tables.json<br/>cross_tables.csv")]:::artifactStyle
+        S8["Step 8<br/>Apply Transformations<br/>(Recoding, Computing)"]:::processingGreen
+        S9["Step 9<br/>Generate Cross-Tables<br/>& Statistics"]:::processingGreen
+        crosstabs[("cross_tables.json")]:::artifactStyle
     end
 
-    %% STAGE 4: Statistical Analysis
-    subgraph STAGE4[" "]
+    %% STAGE 6: Statistical Analysis
+    subgraph STAGE6[" "]
         direction TB
-        stage4_label["**STAGE 4: Statistical Analysis**"]:::stageLabelStyle
+        stage6_label["**STAGE 6: Statistical Analysis**"]:::stageLabelStyle
 
         S10["Step 10<br/>Statistical Analysis"]:::processingGreen
         S11["Step 11<br/>Filter Significant Tables"]:::processingGreen
-        results[("filtered_tables<br/>statistical_summary")]:::artifactStyle
+        results[("filtered_results.json")]:::artifactStyle
     end
 
-    %% STAGE 5: Reporting
-    subgraph STAGE5[" "]
+    %% STAGE 7: Reporting
+    subgraph STAGE7[" "]
         direction TB
-        stage5_label["**STAGE 5: Reporting**"]:::stageLabelStyle
+        stage7_label["**STAGE 7: Reporting**"]:::stageLabelStyle
 
         S12["Step 12<br/>Generate PowerPoint"]:::processingGreen
         S13["Step 13<br/>Generate HTML Dashboard"]:::processingGreen
@@ -150,20 +178,16 @@ flowchart TD
 
     %% Data flow edges
     S1 --> S2 --> S3 --> metadata
-    metadata ==> S4
-    excel ==> S4
-    S4 --> S5
-    S5 -->|Valid| S6
-    S5 -.->|Invalid| S4
-    S6 -->|Approve| tableSpec
-    S6 -.->|Reject| S4
+    metadata ==> S4 --> questions
+    questions ==> S5 --> indicators
+    indicators ==> S6 --> S7 --> tableSpec
 
-    tableSpec ==> S7 --> S8 --> S9 --> crosstabs
+    tableSpec ==> S8 --> S9 --> crosstabs
 
     crosstabs ==> S10 --> S11 --> results
 
-    results ==> S12 --> ppt
-    results ==> S13 --> html
+    results ==> S12
+    results ==> S13 --> outputs
 ```
 
 **Legend:**
@@ -175,45 +199,52 @@ flowchart TD
 
 | Color | Meaning | Examples |
 |-------|---------|----------|
-| 🔵 **Blue** | AI-Orchestrated Processing (Skill generates artifact) | Step 4 |
-| 🟢 **Green** | Deterministic Processing (Python library, pandas, scipy) | Steps 1-3, 7-13 |
-| 🟠 **Orange** | Validation (Python checks syntax/references) | Step 5 |
-| 🟣 **Purple** | Review (Human validates semantic quality) | Step 6 |
+| 🔵 **Blue** | AI-Orchestrated Processing (LLM generates artifact) | Steps 5, 6 |
+| 🟢 **Green** | Deterministic Processing (Python library, pandas, scipy) | All other steps |
 | 🟡 **Yellow** | Data Artifacts (Files and outputs) | `.sav`, `.csv`, `.json`, `.pptx`, `.html` |
 
 **Line Styles:**
 - `-->` Solid line: Forward flow to next step
 - `==>` Thick line: Major data flow between stages
-- `-.->` Dotted line: Feedback loop (validation/review triggering regeneration)
 
 ### 3.2 Stage Descriptions
 
 | Stage | Steps | Description | Input | Output |
 |-------|--------|-------------|-------|--------|
 | **1** | 1-3 | Load data, extract/transform/filter metadata | .sav file | `filtered_metadata.json` |
-| **2** | 4-6 | Generate, validate, review table specification (AI-orchestrated) | `filtered_metadata.json` + `table-specification.xlsx` | `table_specification.jsonc` |
-| **3** | 7-9 | Apply transformations, generate cross-tables with statistics | `table_specification.jsonc` | `cross_tables.json`, `cross_tables.csv` |
-| **4** | 10-11 | Statistical analysis and significance filtering | `cross_tables.json` | `filtered_tables.json`, `statistical_summary.json` |
-| **5** | 12-13 | Generate PowerPoint and HTML dashboard | Filtered results | `presentation.pptx`, `dashboard.html` |
+| **2** | 4 | Extract question codes, group variables by question | `filtered_metadata.json` | `questions.json` |
+| **3** | 5 | Generate indicators (batch, AI-orchestrated) | `questions.json` + `filtered_metadata.json` | `indicators.json` |
+| **4** | 6-7 | LLM classify + build table specification | `indicators.json` | `table_specification.jsonc` |
+| **5** | 8-9 | Apply transformations, generate cross-tables with statistics | `table_specification.jsonc` | `cross_tables.json` |
+| **6** | 10-11 | Statistical analysis and significance filtering | `cross_tables.json` | `filtered_results.json` |
+| **7** | 12-13 | Generate PowerPoint and HTML dashboard | `filtered_results.json` | `presentation.pptx`, `dashboard.html` |
 
 ---
 
 ## 4. Table Specification
 
-The **table_specification.jsonc** is a consolidated artifact generated from `filtered_metadata.json` and user-edited `table-specification.xlsx`.
+The **table_specification.jsonc** is the final artifact for cross-tabulation analysis, generated by Stage 4.
 
 ### 4.1 Structure
 
 ```jsonc
 {
   "metadata": {
-    "spec_id": "autosurvey_crosstab_20250220_152000",
-    "project_id": "proj_auto_survey_2024",
-    "dataset_id": "ds_real_data_national",
-    "description": "Auto-generated table specification from real-data.sav",
-    "generated_at": "2025-02-20T15:20:00",
-    "source_file": "real-data.sav",
-    "case_count": 13064
+    "spec_id": "tablespec_proj_survey_20260225_200000",
+    "project_id": "proj_survey",
+    "dataset_id": "ds_survey_data",
+    "description": "Table specification for cross-tabulation analysis",
+    "generated_at": "2026-02-25T20:00:00",
+    "source_file": "survey_data.sav",
+    "case_count": 13064,
+    "indicator_counts": {
+      "total": 92,
+      "row": 85,
+      "column": 7,
+      "both": 0
+    },
+    "row_indicator_codes": ["Q10_ENGINE", "Q2A_USAGE", ...],
+    "column_indicator_codes": ["GENDER", "AGE", "CITY_TIER", ...]
   },
   "filter_clause": {
     "exclude_incomplete": true
@@ -229,14 +260,15 @@ The **table_specification.jsonc** is a consolidated artifact generated from `fil
       "tabulation_metric": "column_percent",
       "base_variables": {
         "Q2A_1_bin": "上/下班用",
-        "Q2A_2_bin": "和家庭成员/朋友/同事一起出外娱乐聚餐",
-        "Q2A_3_bin": "去购物"
+        "Q2A_2_bin": "和家庭成员/朋友/同事一起出外娱乐聚餐"
       },
       "base_variables_transformations": null,
       "base_variables_value_labels": {
         "1": "是",
         "0": "否"
-      }
+      },
+      "is_row": true,
+      "is_column": false
     }
   ],
   "column_indicators": [
@@ -254,7 +286,9 @@ The **table_specification.jsonc** is a consolidated artifact generated from `fil
       "base_variables_value_labels": {
         "1": "男",
         "2": "女"
-      }
+      },
+      "is_row": false,
+      "is_column": true
     }
   ]
 }
@@ -266,44 +300,25 @@ The **table_specification.jsonc** is a consolidated artifact generated from `fil
 |-------|-------------|--------|
 | `metadata` | Nested object containing project identification | Generated |
 | `metadata.spec_id` | Unique specification identifier | Generated |
-| `metadata.project_id` | Project identifier | Excel Metadata sheet |
-| `metadata.dataset_id` | Dataset identifier | Excel Metadata sheet |
-| `metadata.description` | Human-readable description | Excel Metadata sheet |
+| `metadata.project_id` | Project identifier | Configurable |
+| `metadata.dataset_id` | Dataset identifier | Configurable |
+| `metadata.description` | Human-readable description | Generated |
 | `metadata.generated_at` | ISO timestamp of generation | Generated |
 | `metadata.source_file` | Original SPSS filename | From Stage 1 |
 | `metadata.case_count` | Number of cases in dataset | From Stage 1 |
-| `filter_clause` | Data filtering rules (e.g., `exclude_incomplete`) | Excel Metadata sheet |
-| `weight_indicator` | Weight variable name or `null` | Excel Weight Indicator sheet |
+| `filter_clause` | Data filtering rules (e.g., `exclude_incomplete`) | Default |
+| `weight_indicator` | Weight variable name or `null` | Optional |
 | `indicator_code` | Internal variable identifier | Generated |
 | `indicator_label` | Full Chinese question text | filtered_metadata.json |
-| `question_code` | SPSS variable prefix (Q1, S1, D1) | Excel Question Code column |
-| `question_type` | Single Choice, Multiple Choice, Matrix, Rating Scale, etc. | Excel Question Type dropdown |
-| `tabulation_type` | `categorical` or `scalar` | Excel Statistic Type column |
-| `tabulation_metric` | `column_percent` or `descriptive_statistics` | Derived from type |
+| `question_code` | SPSS variable prefix (Q1, S1, D1) | extracted |
+| `question_type` | Single Choice, Multiple Choice, Matrix, Rating Scale, etc. | LLM classified |
+| `tabulation_type` | `categorical` or `scalar` | LLM classified |
+| `tabulation_metric` | `column_percent` or `descriptive_statistics` | LLM classified |
 | `base_variables` | Dictionary of variable names to labels | Generated from metadata |
-| `base_variables_transformations` | SPSS transformation syntax or `null` | Excel Transformation Rules column |
+| `base_variables_transformations` | SPSS transformation syntax or `null` | Optional |
 | `base_variables_value_labels` | Value labels mapping (`{"1": "Yes", "0": "No"}`) | filtered_metadata.json |
-
-### 4.3 Transformation Rules Format
-
-The `base_variables_transformations` field uses **SPSS-compatible syntax** (parsed and applied by pure Python):
-
-| Format | Example | Description |
-|--------|---------|-------------|
-| Single value | `(3=2)` | Recode value 3 to 2 |
-| Range | `(1 THRU 3=99)` | Recode values 1-3 to 99 |
-| Compute | `COMPUTE var = a + b` | Calculate new variable |
-| Null | `null` | No transformation |
-
-**Example:**
-```jsonc
-"base_variables_transformations": "(1 THRU 2=1) (3=2) (4 THRU 5=3)"
-```
-
-Applied by `TransformationEngine` using pandas:
-```python
-# Parsed and applied as: series.map({1: 1, 2: 1, 3: 2, 4: 3, 5: 3})
-```
+| `is_row` | Boolean: true if used as row variable | LLM classified |
+| `is_column` | Boolean: true if used as column variable | LLM classified |
 
 ---
 
@@ -312,77 +327,134 @@ Applied by `TransformationEngine` using pandas:
 ### Stage 1: Data Preparation (Steps 1-3)
 
 | Step | Skill | Module | Purpose | Type |
-|------|--------|---------|------|
-| 1 | `stage1-data-prep` | `survey_analyzer.io.SPSSReader` | Load .sav file | Deterministic |
-| 2 | `stage1-data-prep` | `survey_analyzer.io.MetadataTransformer` | Extract & transform metadata | Deterministic |
-| 3 | `stage1-data-prep` | `survey_analyzer.io.MetadataTransformer` | Filter variables | Deterministic |
+|------|--------|---------|------|----------|
+| 1 | `analyzer-data-prep` | `survey_analyzer.io.SPSSReader` | Load .sav file | Deterministic |
+| 2 | `analyzer-data-prep` | `survey_analyzer.io.MetadataTransformer` | Extract & transform metadata | Deterministic |
+| 3 | `analyzer-data-prep` | `survey_analyzer.io.MetadataTransformer` | Filter variables | Deterministic |
 
-**Skill:** `stage1-data-prep` handles all Stage 1 operations.
+**Skill:** `analyzer-data-prep` handles all Stage 1 operations.
 
 **Output:** `filtered_metadata.json`
 
-### Stage 2: Table Specification (Steps 4-6)
+---
 
-| Step | Skill | Purpose | Type |
-|------|--------|---------|------|
-| 4 | `stage2-spec-gen` | Generate table_specification.jsonc (AI-orchestrated) | AI |
-| 5 | `stage2-spec-gen` | Validate specification | Validation |
-| 6 | Human review via skill interaction | Approve/reject specification | Review |
+### Stage 2: Question Extraction (Step 4)
 
-**Skill:** `stage2-spec-gen` handles all Stage 2 operations.
+| Step | Skill | Module | Purpose | Type |
+|------|--------|---------|------|----------|
+| 4 | `analyzer-question-extraction` | Direct programming | Extract question codes, group variables | Deterministic |
+
+**Skill:** `analyzer-question-extraction` handles question code extraction and grouping.
+
+**Input:** `filtered_metadata.json`
+
+**Output:** `questions.json`
+
+**Why This Step?**
+- Enables **batch processing** instead of single large API call
+- Groups variables by question code for organized processing
+- Provides checkpointing capability for indicator generation
+
+---
+
+### Stage 3: Indicator Generation (Step 5)
+
+| Step | Skill | Module | Purpose | Type |
+|------|--------|---------|------|----------|
+| 5 | `analyzer-indicator-generation` | `indicators.generator.IndicatorGenerator` | Generate indicators (batch, AI-orchestrated) | AI |
+
+**Skill:** `analyzer-indicator-generation` handles indicator generation.
 
 **Inputs:**
+- `questions.json` (from Stage 2)
 - `filtered_metadata.json` (from Stage 1)
-- `table-specification.xlsx` (user-edited Excel file)
+
+**Output:** `indicators.json` (WITHOUT `is_row`/`is_column` fields)
+
+**Batch Processing Approach:**
+```
+For each question in questions.json:
+    1. Generate indicator(s) for that question
+    2. Append to indicators.json
+    3. Save checkpoint after each question
+```
+
+**Key Points:**
+- **No is_row/is_column fields** added at this stage
+- Those fields are added in Stage 4 by the LLM classifier
+- Enables clean separation of concerns
+
+---
+
+### Stage 4: Table Specification (Steps 6-7) - COMBINED
+
+| Step | Skill | Module | Purpose | Type |
+|------|--------|---------|------|----------|
+| 6 | `analyzer-tablespec` | `tablespec.tablespec.TableSpec` | LLM classify indicators (is_row/is_column) | AI |
+| 7 | `analyzer-tablespec` | `tablespec.tablespec.TableSpec` | Build table specification | Deterministic |
+
+**Skill:** `analyzer-tablespec` handles both classification and building.
+
+**Input:** `indicators.json` (from Stage 3)
 
 **Output:** `table_specification.jsonc`
 
-**Why AI Agent?**
-- Requires intelligent interpretation of user selections from Excel
-- Mapping question codes (Q1, S1) to real variable names from metadata
-- Understanding transformation rule descriptions and validating semantic correctness
-- Generating consolidated table_specification.jsonc from multiple sources
+**Combined Process:**
+```
+1. LLM Classify (Step 6)
+   - Create concise version of indicators (saves tokens)
+   - LLM determines is_row/is_column for each indicator
+   - Add classification fields to indicators
 
-**Feedback Loop:** If validation fails or review rejects, regenerate from Step 4.
+2. Build Specification (Step 7)
+   - Separate into row_indicators and column_indicators
+   - Add metadata
+   - Write table_specification.jsonc
+```
 
-### Stage 3: Cross-Table Generation (Steps 7-9)
+**Why Combined?**
+- No intermediate `indicators_classified.json` file needed
+- Simpler workflow (one skill call instead of two)
+- Classification and building are one logical unit
+
+---
+
+### Stage 5: Cross-Table Generation (Steps 8-9)
 
 | Step | Skill | Module | Purpose | Type |
-|------|--------|---------|------|
-| 7 | `stage3-crosstabs` | `survey_analyzer.analysis.transformation.TransformationEngine` | Apply recoding and transformations | Deterministic |
-| 8 | `stage3-crosstabs` | `survey_analyzer.analysis.crosstab.CrossTabGenerator` | Generate cross-tables with statistics | Deterministic |
-| 9 | `stage3-crosstabs` | Exporter module | Export cross-tables to JSON/CSV | Deterministic |
+|------|--------|---------|------|----------|
+| 8 | `analyzer-crosstabs` | `survey_analyzer.analysis.transformation.TransformationEngine` | Apply recoding and transformations | Deterministic |
+| 9 | `analyzer-crosstabs` | `survey_analyzer.analysis.crosstab.CrossTabGenerator` | Generate cross-tables with statistics | Deterministic |
 
-**Skill:** `stage3-crosstabs` handles all Stage 3 operations.
+**Skill:** `analyzer-crosstabs` handles all Stage 5 operations.
 
 **Input:** `table_specification.jsonc`
 
-**Outputs:** `cross_tables.json`, `cross_tables.csv`
+**Outputs:** `cross_tables.json`
 
-**Why Direct Programming?**
-- Deterministic transformation and crosstab generation using pandas
-- Chi-square test and Cramer's V calculation using scipy
-- No AI interpretation needed
+---
 
-### Stage 4: Statistical Analysis (Steps 10-11)
+### Stage 6: Statistical Analysis (Steps 10-11)
 
 | Step | Skill | Module | Purpose | Type |
-|------|--------|---------|------|
-| 10 | `stage4-statistics` | `survey_analyzer.analysis.statistics` | Calculate statistics (chi-square, Cramer's V) | Deterministic |
-| 11 | `stage4-statistics` | `survey_analyzer.filtering.significance` | Filter significant tables by p-value | Deterministic |
+|------|--------|---------|------|----------|
+| 10 | `analyzer-statistics` | `survey_analyzer.analysis.statistics` | Calculate statistics (chi-square, Cramer's V) | Deterministic |
+| 11 | `analyzer-statistics` | `survey_analyzer.filtering.significance` | Filter significant tables by p-value | Deterministic |
 
-**Skill:** `stage4-statistics` handles all Stage 4 operations.
+**Skill:** `analyzer-statistics` handles all Stage 6 operations.
 
-**Outputs:** `statistical_summary.json`, `filtered_tables.json`
+**Outputs:** `filtered_results.json`
 
-### Stage 5: Reporting (Steps 12-13)
+---
+
+### Stage 7: Reporting (Steps 12-13)
 
 | Step | Skill | Module | Purpose | Type |
-|------|--------|---------|------|
-| 12 | `stage5-reports` | `survey_analyzer.reporting.powerpoint` | Create .pptx | Deterministic |
-| 13 | `stage5-reports` | `survey_analyzer.reporting.dashboard` | Create .html | Deterministic |
+|------|--------|---------|------|----------|
+| 12 | `analyzer-reports` | `survey_analyzer.reporting.powerpoint` | Create .pptx | Deterministic |
+| 13 | `analyzer-reports` | `survey_analyzer.reporting.dashboard` | Create .html | Deterministic |
 
-**Skill:** `stage5-reports` handles all Stage 5 operations.
+**Skill:** `analyzer-reports` handles all Stage 7 operations.
 
 **Outputs:** `presentation.pptx`, `dashboard.html`
 
@@ -392,18 +464,21 @@ Applied by `TransformationEngine` using pandas:
 
 | Term | Definition |
 |------|------------|
-| **Table Specification (JSONC)** | Consolidated JSONC artifact containing row/column indicators with transformation rules |
-| **Excel Specification** | User-friendly `table-specification.xlsx` for editing indicators, metadata, and settings |
-| **question_code** | SPSS variable prefix (Q1, Q2, S1, S2, D1, D2) from Excel |
-| **question_label** | Full Chinese question text from `filtered_metadata.json` |
-| **question_description** | Concise English label from Excel |
-| **question_type** | Single Choice, Multiple Choice, Matrix, Numeric Input, Rating Scale (dropdown in Excel) |
-| **transformation_rules** | SPSS-compatible recoding syntax (parsed by Python) |
-| **statistic_type** | `categorical` (column percent) or `scalar` (mean, median, min, max) |
-| **AI-orchestrated step** | Workflow step where Skill uses AI to generate content (Stage 2) |
-| **Deterministic processing** | Pure Python functions with predictable outputs (Stages 1, 3, 4, 5) |
+| **Questions JSON** | Artifact grouping variables by question_code for batch processing (`questions.json`) |
+| **Indicators JSON** | Artifact with generated indicators WITHOUT `is_row`/`is_column` fields (`indicators.json`) |
+| **Table Specification (JSONC)** | Final artifact with classified `row_indicators` and `column_indicators` arrays (`table_specification.jsonc`) |
+| **question_code** | SPSS variable prefix (Q1, Q2, S1, S2) - extracted from variable names |
+| **question_label** | Full question text from `filtered_metadata.json` |
+| **is_row** | Boolean field marking indicator as row variable (dependent variable in crosstab) |
+| **is_column** | Boolean field marking indicator as column variable (independent/breakout variable in crosstab) |
+| **question_type** | Single Choice, Multiple Choice, Matrix, Rating Scale, etc. (LLM classified) |
+| **tabulation_type** | `categorical` or `scalar` (LLM classified) |
+| **tabulation_metric** | `column_percent` or `descriptive_statistics` |
+| **AI-orchestrated step** | Workflow step where Skill uses LLM to generate content (Stages 3, 4) |
+| **Deterministic processing** | Pure Python functions with predictable outputs (Stages 1, 2, 5, 6, 7) |
+| **Batch processing** | Processing indicators question-by-question instead of single large API call |
+| **Checkpointing** | Saving progress after each question for resume capability |
 | **Skill orchestration** | Claude Code Skills coordinating library module execution |
-| **Specification validation** | Checking JSONC structure, variable references, and business logic |
 
 ---
 

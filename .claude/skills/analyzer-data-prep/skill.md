@@ -17,7 +17,7 @@ This skill guides you through using the **`survey_analyzer` CLI** to prepare SPS
 | `python -m survey_analyzer data read` | Read SPSS file and extract metadata |
 | `python -m survey_analyzer data filter` | Filter variables by business rules |
 
-**Output**: `filtered_metadata.json` - Ready for Stage 2 (Table Specification)
+**Output**: `filtered_metadata.json` - Ready for Stage 2 (Question Extraction)
 
 ---
 
@@ -62,12 +62,18 @@ This skill guides you through using the **`survey_analyzer` CLI** to prepare SPS
 
 ## Quick Start
 
+**Important**: Run commands from the **project root directory** (where `data/` and `output/` are located):
+
+```bash
+cd /home/admin/workspaces/datachat
+```
+
 ### CLI Usage (Recommended)
 
 ```bash
 # Read SPSS file and extract metadata (encoding auto-detected)
 python -m survey_analyzer data read \
-  --sav-file data/survey.sav \
+  --sav-file data/real-data.sav \
   --output-file output/metadata.json
 
 # Filter variables by category count
@@ -91,7 +97,7 @@ python -m survey_analyzer.data prep \
 | **SPSSReader** | `survey_analyzer.io.reader` | Read SPSS (.sav) files |
 | **MetadataTransformer** | `survey_analyzer.io.metadata` | Transform and filter variables |
 
-**Output**: `filtered_metadata.json` - Ready for Stage 2 (Table Specification)
+**Output**: `filtered_metadata.json` - Ready for Stage 2 (Question Extraction)
 
 ---
 
@@ -397,7 +403,7 @@ pip install pyreadstat pandas
 
 | Skill | Next Stage |
 |-------|------------|
-| `analyzer-tablespec-gen` | Stage 2: Table Specification (uses filtered_metadata.json) |
+| `analyzer-question-extraction` | Stage 15: Question Extraction (uses filtered_metadata.json) |
 
 ---
 

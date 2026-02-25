@@ -1,0 +1,180 @@
+{
+  "metadata": {
+    "spec_id": "indicator_examples_20260225",
+    "description": "Example indicators demonstrating common types for indicator generation skill"
+  },
+
+  "indicators": [
+    // ============================================
+    // TYPE 1: Single Choice
+    // ============================================
+    {
+      "indicator_code": "Q10_ENGINE",
+      "indicator_label": "Q10 - 排量偏好",
+      "question_code": "Q10",
+      "question_type": "Single Choice",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "Q10_cat": "排量"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "1.0L",
+        "2": "1.2L",
+        "3": "1.4L",
+        "4": "1.5L",
+        "5": "1.6L",
+        "6": "1.8L",
+        "7": "2.0L",
+        "8": "2.4L",
+        "9": "2.5T",
+        "10": "3.0L"
+      }
+    },
+
+    // ============================================
+    // TYPE 2: Multiple Choice (Binary Variables)
+    // ============================================
+    {
+      "indicator_code": "Q2A_USAGE",
+      "indicator_label": "Q2A - 请问您要购买的新车通常将如何使用？",
+      "question_code": "Q2A",
+      "question_type": "Multiple Choice",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "Q2A_1_bin": "上/下班用",
+        "Q2A_2_bin": "和家庭成员/朋友/同事一起出外娱乐聚餐",
+        "Q2A_3_bin": "去购物",
+        "Q2A_4_bin": "去户外活动",
+        "Q2A_5_bin": "自己驾车兜风",
+        "Q2A_6_bin": "和家人/朋友/同事外出一日游"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "是",
+        "0": "否"
+      }
+    },
+
+    // ============================================
+    // TYPE 3: Rating Scale - Single Variable
+    // ============================================
+    {
+      "indicator_code": "Q3X1",
+      "indicator_label": "Q3X1 - 购车考虑因素",
+      "question_code": "Q3X1",
+      "question_type": "Rating Scale",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "Q3X1_cat": "购车考虑因素"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "非常不重要",
+        "2": "不重要",
+        "3": "一般",
+        "4": "重要",
+        "5": "非常重要"
+      }
+    },
+
+    // ============================================
+    // TYPE 4: Rating Scale - Multiple Attributes
+    // ============================================
+    {
+      "indicator_code": "Q9X2_SATISFACTION",
+      "indicator_label": "Q9X2 - 满意度评分",
+      "question_code": "Q9X2",
+      "question_type": "Rating Scale",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "Q9X2_1_cat": "满意度指标1",
+        "Q9X2_2_cat": "满意度指标2",
+        "Q9X2_3_cat": "满意度指标3",
+        "Q9X2_4_cat": "满意度指标4",
+        "Q9X2_5_cat": "满意度指标5"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "非常不满意",
+        "2": "不满意",
+        "3": "一般",
+        "4": "满意",
+        "5": "非常满意"
+      }
+    },
+
+    // ============================================
+    // TYPE 5: Demographic - Single Choice
+    // ============================================
+    {
+      "indicator_code": "GENDER",
+      "indicator_label": "S0 - 性别",
+      "question_code": "S0",
+      "question_type": "Single Choice",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "S0_cat": "性别"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "男",
+        "2": "女"
+      }
+    },
+
+    // ============================================
+    // TYPE 6: Demographic - Age Group
+    // ============================================
+    {
+      "indicator_code": "AGE",
+      "indicator_label": "S1X1 - 年龄",
+      "question_code": "S1X1",
+      "question_type": "Single Choice",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "S1X1_cat": "年龄段"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "18岁以下",
+        "2": "18-25岁",
+        "3": "26-35岁",
+        "4": "36-45岁",
+        "5": "46-55岁",
+        "6": "56-60岁",
+        "7": "60岁以上"
+      }
+    },
+
+    // ============================================
+    // TYPE 7: Demographic - City Tier
+    // ============================================
+    {
+      "indicator_code": "CITY_TIER",
+      "indicator_label": "S0XB1 - 城市级别",
+      "question_code": "S0XB1",
+      "question_type": "Single Choice",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "S0XB1_cat": "城市级别"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "一线城市",
+        "2": "二线城市",
+        "3": "三线城市",
+        "4": "四线城市",
+        "5": "五线城市",
+        "6": "六线城市"
+      }
+    }
+  ]
+}

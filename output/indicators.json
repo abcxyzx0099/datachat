@@ -1,23 +1,18 @@
 {
   "metadata": {
-    "spec_id": "autosurvey_crosstab_20260225_182816",
-    "project_id": "proj_auto_survey",
-    "dataset_id": "ds_survey_data",
-    "description": "Auto-generated table specification from unknown.sav",
-    "source_file": "unknown.sav",
-    "case_count": "0",
-    "generated_at": "2026-02-25T18:28:16.857352",
-    "indicator_counts": {
-      "total": 89,
-      "row": 89,
-      "column": 0,
-      "both": 0,
-      "neither": 0
+    "generated_at": "2026-02-25T18:25:49.461561",
+    "source_questions": "survey_analyzer/output/questions.json",
+    "source_metadata": "survey_analyzer/output/filtered_metadata.json",
+    "total_indicators": 89,
+    "processing_summary": {
+      "processed": 2,
+      "skipped": 0,
+      "errors": 0,
+      "error_details": [],
+      "completed_at": "2026-02-25T18:27:54.328745"
     }
   },
-  "filter_clause": {},
-  "weight_indicator": null,
-  "row_indicators": [
+  "indicators": [
     {
       "indicator_code": "DEVICE",
       "indicator_label": "DEVICE_INFO",
@@ -2511,6 +2506,5 @@
       "is_row": true,
       "is_column": false
     }
-  ],
-  "column_indicators": []
+  ]
 }

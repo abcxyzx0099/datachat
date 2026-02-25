@@ -48,3 +48,9 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Output directory (use project root output/ instead)
+output/
+
+# Data directory (use project root data/ instead)
+data/

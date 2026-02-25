@@ -1,0 +1,221 @@
+---
+name: analyzer-indicator-generation
+description: Stage 3: Indicator Generation - Generate analysis indicators for each question using GLM-4.7 LLM in batch processing. Outputs indicators.json (is_row/is_column fields are added in Stage 4).
+license: Apache-2.0
+---
+
+# Analyzer Indicator Generation
+
+> **Stage 3: Indicator Generation** - Generate indicators using LLM in batch processing
+
+## Overview
+
+Generates table specification indicators for each question using GLM-4.7 LLM API. Each indicator includes `is_row` and `is_column` metadata fields for later classification.
+
+**Output**: `indicators.json` - Ready for Stage 4 (Table Specification)
+
+## Why This Step?
+
+| Problem | Solution |
+|---------|----------|
+| Single API call with 345 variables exceeds model output limits | Split into smaller, question-based calls |
+| One failure loses all progress | Each question saved individually |
+| Can't resume from where processing stopped | Checkpoint after each question |
+| Need to classify row vs column indicators | Add `is_row`/`is_column` fields for later marking |
+
+## When to Use
+
+Use this skill when:
+- Stage 1 (Data Preparation) and Stage 2 (Question Extraction) are complete
+- `questions.json` and `filtered_metadata.json` are ready
+- Need to generate indicators for all questions
+- Want checkpointing capability for long-running process
+
+## Usage
+
+**Important**: Run commands from the project root directory (where `output/` is located).
+
+```
+User: Generate indicators for all questions
+
+Assistant: [Stage 3: Indicator Generation - Batch Mode]
+           Working directory: /home/admin/workspaces/datachat
+           Reading: output/questions.json
+           Found 90 questions
+
+           Processing:
+           [1/90] DEVICE (1 variables) → DEVICE
+           [2/90] F1 (1 variables) → F1_MARITAL_STATUS
+           [3/90] F2X1 (1 variables) → HOUSEHOLD_SIZE
+           ...
+
+           ✓ Generated: 90 indicators
+           ✓ Output: output/indicators.json
+           ✓ Ready for Stage 4: Table Specification Configuration
+```
+
+## CLI Commands
+
+### Working Directory
+
+All commands should be run from the **project root directory** (where `output/` is located):
+
+```bash
+cd /home/admin/workspaces/datachat
+```
+
+### Generate Indicators (Batch)
+
+```bash
+# Using the survey_analyzer CLI (from project root)
+python -m survey_analyzer indicators batch \
+  --questions-file output/questions.json \
+  --metadata-file output/filtered_metadata.json \
+  --output-file output/indicators.json
+```
+
+### Generate Single Indicator (Testing)
+
+```bash
+python -m survey_analyzer.indicators.generator \
+  --question-code S0 \
+  --metadata-file output/filtered_metadata.json \
+  --variables S0
+```
+
+## Input
+
+| Input | Required | Description |
+|-------|----------|-------------|
+| `--questions-file` | Yes | Path to `questions.json` from Stage 2 |
+| `--metadata-file` | Yes | Path to `filtered_metadata.json` from Stage 1 |
+| `--output-file` | No | Output indicators file (default: `output/indicators.json`) |
+
+## Options
+
+| Option | Default | Description |
+|---------|---------|-------------|
+| `--no-resume` | False | Don't resume from existing output file |
+| `--stop-on-error` | False | Stop processing on first error |
+| `--default-is-row` | True | Default value for `is_row` field |
+| `--default-is-column` | False | Default value for `is_column` field |
+
+## Output
+
+### indicators.json
+
+```jsonc
+{
+  "metadata": {
+    "generated_at": "2025-02-25T15:34:48",
+    "source_questions": "output/questions.json",
+    "source_metadata": "output/filtered_metadata.json",
+    "total_indicators": 90
+  },
+  "indicators": [
+    {
+      "indicator_code": "GENDER",
+      "indicator_label": "请问您的性别是？(单选)",
+      "question_code": "S0",
+      "is_row": false,
+      "is_column": true,
+      "question_type": "Single Choice",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "S0": "请问您的性别是？(单选)"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1.0": "男",
+        "2.0": "女"
+      }
+    },
+    {
+      "indicator_code": "Q2A_USAGE",
+      "indicator_label": "Q2A - 请问您要购买的新车通常将如何使用？",
+      "question_code": "Q2A",
+      "is_row": true,
+      "is_column": false,
+      "question_type": "Multiple Choice",
+      "tabulation_type": "categorical",
+      "tabulation_metric": "column_percent",
+      "base_variables": {
+        "Q2A_1_bin": "上/下班用",
+        "Q2A_2_bin": "和家庭成员/朋友/同事一起出外娱乐聚餐",
+        "Q2A_3_bin": "去购物"
+      },
+      "base_variables_transformations": null,
+      "base_variables_value_labels": {
+        "1": "是",
+        "0": "否"
+      }
+    }
+  ]
+}
+```
+
+## Field Descriptions
+
+| Field | Description | Default |
+|-------|-------------|---------|
+| `indicator_code` | Unique identifier for the indicator (uppercase) | Generated by LLM |
+| `indicator_label` | Full question text | From filtered_metadata.json |
+| `question_code` | Question code (S0, Q2A, etc.) | From questions.json |
+| `is_row` | Mark as row variable (dependent) | `true` |
+| `is_column` | Mark as column variable (independent/breakout) | `false` |
+| `question_type` | Single Choice, Multiple Choice, Matrix, Rating Scale | Generated by LLM |
+| `tabulation_type` | `categorical` or `scalar` | Generated by LLM |
+| `tabulation_metric` | `column_percent` or `descriptive_statistics` | Generated by LLM |
+| `base_variables` | Dictionary of variable names to labels | Generated by LLM |
+| `base_variables_transformations` | SPSS transformation syntax or null | Generated by LLM |
+| `base_variables_value_labels` | Value labels mapping | From filtered_metadata.json |
+
+## Library Module
+
+| Module | Purpose |
+|---------|---------|
+| `survey_analyzer.indicators` | Indicator generation and batch processing |
+
+## Configuration
+
+The skill uses `ZHIPU_API_KEY` from `.env` file:
+
+```bash
+# .env file
+ZHIPU_API_KEY=your_api_key_here
+```
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| **Batch processing** | Process questions one-by-one |
+| **Checkpointing** | Save after each question |
+| **Resume** | Resume from checkpoint if interrupted |
+| **Error handling** | Continue on error option |
+| **Progress tracking** | Real-time progress display |
+| **Default values** | Configurable `is_row`/`is_column` defaults |
+
+## Related Skills
+
+| Skill | Previous/Next Stage |
+|-------|---------------------|
+| `analyzer-question-extraction` | Previous: Produces questions.json |
+| `analyzer-tablespec-configuration` | Next: Uses indicators.json for table specification |
+
+## References
+
+| Resource | Location |
+|----------|----------|
+| Data Flow Document | `docs/data-related/data-flow.md` |
+| System Architecture | `docs/application-design/system-architecture.md` |
+
+## Technology Stack
+
+| Component | Technology |
+|-----------|------------|
+| **LLM API** | Zhipu GLM-4.7 via zai-sdk |
+| **Batch Processing** | Python stdlib (json, pathlib) |
+| **Configuration** | python-dotenv |
+| **Coordination** | Claude Code Skills |

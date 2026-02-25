@@ -1,10 +1,10 @@
 ---
 name: stage5-reports
-description: 'Stage 5: Reporting - Generate PowerPoint presentation and interactive HTML dashboard from filtered results. Output: presentation.pptx, dashboard.html. Use when analysis is complete and reports are needed.'
+description: 'Stage 7: Reporting - Generate PowerPoint presentation and interactive HTML dashboard from filtered results. Output: presentation.pptx, dashboard.html. Use when analysis is complete and reports are needed.'
 license: Apache-2.0
 ---
 
-# Stage 5: Reporting
+# Stage 7: Reporting
 
 Generate final deliverables: PowerPoint presentation and HTML dashboard.
 
@@ -17,7 +17,7 @@ Executes **Steps 12-13** of the workflow:
 ## When to Use
 
 Use this skill when:
-- Statistical analysis is complete (Stage 4)
+- Statistical analysis is complete (Stage 6)
 - Need client-ready reports
 - Sharing results with stakeholders
 

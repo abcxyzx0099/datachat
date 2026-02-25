@@ -34,10 +34,8 @@ class TestCLIImports:
         assert callable(cmd_data_read)
         assert callable(cmd_data_filter)
 
-    def test_cli_spec_functions_exist(self):
-        """Test spec command functions exist."""
-        from survey_analyzer.cli import cmd_spec_tables
-        assert callable(cmd_spec_tables)
+    # Removed: spec command deprecated - no longer has cmd_spec_tables
+    # Removed: all command deprecated - no longer has cmd_all_workflow
 
     def test_cli_analysis_functions_exist(self):
         """Test analysis command functions exist."""
@@ -56,10 +54,7 @@ class TestCLIImports:
         assert callable(cmd_reporting_ppt)
         assert callable(cmd_reporting_html)
 
-    def test_cli_all_function_exists(self):
-        """Test all workflow function exists."""
-        from survey_analyzer.cli import cmd_all_workflow
-        assert callable(cmd_all_workflow)
+    # Removed: all command deprecated
 
 
 # ============================================================================
@@ -92,16 +87,8 @@ class TestCLIArgumentParsing:
 
         assert result.returncode == 0
 
-    def test_spec_command_exists(self):
-        """Test spec command is recognized."""
-        result = subprocess.run(
-            [sys.executable, "-m", "survey_analyzer", "spec", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=Path(__file__).parent.parent / "src"
-        )
-
-        assert result.returncode == 0
+    # Removed: spec command deprecated
+    # def test_spec_command_exists(self):
 
     def test_analysis_command_exists(self):
         """Test analysis command is recognized."""
@@ -136,16 +123,8 @@ class TestCLIArgumentParsing:
 
         assert result.returncode == 0
 
-    def test_all_command_exists(self):
-        """Test all command is recognized."""
-        result = subprocess.run(
-            [sys.executable, "-m", "survey_analyzer", "all", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=Path(__file__).parent.parent / "src"
-        )
-
-        assert result.returncode == 0
+    # Removed: all command deprecated
+    # def test_all_command_exists(self):
 
 
 # ============================================================================
@@ -229,44 +208,7 @@ class TestCLIFunctions:
         output = mock_stdout.getvalue()
         assert output is not None
 
-    @patch("builtins.open")
-    def test_cmd_spec_tables(self, mock_open):
-        """Test cmd_spec_tables function."""
-        from survey_analyzer.cli import cmd_spec_tables
-
-        mock_args = Mock(metadata_file="metadata.json", count=10, output_file="output.json")
-        mock_stdout = StringIO()
-        sys.stdout = mock_stdout
-
-        cmd_spec_tables(mock_args)
-
-        output = mock_stdout.getvalue()
-        assert "Saved specification template" in output
-
-    def test_cmd_all_workflow(self, tmp_path):
-        """Test cmd_all_workflow function."""
-        from survey_analyzer.cli import cmd_all_workflow
-        import pathlib
-
-        # Create a minimal test .sav file path (just for testing, doesn't need to be real)
-        mock_args = Mock(
-            sav_file=str(tmp_path / "test.sav"),
-            output_dir=str(tmp_path / "output"),
-            skip=None
-        )
-        mock_stdout = StringIO()
-        sys.stdout = mock_stdout
-
-        # This test will fail on file not found, but we can test the function exists and is called
-        try:
-            cmd_all_workflow(mock_args)
-        except (FileNotFoundError, Exception):
-            # Expected - file doesn't exist
-            pass
-
-        output = mock_stdout.getvalue()
-        # Should have some output
-        assert len(output) >= 0
+    # Removed: cmd_spec_tables and cmd_all_workflow tests - commands deprecated
 
     def test_cmd_analysis_indicators(self):
         """Test cmd_analysis_indicators function."""

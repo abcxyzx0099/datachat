@@ -1,12 +1,12 @@
 ---
 name: analyzer-coordinator
-description: 'Survey Analysis Orchestrator - Coordinates 5-stage workflow for SPSS survey analysis using pure Python. Use when running complete analysis pipeline, managing stage dependencies, handling checkpoints, or recovering from errors.'
+description: 'Survey Analysis Orchestrator - Coordinates 7-stage workflow for SPSS survey analysis using pure Python. Use when running complete analysis pipeline, managing stage dependencies, handling checkpoints, or recovering from errors.'
 license: Apache-2.0
 ---
 
 # Analyzer Coordinator
 
-Orchestrates the complete 5-stage survey analysis workflow.
+Orchestrates the complete 7-stage survey analysis workflow.
 
 ## Overview
 
@@ -14,11 +14,13 @@ The coordinator manages the entire analysis pipeline:
 
 | Stage | Description | Skill |
 |-------|-------------|-------|
-| 1 | Data Preparation | `stage1-data-prep` |
-| 2 | Table Specification | `stage2-spec-gen` |
-| 3 | Cross-Tabulation Generation | `stage3-crosstabs` |
-| 4 | Statistical Filtering | `stage4-statistics` |
-| 5 | Reporting | `stage5-reports` |
+| 1 | Data Preparation | `analyzer-data-prep` |
+| 2 | Question Extraction | `analyzer-question-extraction` |
+| 3 | Indicator Generation | `analyzer-indicator-generation` |
+| 4 | Table Specification | `analyzer-tablespec` |
+| 5 | Cross-Tabulation Generation | `analyzer-crosstabs` |
+| 6 | Statistical Filtering | `analyzer-statistics` |
+| 7 | Reporting | `analyzer-reports` |
 
 ## When to Use
 
@@ -34,28 +36,36 @@ Use this skill when:
 ```
 User: Analyze survey_data.sav with full workflow
 
-Assistant: [Starting 5-Stage Workflow]
+Assistant: [Starting 7-Stage Workflow]
            [Stage 1] Data Preparation...
            Loaded 150 variables, filtered to 45 analysis variables
            Saved: filtered_metadata.json
 
-           [Stage 2] Table Specification...
-           Generated 18 tables, 6 indicators (AI-orchestrated)
+           [Stage 2] Question Extraction...
+           Extracted 90 questions from 345 variables
+           Saved: questions.json
+
+           [Stage 3] Indicator Generation...
+           Generated 90 indicators using LLM
+           Saved: indicators.json
+
+           [Stage 4] Table Specification...
+           Classified indicators (row/column) using LLM
+           Built table specification
            Saved: table_specification.jsonc
 
-           [Stage 3] Cross-Tabulation Generation...
+           [Stage 5] Cross-Tabulation Generation...
            Applied transformations, generated cross-tabs
-           Computed chi-square and Cramer's V for 18 tables
+           Computed chi-square and Cramer's V
            Saved: cross_tables_with_stats.json
 
-           [Stage 4] Statistical Filtering...
+           [Stage 6] Statistical Filtering...
            Filtered by significance (p < 0.05)
-           Significant tables: 8 of 18 (44.4%)
+           Significant tables: X of Y (Z%)
            Saved: filtered_tables.json, statistical_summary.json
 
-           [Stage 5] Reporting...
-           Generated 24-slide presentation
-           Created interactive HTML dashboard
+           [Stage 7] Reporting...
+           Generated presentation and dashboard
            Saved: presentation.pptx, dashboard.html
 
            Analysis complete! All outputs in output/
@@ -77,35 +87,49 @@ Input: survey.sav file
 
 #### Stage 1: Data Preparation
 ```bash
-Use skill: stage1-data-prep
+Use skill: analyzer-data-prep
 Input: survey.sav file
 Output: filtered_metadata.json
 ```
 
-#### Stage 2: Table Specification
+#### Stage 2: Question Extraction
 ```bash
-Use skill: stage2-spec-gen
-Input: filtered_metadata.json, table-specification.xlsx
+Use skill: analyzer-question-extraction
+Input: filtered_metadata.json
+Output: questions.json
+```
+
+#### Stage 3: Indicator Generation
+```bash
+Use skill: analyzer-indicator-generation
+Input: questions.json, filtered_metadata.json
+Output: indicators.json
+```
+
+#### Stage 4: Table Specification
+```bash
+Use skill: analyzer-tablespec
+Input: indicators.json
 Output: table_specification.jsonc
 ```
 
-#### Stage 3: Cross-Tabulation
+#### Stage 5: Cross-Tabulation
 ```bash
-Use skill: stage3-crosstabs
+Use skill: analyzer-crosstabs
 Input: table_specification.jsonc, filtered_metadata.json
 Output: cross_tables_with_stats.json
 ```
 
-#### Stage 4: Statistical Filtering
+#### Stage 6: Statistical Filtering
 ```bash
-Use skill: stage4-statistics
+Use skill: analyzer-statistics
 Input: cross_tables_with_stats.json
 Output: filtered_tables.json, statistical_summary.json
 ```
 
-#### Stage 5: Reporting
+#### Stage 7: Reporting
 ```bash
-Use skill: stage5-reports
+Use skill: analyzer-reports
 Input: filtered_tables.json
 Output: presentation.pptx, dashboard.html
 ```
@@ -153,13 +177,17 @@ Output: presentation.pptx, dashboard.html
 ```
 Stage 1 (Data Prep)
     ↓
-Stage 2 (Specification - AI)
+Stage 2 (Question Extraction)
     ↓
-Stage 3 (Cross-Tabulation)
+Stage 3 (Indicator Generation)
     ↓
-Stage 4 (Statistical Filtering)
+Stage 4 (Table Specification)
     ↓
-Stage 5 (Reports)
+Stage 5 (Cross-Tabulation)
+    ↓
+Stage 6 (Statistical Filtering)
+    ↓
+Stage 7 (Reports)
 ```
 
 ## References

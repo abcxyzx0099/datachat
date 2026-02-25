@@ -3,28 +3,24 @@
 SPSS Survey Analysis - CLI
 
 Single CLI script with subcommands for all survey analysis operations.
-Provides semantic, module-based commands (no stage concepts).
+Uses unified table_specification.jsonc as single source of truth.
 
-Usage: spss-analyzer <command> [options]
+Usage: python -m survey_analyzer <command> [options]
 
 Commands:
-    data      - Read and filter survey data
-    spec      - Generate table specifications
-    analysis   - Compute indicators and crosstabs
-    stats      - Calculate chi-square tests
-    reporting  - Generate PowerPoint and HTML
-    all        - Run complete 5-stage workflow
+    data        - Read and filter survey data (Stage 1)
+    questions   - Extract question codes (Stage 2)
+    indicators  - Generate indicators using LLM (Stage 3)
+    tablespec   - Classify indicators as row/column (Stage 4)
+    analysis    - Compute crosstabs (Stage 5)
+    stats       - Calculate chi-square tests (Stage 6)
+    reporting   - Generate PowerPoint and HTML (Stage 7)
 
 Examples:
-  spss-analyzer data prep --sav-file survey.sav
-  spss-analyzer data read --sav-file survey.sav
-  spss-analyzer data filter --metadata-file metadata.json
-  spss-analyzer spec tables --metadata-file metadata.json
-  spss-analyzer analysis indicators --spec-file spec.json
-  spss-analyzer stats test --crosstabs-file cross_tables.json
-  spss-analyzer reporting ppt --tables-file filtered_tables.json
-  spss-analyzer reporting html --tables-file filtered_tables.json
-  spss-analyzer all --sav-file survey.sav --output-dir output/
+  python -m survey_analyzer data prep --sav-file survey.sav
+  python -m survey_analyzer questions extract --metadata-file output/filtered_metadata.json
+  python -m survey_analyzer indicators batch --spec-file output/table_specification.jsonc
+  python -m survey_analyzer tablespec build --spec-file output/table_specification.jsonc
 """
 
 import sys
@@ -34,6 +30,10 @@ from pathlib import Path
 
 from survey_analyzer.constants import DEFAULT_MAX_CATEGORIES
 
+
+# ============================================================================
+# Stage 1: Data Preparation
+# ============================================================================
 
 def cmd_data_read(args):
     """Read SPSS .sav file and output metadata."""
@@ -73,70 +73,192 @@ def cmd_data_filter(args):
 
 
 def cmd_data_prep(args):
-    """Read SPSS file and filter metadata in one command."""
+    """Read SPSS file and filter metadata in one command (Stage 1)."""
     from survey_analyzer.io import SPSSReader, MetadataTransformer
     import subprocess
 
     print(f"\n[Stage 1: Data Preparation]")
     print(f"  Reading: {args.sav_file}")
 
-    # Step 0: Backup existing file if it exists
+    # Backup existing file if needed
     output_file = args.output_file or 'output/filtered_metadata.json'
     output_path = Path(output_file)
 
     if output_path.exists():
-        # Create timestamped backup
         timestamp = subprocess.check_output(['date', '+%Y%m%d_%H%M%S']).decode().strip()
         backup_path = output_path.parent / f"{output_path.stem}_{timestamp}{output_path.suffix}"
-        subprocess.run(['cp', str(output_path), str(backup_path)])
-        print(f"  ✓ Backed up existing file to: {backup_path.name}")
+        subprocess.run(['cp', str(output_path), str(backup_path)], stderr=subprocess.DEVNULL)
+        print(f"  ✓ Backed up existing file")
 
-    # Step 1: Read SPSS file
+    # Read SPSS file
     reader = SPSSReader(encoding=args.encoding)
     data, meta = reader.read(args.sav_file)
     var_count = len(meta.get('variable_labels', {}))
     print(f"  Loaded: {len(data)} rows, {var_count} variables")
 
-    # Step 2: Transform to variable-centered format
+    # Transform and filter
     transformer = MetadataTransformer()
     metadata_dict = transformer.to_variable_centered(meta)
-    print(f"  Transformed: {len(metadata_dict)} variables")
-
-    # Step 3: Filter by business rules
     filtered_metadata = transformer.filter_variables(
         metadata_dict,
         max_categories=args.max_categories
     )
-    print(f"  Filtered: {len(filtered_metadata)} variables (max_categories={args.max_categories})")
+    print(f"  Filtered: {len(filtered_metadata)} variables")
 
-    # Step 4: Save output
+    # Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(filtered_metadata, f, indent=2, ensure_ascii=False)
 
     print(f"\n  ✓ Saved: {output_path}")
-    print(f"  ✓ Variables: {len(filtered_metadata)}")
-    print(f"  ✓ Ready for Stage 2: Table Specification\n")
+    print(f"  ✓ Ready for Stage 2: Question Extraction\n")
 
 
-def cmd_spec_tables(args):
-    """Generate table specifications from metadata."""
-    from survey_analyzer.specification import create_empty_spec
+# ============================================================================
+# Stage 2: Question Extraction
+# ============================================================================
 
-    # Create an empty specification template
-    spec = create_empty_spec(source_file=args.metadata_file)
-    spec_dict = spec.to_dict()
+def cmd_questions_extract(args):
+    """Extract question codes and group variables by question (Stage 2)."""
+    from survey_analyzer.questions import QuestionExtractor
 
-    output_file = args.output_file or 'table_specification.json'
-    with open(output_file, 'w') as f:
-        json.dump(spec_dict, f, indent=2)
-    print(f"Saved specification template to: {output_file}")
-    print("NOTE: This is a template. Use AI/skills to generate full specifications.")
+    print("\n[Stage 2: Question Extraction]")
+    print(f"  Reading: {args.metadata_file}")
 
+    extractor = QuestionExtractor()
+    spec = extractor.extract_from_file(
+        args.metadata_file,
+        args.output_file
+    )
+
+    # Optional backup
+    if args.backup_file:
+        questions = spec.get("questions", [])
+        extractor.save_questions(questions, args.backup_file)
+        print(f"  ✓ Backup saved: {args.backup_file}")
+
+    print(f"  ✓ Extracted: {len(spec.get('questions', []))} questions")
+    print(f"  ✓ Saved: {args.output_file}")
+    print(f"  ✓ Ready for Stage 3: Indicator Generation\n")
+
+
+# ============================================================================
+# Stage 3: Indicator Generation
+# ============================================================================
+
+def cmd_indicators_batch(args):
+    """Batch generate indicators using LLM (Stage 3)."""
+    from survey_analyzer.indicators import BatchProcessor
+
+    print("\n[Stage 3: Indicator Generation]")
+    print(f"  Spec file: {args.spec_file}")
+    print(f"  Metadata: {args.metadata_file}")
+
+    # Parse question codes if provided
+    question_codes = None
+    if hasattr(args, 'questions') and args.questions:
+        question_codes = [q.strip() for q in args.questions.split(",")]
+        print(f"  Question codes: {', '.join(question_codes)}")
+
+    # Progress callback
+    def progress_callback(current: int, total: int, question_code: str) -> None:
+        print(f"  [{current}/{total}] {question_code}")
+
+    # Process
+    processor = BatchProcessor(continue_on_error=not args.stop_on_error)
+    spec = processor.process_all(
+        spec_file=args.spec_file,
+        metadata_file=args.metadata_file,
+        question_codes=question_codes,
+        resume=not args.no_resume,
+        progress_callback=progress_callback
+    )
+
+    # Count indicators
+    total_indicators = sum(
+        len(q.get("indicators", []))
+        for q in spec.get("questions", [])
+    )
+
+    # Optional backup
+    if args.backup_file:
+        from datetime import datetime
+        all_indicators = []
+        for q in spec.get("questions", []):
+            for ind in q.get("indicators", []):
+                all_indicators.append({**ind, "question_code": q["question_code"]})
+
+        backup_data = {
+            "metadata": {
+                "source_spec": str(Path(args.spec_file).absolute()),
+                "generated_at": datetime.now().isoformat(),
+                "total_indicators": len(all_indicators)
+            },
+            "indicators": all_indicators
+        }
+
+        backup_path = Path(args.backup_file)
+        backup_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(backup_path, "w", encoding="utf-8") as f:
+            json.dump(backup_data, f, indent=2, ensure_ascii=False)
+        print(f"  ✓ Backup saved: {args.backup_file}")
+
+    print(f"\n  ✓ Generated: {total_indicators} indicators")
+    print(f"  ✓ Updated: {args.spec_file}")
+    print(f"  ✓ Ready for Stage 4: Classification\n")
+
+
+# ============================================================================
+# Stage 4: Table Specification (Classification)
+# ============================================================================
+
+def cmd_tablespec_template(args):
+    """Show Excel template info (optional guidance)."""
+    print("\n[Table Specification - Excel Template]")
+    print("\nThe Excel template is OPTIONAL - for providing domain knowledge.")
+    print("When filled out, it helps guide the LLM in classifying indicators.")
+    print("\nTemplate location:")
+    print("  .claude/skills/analyzer-tablespec-template/templates/table-specification-template.xlsx")
+    print("\nFor detailed guidance, see: /skill analyzer-tablespec-template\n")
+
+
+def cmd_tablespec_build(args):
+    """Classify indicators as row/column using LLM (Stage 4)."""
+    from survey_analyzer.tablespec import TableSpec
+
+    print("\n[Stage 4: Table Specification - Classification]")
+    print(f"  Spec file: {args.spec_file}")
+
+    spec_builder = TableSpec()
+    spec = spec_builder.classify_from_file(
+        spec_file=args.spec_file,
+        output_file=args.output_file or args.spec_file
+    )
+
+    # Count row/column indicators
+    row_count = sum(
+        1 for q in spec.get("questions", [])
+        for ind in q.get("indicators", [])
+        if ind.get("is_row")
+    )
+    col_count = sum(
+        1 for q in spec.get("questions", [])
+        for ind in q.get("indicators", [])
+        if ind.get("is_column")
+    )
+
+    print(f"\n  ✓ Row indicators: {row_count}")
+    print(f"  ✓ Column indicators: {col_count}")
+    print(f"  ✓ Saved: {args.output_file or args.spec_file}")
+    print(f"  ✓ Ready for Stage 5: Cross-Table Generation\n")
+
+
+# ============================================================================
+# Stage 5: Analysis (Crosstabs)
+# ============================================================================
 
 def cmd_analysis_indicators(args):
-    """Compute indicators from specification."""
+    """Compute indicators from specification (Stage 5)."""
     from survey_analyzer.analysis import IndicatorGenerator
 
     with open(args.spec_file) as f:
@@ -144,7 +266,6 @@ def cmd_analysis_indicators(args):
     with open(args.metadata_file) as f:
         metadata = json.load(f)
 
-    # Use IndicatorGenerator instead of IndicatorsCalculator
     gen = IndicatorGenerator()
     indicators = gen.generate(spec.get('indicators', []), metadata)
 
@@ -159,8 +280,12 @@ def cmd_analysis_indicators(args):
         print(json.dumps(indicators, indent=2))
 
 
+# ============================================================================
+# Stage 6: Statistics
+# ============================================================================
+
 def cmd_stats_test(args):
-    """Calculate chi-square tests on crosstabs."""
+    """Calculate chi-square tests (Stage 6)."""
     from survey_analyzer.analysis import StatisticsCalculator
     from survey_analyzer.filtering import SignificanceFilter
 
@@ -182,7 +307,7 @@ def cmd_stats_test(args):
 
 
 def cmd_stats_filter(args):
-    """Filter tables by significance."""
+    """Filter tables by significance (Stage 6)."""
     from survey_analyzer.filtering import SignificanceFilter
 
     with open(args.crosstabs_file) as f:
@@ -200,8 +325,12 @@ def cmd_stats_filter(args):
     print(f"Saved filtered tables to: {output_file}")
 
 
+# ============================================================================
+# Stage 7: Reporting
+# ============================================================================
+
 def cmd_reporting_ppt(args):
-    """Generate PowerPoint report."""
+    """Generate PowerPoint report (Stage 7)."""
     from survey_analyzer.reporting import PowerPointGenerator
 
     with open(args.tables_file) as f:
@@ -218,7 +347,7 @@ def cmd_reporting_ppt(args):
 
 
 def cmd_reporting_html(args):
-    """Generate HTML dashboard."""
+    """Generate HTML dashboard (Stage 7)."""
     from survey_analyzer.reporting import HTMLDashboardGenerator
 
     with open(args.tables_file) as f:
@@ -233,181 +362,121 @@ def cmd_reporting_html(args):
     print(f"Saved HTML dashboard to: {output_path}")
 
 
-def cmd_all_workflow(args):
-    """Run complete 5-stage workflow."""
-    from survey_analyzer.io import SPSSReader, MetadataTransformer
-    from survey_analyzer.specification import create_empty_spec
-    from survey_analyzer.analysis import IndicatorGenerator, StatisticsCalculator
-    from survey_analyzer.filtering import SignificanceFilter
-    from survey_analyzer.reporting import PowerPointGenerator, HTMLDashboardGenerator
-
-    output_path = Path(args.output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    skip_stages = set((args.skip or '').split(','))
-
-    # Stage 1: Data Preparation
-    if '1' not in skip_stages:
-        print("\n[Stage 1: Data Preparation]")
-        reader = SPSSReader(encoding=args.encoding)
-        data, meta = reader.read(args.sav_file)
-
-        transformer = MetadataTransformer()
-        metadata_dict = transformer.to_variable_centered(meta)
-        filtered_metadata = transformer.filter_variables(metadata_dict)
-
-        metadata_file = output_path / "filtered_metadata.json"
-        with open(metadata_file, 'w', encoding='utf-8') as f:
-            json.dump(filtered_metadata, f, indent=2, ensure_ascii=False)
-        print(f"Saved: {metadata_file}")
-
-    # Stage 2: Table Specification
-    if '2' not in skip_stages:
-        print("\n[Stage 2: Table Specification]")
-        with open(metadata_file, 'r') as f:
-            filtered_metadata = json.load(f)
-
-        # Create empty spec template (use AI/skills to generate full spec)
-        spec = create_empty_spec(source_file=args.sav_file)
-        spec_dict = spec.to_dict()
-
-        spec_file = output_path / "table_specification.json"
-        with open(spec_file, 'w', encoding='utf-8') as f:
-            json.dump(spec_dict, f, indent=2, ensure_ascii=False)
-        print(f"Saved: {spec_file}")
-        print("NOTE: Use AI/skills to generate full table specifications")
-
-    # Stage 3: Cross-Table Calculation
-    if '3' not in skip_stages:
-        print("\n[Stage 3: Cross-Table Calculation]")
-        gen = IndicatorGenerator()
-        # Mock indicators for now - needs actual spec
-        indicators_file = output_path / "indicators.json"
-        with open(indicators_file, 'w') as f:
-            json.dump([], f, indent=2)
-        print(f"Saved: {indicators_file}")
-        print("NOTE: Use AI/skills to generate indicators from spec")
-
-    # Stage 4: Statistical Analysis
-    if '4' not in skip_stages:
-        print("\n[Stage 4: Statistical Analysis]")
-        stats_calc = StatisticsCalculator()
-        # Mock crosstabs for now - needs actual data
-        crosstabs_file = output_path / "cross_tables.json"
-        with open(crosstabs_file, 'w') as f:
-            json.dump([], f, indent=2)
-        print(f"Saved: {crosstabs_file}")
-
-    # Stage 5: Reporting
-    if '5' not in skip_stages:
-        print("\n[Stage 5: Reporting]")
-        ppt_gen = PowerPointGenerator()
-        ppt_file = output_path / "presentation.pptx"
-        # Create empty presentation for now
-        ppt_gen.create_presentation([], {}, "Survey Analysis Results")
-        ppt_gen.save(str(ppt_file))
-        print(f"Saved: {ppt_file}")
-
-        dash_gen = HTMLDashboardGenerator()
-        dash_file = output_path / "dashboard.html"
-        # Create empty dashboard for now
-        html_content = dash_gen.generate_dashboard({"tables": []}, {"tables": []}, None)
-        dash_gen.save(str(dash_file), html_content)
-        print(f"Saved: {dash_file}")
-
-    print("\n[Workflow Complete]")
-    print(f"Results saved to: {args.output_dir}")
-
+# ============================================================================
+# Main CLI
+# ============================================================================
 
 def main():
-    """Main CLI entry point with subcommands."""
+    """Main CLI entry point."""
     parser = argparse.ArgumentParser(
-        description="SPSS Survey Analysis - Semantic CLI Commands",
+        description="SPSS Survey Analysis - 7-Stage Unified Workflow",
         epilog="""Examples:
-  spss-analyzer data read --sav-file survey.sav
-  spss-analyzer data filter --metadata-file metadata.json
-  spss-analyzer spec tables --metadata-file metadata.json
-  spss-analyzer analysis indicators --spec-file spec.json
-  spss-analyzer stats test --crosstabs-file cross_tables.json
-  spss-analyzer reporting ppt --tables-file filtered_tables.json
-  spss-analyzer reporting html --tables-file filtered_tables.json
-  spss-analyzer all --sav-file survey.sav --output-dir output/"""
+  # Stage 1: Prepare data
+  python -m survey_analyzer data prep --sav-file survey.sav
+
+  # Stage 2: Extract questions
+  python -m survey_analyzer questions extract --metadata-file output/filtered_metadata.json
+
+  # Stage 3: Generate indicators
+  python -m survey_analyzer indicators batch --spec-file output/table_specification.jsonc --metadata-file output/filtered_metadata.json
+
+  # Stage 4: Classify indicators
+  python -m survey_analyzer tablespec build --spec-file output/table_specification.jsonc
+
+  # Stage 5-7: Analysis, statistics, reporting
+  python -m survey_analyzer analysis indicators --spec-file output/table_specification.jsonc --metadata-file output/filtered_metadata.json
+  python -m survey_analyzer stats test --crosstabs-file output/cross_tables.json
+  python -m survey_analyzer reporting ppt --tables-file output/filtered_tables.json
+"""
     )
 
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
 
-    # Data command
-    data_parser = subparsers.add_parser('data', help='Data operations (read, filter, prep)')
+    # Data command (Stage 1)
+    data_parser = subparsers.add_parser('data', help='Data operations (Stage 1)')
     data_subparsers = data_parser.add_subparsers(dest='subcommand')
 
-    data_read = data_subparsers.add_parser('read', help='Read SPSS file and extract metadata')
-    data_read.add_argument('--sav-file', required=True, help='Path to SPSS .sav file')
-    data_read.add_argument('--encoding', help='File encoding (default: auto-detect from file)')
-    data_read.add_argument('--output-file', help='Output metadata JSON file')
+    data_read = data_subparsers.add_parser('read', help='Read SPSS file')
+    data_read.add_argument('--sav-file', required=True)
+    data_read.add_argument('--encoding')
+    data_read.add_argument('--output-file')
 
-    data_filter = data_subparsers.add_parser('filter', help='Filter metadata by category count')
-    data_filter.add_argument('--metadata-file', required=True, help='Path to metadata JSON')
-    data_filter.add_argument('--output-file', help='Output filtered metadata')
-    data_filter.add_argument('--max-categories', type=int, default=DEFAULT_MAX_CATEGORIES,
-                           help=f'Max categories (default: {DEFAULT_MAX_CATEGORIES})')
+    data_filter = data_subparsers.add_parser('filter', help='Filter metadata')
+    data_filter.add_argument('--metadata-file', required=True)
+    data_filter.add_argument('--output-file')
+    data_filter.add_argument('--max-categories', type=int, default=DEFAULT_MAX_CATEGORIES)
 
-    data_prep = data_subparsers.add_parser('prep', help='Read and filter metadata in one command (Stage 1 complete)')
-    data_prep.add_argument('--sav-file', required=True, help='Path to SPSS .sav file')
-    data_prep.add_argument('--encoding', help='File encoding (default: auto-detect from file)')
-    data_prep.add_argument('--output-file', help='Output filtered metadata JSON file')
-    data_prep.add_argument('--max-categories', type=int, default=DEFAULT_MAX_CATEGORIES,
-                           help=f'Max categories (default: {DEFAULT_MAX_CATEGORIES})')
+    data_prep = data_subparsers.add_parser('prep', help='Read and filter (Stage 1)')
+    data_prep.add_argument('--sav-file', required=True)
+    data_prep.add_argument('--encoding')
+    data_prep.add_argument('--output-file', default='output/filtered_metadata.json')
+    data_prep.add_argument('--max-categories', type=int, default=DEFAULT_MAX_CATEGORIES)
 
-    # Spec command
-    spec_parser = subparsers.add_parser('spec', help='Specification operations')
-    spec_subparsers = spec_parser.add_subparsers(dest='subcommand')
+    # Questions command (Stage 2)
+    questions_parser = subparsers.add_parser('questions', help='Question extraction (Stage 2)')
+    questions_subparsers = questions_parser.add_subparsers(dest='subcommand')
 
-    spec_tables = spec_subparsers.add_parser('tables', help='Generate table specifications')
-    spec_tables.add_argument('--metadata-file', required=True, help='Path to metadata JSON')
-    spec_tables.add_argument('--output-file', help='Output specification JSON')
-    spec_tables.add_argument('--count', type=int, default=20, help='Number of tables')
+    questions_extract = questions_subparsers.add_parser('extract', help='Extract questions (Stage 2)')
+    questions_extract.add_argument('--metadata-file', required=True)
+    questions_extract.add_argument('--output-file', default='output/table_specification.jsonc')
+    questions_extract.add_argument('--backup-file', help='Optional: Save questions.json backup')
 
-    # Analysis command
-    analysis_parser = subparsers.add_parser('analysis', help='Analysis operations')
+    # Indicators command (Stage 3)
+    indicators_parser = subparsers.add_parser('indicators', help='Indicator generation (Stage 3)')
+    indicators_subparsers = indicators_parser.add_subparsers(dest='subcommand')
+
+    indicators_batch = indicators_subparsers.add_parser('batch', help='Generate indicators (Stage 3)')
+    indicators_batch.add_argument('--spec-file', default='output/table_specification.jsonc')
+    indicators_batch.add_argument('--metadata-file', required=True)
+    indicators_batch.add_argument('--questions', help='Specific question codes (comma-separated)')
+    indicators_batch.add_argument('--no-resume', action='store_true')
+    indicators_batch.add_argument('--stop-on-error', action='store_true')
+    indicators_batch.add_argument('--backup-file', help='Optional: Save indicators.json backup')
+
+    # Tablespec command (Stage 4)
+    tablespec_parser = subparsers.add_parser('tablespec', help='Table specification (Stage 4)')
+    tablespec_subparsers = tablespec_parser.add_subparsers(dest='subcommand')
+
+    tablespec_template = tablespec_subparsers.add_parser('template', help='Show Excel template info')
+
+    tablespec_build = tablespec_subparsers.add_parser('build', help='Classify indicators (Stage 4)')
+    tablespec_build.add_argument('--spec-file', default='output/table_specification.jsonc')
+    tablespec_build.add_argument('--output-file', help='Output path (default: same as spec-file)')
+
+    # Analysis command (Stage 5)
+    analysis_parser = subparsers.add_parser('analysis', help='Analysis operations (Stage 5)')
     analysis_subparsers = analysis_parser.add_subparsers(dest='subcommand')
 
     analysis_indicators = analysis_subparsers.add_parser('indicators', help='Compute indicators')
-    analysis_indicators.add_argument('--spec-file', required=True, help='Path to specification JSON')
-    analysis_indicators.add_argument('--metadata-file', required=True, help='Path to metadata JSON')
-    analysis_indicators.add_argument('--output-file', help='Output indicators CSV')
+    analysis_indicators.add_argument('--spec-file', required=True)
+    analysis_indicators.add_argument('--metadata-file', required=True)
+    analysis_indicators.add_argument('--output-file')
 
-    # Stats command
-    stats_parser = subparsers.add_parser('stats', help='Statistical analysis')
+    # Stats command (Stage 6)
+    stats_parser = subparsers.add_parser('stats', help='Statistical analysis (Stage 6)')
     stats_subparsers = stats_parser.add_subparsers(dest='subcommand')
 
-    stats_test = stats_subparsers.add_parser('test', help='Calculate chi-square tests')
-    stats_test.add_argument('--crosstabs-file', required=True, help='Path to crosstabs JSON')
-    stats_test.add_argument('--threshold', type=float, default=0.05, help='Significance threshold')
-    stats_test.add_argument('--output-file', help='Output filtered tables JSON')
+    stats_test = stats_subparsers.add_parser('test', help='Chi-square tests')
+    stats_test.add_argument('--crosstabs-file', required=True)
+    stats_test.add_argument('--threshold', type=float, default=0.05)
+    stats_test.add_argument('--output-file')
 
     stats_filter = stats_subparsers.add_parser('filter', help='Filter by significance')
-    stats_filter.add_argument('--crosstabs-file', required=True, help='Path to crosstabs JSON')
-    stats_filter.add_argument('--threshold', type=float, default=0.05, help='Significance threshold')
-    stats_filter.add_argument('--output-file', help='Output filtered tables JSON')
+    stats_filter.add_argument('--crosstabs-file', required=True)
+    stats_filter.add_argument('--threshold', type=float, default=0.05)
+    stats_filter.add_argument('--output-file')
 
-    # Reporting command
-    reporting_parser = subparsers.add_parser('reporting', help='Report generation')
+    # Reporting command (Stage 7)
+    reporting_parser = subparsers.add_parser('reporting', help='Report generation (Stage 7)')
     reporting_subparsers = reporting_parser.add_subparsers(dest='subcommand')
 
     reporting_ppt = reporting_subparsers.add_parser('ppt', help='Generate PowerPoint')
-    reporting_ppt.add_argument('--tables-file', required=True, help='Path to filtered tables JSON')
-    reporting_ppt.add_argument('--output-dir', default='output', help='Output directory')
+    reporting_ppt.add_argument('--tables-file', required=True)
+    reporting_ppt.add_argument('--output-dir', default='output')
 
     reporting_html = reporting_subparsers.add_parser('html', help='Generate HTML dashboard')
-    reporting_html.add_argument('--tables-file', required=True, help='Path to filtered tables JSON')
-    reporting_html.add_argument('--output-dir', default='output', help='Output directory')
-
-    # All workflow command
-    all_parser = subparsers.add_parser('all', help='Run complete 5-stage workflow')
-    all_parser.add_argument('--sav-file', required=True, help='Path to SPSS .sav file')
-    all_parser.add_argument('--encoding', help='File encoding (default: auto-detect from file)')
-    all_parser.add_argument('--output-dir', default='output', help='Output directory')
-    all_parser.add_argument('--skip', help='Skip stages (e.g., "3,4")')
+    reporting_html.add_argument('--tables-file', required=True)
+    reporting_html.add_argument('--output-dir', default='output')
 
     args = parser.parse_args()
 
@@ -425,16 +494,33 @@ def main():
             cmd_data_prep(args)
         else:
             data_subparsers.choices['read'].print_help()
-    elif args.command == 'spec':
-        if args.subcommand == 'tables':
-            cmd_spec_tables(args)
+
+    elif args.command == 'questions':
+        if args.subcommand == 'extract':
+            cmd_questions_extract(args)
         else:
-            spec_subparsers.choices['tables'].print_help()
+            questions_subparsers.choices['extract'].print_help()
+
+    elif args.command == 'indicators':
+        if args.subcommand == 'batch':
+            cmd_indicators_batch(args)
+        else:
+            indicators_subparsers.choices['batch'].print_help()
+
+    elif args.command == 'tablespec':
+        if args.subcommand == 'template':
+            cmd_tablespec_template(args)
+        elif args.subcommand == 'build':
+            cmd_tablespec_build(args)
+        else:
+            tablespec_subparsers.choices['build'].print_help()
+
     elif args.command == 'analysis':
         if args.subcommand == 'indicators':
             cmd_analysis_indicators(args)
         else:
             analysis_subparsers.choices['indicators'].print_help()
+
     elif args.command == 'stats':
         if args.subcommand == 'test':
             cmd_stats_test(args)
@@ -442,6 +528,7 @@ def main():
             cmd_stats_filter(args)
         else:
             stats_subparsers.choices['test'].print_help()
+
     elif args.command == 'reporting':
         if args.subcommand == 'ppt':
             cmd_reporting_ppt(args)
@@ -449,8 +536,6 @@ def main():
             cmd_reporting_html(args)
         else:
             reporting_subparsers.choices['ppt'].print_help()
-    elif args.command == 'all':
-        cmd_all_workflow(args)
 
 
 if __name__ == '__main__':
