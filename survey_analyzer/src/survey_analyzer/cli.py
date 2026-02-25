@@ -31,6 +31,16 @@ from pathlib import Path
 from survey_analyzer.constants import DEFAULT_MAX_CATEGORIES
 
 
+def load_jsonc(file_path: str) -> dict:
+    """Load JSONC file (JSON with comments)."""
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    # Strip JSONC comments
+    lines = [line for line in content.split("\n") if not line.strip().startswith("//")]
+    content = "\n".join(lines)
+    return json.loads(content)
+
+
 # ============================================================================
 # Stage 1: Data Preparation
 # ============================================================================
@@ -258,26 +268,114 @@ def cmd_tablespec_build(args):
 # ============================================================================
 
 def cmd_analysis_indicators(args):
-    """Compute indicators from specification (Stage 5)."""
-    from survey_analyzer.analysis import IndicatorGenerator
+    """Compute crosstabs from specification (Stage 5)."""
+    from survey_analyzer.analysis import generate_crosstabs_batch
+    from survey_analyzer.io import SPSSReader
+    import pandas as pd
 
-    with open(args.spec_file) as f:
-        spec = json.load(f)
-    with open(args.metadata_file) as f:
-        metadata = json.load(f)
+    # Load spec file (JSONC)
+    spec = load_jsonc(args.spec_file)
 
-    gen = IndicatorGenerator()
-    indicators = gen.generate(spec.get('indicators', []), metadata)
+    # Load SPSS data
+    reader = SPSSReader()
+    df, meta = reader.read(args.sav_file)
 
+    # Extract row and column indicators from spec
+    row_indicators = []
+    col_indicators = []
+
+    for question in spec.get("questions", []):
+        for indicator in question.get("indicators", []):
+            # Only include classified indicators
+            if indicator.get("is_row") or indicator.get("is_column"):
+                # Use base_variables directly (from LLM Stage 3)
+                base_vars = indicator.get("base_variables", {})
+                # Convert base_variables dict to list format expected by crosstab processor
+                # Expected: [{"name": "var1", "label": "Label 1"}, ...]
+                base_vars_list = []
+                if isinstance(base_vars, dict):
+                    for var_name, label in base_vars.items():
+                        base_vars_list.append({"name": var_name, "label": label})
+                else:
+                    base_vars_list = base_vars
+
+                variables = [bv["name"] for bv in base_vars_list]
+
+                ind_data = {
+                    "indicator_code": indicator["indicator_code"],
+                    "indicator_label": indicator["indicator_label"],
+                    "question_code": question["question_code"],
+                    "variables": variables,
+                    "base_variables": base_vars_list,
+                    "value_labels": indicator.get("base_variables_value_labels", {}),
+                    "transformation": indicator.get("base_variables_transformations"),
+                }
+
+                if indicator.get("is_row"):
+                    row_indicators.append(ind_data)
+                if indicator.get("is_column"):
+                    col_indicators.append(ind_data)
+
+    # Check if we have both row and column indicators
+    if not row_indicators:
+        print("Error: No row indicators found in spec. Run Stage 4 (tablespec build) first.")
+        sys.exit(1)
+    if not col_indicators:
+        print("Error: No column indicators found in spec. Run Stage 4 (tablespec build) first.")
+        sys.exit(1)
+
+    # Get weight variable if specified
+    weight_var = spec.get("weight_indicator")
+    if weight_var:
+        weight_var = weight_var.get("indicator_variables", [None])[0]
+
+    # Generate crosstabs
+    print(f"[Stage 5: Cross-Table Generation]")
+    print(f"  Data file: {args.sav_file}")
+    print(f"  Row indicators: {len(row_indicators)}")
+    print(f"  Column indicators: {len(col_indicators)}")
+    print(f"  Total combinations: {len(row_indicators) * len(col_indicators)}")
+
+    results = generate_crosstabs_batch(df, row_indicators, col_indicators, weight_var)
+
+    # Convert numpy/pandas types to regular Python types for JSON serialization
+    def convert_to_json_serializable(obj):
+        """Convert numpy/pandas types to regular Python types."""
+        import numpy as np
+        if isinstance(obj, dict):
+            return {k: convert_to_json_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_to_json_serializable(item) for item in obj]
+        elif isinstance(obj, (np.integer, np.floating)):
+            return float(obj)
+        elif isinstance(obj, (np.bool_, bool)):
+            return bool(obj)
+        elif pd.isna(obj):
+            return None
+        else:
+            return obj
+
+    results = convert_to_json_serializable(results)
+
+    # Save results
     if args.output_file:
-        import csv
-        with open(args.output_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=['indicator_id', 'value'])
-            writer.writeheader()
-            writer.writerows(indicators)
-        print(f"Saved indicators to: {args.output_file}")
+        output_data = {
+            "tables": results,
+            "summary": {
+                "total_tables": len(results),
+                "row_indicators": len(row_indicators),
+                "column_indicators": len(col_indicators),
+                "generated_at": pd.Timestamp.now().isoformat()
+            }
+        }
+        with open(args.output_file, "w", encoding="utf-8") as f:
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
+        print(f"  ✓ Saved: {args.output_file}")
     else:
-        print(json.dumps(indicators, indent=2))
+        print(json.dumps(results, indent=2, ensure_ascii=False))
+
+    print(f"  ✓ Generated: {len(results)} cross-tables")
+    print(f"  ✓ Ready for Stage 6: Statistical Filtering\n")
 
 
 # ============================================================================
@@ -308,21 +406,42 @@ def cmd_stats_test(args):
 
 def cmd_stats_filter(args):
     """Filter tables by significance (Stage 6)."""
-    from survey_analyzer.filtering import SignificanceFilter
+    from survey_analyzer.filtering import SignificanceFilter, FilterCriteria
 
     with open(args.crosstabs_file) as f:
         data = json.load(f)
 
-    filter_obj = SignificanceFilter()
-    filtered, summary = filter_obj.filter_significant(
-        data,
-        threshold=args.threshold
-    )
+    tables = data.get('tables', [])
+
+    # Create filter criteria with custom threshold
+    criteria = FilterCriteria()
+    criteria.significance_level = args.threshold
+    criteria.min_cramers_v = 0.1
+
+    filter_obj = SignificanceFilter(criteria=criteria)
+
+    # Apply filter
+    filter_result = filter_obj.filter_tables(tables)
+
+    # Get included tables (table IDs)
+    included_ids = filter_result.included_tables
+
+    # Filter the actual table data
+    filtered_tables = [
+        table for table in tables
+        if table.get('table_id') in included_ids
+    ]
+
+    # Get summary from filter_result
+    summary_dict = filter_result.summary.to_dict()
 
     output_file = args.output_file or 'filtered_tables.json'
     with open(output_file, 'w') as f:
-        json.dump({'tables': filtered, 'summary': summary}, f, indent=2)
+        json.dump({'tables': filtered_tables, 'summary': summary_dict}, f, indent=2)
     print(f"Saved filtered tables to: {output_file}")
+    print(f"  Total: {summary_dict.get('total_tables', len(tables))}")
+    print(f"  Significant: {summary_dict.get('included_count', len(filtered_tables))}")
+    print(f"  Excluded: {summary_dict.get('excluded_count', len(tables) - len(filtered_tables))}")
 
 
 # ============================================================================
@@ -447,9 +566,9 @@ def main():
     analysis_parser = subparsers.add_parser('analysis', help='Analysis operations (Stage 5)')
     analysis_subparsers = analysis_parser.add_subparsers(dest='subcommand')
 
-    analysis_indicators = analysis_subparsers.add_parser('indicators', help='Compute indicators')
+    analysis_indicators = analysis_subparsers.add_parser('indicators', help='Compute crosstabs (Stage 5)')
     analysis_indicators.add_argument('--spec-file', required=True)
-    analysis_indicators.add_argument('--metadata-file', required=True)
+    analysis_indicators.add_argument('--sav-file', required=True)
     analysis_indicators.add_argument('--output-file')
 
     # Stats command (Stage 6)

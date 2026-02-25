@@ -318,6 +318,8 @@ Return ONLY valid JSON, no additional text."""
             description += f" - {var_count} attribute(s)"
 
         example_json = json.dumps(indicator, ensure_ascii=False, indent=2)
+        # Escape braces to prevent format() from interpreting them
+        example_json = example_json.replace('{', '{{').replace('}', '}}')
 
         return f"""### Example {idx}: {description}
 
